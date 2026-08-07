@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { Box, Text, useInput } from "ink";
-import { Spinner } from "@inkjs/ui";
+import { Spinner, Select } from "@inkjs/ui";
 import { useStore } from "../store";
 import { GradientBar } from "../components/GradientBar";
 import { TextField } from "../components/TextField";
+import { SelectField, TextInputField } from "../components/FormHelpers";
 import { makeYoutube } from "../../sources/youtube";
 import { makeSoundcloud } from "../../sources/soundcloud";
 import { makeSpotify } from "../../sources/spotify/adapter";
@@ -11,15 +12,23 @@ import { clearPartials } from "../../sources/partials";
 import { mpvInstallHint } from "../../player/playback";
 import { normalizeHandle } from "../../sources/handle";
 import { persistableHandle } from "../../sources/persist-handle";
-import { displayPath } from "../../util/format";
+import { displayPath, expandTilde } from "../../util/format";
 import { wrapStep } from "../move";
 import { COLOR, ICON } from "../theme";
+import { detectBrowserProfiles, type BrowserProfile } from "../../config/cookies";
+import { findYtDlpConfig, importFromYtDlpConfig, type ImportResult } from "../../config/import";
+import { defaultLibraryDir } from "../../config/paths";
 import type { SourceId } from "../../library/types";
 import type { SourceAdapter, SourcePlaylist } from "../../sources/types";
 
 type Step =
   | "intro"
   | "handle"
+  | "format"
+  | "cookies"
+  | "cookies-browser"
+  | "cookies-file"
+  | "output"
   | "loading"
   | "downloading"
   | "error";
@@ -85,9 +94,12 @@ export function Welcome() {
   /** Progress while enumerating each list's tracks, so big libraries don't
    *  sit on a static spinner with no sign of life. */
   const [gather, setGather] = useState({ done: 0, total: 0 });
+  /** Browser profiles detected for the cookies wizard step. */
+  const [browserProfiles, setBrowserProfiles] = useState<BrowserProfile[]>([]);
+  const [profilesLoading, setProfilesLoading] = useState(false);
 
-  // Capture input during the handle entry step so global keys don't fire.
-  const capturing = step === "handle";
+  // Capture input during text-entry steps so global keys don't fire.
+  const capturing = step === "handle" || step === "cookies-file" || step === "output";
   useEffect(() => {
     setCaptureMode(capturing ? "text" : "none");
     return () => setCaptureMode("none");
@@ -141,6 +153,58 @@ export function Welcome() {
     },
     { isActive: step === "handle" },
   );
+
+  // Format step: esc goes back to handle.
+  useInput(
+    (_input, key) => {
+      if (key.escape) setStep("handle");
+    },
+    { isActive: step === "format" },
+  );
+
+  // Cookies step: esc goes back to format.
+  useInput(
+    (_input, key) => {
+      if (key.escape) setStep("format");
+    },
+    { isActive: step === "cookies" },
+  );
+
+  // Cookies-browser: esc goes back to cookies menu.
+  useInput(
+    (_input, key) => {
+      if (key.escape) setStep("cookies");
+    },
+    { isActive: step === "cookies-browser" },
+  );
+
+  // Cookies-file: esc goes back to cookies menu.
+  useInput(
+    (_input, key) => {
+      if (key.escape) setStep("cookies");
+    },
+    { isActive: step === "cookies-file" },
+  );
+
+  // Output step: esc goes back to cookies.
+  useInput(
+    (_input, key) => {
+      if (key.escape) setStep("cookies");
+    },
+    { isActive: step === "output" },
+  );
+
+  // Detect browser profiles when entering the cookies-browser step.
+  useEffect(() => {
+    if (step === "cookies-browser" && !browserProfiles.length && !profilesLoading) {
+      setProfilesLoading(true);
+      void (async () => {
+        const detected = await detectBrowserProfiles();
+        setBrowserProfiles(detected);
+        setProfilesLoading(false);
+      })();
+    }
+  }, [step, browserProfiles.length, profilesLoading]);
 
   // Error: any key goes back to intro.
   useInput(
@@ -244,7 +308,8 @@ export function Welcome() {
       saveHandle(source, handle);
     }
 
-    void startLoading(source, v);
+    // Go to format setup instead of straight to loading.
+    setStep("format");
   }
 
   const nameWidth = Math.max(...SOURCES.map((s) => s.name.length));
@@ -327,6 +392,194 @@ export function Welcome() {
             onSubmit={onHandleSubmit}
           />
         </Box>
+        <Box marginTop={1}>
+          <Text dimColor>{`↵ Continue  ${ICON.dot}  esc Back`}</Text>
+        </Box>
+      </Box>
+    );
+  }
+
+  // ── Format step ─────────────────────────────────────────────────────
+
+  if (step === "format" && source) {
+    return (
+      <Box flexDirection="column">
+        <Box marginBottom={1}>
+          <Text bold color={COLOR.text}>
+            Choose your audio format
+          </Text>
+        </Box>
+        <SelectField
+          title=""
+          options={[
+            { label: "Best (no conversion)", value: "best" },
+            { label: "MP3", value: "mp3" },
+            { label: "FLAC", value: "flac" },
+            { label: "WAV", value: "wav" },
+            { label: "M4A", value: "m4a" },
+            { label: "Opus", value: "opus" },
+            { label: "Vorbis", value: "vorbis" },
+          ]}
+          onSelect={(v) => {
+            setConfig({ ...config, audioFormat: v });
+            setStep("cookies");
+          }}
+          onCancel={() => setStep("handle")}
+          focused
+          hint={`↑↓ Move  ${ICON.dot}  ↵ Choose  ${ICON.dot}  esc Back`}
+        />
+      </Box>
+    );
+  }
+
+  // ── Cookies step ────────────────────────────────────────────────────
+
+  if (step === "cookies" && source) {
+    return (
+      <Box flexDirection="column">
+        <Box marginBottom={1}>
+          <Text bold color={COLOR.text}>
+            Set up cookies?
+          </Text>
+        </Box>
+        <Text dimColor>
+          Avoids rate limits on YouTube and SoundCloud.
+        </Text>
+        <Box marginTop={1}>
+          <SelectField
+            title=""
+            options={[
+              { label: "Import from browser", value: "browser" },
+              { label: "Choose cookies.txt file", value: "file" },
+              { label: "Skip", value: "skip" },
+            ]}
+            onSelect={(v) => {
+              if (v === "browser") {
+                setStep("cookies-browser");
+              } else if (v === "file") {
+                setStep("cookies-file");
+              } else {
+                setStep("output");
+              }
+            }}
+            onCancel={() => setStep("format")}
+            focused
+            hint={`↑↓ Move  ${ICON.dot}  ↵ Choose  ${ICON.dot}  esc Back`}
+          />
+        </Box>
+      </Box>
+    );
+  }
+
+  // ── Cookies: browser detection ──────────────────────────────────────
+
+  if (step === "cookies-browser" && source) {
+    if (profilesLoading) {
+      return (
+        <Box flexDirection="column">
+          <Spinner label="Detecting browser profiles…" />
+        </Box>
+      );
+    }
+    if (browserProfiles.length === 0) {
+      return (
+        <Box flexDirection="column">
+          <Text color={COLOR.warn}>
+            {`${ICON.warn} No browser profiles found.`}
+          </Text>
+          <Box marginTop={1}>
+            <Text dimColor>
+              Export cookies.txt from your browser with a cookie extension,
+              then choose "Choose cookies.txt file".
+            </Text>
+          </Box>
+          <Box marginTop={1}>
+            <SelectField
+              title=""
+              options={[
+                { label: "Choose cookies.txt file instead", value: "file" },
+                { label: "Skip", value: "skip" },
+              ]}
+              onSelect={(v) => {
+                if (v === "file") setStep("cookies-file");
+                else setStep("output");
+              }}
+              onCancel={() => setStep("cookies")}
+              focused
+              hint={`↵ Choose  ${ICON.dot}  esc Back`}
+            />
+          </Box>
+        </Box>
+      );
+    }
+    return (
+      <Box flexDirection="column">
+        <Box marginBottom={1}>
+          <Text bold color={COLOR.text}>
+            Pick a browser profile
+          </Text>
+        </Box>
+        <SelectField
+          title=""
+          options={browserProfiles.map((p) => ({
+            label: p.label,
+            value: `${p.browser}:${p.profileName}`,
+          }))}
+          onSelect={(v) => {
+            setConfig({ ...config, cookiesFromBrowser: v });
+            setStep("output");
+          }}
+          onCancel={() => setStep("cookies")}
+          focused
+          hint={`↑↓ Move  ${ICON.dot}  ↵ Choose  ${ICON.dot}  esc Back`}
+        />
+      </Box>
+    );
+  }
+
+  // ── Cookies: file path entry ─────────────────────────────────────────
+
+  if (step === "cookies-file" && source) {
+    return (
+      <Box flexDirection="column">
+        <TextInputField
+          title="Path to cookies.txt"
+          hint="Netscape format — export with a browser cookie extension"
+          placeholder="~/cookies.txt"
+          onSubmit={(v) => {
+            setConfig({ ...config, cookiesFile: v });
+            setStep("output");
+          }}
+          onCancel={() => setStep("cookies")}
+          focused
+        />
+        <Box marginTop={1}>
+          <Text dimColor>{`↵ Save  ${ICON.dot}  esc Back`}</Text>
+        </Box>
+      </Box>
+    );
+  }
+
+  // ── Output location step ─────────────────────────────────────────────
+
+  if (step === "output" && source) {
+    return (
+      <Box flexDirection="column">
+        <TextInputField
+          title="Where should downloads go?"
+          hint="Press enter to keep the default, or type a new path"
+          placeholder={displayPath(defaultLibraryDir)}
+          defaultValue={displayPath(config.libraryDir)}
+          onSubmit={(v) => {
+            if (v.trim()) {
+              setConfig({ ...config, libraryDir: expandTilde(v.trim()) });
+            }
+            // Start loading the source the user picked.
+            void startLoading(source, handle || savedValue(source) || "");
+          }}
+          onCancel={() => setStep("cookies")}
+          focused
+        />
         <Box marginTop={1}>
           <Text dimColor>{`↵ Continue  ${ICON.dot}  esc Back`}</Text>
         </Box>
