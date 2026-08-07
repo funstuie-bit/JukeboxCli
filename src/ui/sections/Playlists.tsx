@@ -1,0 +1,619 @@
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { Box, Text, useInput } from "ink";
+import { Select } from "@inkjs/ui";
+import {
+  useStore,
+  useQueueDoneCount,
+  useLibrary,
+  usePlaybackSelector,
+} from "../store";
+import { Header } from "../components/Header";
+import { SourceTabs, type SourceFilter } from "../components/SourceTabs";
+import { TextField } from "../components/TextField";
+import { SongList, type SongGroup } from "../components/SongList";
+import { COLOR, ICON } from "../theme";
+import { cleanText, formatDuration, formatRuntime } from "../../util/format";
+import { fuzzyFilter } from "../../util/fuzzy";
+import { deleteTracks } from "../../library/delete";
+import { displaySource, setFolderKey } from "../../library/drift";
+import { renamePlaylist, renameTrack } from "../../library/rename";
+import { SOURCE_LABELS, type SourceId, type Track } from "../../library/types";
+import { shuffledOrder } from "../../player/order";
+
+const SOURCE_ORDER: SourceId[] = [
+  "youtube",
+  "soundcloud",
+  "spotify",
+  "link",
+  "local",
+];
+
+interface SetInfo {
+  key: string;
+  source: SourceId;
+  owner?: string;
+  name: string;
+  tracks: Track[];
+}
+
+type View = { kind: "sets" } | { kind: "songs"; setKey: string };
+
+/** Pending delete: one song, or a whole set with everything in it. */
+type Confirm =
+  | { kind: "song"; id: string; label: string }
+  | { kind: "set"; key: string; label: string; count: number };
+
+// Module scope: pure row helpers, so the memoized groups and callbacks below
+// never need them as deps.
+const setLabel = (s: SetInfo): string => s.name;
+
+const toSetItem = (s: SetInfo) => ({
+  value: s.key,
+  title: setLabel(s),
+  meta: `${s.tracks.length} song${s.tracks.length === 1 ? "" : "s"}`,
+});
+
+/**
+ * Browse the library by set (playlist / likes collection) instead of as one
+ * big song list: a two-level drill-down. The sets level groups by source;
+ * opening a set shows its songs with a set-scoped shuffle, and playing a song
+ * scopes next/prev to that set.
+ */
+export function Playlists() {
+  const {
+    library,
+    config,
+    playTrack,
+    region,
+    setSection,
+    setCaptureMode,
+    setPlaylistsDepth,
+    queue,
+    playback,
+    compact,
+  } = useStore();
+  const doneCount = useQueueDoneCount(queue);
+  const libVersion = useLibrary(library);
+  const playingId = usePlaybackSelector(playback, (s) => s.track?.id);
+  const focused = region === "content";
+  const [view, setView] = useState<View>({ kind: "sets" });
+  const [confirm, setConfirm] = useState<Confirm | null>(null);
+  const [q, setQ] = useState("");
+  const [filtering, setFiltering] = useState(false);
+  const [filter, setFilter] = useState<SourceFilter>("all");
+  const [renamingSetKey, setRenamingSetKey] = useState<string | null>(null);
+  const [newPlaylistName, setNewPlaylistName] = useState("");
+  const [renamingTrackId, setRenamingTrackId] = useState<string | null>(null);
+  const [newTrackTitle, setNewTrackTitle] = useState("");
+  // Search inside the open set, mirroring the Library search box.
+  const [songQ, setSongQ] = useState("");
+  const [songFiltering, setSongFiltering] = useState(false);
+
+  const songs = useMemo(
+    // library.all() is already newest-first; recompute on new downloads and
+    // on drift cleanup (prune/merge).
+    () => library.all(),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [library, doneCount, libVersion],
+  );
+
+  // Bucket tracks into sets, preserving first-appearance (newest-first) order.
+  // A set is the folder its files sit in (like the Library tabs), so
+  // re-sorting on disk re-homes tracks here too, and metadata drift (an
+  // ownerless stray in an owned folder) can never split a folder into two
+  // look-alike playlists. Tracks outside the library group by metadata.
+  const sets = useMemo(() => {
+    const byKey = new Map<string, SetInfo>();
+    const ordered: SetInfo[] = [];
+    for (const t of songs) {
+      const src = displaySource(t, config.libraryDir);
+      const key =
+        setFolderKey(t, config.libraryDir) ??
+        `${src}|${t.owner ?? ""}|${t.playlist ?? "Other"}`;
+      let s = byKey.get(key);
+      if (!s) {
+        s = {
+          key,
+          source: src,
+          owner: t.owner,
+          name: t.playlist ?? "Other",
+          tracks: [],
+        };
+        byKey.set(key, s);
+        ordered.push(s);
+      }
+      s.tracks.push(t);
+    }
+    // Inside a set, mirror the source feed's order (restamped by every
+    // "download all"); tracks without a position (adopted strays, singles)
+    // keep their newest-first order at the end since the sort is stable.
+    for (const s of ordered) {
+      s.tracks.sort(
+        (a, b) =>
+          (a.playlistPos ?? Number.MAX_SAFE_INTEGER) -
+          (b.playlistPos ?? Number.MAX_SAFE_INTEGER),
+      );
+    }
+    return ordered;
+  }, [songs, config.libraryDir]);
+
+  const searching = q.trim().length > 0;
+  const filteredSets = useMemo(() => {
+    if (!searching) return sets;
+    return fuzzyFilter(q, sets, (s) => [s.name, s.owner]);
+  }, [sets, searching, q]);
+
+  const presentSources = useMemo(() => {
+    const set = new Set(sets.map((s) => s.source));
+    return SOURCE_ORDER.filter((s) => set.has(s));
+  }, [sets]);
+  const tabs = useMemo<SourceFilter[]>(
+    () => ["all", ...presentSources],
+    [presentSources],
+  );
+
+  const countBySource = useMemo(() => {
+    const m = new Map<SourceId, number>();
+    for (const s of sets) m.set(s.source, (m.get(s.source) ?? 0) + 1);
+    return m;
+  }, [sets]);
+  const tabCount = (tb: SourceFilter): number =>
+    tb === "all" ? sets.length : countBySource.get(tb) ?? 0;
+
+  useEffect(() => {
+    if (filter !== "all" && !presentSources.includes(filter)) setFilter("all");
+  }, [filter, presentSources]);
+
+  const visibleSets = useMemo(() => {
+    const base = searching ? filteredSets : sets;
+    return filter === "all" ? base : base.filter((s) => s.source === filter);
+  }, [sets, filteredSets, searching, filter]);
+
+  const active =
+    view.kind === "songs" ? sets.find((s) => s.key === view.setKey) : undefined;
+
+  // If the open set disappears (wipe, prune), fall back to the sets list.
+  useEffect(() => {
+    if (view.kind === "songs" && !active) setView({ kind: "sets" });
+  }, [view, active]);
+
+  // A fresh drill-down starts unfiltered.
+  const activeKey = view.kind === "songs" ? view.setKey : undefined;
+  useEffect(() => {
+    setSongQ("");
+    setSongFiltering(false);
+  }, [activeKey]);
+
+  useEffect(() => {
+    setPlaylistsDepth(view.kind === "songs" ? "songs" : "sets");
+    return () => setPlaylistsDepth("sets");
+  }, [view.kind, setPlaylistsDepth]);
+
+  const inSongs = focused && view.kind === "songs";
+  const inSets = focused && view.kind === "sets";
+  const confirming = focused && confirm !== null;
+  const filteringSets = inSets && filtering;
+  const renamingSet = inSets && renamingSetKey !== null;
+  const renamingTrack = inSongs && renamingTrackId !== null;
+  const filteringSongs = inSongs && songFiltering;
+  useEffect(() => {
+    // The sets list claims no special mode: like Library, a plain esc falls
+    // through to the global handler and returns focus to the sidebar. Only the
+    // search boxes (text) and the songs drill-down / delete confirm (esc, each
+    // with its own handler) capture keys. ("picker" would swallow esc here.)
+    setCaptureMode(
+      confirming
+        ? "esc"
+        : filteringSets || filteringSongs
+          ? "text"
+          : renamingSet
+            ? "text"
+            : renamingTrack
+              ? "text"
+              : inSongs
+                ? "esc"
+                : "none",
+    );
+    return () => setCaptureMode("none");
+  }, [confirming, filteringSets, filteringSongs, inSongs, renamingSet, renamingTrack, setCaptureMode]);
+
+  function stepSourceTab(dir: -1 | 1): void {
+    const i = tabs.indexOf(filter);
+    setFilter(tabs[(i + dir + tabs.length) % tabs.length]!);
+  }
+
+  useInput(
+    (input, key) => {
+      if (key.escape) setView({ kind: "sets" });
+      else if (input === "/") setSongFiltering(true);
+    },
+    { isActive: inSongs && !confirm && !songFiltering },
+  );
+
+  // esc closes the in-set search box (back to browsing), keeping the query.
+  useInput(
+    (_input, key) => {
+      if (key.escape) setSongFiltering(false);
+    },
+    { isActive: inSongs && songFiltering },
+  );
+
+  useInput(
+    (_input, key) => {
+      if (key.escape) {
+        setRenamingTrackId(null);
+        setNewTrackTitle("");
+      }
+    },
+    { isActive: renamingTrack },
+  );
+
+  const handleTrackRenameSubmit = async () => {
+    const track = renamingTrackId ? library.get(renamingTrackId) : undefined;
+    if (track) {
+      const result = await renameTrack(library, track, newTrackTitle);
+      // Taken name: keep the field open for adjustment; esc cancels.
+      if (result === "collision") return;
+    }
+    setRenamingTrackId(null);
+    setNewTrackTitle("");
+  };
+
+  useInput(
+    (input) => {
+      if (inSets && input === "/") {
+        setFiltering(true);
+        return;
+      }
+      if (input === "[") stepSourceTab(-1);
+      else if (input === "]") stepSourceTab(1);
+    },
+    { isActive: focused && !confirm && !filtering && !renamingSet && inSets },
+  );
+
+  useInput(
+    (_input, key) => {
+      if (key.escape) setFiltering(false);
+    },
+    { isActive: inSets && filtering },
+  );
+
+  useInput(
+    (_input, key) => {
+      if (key.escape) {
+        setRenamingSetKey(null);
+        setNewPlaylistName("");
+      }
+    },
+    { isActive: inSets && renamingSet },
+  );
+
+  const handleRenameSubmit = async () => {
+    const targetSet = renamingSetKey
+      ? sets.find((s) => s.key === renamingSetKey)
+      : undefined;
+    if (targetSet) {
+      const result = await renamePlaylist(
+        library,
+        targetSet.tracks,
+        newPlaylistName,
+      );
+      // Taken name: keep the field open for adjustment; esc cancels.
+      if (result === "collision") return;
+    }
+    setRenamingSetKey(null);
+    setNewPlaylistName("");
+  };
+
+  // y commits the pending delete (one song, or a whole set and its folder),
+  // esc keeps it. Playback stops first when the playing song is a victim:
+  // the player holds the file handle open and Windows refuses the unlink.
+  useInput(
+    (input, key) => {
+      if (key.escape) setConfirm(null);
+      else if (input === "y" && confirm) {
+        const victims =
+          confirm.kind === "set"
+            ? (sets.find((s) => s.key === confirm.key)?.tracks ?? [])
+            : [library.get(confirm.id)].filter((t): t is Track => Boolean(t));
+        setConfirm(null);
+        if (victims.length === 0) return;
+        void (async () => {
+          if (victims.some((t) => t.id === playingId)) await playback.stop();
+          await deleteTracks(library, victims, config.libraryDir);
+        })();
+      }
+    },
+    { isActive: confirming },
+  );
+
+  function confirmText(): string {
+    if (!confirm) return "";
+    return confirm.kind === "set"
+      ? `Delete '${cleanText(confirm.label)}'  ${ICON.dot}  ${confirm.count} song${
+          confirm.count === 1 ? "" : "s"
+        }?  y Delete  ${ICON.dot}  esc Keep`
+      : `Delete '${cleanText(confirm.label)}'?  y Delete  ${ICON.dot}  esc Keep`;
+  }
+
+  // Songs narrowed to the in-set search; play/shuffle scope to the matches.
+  // Memoized so the fuzzy pass runs on query/set changes only, never on
+  // playback-tick or cursor re-renders.
+  const sq = songQ.trim();
+  const shown = useMemo(
+    () =>
+      active && sq
+        ? fuzzyFilter(songQ, active.tracks, (t) => [t.title, t.artist])
+        : (active?.tracks ?? []),
+    [active, sq, songQ],
+  );
+
+  // Row objects and handlers keep a stable identity between renders so the
+  // memoized SongList can skip playback-tick and cursor re-renders (playingId
+  // stays a separate prop; the rows never depend on it).
+  const songGroups = useMemo<SongGroup[]>(
+    () => [
+      {
+        items: shown.map((t) => ({
+          value: t.id,
+          title: t.title,
+          artist: t.artist,
+          meta: formatDuration(t.durationSec),
+        })),
+      },
+    ],
+    [shown],
+  );
+
+  const shuffleAction = useMemo(
+    () =>
+      shown.length > 1
+        ? {
+            value: "__shuffle__",
+            label: `${ICON.shuffle} Shuffle`,
+          }
+        : undefined,
+    [shown],
+  );
+
+  const handleSongDelete = useCallback(
+    (value: string) => {
+      const t = library.get(value);
+      if (t) setConfirm({ kind: "song", id: t.id, label: t.title });
+    },
+    [library],
+  );
+
+  const handleSongSelect = useCallback(
+    (value: string) => {
+      if (value === "__shuffle__") {
+        const list = shuffledOrder(shown.length, -1).map((i) => shown[i]!);
+        if (list.length > 0) playTrack(list[0]!, list);
+        return;
+      }
+      const t = library.get(value);
+      if (t) playTrack(t, shown);
+    },
+    [library, playTrack, shown],
+  );
+
+  const handleSongRename = useCallback(
+    (value: string) => {
+      const t = library.get(value);
+      if (t) {
+        setRenamingTrackId(t.id);
+        setNewTrackTitle(t.title);
+      }
+    },
+    [library],
+  );
+
+  // Sets-view rows, grouped by source unless a search or tab narrows the view.
+  const setGroups = useMemo<SongGroup[]>(() => {
+    if (searching || filter !== "all" || presentSources.length <= 1) {
+      return [{ items: visibleSets.map(toSetItem) }];
+    }
+    return presentSources
+      .map((src) => {
+        const inSrc = visibleSets.filter((s) => s.source === src);
+        return {
+          title: `${SOURCE_LABELS[src]}  ${ICON.dot}  ${inSrc.length}`,
+          items: inSrc.map(toSetItem),
+        };
+      })
+      .filter((g) => g.items.length > 0);
+  }, [searching, filter, presentSources, visibleSets]);
+
+  const handleSetDelete = useCallback(
+    (value: string) => {
+      const s = sets.find((x) => x.key === value);
+      if (s)
+        setConfirm({
+          kind: "set",
+          key: s.key,
+          label: setLabel(s),
+          count: s.tracks.length,
+        });
+    },
+    [sets],
+  );
+
+  const handleSetSelect = useCallback(
+    (value: string) => setView({ kind: "songs", setKey: value }),
+    [],
+  );
+
+  const handleSetRename = useCallback(
+    (value: string) => {
+      const s = sets.find((x) => x.key === value);
+      if (s) {
+        setRenamingSetKey(s.key);
+        setNewPlaylistName(s.name);
+      }
+    },
+    [sets],
+  );
+
+  if (sets.length === 0) {
+    return (
+      <Box flexDirection="column">
+        <Header title="Playlists" focused={focused} />
+        <Text dimColor>No playlists yet.</Text>
+        <Box marginTop={1}>
+          <Select
+            isDisabled={!focused}
+            options={[{ label: "Download ›", value: "download" }]}
+            onChange={() => setSection("download")}
+          />
+        </Box>
+      </Box>
+    );
+  }
+
+  if (view.kind === "songs" && active) {
+    const n = active.tracks.length;
+    const totalSec = active.tracks.reduce(
+      (sum, t) => sum + (t.durationSec ?? 0),
+      0,
+    );
+    const subtitle = [
+      `${n} song${n === 1 ? "" : "s"}`,
+      formatRuntime(totalSec),
+      SOURCE_LABELS[active.source],
+    ]
+      .filter(Boolean)
+      .join(`  ${ICON.dot}  `);
+    const sn = shown.length;
+    // Same visibility rule as Library and the sets view: the idle search hint
+    // stays visible when expanded and yields its row back when compact.
+    const showSongSearchRow = !compact || songFiltering || sq.length > 0;
+    return (
+      <Box flexDirection="column">
+        <Header title={setLabel(active)} subtitle={subtitle} focused={focused} />
+        {confirm ? (
+          <Box marginBottom={compact ? 0 : 1} flexShrink={0}>
+            <Text color={COLOR.warn} wrap="truncate-end">
+              {confirmText()}
+            </Text>
+          </Box>
+        ) : renamingTrack ? (
+          <Box marginBottom={compact ? 0 : 1} flexShrink={0}>
+            <TextField
+              defaultValue={newTrackTitle}
+              placeholder="New title…"
+              onChange={setNewTrackTitle}
+              onSubmit={handleTrackRenameSubmit}
+            />
+          </Box>
+        ) : showSongSearchRow ? (
+          <Box marginBottom={compact ? 0 : 1} flexShrink={0}>
+            <Text dimColor>{`${ICON.pointer} `}</Text>
+            {focused && songFiltering ? (
+              <TextField
+                defaultValue={songQ}
+                placeholder="Search this playlist…"
+                onChange={setSongQ}
+                onSubmit={() => setSongFiltering(false)}
+              />
+            ) : (
+              <Box flexGrow={1} minWidth={0}>
+                <Text dimColor wrap="truncate-end">
+                  {songQ || "Press / to search…"}
+                </Text>
+              </Box>
+            )}
+          </Box>
+        ) : null}
+        {sq && sn === 0 ? (
+          <Text dimColor>No matches.</Text>
+        ) : (
+          <SongList
+            key={active.key}
+            groups={songGroups}
+            action={shuffleAction}
+            numbered
+            playingId={playingId}
+            focused={focused && !confirm && !renamingTrack && !songFiltering}
+            // The row above plus its expanded-mode margin (Library's formula).
+            reserveRows={
+              confirm || renamingTrack || showSongSearchRow
+                ? compact
+                  ? 1
+                  : 2
+                : 0
+            }
+            onDelete={handleSongDelete}
+            onSelect={handleSongSelect}
+            onRename={handleSongRename}
+          />
+        )}
+      </Box>
+    );
+  }
+
+  const subtitle = `${visibleSets.length} playlist${visibleSets.length === 1 ? "" : "s"}`;
+  // The filter/hint row carries content only while typing, confirming a
+  // delete, or showing an active query; when compact and idle, drop it.
+  const showSearchRow =
+    !compact || filtering || confirm !== null || searching || renamingSet;
+  // Rows above the list beyond the header: tabs (1) + the filter row when shown
+  // (2 normally, 1 compact since its margin goes too).
+  const reserveRows = 1 + (showSearchRow ? (compact ? 1 : 2) : 0);
+
+  return (
+    <Box flexDirection="column">
+      <Header title="Playlists" subtitle={subtitle} focused={focused} />
+      <SourceTabs tabs={tabs} active={filter} count={tabCount} />
+      {showSearchRow ? (
+        <Box marginBottom={compact ? 0 : 1} flexShrink={0}>
+          {confirm ? (
+            <Text color={COLOR.warn} wrap="truncate-end">
+              {confirmText()}
+            </Text>
+          ) : renamingSet ? (
+            <>
+              <Text dimColor>{`${ICON.pointer} `}</Text>
+              <TextField
+                defaultValue={newPlaylistName}
+                placeholder="New playlist name…"
+                onChange={setNewPlaylistName}
+                onSubmit={handleRenameSubmit}
+              />
+            </>
+          ) : (
+            <>
+              <Text dimColor>{`${ICON.pointer} `}</Text>
+              {focused && filtering ? (
+                <TextField
+                  defaultValue={q}
+                  placeholder="Search playlists…"
+                  onChange={setQ}
+                  onSubmit={() => setFiltering(false)}
+                />
+              ) : (
+                <Box flexGrow={1} minWidth={0}>
+                  <Text dimColor wrap="truncate-end">
+                    {q || "Press / to search…"}
+                  </Text>
+                </Box>
+              )}
+            </>
+          )}
+        </Box>
+      ) : null}
+      {visibleSets.length === 0 ? (
+        <Text dimColor>No matches.</Text>
+      ) : (
+        <SongList
+          key="sets"
+          groups={setGroups}
+          focused={focused && !confirm && !filtering && !renamingSet}
+          reserveRows={reserveRows}
+          onDelete={handleSetDelete}
+          onSelect={handleSetSelect}
+          onRename={handleSetRename}
+        />
+      )}
+    </Box>
+  );
+}
