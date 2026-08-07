@@ -1,0 +1,161 @@
+import { promises as fs } from "node:fs";
+import path from "node:path";
+import os from "node:os";
+import { execa } from "execa";
+
+/**
+ * Browser cookie extraction for yt-dlp.
+ *
+ * Supports two sources:
+ * 1. Netscape cookies.txt file (user-provided or exported)
+ * 2. Direct extraction from Chrome/Firefox profile via yt-dlp's --cookies-from-browser
+ *
+ * On macOS:
+ * - Chrome: ~/Library/Application Support/Google/Chrome/Default/Cookies
+ * - Firefox: ~/Library/Application Support/Firefox/Profiles/*.default-release/cookies.sqlite
+ * - Edge: ~/Library/Application Support/Microsoft Edge/Default/Cookies
+ * - Brave: ~/Library/Application Support/BraveSoftware/Brave-Browser/Default/Cookies
+ *
+ * yt-dlp can read cookies directly from the browser with --cookies-from-browser <browser>:<profile>
+ * which is simpler and keeps cookies fresh. We write a cookies.txt only if the user wants
+ * a portable file.
+ */
+
+export interface BrowserProfile {
+  browser: "chrome" | "firefox" | "edge" | "brave" | "safari";
+  profileName: string;
+  /** Display label for the picker */
+  label: string;
+  /** Path to the profile directory (for verification) */
+  profilePath: string;
+}
+
+/** Detect installed browsers and their profiles on macOS. */
+export async function detectBrowserProfiles(): Promise<BrowserProfile[]> {
+  const home = os.homedir();
+  const profiles: BrowserProfile[] = [];
+
+  const candidates: { browser: BrowserProfile["browser"]; basePath: string; label: string }[] = [
+    {
+      browser: "chrome",
+      basePath: path.join(home, "Library/Application Support/Google/Chrome"),
+      label: "Google Chrome",
+    },
+    {
+      browser: "edge",
+      basePath: path.join(home, "Library/Application Support/Microsoft Edge"),
+      label: "Microsoft Edge",
+    },
+    {
+      browser: "brave",
+      basePath: path.join(home, "Library/Application Support/BraveSoftware/Brave-Browser"),
+      label: "Brave",
+    },
+  ];
+
+  for (const c of candidates) {
+    try {
+      const entries = await fs.readdir(c.basePath, { withFileTypes: true });
+      // Default profile
+      const hasDefault = entries.some(
+        (e) => e.isDirectory() && e.name === "Default",
+      );
+      if (hasDefault) {
+        profiles.push({
+          browser: c.browser,
+          profileName: "Default",
+          label: `${c.label} · Default`,
+          profilePath: path.join(c.basePath, "Default"),
+        });
+      }
+      // Additional profiles (Profile 1, Profile 2, etc.)
+      for (const e of entries) {
+        if (e.isDirectory() && /^Profile \d+$/.test(e.name)) {
+          profiles.push({
+            browser: c.browser,
+            profileName: e.name,
+            label: `${c.label} · ${e.name}`,
+            profilePath: path.join(c.basePath, e.name),
+          });
+        }
+      }
+    } catch {
+      // browser not installed
+    }
+  }
+
+  // Firefox profiles (different structure)
+  const firefoxPath = path.join(home, "Library/Application Support/Firefox/Profiles");
+  try {
+    const entries = await fs.readdir(firefoxPath, { withFileTypes: true });
+    for (const e of entries) {
+      if (!e.isDirectory()) continue;
+      // .default-release is the main profile, .default is older/secondary
+      const isDefault = e.name.endsWith(".default-release") || e.name.endsWith(".default");
+      if (isDefault) {
+        profiles.push({
+          browser: "firefox",
+          profileName: e.name,
+          label: `Firefox · ${e.name.replace(/\.(default-release|default)$/, "")}`,
+          profilePath: path.join(firefoxPath, e.name),
+        });
+      }
+    }
+  } catch {
+    // Firefox not installed
+  }
+
+  return profiles;
+}
+
+/**
+ * Use yt-dlp to extract cookies from a browser profile into a Netscape cookies.txt file.
+ * yt-dlp's --cookies-from-browser flag handles the SQLite decryption.
+ */
+export async function extractCookies(
+  browser: BrowserProfile["browser"],
+  profile: string,
+  outputPath: string,
+  ytDlpPath: string,
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    // yt-dlp --cookies-from-browser <browser>:<profile> --cookies <output>
+    // Actually, yt-dlp doesn't support exporting cookies directly.
+    // We use --cookies-from-browser as a passthrough flag instead.
+    // For a portable cookies.txt, the user needs to export manually.
+    //
+    // But we CAN use yt-dlp with --cookies-from-browser directly by storing
+    // the browser string in config instead of a cookies file path.
+    throw new Error(
+      "Direct cookie extraction requires yt-dlp's --cookies-from-browser flag. " +
+      "Store the browser identifier instead of a cookies file path.",
+    );
+  } catch (e) {
+    return { success: false, error: e instanceof Error ? e.message : String(e) };
+  }
+}
+
+/**
+ * Build a yt-dlp --cookies-from-browser argument from a browser profile.
+ * e.g. "chrome:Default" or "firefox:abc123.default-release"
+ *
+ * Stored in config as `cookiesFromBrowser` instead of `cookiesFile` when
+ * the user picks a browser profile. The download function checks for
+ * this field and uses --cookies-from-browser instead of --cookies.
+ */
+export function browserCookieArg(profile: BrowserProfile): string {
+  return `${profile.browser}:${profile.profileName}`;
+}
+
+/**
+ * Verify a cookies.txt file exists and looks like a Netscape cookies file.
+ */
+export async function validateCookiesFile(filePath: string): Promise<boolean> {
+  try {
+    const content = await fs.readFile(filePath, "utf-8");
+    // Netscape format starts with "# Netscape HTTP Cookie File" or has tab-separated lines
+    return content.includes("# Netscape HTTP Cookie File") || content.includes("\tHttpOnly\t");
+  } catch {
+    return false;
+  }
+}

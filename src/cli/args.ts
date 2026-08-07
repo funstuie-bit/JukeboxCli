@@ -46,6 +46,9 @@ function flagToConfig(name: string, value: string): Partial<Config> {
     case "cookies":
     case "cookies-file":
       return { cookiesFile: value };
+    case "cookies-from-browser":
+    case "browser-cookies":
+      return { cookiesFromBrowser: value };
     case "output-template":
       return { outputTemplate: value };
     case "sleep":
@@ -125,6 +128,7 @@ download options (override config.json)
   --output-dir <path>       where to save downloads
   --output-template <tpl>   yt-dlp -o template (overrides folder structure)
   --cookies <path>          cookies.txt file (Netscape format)
+  --cookies-from-browser <id>  read cookies from browser (e.g. "chrome:Default")
   --sleep <sec>             min seconds between downloads
   --max-sleep <sec>         max seconds between downloads
   --retries <n>             number of retries on failure

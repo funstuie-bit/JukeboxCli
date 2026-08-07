@@ -5,6 +5,7 @@ import { Box, Text, useInput } from "ink";
 import { Select, Spinner } from "@inkjs/ui";
 import { useQueueItems, useStore } from "../store";
 import { TextField } from "../components/TextField";
+import { SelectField, TextInputField } from "../components/FormHelpers";
 import { Header } from "../components/Header";
 import { openPath } from "../../util/open-path";
 import { wrapStep } from "../move";
@@ -24,6 +25,16 @@ import {
 } from "../../library/move-library";
 import { defaultLibraryDir } from "../../config/paths";
 import { COLOR, ICON } from "../theme";
+import {
+  detectBrowserProfiles,
+  browserCookieArg,
+  type BrowserProfile,
+} from "../../config/cookies";
+import {
+  findYtDlpConfig,
+  importFromYtDlpConfig,
+  type ImportResult,
+} from "../../config/import";
 
 type Mode =
   | "menu"
@@ -33,7 +44,11 @@ type Mode =
   | "folder"
   | "folder-confirm"
   | "moving"
-  | "wipe-all";
+  | "wipe-all"
+  | "format"
+  | "cookies"
+  | "pacing"
+  | "import";
 
 /** Key hints pinned under the page content (Download's FooterHint idiom). */
 function HintLine({ children }: { children: string }) {
@@ -56,6 +71,15 @@ export function Settings() {
   const [folderError, setFolderError] = useState<string | null>(null);
   const [moveProgress, setMoveProgress] = useState<MoveProgress | null>(null);
   const [moveNote, setMoveNote] = useState<string | null>(null);
+  // Download-settings sub-pages: cookies + import do async detection.
+  const [browserProfiles, setBrowserProfiles] = useState<BrowserProfile[]>([]);
+  const [profilesLoading, setProfilesLoading] = useState(false);
+  const [cookiesError, setCookiesError] = useState<string | null>(null);
+  const [importResult, setImportResult] = useState<ImportResult | null>(null);
+  const [importLoading, setImportLoading] = useState(false);
+  const [importConfigPath, setImportConfigPath] = useState<string | null>(null);
+  // Pacing sub-page: cursor to track which of the 3 text fields is active.
+  const [pacingCursor, setPacingCursor] = useState(0);
   // Keeps the confirm page's downloads-running gate live while it's open.
   useQueueItems(queue);
 
@@ -91,6 +115,39 @@ export function Settings() {
       set: Boolean(config.spotifyHandle),
     },
     {
+      value: "format",
+      name: "Audio format",
+      detail:
+        config.audioFormat && config.audioFormat !== "best"
+          ? config.audioFormat
+          : "Best",
+      set:
+        Boolean(config.audioFormat) && config.audioFormat !== "best",
+      gap: true,
+    },
+    {
+      value: "cookies",
+      name: "Cookies",
+      detail: config.cookiesFromBrowser
+        ? `Browser: ${config.cookiesFromBrowser}`
+        : config.cookiesFile
+          ? `File: ${truncate(config.cookiesFile, 30)}`
+          : "not set",
+      set: Boolean(config.cookiesFromBrowser || config.cookiesFile),
+    },
+    {
+      value: "pacing",
+      name: "Download pacing",
+      detail: `${config.sleepInterval ?? 1}s sleep, ${config.retries ?? 5} retries`,
+      set:
+        (config.sleepInterval ?? 1) !== 1 || (config.retries ?? 5) !== 5,
+    },
+    {
+      value: "import",
+      name: "Import config",
+      detail: "Import from yt-dlp config",
+    },
+    {
       value: "open-folder",
       name: "Music folder",
       detail: displayPath(config.libraryDir),
@@ -120,6 +177,36 @@ export function Settings() {
       return;
     }
     if (v === "folder") setFolderError(null);
+    if (v === "cookies") {
+      setCookiesError(null);
+      setProfilesLoading(true);
+      void detectBrowserProfiles()
+        .then((profiles) => {
+          setBrowserProfiles(profiles);
+          setProfilesLoading(false);
+        })
+        .catch(() => {
+          setBrowserProfiles([]);
+          setProfilesLoading(false);
+        });
+    }
+    if (v === "import") {
+      setImportResult(null);
+      setImportLoading(true);
+      void findYtDlpConfig()
+        .then((found) => {
+          setImportConfigPath(found);
+          if (!found) {
+            setImportLoading(false);
+            return;
+          }
+          return importFromYtDlpConfig(found).then((result) => {
+            setImportResult(result);
+            setImportLoading(false);
+          });
+        })
+        .catch(() => setImportLoading(false));
+    }
     setMode(v);
   }
 
@@ -146,7 +233,8 @@ export function Settings() {
     mode === "soundcloud" ||
     mode === "spotify" ||
     mode === "folder" ||
-    mode === "moving";
+    mode === "moving" ||
+    mode === "pacing";
   useEffect(() => {
     setCaptureMode(!inSubPage ? "none" : isTextPage ? "text" : "picker");
     return () => setCaptureMode("none");
@@ -461,6 +549,364 @@ export function Settings() {
         />
       </Box>,
       `↑↓ Move  ${ICON.dot}  ↵ Choose  ${ICON.dot}  esc Back`,
+    );
+  }
+
+  // ─── Audio format ──────────────────────────────────────────────────
+  if (mode === "format") {
+    const formatOptions = [
+      { label: "Best (no conversion)", value: "best" },
+      { label: "MP3", value: "mp3" },
+      { label: "FLAC", value: "flac" },
+      { label: "WAV", value: "wav" },
+      { label: "M4A", value: "m4a" },
+      { label: "Opus", value: "opus" },
+      { label: "Vorbis", value: "vorbis" },
+    ];
+    return frame(
+      "Audio format",
+      <SelectField
+        title=""
+        options={formatOptions}
+        focused={focused}
+        onSelect={(v) => {
+          setConfig({ ...config, audioFormat: v });
+          setMode("menu");
+        }}
+        onCancel={() => setMode("menu")}
+      />,
+    );
+  }
+
+  // ─── Cookies ───────────────────────────────────────────────────────
+  if (mode === "cookies") {
+    // Build the options for the cookies sub-page.
+    const cookieOptions: { label: string; value: string }[] = [];
+
+    // Browser profiles (if detected)
+    if (browserProfiles.length > 0) {
+      for (const p of browserProfiles) {
+        cookieOptions.push({
+          label: p.label,
+          value: `browser:${browserCookieArg(p)}`,
+        });
+      }
+    }
+
+    // Manual cookies file option
+    cookieOptions.push({
+      label: "Choose cookies file…",
+      value: "file",
+    });
+
+    // Clear option (only if something is set)
+    if (config.cookiesFromBrowser || config.cookiesFile) {
+      cookieOptions.push({
+        label: "Clear cookies",
+        value: "clear",
+      });
+    }
+
+    // No browser profiles detected: show a message and file path entry inline
+    if (!profilesLoading && browserProfiles.length === 0) {
+      return frame(
+        "Cookies",
+        <Box flexDirection="column">
+          <Box marginBottom={1}>
+            <Text dimColor>
+              {`${ICON.dot} No browser profiles detected.`}
+            </Text>
+          </Box>
+          {config.cookiesFromBrowser || config.cookiesFile ? (
+            <Box marginBottom={1}>
+              <Text color={COLOR.alt}>
+                {config.cookiesFromBrowser
+                  ? `Browser: ${config.cookiesFromBrowser}`
+                  : `File: ${truncate(config.cookiesFile ?? "", 40)}`}
+              </Text>
+            </Box>
+          ) : null}
+          <TextInputField
+            title="Cookies file path"
+            hint="Paste a path to a Netscape cookies.txt file"
+            placeholder="~/cookies.txt"
+            defaultValue={config.cookiesFile ?? ""}
+            focused={focused}
+            onSubmit={(v) => {
+              setConfig({
+                ...config,
+                cookiesFile: v || undefined,
+                cookiesFromBrowser: undefined,
+              });
+              setMode("menu");
+            }}
+            onCancel={() => setMode("menu")}
+          />
+          {cookiesError && (
+            <Box marginTop={1}>
+              <Text color={COLOR.bad}>{cookiesError}</Text>
+            </Box>
+          )}
+        </Box>,
+      );
+    }
+
+    // Browser profiles detected: show as a SelectField
+    if (profilesLoading) {
+      return frame(
+        "Cookies",
+        <Box>
+          <Spinner label="Detecting browser profiles…" />
+        </Box>,
+      );
+    }
+
+    return frame(
+      "Cookies",
+      <Box flexDirection="column">
+        {config.cookiesFromBrowser || config.cookiesFile ? (
+          <Box marginBottom={1}>
+            <Text color={COLOR.alt}>
+              {config.cookiesFromBrowser
+                ? `Current: Browser (${config.cookiesFromBrowser})`
+                : `Current: File (${truncate(config.cookiesFile ?? "", 40)})`}
+            </Text>
+          </Box>
+        ) : null}
+        <SelectField
+          title=""
+          options={cookieOptions}
+          focused={focused}
+          onSelect={(v) => {
+            if (v === "file") {
+              // Switch to the file-entry mode by re-rendering with no profiles
+              setBrowserProfiles([]);
+              return;
+            }
+            if (v === "clear") {
+              setConfig({
+                ...config,
+                cookiesFile: undefined,
+                cookiesFromBrowser: undefined,
+              });
+              setMode("menu");
+              return;
+            }
+            if (v.startsWith("browser:")) {
+              const browserArg = v.slice("browser:".length);
+              setConfig({
+                ...config,
+                cookiesFromBrowser: browserArg,
+                cookiesFile: undefined,
+              });
+              setMode("menu");
+              return;
+            }
+            setMode("menu");
+          }}
+          onCancel={() => setMode("menu")}
+        />
+      </Box>,
+    );
+  }
+
+  // ─── Download pacing ───────────────────────────────────────────────
+  if (mode === "pacing") {
+    // Three text fields in sequence: sleep, max-sleep, retries.
+    // pacingCursor (declared at top level for hooks safety) tracks which
+    // field is active. ↑/↓ cycles, ↵ saves the active field.
+    const pacingFields = [
+      {
+        key: "sleepInterval" as const,
+        title: "Sleep interval (seconds)",
+        placeholder: "1",
+        value: String(config.sleepInterval ?? 1),
+      },
+      {
+        key: "maxSleepInterval" as const,
+        title: "Max sleep interval (seconds)",
+        placeholder: "3",
+        value: String(config.maxSleepInterval ?? 3),
+      },
+      {
+        key: "retries" as const,
+        title: "Retries on failure",
+        placeholder: "5",
+        value: String(config.retries ?? 5),
+      },
+    ];
+
+    useInput(
+      (_input, key) => {
+        if (key.upArrow)
+          setPacingCursor((c) => wrapStep(c, -1, pacingFields.length));
+        else if (key.downArrow)
+          setPacingCursor((c) => wrapStep(c, 1, pacingFields.length));
+      },
+      { isActive: focused },
+    );
+
+    return frame(
+      "Download pacing",
+      <Box flexDirection="column">
+        <Box marginBottom={1}>
+          <Text dimColor>
+            {`${ICON.dot} ↑↓ to switch fields ${ICON.dot} ↵ to save`}
+          </Text>
+        </Box>
+        {pacingFields.map((f, i) => {
+          const isActive = i === pacingCursor;
+          return (
+            <Box key={f.key} marginTop={i > 0 ? 1 : 0}>
+              <Box flexDirection="column">
+                <Text
+                  color={isActive ? COLOR.accent : undefined}
+                  bold={isActive}
+                >
+                  {isActive ? `${ICON.pointer} ` : "  "}
+                  {f.title}
+                </Text>
+                {isActive ? (
+                  <Box>
+                    <Text color={COLOR.accent}>{`${ICON.pointer} `}</Text>
+                    <TextField
+                      isDisabled={!focused}
+                      defaultValue={f.value}
+                      placeholder={f.placeholder}
+                      onSubmit={(v) => {
+                        const num = parseInt(v.trim(), 10);
+                        if (!isNaN(num) && num >= 0) {
+                          setConfig({
+                            ...config,
+                            [f.key]: num,
+                          });
+                        }
+                        setMode("menu");
+                      }}
+                    />
+                  </Box>
+                ) : (
+                  <Text dimColor>{`   ${f.value}`}</Text>
+                )}
+              </Box>
+            </Box>
+          );
+        })}
+      </Box>,
+      `↵ Save  ${ICON.dot}  esc Back  ${ICON.dot}  ↑↓ Switch field`,
+    );
+  }
+
+  // ─── Import config ─────────────────────────────────────────────────
+  if (mode === "import") {
+    if (importLoading) {
+      return frame(
+        "Import config",
+        <Box>
+          <Spinner label="Detecting yt-dlp config…" />
+        </Box>,
+      );
+    }
+
+    if (!importConfigPath && !importResult) {
+      return frame(
+        "Import config",
+        <Box flexDirection="column">
+          <Text dimColor>
+            {`${ICON.dot} No yt-dlp config file found.`}
+          </Text>
+          <Box marginTop={1}>
+            <Text dimColor>
+              {`${ICON.dot} Checked: ~/yt-dlp.conf, ~/.config/yt-dlp/yt-dlp.conf,`}
+            </Text>
+          </Box>
+          <Box>
+            <Text dimColor>
+              {`${ICON.dot} ~/Library/Application Support/yt-dlp/yt-dlp.conf`}
+            </Text>
+          </Box>
+        </Box>,
+      );
+    }
+
+    const result = importResult;
+    const importedKeys = result
+      ? Object.keys(result.imported)
+      : [];
+    const hasUnmapped = result && result.unmapped.length > 0;
+
+    return frame(
+      "Import config",
+      <Box flexDirection="column">
+        {importConfigPath && (
+          <Box marginBottom={1}>
+            <Text dimColor>
+              {`${ICON.dot} Found: ${truncate(importConfigPath, 50)}`}
+            </Text>
+          </Box>
+        )}
+        {result && importedKeys.length > 0 && (
+          <Box marginBottom={1} flexDirection="column">
+            <Text color={COLOR.good}>
+              {`${ICON.done} ${importedKeys.length} setting${importedKeys.length === 1 ? "" : "s"} detected:`}
+            </Text>
+            {importedKeys.map((k) => (
+              <Text key={k} dimColor>
+                {`  ${k}: ${String((result.imported as any)[k])}`}
+              </Text>
+            ))}
+          </Box>
+        )}
+        {result && importedKeys.length === 0 && (
+          <Box marginBottom={1}>
+            <Text color={COLOR.warn}>
+              {`${ICON.warn} No mappable settings found in config.`}
+            </Text>
+          </Box>
+        )}
+        {hasUnmapped && (
+          <Box marginBottom={1} flexDirection="column">
+            <Text dimColor>
+              {`${ICON.dot} Unmapped flags (not imported):`}
+            </Text>
+            {result!.unmapped.map((f) => (
+              <Text key={f} dimColor>
+                {`  ${f}`}
+              </Text>
+            ))}
+          </Box>
+        )}
+        {result && result.errors.length > 0 && (
+          <Box marginBottom={1}>
+            <Text color={COLOR.bad}>
+              {`${ICON.error} ${result.errors[0]}`}
+            </Text>
+          </Box>
+        )}
+        {result && importedKeys.length > 0 && (
+          <SelectField
+            title=""
+            options={[
+              { label: "‹ Cancel", value: "cancel" },
+              { label: "Import settings", value: "import" },
+            ]}
+            focused={focused}
+            onSelect={(v) => {
+              if (v === "import" && result) {
+                setConfig({
+                  ...config,
+                  ...result.imported,
+                });
+              }
+              setMode("menu");
+            }}
+            onCancel={() => setMode("menu")}
+          />
+        )}
+      </Box>,
+      result && importedKeys.length > 0
+        ? `↑↓ Move  ${ICON.dot}  ↵ Choose  ${ICON.dot}  esc Back`
+        : "esc Back",
     );
   }
 

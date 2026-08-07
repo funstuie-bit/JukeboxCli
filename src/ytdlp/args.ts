@@ -29,8 +29,12 @@ export function audioFormatArgs(config?: Pick<Config, "audioFormat" | "audioQual
   return args;
 }
 
-/** Cookie args for yt-dlp, if cookies file is configured. */
-export function cookieArgs(config?: Pick<Config, "cookiesFile">): string[] {
+/** Cookie args for yt-dlp, if cookies are configured.
+ *  cookiesFromBrowser takes precedence over cookiesFile. */
+export function cookieArgs(config?: Pick<Config, "cookiesFile" | "cookiesFromBrowser">): string[] {
+  if (config?.cookiesFromBrowser) {
+    return ["--cookies-from-browser", config.cookiesFromBrowser];
+  }
   if (config?.cookiesFile) {
     return ["--cookies", config.cookiesFile];
   }

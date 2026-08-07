@@ -22,6 +22,8 @@ export interface Config {
   ytdlpAutoUpdate?: boolean;
   /** Path to a cookies.txt file for yt-dlp (Netscape format). Bypasses rate limits. */
   cookiesFile?: string;
+  /** Browser profile for yt-dlp --cookies-from-browser (e.g. "chrome:Default"). Takes precedence over cookiesFile. */
+  cookiesFromBrowser?: string;
   /** Audio format for downloads: "best" (default), "mp3", "flac", "wav", "m4a", "opus", "vorbis". */
   audioFormat?: string;
   /** Audio quality: 0 (best) to 10 (worst). Default 0. Only affects re-encoding. */
@@ -59,6 +61,7 @@ export const defaultConfig: Config = {
   firstRunComplete: false,
   ytdlpAutoUpdate: true,
   cookiesFile: undefined,
+  cookiesFromBrowser: undefined,
   audioFormat: "best",
   audioQuality: "0",
   formatString: undefined,
