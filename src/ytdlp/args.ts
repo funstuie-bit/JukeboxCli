@@ -1,8 +1,59 @@
 import path from "node:path";
+import type { Config } from "../config/config";
 
-/** yt-dlp audio extraction args: always extract best-available, no re-encode. */
-export function audioFormatArgs(): string[] {
-  return ["-x"];
+/** yt-dlp audio extraction args: configurable format + quality. */
+export function audioFormatArgs(config?: Pick<Config, "audioFormat" | "audioQuality" | "formatString" | "reencodeAudio">): string[] {
+  const args: string[] = ["-x"];
+  
+  // Format string override (e.g. "bestaudio", "bestaudio[ext=m4a]")
+  if (config?.formatString) {
+    args.push("-f", config.formatString);
+  }
+  
+  // Audio format conversion
+  const fmt = config?.audioFormat ?? "best";
+  if (fmt && fmt !== "best") {
+    args.push("--audio-format", fmt);
+    // Force re-encode if requested (otherwise yt-dlp skips if already matching)
+    if (config?.reencodeAudio) {
+      args.push("--postprocessor-args", "ffmpeg:-c:a libmp3lame -q:a 0");
+    }
+  }
+  
+  // Audio quality (0=best, 10=worst)
+  const quality = config?.audioQuality ?? "0";
+  if (quality && quality !== "0") {
+    args.push("--audio-quality", quality);
+  }
+  
+  return args;
+}
+
+/** Cookie args for yt-dlp, if cookies file is configured. */
+export function cookieArgs(config?: Pick<Config, "cookiesFile">): string[] {
+  if (config?.cookiesFile) {
+    return ["--cookies", config.cookiesFile];
+  }
+  return [];
+}
+
+/** Extra download args from config (sleep, retries, embeds). */
+export function extraDownloadArgs(config?: Pick<Config, "sleepInterval" | "maxSleepInterval" | "retries" | "embedSubs" | "embedChapters">): string[] {
+  const args: string[] = [];
+  const sleepMin = config?.sleepInterval ?? 1;
+  const sleepMax = config?.maxSleepInterval ?? 3;
+  args.push("--sleep-interval", String(sleepMin));
+  args.push("--max-sleep-interval", String(sleepMax));
+  const retries = config?.retries ?? 5;
+  args.push("--retries", String(retries));
+  args.push("--retry-sleep", "5");
+  if (config?.embedSubs) {
+    args.push("--embed-subs");
+  }
+  if (config?.embedChapters) {
+    args.push("--embed-chapters");
+  }
+  return args;
 }
 
 /**

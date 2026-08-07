@@ -27,12 +27,81 @@ describe("parseCliArgs", () => {
     });
   });
 
-  it("rejects unknown flags and extra args", () => {
-    expect(parseCliArgs(["-x"])).toEqual({ kind: "invalid", arg: "-x" });
-    expect(parseCliArgs(["a", "b"])).toEqual({ kind: "invalid", arg: "b" });
+  it("rejects unknown double-dash flags", () => {
+    expect(parseCliArgs(["--unknown-flag"])).toEqual({ kind: "invalid", arg: "--unknown-flag" });
+  });
+
+  it("parses --format flag", () => {
+    expect(parseCliArgs(["--format", "mp3"])).toEqual({
+      kind: "run",
+      initialAdd: undefined,
+      overrides: { audioFormat: "mp3" },
+    });
+  });
+
+  it("parses --format=flac inline", () => {
+    expect(parseCliArgs(["--format=flac"])).toEqual({
+      kind: "run",
+      initialAdd: undefined,
+      overrides: { audioFormat: "flac" },
+    });
+  });
+
+  it("parses --cookies flag", () => {
+    expect(parseCliArgs(["--cookies", "~/cookies.txt"])).toEqual({
+      kind: "run",
+      initialAdd: undefined,
+      overrides: { cookiesFile: "~/cookies.txt" },
+    });
+  });
+
+  it("parses --output-dir flag", () => {
+    expect(parseCliArgs(["--output-dir", "~/Music/MyLibrary"])).toEqual({
+      kind: "run",
+      initialAdd: undefined,
+      overrides: { libraryDir: "~/Music/MyLibrary" },
+    });
+  });
+
+  it("parses --quality flag", () => {
+    expect(parseCliArgs(["--quality", "5"])).toEqual({
+      kind: "run",
+      initialAdd: undefined,
+      overrides: { audioQuality: "5" },
+    });
+  });
+
+  it("parses --sleep and --max-sleep flags", () => {
+    expect(parseCliArgs(["--sleep", "2", "--max-sleep", "10"])).toEqual({
+      kind: "run",
+      initialAdd: undefined,
+      overrides: { sleepInterval: 2, maxSleepInterval: 10 },
+    });
+  });
+
+  it("parses --output-template flag", () => {
+    expect(parseCliArgs(["--output-template", "~/Music/%(title)s.%(ext)s"])).toEqual({
+      kind: "run",
+      initialAdd: undefined,
+      overrides: { outputTemplate: "~/Music/%(title)s.%(ext)s" },
+    });
+  });
+
+  it("combines flags with a link argument", () => {
+    expect(parseCliArgs(["--format", "mp3", "https://youtube.com/watch?v=abc"])).toEqual({
+      kind: "run",
+      initialAdd: "https://youtube.com/watch?v=abc",
+      overrides: { audioFormat: "mp3" },
+    });
   });
 
   it("help text mentions the link pass-through", () => {
     expect(HELP_TEXT).toContain("soundcli <link>");
+  });
+
+  it("help text mentions new flags", () => {
+    expect(HELP_TEXT).toContain("--format");
+    expect(HELP_TEXT).toContain("--cookies");
+    expect(HELP_TEXT).toContain("--output-dir");
   });
 });

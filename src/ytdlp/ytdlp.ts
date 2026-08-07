@@ -5,6 +5,8 @@ import { resolvedYtDlpPath } from "../bin/ytdlp-fetch";
 import type { Config } from "../config/config";
 import {
   audioFormatArgs,
+  cookieArgs,
+  extraDownloadArgs,
   outputTemplate,
   outputTemplateFixed,
   outputTemplateInFolder,
@@ -176,16 +178,20 @@ export async function downloadTrack(
 ): Promise<DownloadResult> {
   const { url, config, sourceLabel, fixedStem, playlistName, owner } = params;
 
-  const outTpl = fixedStem
-    ? outputTemplateFixed(
-        config.libraryDir,
-        sourceLabel,
-        playlistName ?? "Singles",
-        fixedStem,
-      )
-    : playlistName
-      ? outputTemplateInFolder(config.libraryDir, sourceLabel, playlistName, owner)
-      : outputTemplate(config.libraryDir, sourceLabel, owner);
+  // Custom output template overrides the default folder structure.
+  // If set, the file lands exactly where the user specified.
+  const outTpl = config.outputTemplate
+    ? config.outputTemplate
+    : fixedStem
+      ? outputTemplateFixed(
+          config.libraryDir,
+          sourceLabel,
+          playlistName ?? "Singles",
+          fixedStem,
+        )
+      : playlistName
+        ? outputTemplateInFolder(config.libraryDir, sourceLabel, playlistName, owner)
+        : outputTemplate(config.libraryDir, sourceLabel, owner);
 
   const progTpl =
     "download:SCPROG\t%(progress.status)s\t%(progress.downloaded_bytes)s\t%(progress.total_bytes)s\t%(progress.total_bytes_estimate)s\t%(progress.speed)s\t%(progress.eta)s";
@@ -194,6 +200,7 @@ export async function downloadTrack(
 
   const args: string[] = [
     ...jsRuntimeArgs(),
+    ...cookieArgs(config),
     "--ffmpeg-location",
     ffmpegPath(),
     "--encoding",
@@ -205,17 +212,10 @@ export async function downloadTrack(
     "--ignore-config",
     "--continue",
     // Gentle pacing so big batches are far less likely to get rate-limited.
-    "--retries",
-    "5",
-    "--retry-sleep",
-    "5",
-    "--sleep-interval",
-    "1",
-    "--max-sleep-interval",
-    "3",
+    ...extraDownloadArgs(config),
     "--embed-metadata",
     "--embed-thumbnail",
-    ...audioFormatArgs(),
+    ...audioFormatArgs(config),
     "-o",
     outTpl,
     "--progress-template",

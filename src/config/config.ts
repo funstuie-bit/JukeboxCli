@@ -20,6 +20,28 @@ export interface Config {
   firstRunComplete: boolean;
   /** Check for yt-dlp updates at every launch (staged, applied when idle). */
   ytdlpAutoUpdate?: boolean;
+  /** Path to a cookies.txt file for yt-dlp (Netscape format). Bypasses rate limits. */
+  cookiesFile?: string;
+  /** Audio format for downloads: "best" (default), "mp3", "flac", "wav", "m4a", "opus", "vorbis". */
+  audioFormat?: string;
+  /** Audio quality: 0 (best) to 10 (worst). Default 0. Only affects re-encoding. */
+  audioQuality?: string;
+  /** yt-dlp format string override (e.g. "bestaudio", "ba", "bestaudio[ext=m4a]"). */
+  formatString?: string;
+  /** Whether to re-encode to the target format even if best-available matches. */
+  reencodeAudio?: boolean;
+  /** Minimum sleep between downloads (seconds). Default 1. */
+  sleepInterval?: number;
+  /** Maximum sleep between downloads (seconds). Default 3. */
+  maxSleepInterval?: number;
+  /** Number of retries on failure. Default 5. */
+  retries?: number;
+  /** Embed subtitles if available. Default false. */
+  embedSubs?: boolean;
+  /** Embed chapters if available. Default false. */
+  embedChapters?: boolean;
+  /** Custom output template override (yt-dlp -o format string). If set, replaces the default. */
+  outputTemplate?: string;
 }
 
 /** Drop deprecated keys before returning config or writing it to disk. */
@@ -36,6 +58,17 @@ export const defaultConfig: Config = {
   spotifyProfile: undefined,
   firstRunComplete: false,
   ytdlpAutoUpdate: true,
+  cookiesFile: undefined,
+  audioFormat: "best",
+  audioQuality: "0",
+  formatString: undefined,
+  reencodeAudio: false,
+  sleepInterval: 1,
+  maxSleepInterval: 3,
+  retries: 5,
+  embedSubs: false,
+  embedChapters: false,
+  outputTemplate: undefined,
 };
 
 export async function loadConfig(): Promise<Config> {

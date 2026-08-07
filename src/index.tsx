@@ -76,6 +76,14 @@ async function main(): Promise<void> {
   }
 
   try {
+    // Apply CLI overrides to the loaded config before launching the app.
+    if (command.overrides) {
+      const { loadConfig, saveConfig } = await import("./config/config");
+      const config = await loadConfig();
+      const merged = { ...config, ...command.overrides };
+      await saveConfig(merged);
+    }
+
     const { waitUntilExit } = render(
       <ThemeProvider theme={uiTheme}>
         <App initialAdd={command.initialAdd} />
