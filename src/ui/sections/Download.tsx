@@ -27,7 +27,14 @@ import {
   trackDisplayTitle,
 } from "../../util/format";
 import { fuzzyFilter } from "../../util/fuzzy";
-import { WAITING_FOR_TOOLS, type QueueItem } from "../../download/queue";
+import {
+  RATE_LIMITED,
+  SOURCE_BLOCKING,
+  TOO_MANY_FAILURES,
+  TRACKS_MISSING,
+  WAITING_FOR_TOOLS,
+  type QueueItem,
+} from "../../download/queue";
 import { sanitizeName } from "../../ytdlp/args";
 import type { SourceAdapter, SourcePlaylist } from "../../sources/types";
 import { SOURCE_LABELS, type SourceId } from "../../library/types";
@@ -407,7 +414,13 @@ function QueueView() {
             {`${ICON.warn} ${
               s.rateLimitReason === WAITING_FOR_TOOLS
                 ? "Waiting for the audio engine (install ffmpeg if this persists)"
-                : "Rate-limited, wait a while"
+                : s.rateLimitReason === RATE_LIMITED
+                  ? "Rate-limited, wait a while"
+                  : s.rateLimitReason === SOURCE_BLOCKING
+                    ? "The source is refusing downloads, it clears in a few minutes"
+                    : s.rateLimitReason === TRACKS_MISSING
+                      ? "Too many dead tracks in a row — they can't be downloaded"
+                      : "Too many failures in a row"
             }  ${ICON.dot}  ] resumes`}
           </Text>
         </Box>

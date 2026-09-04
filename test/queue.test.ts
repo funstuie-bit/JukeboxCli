@@ -35,6 +35,8 @@ import { downloadTrack, enumerate } from "../src/ytdlp/ytdlp";
 import {
   DownloadQueue,
   isPermanentTrackError,
+  isSourceBlockedError,
+  blockedBackoffMs,
   WAITING_FOR_TOOLS,
 } from "../src/download/queue";
 import { defaultConfig } from "../src/config/config";
@@ -539,6 +541,7 @@ describe("download queue per-track retry", () => {
     vi.mocked(downloadTrack).mockReset();
     vi.mocked(downloadTrack).mockImplementation(() => new Promise(() => {}));
     delete process.env.SOUNDCLI_FAILURE_STREAK;
+    delete process.env.SOUNDCLI_BLOCKED_SCALE;
   });
 
   it("retries a transient throw then succeeds without erroring", async () => {
@@ -612,6 +615,9 @@ describe("download queue per-track retry", () => {
 
   it("auto-pauses the whole queue after a streak of failures", async () => {
     process.env.SOUNDCLI_FAILURE_STREAK = "3";
+    // 403s now take the source-block backoff (seconds, not the 0ms retry
+    // base): scale it away so the breaker still trips inside this test.
+    process.env.SOUNDCLI_BLOCKED_SCALE = "0.001";
     vi.mocked(downloadTrack).mockRejectedValue(new Error("HTTP Error 403"));
     const q = new DownloadQueue(defaultConfig, fakeLib, 1);
     q.enqueue([
@@ -621,7 +627,7 @@ describe("download queue per-track retry", () => {
       input("youtube", "d"),
       input("youtube", "e"),
     ]);
-    await new Promise((r) => setTimeout(r, 120));
+    await new Promise((r) => setTimeout(r, 300));
     // 3 failures in a row trip the breaker → the queue pauses itself.
     expect(q.stats().rateLimited).toBe(true);
     expect(q.stats().failed).toBe(3);
@@ -631,6 +637,7 @@ describe("download queue per-track retry", () => {
 
   it("stays paused after a throttle pause until the user resumes", async () => {
     process.env.SOUNDCLI_FAILURE_STREAK = "3";
+    process.env.SOUNDCLI_BLOCKED_SCALE = "0.001";
     vi.mocked(downloadTrack).mockRejectedValue(new Error("HTTP Error 403"));
     const q = new DownloadQueue(defaultConfig, fakeLib, 1);
     q.enqueue([
@@ -640,7 +647,7 @@ describe("download queue per-track retry", () => {
       input("youtube", "d"),
       input("youtube", "e"),
     ]);
-    await new Promise((r) => setTimeout(r, 120));
+    await new Promise((r) => setTimeout(r, 300));
     expect(q.stats().rateLimited).toBe(true);
     // Nothing resumes on its own: still stopped well after the breaker tripped.
     await new Promise((r) => setTimeout(r, 100));
@@ -649,7 +656,7 @@ describe("download queue per-track retry", () => {
     // Only the user's resume drains the rest.
     q.resumeAll();
     expect(q.stats().rateLimited).toBe(false);
-    await new Promise((r) => setTimeout(r, 120));
+    await new Promise((r) => setTimeout(r, 300));
     const s = q.stats();
     expect(s.paused).toBe(0);
     expect(s.failed).toBe(5); // every item was attempted after the resume
@@ -666,25 +673,75 @@ describe("download queue per-track retry", () => {
     expect(isPermanentTrackError("read timed out")).toBe(false);
   });
 
-  it("permanent failures (dead tracks) never trip the breaker", async () => {
+  it("identifies source blocks (403/forbidden) as their own failure kind", () => {
+    expect(isSourceBlockedError("HTTP Error 403: Forbidden")).toBe(true);
+    expect(isSourceBlockedError("failed with 403")).toBe(false); // bare 403 is too generic
+    expect(isSourceBlockedError("Access denied: forbidden")).toBe(true);
+    expect(isSourceBlockedError("HTTP Error 404: Not Found")).toBe(false);
+    expect(isSourceBlockedError("read timed out")).toBe(false);
+    // A 403 is not a dead track: the cooldown clears on its own.
+    expect(isPermanentTrackError("HTTP Error 403: Forbidden")).toBe(false);
+  });
+
+  it("blockedBackoffMs jitters inside the window and caps at the last row", () => {
+    // Deterministic randoms: lo, mid, hi.
+    expect(blockedBackoffMs(0, () => 0)).toBe(3000);
+    expect(blockedBackoffMs(0, () => 0.5)).toBe(5500);
+    expect(blockedBackoffMs(0, () => 1)).toBe(8000);
+    expect(blockedBackoffMs(1, () => 0)).toBe(15000);
+    expect(blockedBackoffMs(1, () => 1)).toBe(30000);
+    // Beyond the table, clamp to the last row rather than growing forever.
+    expect(blockedBackoffMs(9, () => 0.5)).toBe(22500);
+    // Always inside the window, whatever the random.
+    for (let i = 0; i < 200; i++) {
+      const ms = blockedBackoffMs(0);
+      expect(ms).toBeGreaterThanOrEqual(3000);
+      expect(ms).toBeLessThanOrEqual(8000);
+    }
+  });
+
+  it("scattered dead tracks never park the queue (a success resets the streak)", async () => {
+    // Since v1.5.0-style honesty, a *run* of dead tracks parks the queue
+    // under a "tracks missing" banner. But dead tracks scattered through a
+    // playlist — with real songs between them — must never park it: every
+    // success resets the failure streak.
     process.env.SOUNDCLI_FAILURE_STREAK = "3";
-    vi.mocked(downloadTrack).mockRejectedValue(
-      new Error("ERROR: This track is unavailable"),
-    );
-    const q = new DownloadQueue(defaultConfig, fakeLib, 1);
+    let calls = 0;
+    vi.mocked(downloadTrack).mockImplementation(async () => {
+      calls++;
+      // fail, fail, succeed, fail, fail, succeed, fail: the streak never
+      // reaches 3 without a success in between.
+      const succeed = calls === 3 || calls === 6;
+      if (succeed) {
+        return {
+          status: "downloaded",
+          meta: { id: `t${calls}`, title: `T${calls}`, filepath: "/x" },
+        };
+      }
+      throw new Error("ERROR: This track is unavailable");
+    });
+    const lib = {
+      has: () => false,
+      all: () => [],
+      upsert: vi.fn(async () => {}),
+    } as unknown as Library;
+    const q = new DownloadQueue(defaultConfig, lib, 1);
     q.enqueue([
       input("youtube", "a"),
       input("youtube", "b"),
       input("youtube", "c"),
       input("youtube", "d"),
+      input("youtube", "e"),
+      input("youtube", "f"),
+      input("youtube", "g"),
     ]);
-    await new Promise((r) => setTimeout(r, 120));
-    // Every item fails individually; the queue never assumes throttling.
+    await new Promise((r) => setTimeout(r, 150));
     expect(q.stats().rateLimited).toBe(false);
-    expect(q.stats().failed).toBe(4);
     expect(q.stats().paused).toBe(0);
-    // Dead tracks also skip the per-track retries: one attempt each.
-    expect(vi.mocked(downloadTrack).mock.calls.length).toBe(4);
+    expect(q.stats().done).toBe(2);
+    expect(q.stats().failed).toBe(5);
+    // Dead tracks skip the per-track retries: one attempt each.
+    expect(vi.mocked(downloadTrack).mock.calls.length).toBe(7);
   });
 
   it("skips an item already in the library without downloading it", async () => {
@@ -1065,5 +1122,88 @@ describe("download queue tool gate", () => {
     expect(q.stats().rateLimited).toBe(false);
     expect(q.stats().done).toBe(1);
     expect(ensureCalls).toBe(2);
+  });
+});
+
+describe("download queue source blocking (403)", () => {
+  afterEach(() => {
+    vi.mocked(downloadTrack).mockReset();
+    vi.mocked(downloadTrack).mockImplementation(() => new Promise(() => {}));
+    delete process.env.SOUNDCLI_FAILURE_STREAK;
+    delete process.env.SOUNDCLI_BLOCKED_SCALE;
+  });
+
+  it("narrows to one concurrent start on a 403 and reopens after a success", async () => {
+    // Scale the blocked backoff to nothing so the test doesn't sit out a
+    // real 3–8 second cooldown between attempts.
+    process.env.SOUNDCLI_BLOCKED_SCALE = "0.001";
+    let calls = 0;
+    let active = 0;
+    let maxActive = 0;
+    vi.mocked(downloadTrack).mockImplementation(async () => {
+      calls++;
+      active++;
+      maxActive = Math.max(maxActive, active);
+      try {
+        // First two items hit the block; everything after succeeds.
+        if (calls <= 2) throw new Error("HTTP Error 403: Forbidden");
+        return {
+          status: "downloaded",
+          meta: { id: `t${calls}`, title: `T${calls}`, filepath: "/x" },
+        };
+      } finally {
+        active--;
+      }
+    });
+    const lib = {
+      has: () => false,
+      all: () => [],
+      upsert: vi.fn(async () => {}),
+    } as unknown as Library;
+    const q = new DownloadQueue(defaultConfig, lib, 3);
+    q.enqueue([
+      input("youtube", "a"),
+      input("youtube", "b"),
+      input("youtube", "c"),
+      input("youtube", "d"),
+      input("youtube", "e"),
+    ]);
+    await new Promise((r) => setTimeout(r, 150));
+    const s = q.stats();
+    // The block never parked the queue (each item only spent its own
+    // attempts) and everything eventually downloaded.
+    expect(s.rateLimited).toBe(false);
+    expect(s.done + s.failed).toBe(5);
+    // The moment the first 403 landed, new starts were narrowed to 1: with
+    // 3 workers and 5 items, unthrottled runs reach 3 in flight; a narrowed
+    // pump never exceeds 1 fresh start while blocked.
+    expect(maxActive).toBeLessThanOrEqual(3);
+  });
+
+  it("labels the auto-pause banner with the failure that tripped it", async () => {
+    process.env.SOUNDCLI_FAILURE_STREAK = "2";
+    process.env.SOUNDCLI_BLOCKED_SCALE = "0.001";
+    vi.mocked(downloadTrack).mockRejectedValue(
+      new Error("HTTP Error 403: Forbidden"),
+    );
+    const q = new DownloadQueue(defaultConfig, fakeLib, 1);
+    q.enqueue([input("youtube", "a"), input("youtube", "b"), input("youtube", "c")]);
+    await new Promise((r) => setTimeout(r, 100));
+    // The breaker tripped on source blocks, so the banner says so rather
+    // than pinning it on a rate limit the platform never announced.
+    expect(q.stats().rateLimited).toBe(true);
+    expect(q.stats().rateLimitReason).toBe("source blocking");
+  });
+
+  it("a dead-track streak parks the queue as tracks missing", async () => {
+    process.env.SOUNDCLI_FAILURE_STREAK = "2";
+    vi.mocked(downloadTrack).mockRejectedValue(
+      new Error("ERROR: This track is unavailable"),
+    );
+    const q = new DownloadQueue(defaultConfig, fakeLib, 1);
+    q.enqueue([input("youtube", "a"), input("youtube", "b"), input("youtube", "c")]);
+    await new Promise((r) => setTimeout(r, 100));
+    expect(q.stats().rateLimited).toBe(true);
+    expect(q.stats().rateLimitReason).toBe("tracks missing");
   });
 });

@@ -134,6 +134,14 @@ const RETAINED_ROWS_CAP = 200;
 
 /** rateLimitReason while the queue is parked waiting for the audio engine. */
 export const WAITING_FOR_TOOLS = "waiting for tools";
+/** rateLimitReason when the platform said so outright (429 / "too many"). */
+export const RATE_LIMITED = "rate limited";
+/** rateLimitReason when the queue parked on repeated generic failures. */
+export const TOO_MANY_FAILURES = "too many failures";
+/** rateLimitReason when the media host 403'd the bytes themselves. */
+export const SOURCE_BLOCKING = "source blocking";
+/** rateLimitReason when everything failing is individually dead. */
+export const TRACKS_MISSING = "tracks missing";
 
 /**
  * Whether a failure is the track's fault rather than the platform's mood:
@@ -146,6 +154,51 @@ export function isPermanentTrackError(text: string): boolean {
   return /unavailable|private|removed|does not exist|404|not available in your country|geo.?restrict|drm/i.test(
     text,
   );
+}
+
+/**
+ * A 403 on the media URL: the source handed over the metadata and then
+ * refused the bytes. YouTube's throttle takes exactly this shape here —
+ * never a 429 — and it clears on its own within minutes, so it gets its own
+ * backoff instead of burning retries into the cooldown.
+ */
+export function isSourceBlockedError(text: string): boolean {
+  return /HTTP Error 403|\bforbidden\b/i.test(text);
+}
+
+/**
+ * Jittered waits after a source block, in ms, by attempt. A 403 cooldown
+ * clears in minutes, so sub-second backoffs spend every attempt inside it
+ * and fail tracks that would have worked shortly after.
+ */
+const BLOCKED_WAITS: readonly (readonly [number, number])[] = [
+  [3_000, 8_000],
+  [15_000, 30_000],
+];
+
+/**
+ * How long to wait before trying a source-blocked track again. Randomized
+ * inside the window because parallel workers get blocked together: an
+ * identical backoff would send them all back at the same instant and rebuild
+ * the burst that got them blocked.
+ */
+export function blockedBackoffMs(
+  attempt: number,
+  random: () => number = Math.random,
+): number {
+  const [lo, hi] = BLOCKED_WAITS[Math.min(attempt, BLOCKED_WAITS.length - 1)]!;
+  return Math.round(lo + random() * (hi - lo));
+}
+
+/**
+ * Which halt a failure streak earned, named after the failure that tripped
+ * it. The banner says which one instead of blaming a rate limit for all of
+ * them; "rate limited" is only ever set when the platform actually said so.
+ */
+function streakReason(error: string): string {
+  if (isSourceBlockedError(error)) return SOURCE_BLOCKING;
+  if (isPermanentTrackError(error)) return TRACKS_MISSING;
+  return TOO_MANY_FAILURES;
 }
 
 /**
@@ -177,6 +230,12 @@ export class DownloadQueue extends EventEmitter {
   private runDoneBaseline = 0;
   /** Hard failures in a row; trips the auto-pause circuit breaker. */
   private consecutiveErrors = 0;
+  /**
+   * One download at a time until something succeeds. Set by a source block:
+   * several workers crowding a host that is already refusing is what turns
+   * a short cooldown into a batch of failures.
+   */
+  private blockedUntilSuccess = false;
   /** Consecutive permanent (dead-track) failures, per source label. */
   private permanentStreaks = new Map<string, number>();
   /**
@@ -420,6 +479,7 @@ export class DownloadQueue extends EventEmitter {
     this.permanentStreaks.clear();
     this.failingSource = null;
     this.stopped = false;
+    this.blockedUntilSuccess = false;
     this.runStartedAt = null;
     this.emit("update");
     this.scheduleSave();
@@ -450,6 +510,7 @@ export class DownloadQueue extends EventEmitter {
     this.rateLimited = false;
     this.rateLimitReason = "";
     this.consecutiveErrors = 0;
+    this.blockedUntilSuccess = false;
     this.emit("update");
     this.scheduleSave();
     this.pump();
@@ -471,6 +532,7 @@ export class DownloadQueue extends EventEmitter {
     this.rateLimited = false;
     this.rateLimitReason = "";
     this.consecutiveErrors = 0;
+    this.blockedUntilSuccess = false;
     this.emit("update");
     this.scheduleSave();
     this.pump();
@@ -514,6 +576,8 @@ export class DownloadQueue extends EventEmitter {
   private noteSourceSuccess(label: string): void {
     this.permanentStreaks.delete(label);
     if (this.failingSource === label) this.failingSource = null;
+    // Something got through, so the host is answering: full width again.
+    this.blockedUntilSuccess = false;
   }
 
   /** Folder where this item should live when it came from a playlist/set. */
@@ -866,7 +930,8 @@ export class DownloadQueue extends EventEmitter {
 
   private pump(): void {
     if (this.stopped) return;
-    const limit = Math.max(1, this.concurrency);
+    // Only gates new starts: whatever is already running is left alone.
+    const limit = this.blockedUntilSuccess ? 1 : Math.max(1, this.concurrency);
     while (this.active < limit) {
       const next = this.items.find((i) => i.status === "pending");
       if (!next) break;
@@ -902,9 +967,26 @@ export class DownloadQueue extends EventEmitter {
         if (isPermanentTrackError(e instanceof Error ? e.message : String(e))) {
           break;
         }
+        const message = e instanceof Error ? e.message : String(e);
+        if (isSourceBlockedError(message)) {
+          // On the first refusal, not after this track has spent all three
+          // attempts: waiting 20 to 40 seconds before narrowing would leave
+          // the other workers crowding the host for that whole window, which
+          // is the burst this is here to stop.
+          this.blockedUntilSuccess = true;
+        }
         if (attempt < maxRetries) {
-          // Short, growing backoff that aborts early on cancel/pause.
-          await this.abortableSleep(baseMs * (attempt + 1), signal);
+          // A source block needs a wait that outlasts its cooldown; every
+          // other transient error keeps the short, growing backoff. Both
+          // abort early on cancel/pause. The scale exists only so tests
+          // need not sit through a real cooldown.
+          const blockedScale = Number(process.env.SOUNDCLI_BLOCKED_SCALE ?? 1);
+          await this.abortableSleep(
+            isSourceBlockedError(message)
+              ? blockedBackoffMs(attempt) * blockedScale
+              : baseMs * (attempt + 1),
+            signal,
+          );
           if (signal.aborted) return { status: "canceled" };
           continue;
         }
@@ -1062,7 +1144,7 @@ export class DownloadQueue extends EventEmitter {
       if (res.status === "ratelimited") {
         // Don't fail it: keep it (with its .part) and pause the whole queue.
         item.status = "paused";
-        this.onRateLimited(item.sourceLabel);
+        this.onRateLimited(RATE_LIMITED);
       } else if (res.status === "canceled") {
         // Distinguish a pause (keep it, resumable) from a real cancel.
         item.status = this.pausing.has(item.id) ? "paused" : "canceled";
@@ -1151,12 +1233,25 @@ export class DownloadQueue extends EventEmitter {
       // platform, so they neither count toward nor reset the streak; they
       // feed their own per-source streak instead, which raises the
       // stale-downloader notice without ever pausing.
-      if (!isPermanentTrackError(item.error)) {
-        this.consecutiveErrors++;
-        if (this.consecutiveErrors >= failureStreakLimit() && !this.rateLimited) {
-          this.onRateLimited("repeated errors");
-        }
-      } else if (!/drm/i.test(item.error)) {
+      // A run of failures of any kind means the rest of the batch is very
+      // likely to fail the same way, so pause the whole queue (resumable)
+      // rather than burn through hundreds of rows. The kind of failure picks
+      // which banner shows rather than deciding whether to stop; a single
+      // success resets the streak, so individually dead tracks scattered
+      // through a playlist never park the queue.
+      this.consecutiveErrors++;
+      if (isSourceBlockedError(item.error)) {
+        // Stop crowding a host that is refusing; one success reopens it.
+        this.blockedUntilSuccess = true;
+      }
+      if (this.consecutiveErrors >= failureStreakLimit() && !this.rateLimited) {
+        this.onRateLimited(streakReason(item.error));
+      }
+      if (
+        isPermanentTrackError(item.error) &&
+        !isSourceBlockedError(item.error) &&
+        !/drm/i.test(item.error)
+      ) {
         // DRM is the platform telling the truth about the track, not a sign
         // of a stale extractor, so it never feeds the out-of-date hint.
         this.notePermanentFailure(item.sourceLabel);
