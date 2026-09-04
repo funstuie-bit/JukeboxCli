@@ -207,6 +207,9 @@ export async function downloadTrack(
     "utf-8",
     "--no-colors",
     "--newline",
+    // yt-dlp prints progress only on a TTY; spawned through a pipe (as here)
+    // it stays silent without this, and every row sits at "starting…".
+    "--progress",
     "--no-playlist",
     "--no-simulate",
     "--ignore-config",

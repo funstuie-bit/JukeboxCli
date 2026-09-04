@@ -1207,3 +1207,66 @@ describe("download queue source blocking (403)", () => {
     expect(q.stats().rateLimitReason).toBe("tracks missing");
   });
 });
+
+describe("download queue completion linger", () => {
+  afterEach(() => {
+    // Back to the suite-wide instant-clear default, not deleted: the config
+    // pins it to 0 so every other test keeps its old assumptions.
+    process.env.SOUNDCLI_LINGER_MS = "0";
+    // Same reset hygiene as the other describes: an un-set downloadTrack
+    // mock leaks into whichever test block runs next in this file.
+    vi.mocked(downloadTrack).mockReset();
+    vi.mocked(downloadTrack).mockImplementation(() => new Promise(() => {}));
+    findDownloadedFileMock.mockReset();
+    findDownloadedFileMock.mockImplementation(async (p) => p);
+  });
+
+  it("keeps a finished row long enough to be seen, then clears it", async () => {
+    process.env.SOUNDCLI_LINGER_MS = "80";
+    vi.mocked(downloadTrack).mockResolvedValue({
+      status: "downloaded",
+      meta: {
+        id: "linger-a",
+        filepath: "/tmp/linger-a.opus",
+        title: "Linger A",
+      },
+    } as unknown as Awaited<ReturnType<typeof downloadTrack>>);
+    const lib = {
+      has: () => false,
+      all: () => [],
+      upsert: vi.fn(async () => {}),
+    } as unknown as Library;
+    const q = new DownloadQueue(defaultConfig, lib, 1);
+    q.enqueue([input("youtube", "a")]);
+    await new Promise((r) => setTimeout(r, 30));
+    // While the flash lasts the row is still listed, already marked done.
+    expect(q.items.length).toBe(1);
+    expect(q.items[0].status).toBe("done");
+    expect(q.stats().done).toBe(1);
+    await new Promise((r) => setTimeout(r, 120));
+    // After the flash the row is gone and the counters still tell the truth.
+    expect(q.items.length).toBe(0);
+    expect(q.stats().done).toBe(1);
+  });
+  it("clears instantly when lingering is disabled (env at 0)", async () => {
+    process.env.SOUNDCLI_LINGER_MS = "0";
+    vi.mocked(downloadTrack).mockResolvedValue({
+      status: "downloaded",
+      meta: {
+        id: "linger-b",
+        filepath: "/tmp/linger-b.opus",
+        title: "Linger B",
+      },
+    } as unknown as Awaited<ReturnType<typeof downloadTrack>>);
+    const lib = {
+      has: () => false,
+      all: () => [],
+      upsert: vi.fn(async () => {}),
+    } as unknown as Library;
+    const q = new DownloadQueue(defaultConfig, lib, 1);
+    q.enqueue([input("youtube", "a")]);
+    await new Promise((r) => setTimeout(r, 100));
+    expect(q.items.length).toBe(0);
+    expect(q.stats().done).toBe(1);
+  });
+});

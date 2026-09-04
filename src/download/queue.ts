@@ -221,6 +221,12 @@ export class DownloadQueue extends EventEmitter {
   /** Item ids being paused (vs canceled) so run() knows the intent on abort. */
   private readonly pausing = new Set<string>();
   private saveTimer: ReturnType<typeof setTimeout> | null = null;
+  /**
+   * Items that just finished ("done"/"skipped") and are flashing their final
+   * state for a moment before being removed. Bounded by RETAINED_ROWS_CAP so
+   * a burst of completions can't hold rows beyond a few screens' worth.
+   */
+  private retained = new Set<QueueItem>();
   /** Set when the platform rate-limited us and we paused the queue. */
   private rateLimited = false;
   private rateLimitReason = "";
@@ -391,9 +397,33 @@ export class DownloadQueue extends EventEmitter {
     if (item.status === "skipped" || (item.status === "done" && !item.unverifiedMatch)) {
       const idx = this.items.indexOf(item);
       if (idx !== -1) {
+        // Flash "saved" briefly before the row goes, so finishing is visible
+        // instead of rows silently winking out mid-batch. If too many finish
+        // at once, the overflow clears immediately rather than piling rows.
+        const lingerMs = Number(process.env.SOUNDCLI_LINGER_MS ?? 1200);
+        if (lingerMs > 0 && this.retained.size < 24) {
+          this.retained.add(item);
+          setTimeout(() => {
+            this.retained.delete(item);
+            // The row's flash is over: actually remove it now (its index may
+            // have moved since, so look it up again) and keep the counters
+            // in step with the non-lingering path.
+            const i = this.items.indexOf(item);
+            if (i !== -1) {
+              this.items.splice(i, 1);
+              if (item.status === "done") this.clearedDone++;
+              else this.clearedSkipped++;
+            }
+            this.compactRetained();
+            this.scheduleSave();
+            this.emit("update");
+          }, lingerMs);
+          this.compactRetained();
+          return;
+        }
         this.items.splice(idx, 1);
         if (item.status === "done") this.clearedDone++;
-        else if (item.status === "skipped") this.clearedSkipped++;
+        else this.clearedSkipped++;
       }
     }
     this.compactRetained();

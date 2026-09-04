@@ -5,6 +5,12 @@ import { defineConfig } from "vitest/config";
 // the shell running the suite. Pin rendering to plain text everywhere.
 export default defineConfig({
   test: {
-    env: { FORCE_COLOR: "0" },
+    env: {
+      FORCE_COLOR: "0",
+      // Rows flash "saved" for ~1.2s in the real app; tests were written
+      // against instant clearing, so default the flash off and let the
+      // linger tests turn it on explicitly.
+      SOUNDCLI_LINGER_MS: "0",
+    },
   },
 });
