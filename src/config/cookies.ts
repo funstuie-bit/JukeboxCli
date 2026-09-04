@@ -92,14 +92,22 @@ export async function detectBrowserProfiles(): Promise<BrowserProfile[]> {
       if (!e.isDirectory()) continue;
       // .default-release is the main profile, .default is older/secondary
       const isDefault = e.name.endsWith(".default-release") || e.name.endsWith(".default");
-      if (isDefault) {
-        profiles.push({
-          browser: "firefox",
-          profileName: e.name,
-          label: `Firefox · ${e.name.replace(/\.(default-release|default)$/, "")}`,
-          profilePath: path.join(firefoxPath, e.name),
-        });
-      }
+      if (!isDefault) continue;
+      // A profile without a cookie database can't be used by
+      // --cookies-from-browser, so don't offer it: an empty "default"
+      // stub left behind by an old Firefox install would otherwise fail
+      // every download with "could not find firefox cookies database".
+      const hasCookiesDb = await fs
+        .access(path.join(firefoxPath, e.name, "cookies.sqlite"))
+        .then(() => true)
+        .catch(() => false);
+      if (!hasCookiesDb) continue;
+      profiles.push({
+        browser: "firefox",
+        profileName: e.name,
+        label: `Firefox · ${e.name.replace(/\.(default-release|default)$/, "")}`,
+        profilePath: path.join(firefoxPath, e.name),
+      });
     }
   } catch {
     // Firefox not installed

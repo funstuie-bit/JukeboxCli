@@ -40,6 +40,23 @@ describe("detectSystemYtDlp", () => {
 });
 
 describe("resolveYtDlp", () => {
+  it("notifies on the system fallback so a transient failure self-heals", async () => {
+    // The bundled download fails once (transient network), a system yt-dlp
+    // rescues the launch, and the fallback hook fires so the caller can
+    // re-fetch the bundled binary in the background.
+    const fallbacks: string[] = [];
+    const out = await resolveYtDlp(undefined, {
+      dest: "/nonexistent/yt-dlp",
+      exists: async () => false,
+      detect: async () => "/usr/bin/yt-dlp",
+      download: async () => {
+        throw new Error("network down");
+      },
+      onSystemFallback: (p) => fallbacks.push(p),
+    });
+    expect(out).toBe("/usr/bin/yt-dlp");
+    expect(fallbacks).toEqual(["/usr/bin/yt-dlp"]);
+  });
   it("uses the bundled binary untouched when present", async () => {
     let detected = false;
     let downloaded = false;

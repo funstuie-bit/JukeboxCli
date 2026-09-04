@@ -154,6 +154,11 @@ export async function downloadVerified(
  * system yt-dlp on PATH. The download path is untouched for everyone whose
  * fetch works; detection runs only when it fails. Seam-injected and free of
  * module state, so the ordering is unit-testable.
+ *
+ * The system fallback is a crutch, not a destination: a transient network
+ * failure would otherwise silently downgrade this install forever. The
+ * caller (ensureYtDlp) schedules a background re-fetch when this happens,
+ * and the next launch picks the bundled binary up through the normal path.
  */
 export async function resolveYtDlp(
   onStatus?: (msg: string) => void,
@@ -162,6 +167,7 @@ export async function resolveYtDlp(
     exists?: (p: string) => Promise<boolean>;
     detect?: () => Promise<string | null>;
     download?: (dest: string) => Promise<void>;
+    onSystemFallback?: (path: string) => void;
   } = {},
 ): Promise<string> {
   const dest = deps.dest ?? ytDlpPath();
@@ -177,6 +183,7 @@ export async function resolveYtDlp(
     });
   const detect = deps.detect ?? (() => detectSystemYtDlp());
   const download = deps.download ?? downloadVerified;
+  const onSystemFallback = deps.onSystemFallback;
 
   // Already installed: the normal path, completely unchanged.
   if (await exists(dest)) return dest;
@@ -194,6 +201,7 @@ export async function resolveYtDlp(
     const system = await detect();
     if (system) {
       onStatus?.("using yt-dlp from your system");
+      onSystemFallback?.(system);
       return system;
     }
     throw e;
@@ -228,6 +236,17 @@ async function doEnsure(onStatus?: (msg: string) => void): Promise<string> {
   if (resolvedYtDlp) return resolvedYtDlp;
   // A staged update (from the daily check) applies before first use.
   await finalizeStagedYtDlp().catch(() => false);
-  resolvedYtDlp = await resolveYtDlp(onStatus);
+  resolvedYtDlp = await resolveYtDlp(onStatus, {
+    // A transient download failure silently downgrades this install to a
+    // system yt-dlp. The fallback keeps working, but the missing bundled
+    // binary is a live problem: retry the fetch in the background (a stale
+    // system yt-dlp breaks downloads silently over time), so the next
+    // launch takes the normal bundled path without the user ever knowing.
+    onSystemFallback: (path) => {
+      if (path) {
+        void downloadVerified(ytDlpPath()).catch(() => {});
+      }
+    },
+  });
   return resolvedYtDlp;
 }
