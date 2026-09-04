@@ -450,10 +450,10 @@ describe("single-page sections render", () => {
 describe("settings move music folder", () => {
   const CTRL_U = "\u0015";
 
-  /** Menu order: youtube, soundcloud, spotify, format, cookies, pacing, import, open-folder, folder. */
+  /** Menu order: youtube, soundcloud, spotify, format, cookies, pacing, import, convert, open-folder, folder. */
   async function openFolderPage(stdin: { write: (s: string) => void }) {
     await tick();
-    for (let i = 0; i < 8; i++) {
+    for (let i = 0; i < 9; i++) {
       stdin.write(DOWN);
       await tick();
     }

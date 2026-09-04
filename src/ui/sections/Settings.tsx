@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { promises as fs } from "node:fs";
 import path from "node:path";
 import { Box, Text, useInput } from "ink";
@@ -35,6 +35,13 @@ import {
   importFromYtDlpConfig,
   type ImportResult,
 } from "../../config/import";
+import {
+  convertTracks,
+  needsConversion,
+  type ConvertFormat,
+  type ConvertProgress,
+  type ConvertResult,
+} from "../../library/convert";
 
 type Mode =
   | "menu"
@@ -48,7 +55,9 @@ type Mode =
   | "format"
   | "cookies"
   | "pacing"
-  | "import";
+  | "import"
+  | "convert"
+  | "convert-run";
 
 /** Key hints pinned under the page content (Download's FooterHint idiom). */
 function HintLine({ children }: { children: string }) {
@@ -80,6 +89,20 @@ export function Settings() {
   const [importConfigPath, setImportConfigPath] = useState<string | null>(null);
   // Pacing sub-page: cursor to track which of the 3 text fields is active.
   const [pacingCursor, setPacingCursor] = useState(0);
+  // Convert-library sub-pages: chosen format, live progress, stop request,
+  // and the finished result (kept so the run page can render the summary).
+  const [convertFormat, setConvertFormat] = useState<ConvertFormat | null>(
+    null,
+  );
+  const [convertProgress, setConvertProgress] =
+    useState<ConvertProgress | null>(null);
+  const [convertResult, setConvertResult] = useState<ConvertResult | null>(
+    null,
+  );
+  const [convertRunning, setConvertRunning] = useState(false);
+  // Ref mirror of the stop request: the run's shouldStop closure must see the
+  // latest value without re-launching the run on every state change.
+  const convertStopRef = useRef(false);
   // Keeps the confirm page's downloads-running gate live while it's open.
   useQueueItems(queue);
 
@@ -146,6 +169,15 @@ export function Settings() {
       value: "import",
       name: "Import config",
       detail: "Import from yt-dlp config",
+    },
+    {
+      value: "convert",
+      name: "Convert library",
+      detail: `Re-encode downloads to ${
+        config.audioFormat && config.audioFormat !== "best"
+          ? config.audioFormat
+          : "a format"
+      }`,
     },
     {
       value: "open-folder",
@@ -244,7 +276,9 @@ export function Settings() {
     (_input, key) => {
       if (key.escape) setMode("menu");
     },
-    { isActive: inSubPage && mode !== "moving" },
+    // While a conversion runs, esc belongs to the run page (stop), not to
+    // navigating away from the summary that is about to appear.
+    { isActive: inSubPage && mode !== "moving" && !(mode === "convert-run" && convertRunning) },
   );
 
   // Every settings sub-page is rendered through frame(), so the hint line
@@ -794,6 +828,138 @@ export function Settings() {
         })}
       </Box>,
       `↵ Save  ${ICON.dot}  esc Back  ${ICON.dot}  ↑↓ Switch field`,
+    );
+  }
+
+  // ─── Convert library ───────────────────────────────────────────────
+  if (mode === "convert") {
+    // Only formats the converter can actually produce; "best" means "leave
+    // each file in whatever it arrived as", which is nothing to convert to.
+    const convertFormats: Array<{ label: string; value: ConvertFormat }> = [
+      { label: "MP3", value: "mp3" },
+      { label: "FLAC", value: "flac" },
+      { label: "WAV", value: "wav" },
+      { label: "M4A", value: "m4a" },
+      { label: "Opus", value: "opus" },
+    ];
+    const counts = new Map<ConvertFormat, number>();
+    for (const t of library.all()) {
+      for (const f of convertFormats) {
+        if (needsConversion(t, f.value)) {
+          counts.set(f.value, (counts.get(f.value) ?? 0) + 1);
+        }
+      }
+    }
+    const current = config.audioFormat;
+    return frame(
+      "Convert library",
+      <SelectField
+        title={
+          current && current !== "best"
+            ? `Re-encode every download into one format  ${ICON.dot}  current: ${current}`
+            : "Re-encode every download into one format"
+        }
+        options={convertFormats.map((f) => ({
+          label:
+            counts.get(f.value) !== undefined
+              ? `${f.label} (${counts.get(f.value)} to convert)`
+              : f.label,
+          value: f.value,
+        }))}
+        focused={focused}
+        onSelect={(v) => {
+          const fmt = v as ConvertFormat;
+          setConvertFormat(fmt);
+          setConvertResult(null);
+          setConvertProgress(null);
+          convertStopRef.current = false;
+          setConvertRunning(true);
+          setMode("convert-run");
+          void convertTracks(library.all(), fmt, {
+            onProgress: (p) => setConvertProgress({ ...p }),
+            onConverted: (t, newPath) =>
+              library.upsert({ ...t, filePath: newPath }),
+            shouldStop: () => convertStopRef.current,
+          }).then((res) => {
+            setConvertResult(res);
+            setConvertRunning(false);
+          });
+        }}
+        onCancel={() => setMode("menu")}
+      />,
+      `↑↓ Move  ${ICON.dot}  ↵ Convert to format  ${ICON.dot}  esc Back`,
+    );
+  }
+
+  // ─── Convert library: run page ─────────────────────────────────────
+  if (mode === "convert-run") {
+    const fmt = convertFormat ?? "mp3";
+    const progress = convertProgress;
+    useInput(
+      (_input, key) => {
+        if (key.escape && convertRunning) {
+          // First esc stops the run (finishing the current song); the page
+          // stays so the summary can render. A second esc, once stopped,
+          // falls through to the general sub-page handler below.
+          convertStopRef.current = true;
+        }
+      },
+      { isActive: focused },
+    );
+    return frame(
+      "Converting library",
+      <Box flexDirection="column">
+        {convertRunning || progress ? (
+          <Box marginBottom={1}>
+            <Text color={COLOR.alt}>
+              {progress
+                ? `${progress.converted} done${
+                    progress.failed > 0
+                      ? `, ${progress.failed} failed`
+                      : ""
+                  } of ${progress.total}`
+                : "Counting songs…"}
+            </Text>
+          </Box>
+        ) : null}
+        {convertResult ? (
+          <Box flexDirection="column">
+            <Box marginBottom={1}>
+              <Text color={COLOR.good}>
+                {convertResult.stopped
+                  ? `Stopped after ${convertResult.converted} songs.`
+                  : `Converted ${convertResult.converted} songs to ${fmt}.`}
+              </Text>
+            </Box>
+            {convertResult.failed.length > 0 ? (
+              <Box marginBottom={1}>
+                <Text color={COLOR.bad}>
+                  {`${ICON.warn} ${convertResult.failed.length} failed  ${ICON.dot}  details in the downloads log`}
+                </Text>
+              </Box>
+            ) : null}
+            {convertResult.missingEncoder ? (
+              <Box marginBottom={1}>
+                <Text color={COLOR.bad}>
+                  {`${ICON.warn} ffmpeg can't encode ${fmt}  ${ICON.dot}  nothing else was touched`}
+                </Text>
+              </Box>
+            ) : null}
+          </Box>
+        ) : null}
+        {convertRunning ? (
+          <Box>
+            <Text dimColor>{`esc Stop  ${ICON.dot}  already-converted songs are skipped`}</Text>
+          </Box>
+        ) : (
+          <Box>
+            <Text dimColor>esc Back</Text>
+          </Box>
+        )}
+      </Box>,
+      convertRunning
+        ? `esc Stop (first press stops after the current song)`
+        : "esc Back",
     );
   }
 
