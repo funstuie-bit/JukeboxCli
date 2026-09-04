@@ -1,78 +1,80 @@
-<p align="center">
-  <img src="preview/welcome.svg" alt="A terminal dashboard for downloading and playing your music" style="max-width: 832px; width: 100%; height: auto;">
-</p>
+# soundcli-fork
 
-Own your music. soundcli downloads your YouTube, SoundCloud, and Spotify libraries to your computer and plays them offline, straight from your terminal. Every song lands on your own drive as a real file, yours to keep and ready the moment you want it.
+Own your music. Download your YouTube, SoundCloud, and Spotify libraries to your computer and play them offline, all from your terminal.
 
-## Get started
+**This is a fork of [baairon/soundcli](https://github.com/baairon/soundcli) v1.4.1** with extra features built in: a full first-run wizard, browser/cookie support, total format control, download pacing, custom output location, CLI flags, and a settings screen to change all of it later.
 
-You only have to do this once. soundcli handles the rest itself.
+## What this fork adds
 
-1. **Install Node.js** from [nodejs.org](https://nodejs.org): download the installer and click **Next** until it finishes. It's the one piece of software soundcli runs on.
-2. **Open your terminal.** On **Windows**, press the Windows key, type `terminal`, and press Enter. On a **Mac**, press `Cmd + Space`, type `terminal`, and press Enter. A plain window opens, and that's all you need to get going.
-3. **Start soundcli.** Copy the line below, paste it into the terminal, and press **Enter**:
+### First-run wizard
+The first time you run it, a guided setup walks you through everything — every step has **esc to go back**, no dead ends:
 
+1. **Intro** — pick YouTube, SoundCloud, or Spotify
+2. **Handle** — type your handle or paste a link
+3. **Format** — choose audio format (Best / MP3 / FLAC / WAV / M4A / Opus / Vorbis)
+4. **Cookies** — import from browser (auto-detects Chrome / Firefox / Edge / Brave profiles), choose a cookies.txt file, or skip
+5. **Output** — where downloads land (defaults to `~/Music/soundcli`; type a new path or press enter)
+6. **Loading → Downloading** — grabs your playlists and starts
+
+### Settings (press `5` in the sidebar)
+- **Audio format** — change format anytime
+- **Cookies** — set up browser cookies, a cookies.txt file, or clear cookies
+- **Download pacing** — tune sleep interval, max sleep, retries
+- **Import config** — detect and import settings from an existing yt-dlp.conf
+
+### CLI flags (override config without opening the TUI)
+```sh
+soundcli --format mp3 --cookies-from-browser chrome:Default "https://..."
+soundcli --output-dir ~/Music/MyLibrary --quality 5 @somehandle
+soundcli --sleep 2 --max-sleep 10 --retries 10
+```
+
+Full list via `soundcli --help`:
+
+| Flag | What it does |
+| --- | --- |
+| `--format <fmt>` | audio format: best, mp3, flac, wav, m4a, opus, vorbis |
+| `--quality <0-10>` | audio quality (0=best, 10=worst) |
+| `--yt-format <str>` | raw yt-dlp format string (e.g. `bestaudio[ext=m4a]`) |
+| `--output-dir <path>` | where to save downloads |
+| `--output-template <tpl>` | yt-dlp `-o` template (overrides folder structure) |
+| `--cookies <path>` | cookies.txt file (Netscape format) |
+| `--cookies-from-browser <id>` | read cookies from browser (e.g. `chrome:Default`) |
+| `--sleep <sec>` / `--max-sleep <sec>` | pacing between downloads |
+| `--retries <n>` | retries on failure |
+| `--reencode <true\|false>` | force re-encode even if format matches |
+| `soundcli <link>` | download that song/playlist on launch |
+
+## Install on any Mac
+
+**One-time setup on the new Mac:**
+1. Install Node.js 22 or newer — either from [nodejs.org](https://nodejs.org) or `brew install node@22`
+2. Clone and install:
    ```sh
-   npx sndcli
+   git clone https://github.com/funstuie-bit/JukeboxCli.git ~/Developer/soundcli-fork
+   cd ~/Developer/soundcli-fork && ./install.sh
+   ```
+3. Run it from anywhere:
+   ```sh
+   soundcli
    ```
 
-From there soundcli takes over, downloading the few tools it needs and setting everything up on its own.
+That's it — on first run soundcli downloads yt-dlp and ffmpeg itself (into `~/Library/Caches/soundcli/bin`), so no other dependencies are needed. mpv for in-terminal playback is optional: `brew install mpv` (without it, tracks open in your default player).
 
-## The first run
+**What `install.sh` does:** `npm install`, `npm run build`, `npm install -g .` — which puts a global `soundcli` command on your PATH.
 
-The first time it opens, soundcli shows you where your music will be saved: a dedicated folder inside your computer's Music folder, so you always know where your files are.
+## Dev
 
-Then it asks where your music comes from. Pick **YouTube**, **SoundCloud**, or **Spotify**, then type your username or paste a link to a playlist, an album, or a single track. Downloading starts right away, and you can begin listening while the rest of your library finishes.
+```sh
+npm install          # Node 22+
+npm run dev          # run from source
+npm run build        # build dist/
+npm test             # 447 tests
+npm run typecheck
+```
 
-<p align="center">
-  <img src="preview/library.svg" alt="The library view: sidebar, your songs, and the player mid-song" style="max-width: 832px; width: 100%; height: auto;">
-</p>
+Config lives at `~/Library/Application Support/soundcli/config.json` (use `soundcli` itself or the Settings screen to change it).
 
-## Your library, kept in order
+## Upstream credit
 
-Every track downloads in its original quality, with album artwork and artist details included, and gets sorted into folders automatically so your collection stays organized. Almost any link works: playlists, albums, artist profiles, your likes, or a single song. Public Spotify playlists and albums work without signing in.
-
-It never downloads the same song twice, and if you close it mid-download, it picks up where it left off next time. Once a track is saved, it's there for good. You can rename tracks and playlists directly from the interface to keep everything tidy.
-
-## Playing it back
-
-Everything runs from the keyboard, with controls that are quick to pick up. Press `?` anytime for the full list of keys. The bar along the bottom of the screen only shows the few that matter right now, so there's nothing to memorize.
-
-<p align="center">
-  <img src="preview/keys.svg" alt="The keyboard cheatsheet: navigate, player, and download keys" style="max-width: 832px; width: 100%; height: auto;">
-</p>
-
-## Contributing
-
-Issues and pull requests are welcome. soundcli is TypeScript with an Ink
-terminal UI, riding on yt-dlp and mpv.
-
-Run it locally:
-
-1. Clone the repo and open the folder.
-2. Install dependencies (Node 22 or newer):
-   ```sh
-   npm install
-   ```
-3. Start the dev build, which runs straight from source:
-   ```sh
-   npm run dev
-   ```
-   Or build it and run the bundled version:
-   ```sh
-   npm run build
-   npm start
-   ```
-
-Before opening a pull request:
-
-- Run the tests: `npm test`
-- Check types: `npm run typecheck`
-- Write commits in Conventional Commits style (`fix:`, `feat:`, `docs:`, `chore:`, `refactor:`)
-- Keep the UI surface minimal: one contextual footer plus the `?` cheatsheet, never a wall of commands
-
-Then open a PR against `main` with a short note on what changed and why.
-
-## Privacy
-
-soundcli runs on your computer and nowhere else. There are no accounts, no logins, and nothing tracking what you play. It connects to the internet for three reasons only: to download the music you ask for, to set itself up the first time, and to keep its own tools current so downloads keep working. Everything else stays with you.
+All the base functionality (TUI, library, player, download queue) is [baairon/soundcli](https://github.com/baairon/soundcli), MIT licensed. This fork adds the wizard, cookie support, format control, pacing, CLI flags, and settings screens described above.

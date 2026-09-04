@@ -1,10 +1,10 @@
 {
-  "name": "sndcli",
+  "name": "soundcli-fork",
   "version": "1.4.1",
-  "description": "Own your music. Download your YouTube, SoundCloud, and Spotify libraries to your computer and play them offline, all from your terminal.",
+  "description": "Own your music. Download your YouTube, SoundCloud, and Spotify libraries to your computer and play them offline, all from your terminal. Fork of baairon/soundcli with wizard, cookies, format control, and CLI flags.",
   "type": "module",
   "bin": {
-    "sndcli": "./dist/index.js"
+    "soundcli": "./dist/index.js"
   },
   "files": [
     "dist",
