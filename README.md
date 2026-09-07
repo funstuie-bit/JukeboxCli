@@ -21,6 +21,19 @@ The first time you run it, a guided setup walks you through everything — every
 - **Cookies** — set up browser cookies, a cookies.txt file, or clear cookies
 - **Download pacing** — tune sleep interval, max sleep, retries
 - **Import config** — detect and import settings from an existing yt-dlp.conf
+- **Convert library** — re-encode your existing downloads to another format in place
+
+### Download resilience
+- Live phase per row: **starting → % + speed → converting → tagging → saved** — yt-dlp's post-processing steps are instrumented so rows never sit frozen on "starting"
+- Source 403/rate-limit blocks trigger jittered backoff with narrowed concurrency and an honest pause banner, not silent failures
+- Failed rows retry (`f`); the bundled yt-dlp self-heals if it goes missing and auto-updates on launch
+
+### Now Playing screen (press `m`)
+A full-screen player view, toggled from any section (`m` or `esc` closes, transport keys stay live):
+- **Truecolor cover art** rendered as half-blocks from the embedded art — no `ascii` mush
+- **Waveform progress bar** precomputed from the audio's loudness envelope, filled along the accent ramp to the play position
+- **Up next** — the shuffle-aware upcoming list
+- Degrades honestly: no embedded art → tidy placeholder; no waveform data → gradient bar; external player → a clear note instead of a fake progress bar
 
 ### CLI flags (override config without opening the TUI)
 ```sh
@@ -69,7 +82,7 @@ That's it — on first run soundcli downloads yt-dlp and ffmpeg itself (into `~/
 npm install          # Node 22+
 npm run dev          # run from source
 npm run build        # build dist/
-npm test             # 447 tests
+npm test             # 480 tests
 npm run typecheck
 ```
 
