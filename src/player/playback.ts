@@ -381,6 +381,25 @@ export class Playback extends EventEmitter {
     await this.play(this.state.list[ni]!, this.state.list, ni);
   }
 
+  /**
+   * The next `count` tracks after the current one, in actual play order
+   * (shuffle-aware). Previewed with repeat off, so it shows what remains in
+   * this cycle rather than looping or locking on repeat-one.
+   */
+  upNext(count: number): Track[] {
+    const out: Track[] = [];
+    let idx = this.state.index;
+    for (let i = 0; i < count; i++) {
+      const ni = stepIndex(this.order, idx, "off", 1);
+      if (ni === null) break;
+      const t = this.state.list[ni];
+      if (!t) break;
+      out.push(t);
+      idx = ni;
+    }
+    return out;
+  }
+
   async prev(): Promise<void> {
     if (!this.state.list.length) return;
     if (this.state.shuffle) {

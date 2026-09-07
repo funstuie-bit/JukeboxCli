@@ -146,7 +146,15 @@ export function makeFakePlayback(
     canControl: true,
     ...overrides,
   };
-  return { getState: () => state, on: () => {}, off: () => {} } as unknown as Playback;
+  return {
+    getState: () => state,
+    on: () => {},
+    off: () => {},
+    // The Now Playing view lists what follows. Defaults to the placeholder
+    // list after the current index; makeFakePlayback callers get a sane view.
+    upNext: (count: number) =>
+      state.list.slice(state.index + 1, state.index + 1 + count),
+  } as unknown as Playback;
 }
 
 /** A complete Store over the fakes; geometry matches an 80x24 terminal. */

@@ -45,6 +45,7 @@ import { Playlists } from "./sections/Playlists";
 import { History } from "./sections/History";
 import { Download } from "./sections/Download";
 import { Settings } from "./sections/Settings";
+import { NowPlaying as NowPlayingView } from "./views/NowPlaying";
 import { Welcome } from "./views/Welcome";
 import { useMouseWheel } from "./hooks/useMouseWheel";
 
@@ -160,6 +161,9 @@ export function App({ initialAdd }: { initialAdd?: string } = {}) {
   const [region, setRegion] = useState<Region>("sidebar");
   const [captureMode, setCaptureMode] = useState<CaptureMode>("none");
   const [showHelp, setShowHelp] = useState(false);
+  // Full-screen Now Playing view, toggled with `m` from any section. The
+  // body stays mounted (display none) behind it so section state survives.
+  const [nowPlayingView, setNowPlayingView] = useState(false);
   const [pendingSearch, setPendingSearch] = useState(false);
   const [pendingAdd, setPendingAdd] = useState<string | null>(null);
   const [playlistsDepth, setPlaylistsDepth] =
@@ -407,6 +411,13 @@ export function App({ initialAdd }: { initialAdd?: string } = {}) {
         setShowHelp(true);
         return;
       }
+      // `m` toggles the full-screen Now Playing view from any section (text
+      // capture already returned above). Handled here, before pane/section
+      // keys, so it works everywhere; transport keys stay live inside it.
+      if (input === "m") {
+        setNowPlayingView((v) => !v);
+        return;
+      }
       const pb = boot?.playback;
       // Player transport runs before pane/section keys so downloads never
       // steal space/k, j/l, n/p, etc. (text capture already returned above).
@@ -454,6 +465,10 @@ export function App({ initialAdd }: { initialAdd?: string } = {}) {
         // Pickers and drill-down views run their own esc (back one step), so
         // the global one stays out.
         if (captureMode === "picker" || captureMode === "esc") return;
+        if (nowPlayingView) {
+          setNowPlayingView(false);
+          return;
+        }
         if (region === "content") setRegion("sidebar");
         return;
       }
@@ -536,9 +551,10 @@ export function App({ initialAdd }: { initialAdd?: string } = {}) {
       history: boot.history,
       section,
       setSection,
-      // While the cheatsheet is up, no pane owns the keyboard: every handler
-      // gated on "content"/"sidebar" goes inactive without per-component edits.
-      region: showHelp ? "help" : region,
+      // While the cheatsheet or the Now Playing view is up, no pane owns the
+      // keyboard: every handler gated on "content"/"sidebar" goes inactive
+      // without per-component edits.
+      region: showHelp || nowPlayingView ? "help" : region,
       setRegion,
       captureMode,
       setCaptureMode,
@@ -562,6 +578,7 @@ export function App({ initialAdd }: { initialAdd?: string } = {}) {
     section,
     region,
     showHelp,
+    nowPlayingView,
     captureMode,
     playlistsDepth,
     pendingSearch,
@@ -634,10 +651,18 @@ export function App({ initialAdd }: { initialAdd?: string } = {}) {
                 <HelpOverlay />
               </Box>
             ) : null}
+            {nowPlayingView && !showHelp ? (
+              // Same modal treatment as the cheatsheet: full width, never
+              // vertically compressed, and the body stays mounted (display
+              // none) so the section you left is exactly what returns.
+              <Box marginTop={1}>
+                <NowPlayingView />
+              </Box>
+            ) : null}
             <Box
               height={bodyH}
               marginTop={compact ? 0 : 1}
-              display={showHelp ? "none" : "flex"}
+              display={showHelp || nowPlayingView ? "none" : "flex"}
             >
               <Sidebar />
               <Box
@@ -661,7 +686,17 @@ export function App({ initialAdd }: { initialAdd?: string } = {}) {
             <NowPlayingBar />
             {showFooter ? (
               <Footer
-                hints={footerHints(region, section, playlistsDepth)}
+                hints={
+                  nowPlayingView
+                    ? [
+                        { keys: "m", label: "Back to library" },
+                        { keys: "space", label: "Play / pause" },
+                        { keys: "← →", label: "Seek" },
+                        { keys: "n p", label: "Next / prev" },
+                        { keys: "q", label: "Quit" },
+                      ]
+                    : footerHints(region, section, playlistsDepth)
+                }
               />
             ) : null}
             </Box>

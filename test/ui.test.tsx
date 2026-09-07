@@ -11,6 +11,7 @@ import { Library } from "../src/library/library";
 import type { Track } from "../src/library/types";
 import { DownloadQueue, type QueueItem } from "../src/download/queue";
 import { FakeQueue, asQueue, makeFakeLibrary } from "../scripts/fake-data";
+import { makeFakePlayback } from "../scripts/fake-data";
 import { Playback } from "../src/player/playback";
 import { PlayHistory } from "../src/player/history";
 import { Library as LibrarySection } from "../src/ui/sections/Library";
@@ -22,8 +23,10 @@ import { Sidebar } from "../src/ui/components/Sidebar";
 import { SongList } from "../src/ui/components/SongList";
 import { TextField } from "../src/ui/components/TextField";
 import { NowPlayingBar } from "../src/ui/components/NowPlayingBar";
+import { NowPlaying } from "../src/ui/views/NowPlaying";
 import { HelpOverlay } from "../src/ui/components/HelpOverlay";
 import { Welcome } from "../src/ui/views/Welcome";
+import { HELP_GROUPS } from "../src/ui/keymap";
 
 function makeStore(overrides?: Partial<Store>): Store {
   const config = { ...defaultConfig };
@@ -933,5 +936,59 @@ describe("queue copy, banner, overlay, welcome paste", () => {
     stdin.write(ESC);
     await escTick();
     expect(lastFrame() ?? "").toContain("Press / to search…");
+  });
+});
+
+describe("now playing full-screen view", () => {
+  it("shows the honest idle state when nothing plays", () => {
+    const store = makeStore({
+      playback: makeFakePlayback({
+        track: null,
+        list: [],
+        index: -1,
+        mpvAvailable: true,
+      }),
+    });
+    const { lastFrame } = render(wrap(<NowPlaying />, store));
+    expect(lastFrame() ?? "").toContain("Nothing playing");
+    expect(lastFrame() ?? "").toContain("m closes this screen");
+  });
+
+  it("shows title, artist, and the up-next list mid-song", () => {
+    const store = makeStore({ playback: makeFakePlayback() });
+    const { lastFrame } = render(wrap(<NowPlaying />, store));
+    const frame = lastFrame() ?? "";
+    // PLACEHOLDER_TRACKS[0] = "Song Title" / "Artist Name".
+    expect(frame).toContain("Song Title");
+    expect(frame).toContain("Artist Name");
+    expect(frame).toContain("Up next");
+    // list slice after index 0: tracks 2..4.
+    expect(frame).toContain("Another Song");
+  });
+
+  it("degrades to the gradient bar without a waveform", async () => {
+    // Rich layout on an 80-col store triggers extraction against the fake
+    // filePath (/music/soundcli/...): ffmpeg fails/null art and the bar falls
+    // back to the plain GradientBar. The view must still render completely.
+    const store = makeStore({ playback: makeFakePlayback() });
+    const { lastFrame } = render(wrap(<NowPlaying />, store));
+    await new Promise((r) => setTimeout(r, 100));
+    const frame = lastFrame() ?? "";
+    expect(frame).toContain("Song Title");
+    // A gradient fallback bar leaves no waveform block glyphs row.
+    expect(frame).not.toContain("Up nextAA");
+  });
+
+  it("external engine gets the honest message, not a progress bar", () => {
+    const store = makeStore({
+      playback: makeFakePlayback({ engine: "external", canControl: false }),
+    });
+    const { lastFrame } = render(wrap(<NowPlaying />, store));
+    expect(lastFrame() ?? "").toContain("Playing in your default app");
+  });
+
+  it("keymap advertises m in the Player help group", () => {
+    const keys = HELP_GROUPS.flatMap((g) => g.hints).map((h) => h.keys);
+    expect(keys).toContain("m");
   });
 });

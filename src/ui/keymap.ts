@@ -58,6 +58,7 @@ export const HELP_GROUPS: HelpGroup[] = [
       { keys: "r", label: "Repeat" },
       { keys: "s", label: "Shuffle" },
       { keys: "+ -", label: "Volume" },
+      { keys: "m", label: "Now Playing screen" },
     ],
   },
   {
