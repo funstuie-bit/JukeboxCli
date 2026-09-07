@@ -24,4 +24,22 @@ describe("parseProgress", () => {
     expect(parseProgress("just some yt-dlp log line")).toBeUndefined();
     expect(parseProgress("SCMETA\tabc\tTitle")).toBeUndefined();
   });
+
+  it("parses post-process events with the step name", () => {
+    const p = parseProgress("SCPOST\tstarted\tExtractAudio");
+    expect(p).toBeDefined();
+    expect(p!.status).toBe("started");
+    expect(p!.postprocessor).toBe("ExtractAudio");
+    expect(p!.percent).toBeUndefined();
+  });
+
+  it("parses post-process finished events without bytes", () => {
+    const p = parseProgress("SCPOST\tfinished\tMoveFiles");
+    expect(p!.postprocessor).toBe("MoveFiles");
+    expect(p!.status).toBe("finished");
+  });
+
+  it("ignores short SCPOST lines", () => {
+    expect(parseProgress("SCPOST\tstarted")).toBeUndefined();
+  });
 });

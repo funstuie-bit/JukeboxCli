@@ -6,6 +6,11 @@ export interface DownloadProgress {
   speed?: number; // bytes/sec
   eta?: number; // seconds
   percent?: number; // 0..100
+  /**
+   * Post-processing only: the postprocessor yt-dlp just started/finished
+   * (e.g. "ExtractAudio", "Metadata", "EmbedThumbnail", "MoveFiles").
+   */
+  postprocessor?: string;
 }
 
 function num(s: string | undefined): number | undefined {
@@ -16,9 +21,15 @@ function num(s: string | undefined): number | undefined {
 
 /**
  * Parse a tab-delimited progress line emitted by our yt-dlp --progress-template.
- * Format: SCPROG \t status \t downloaded \t total \t total_estimate \t speed \t eta
+ * Download phase:   SCPROG \t status \t downloaded \t total \t total_estimate \t speed \t eta
+ * Post-process:     SCPOST \t status \t postprocessor
  */
 export function parseProgress(line: string): DownloadProgress | undefined {
+  if (line.startsWith("SCPOST\t")) {
+    const parts = line.split("\t");
+    if (parts.length < 3) return undefined;
+    return { status: parts[1] ?? "", postprocessor: parts[2] };
+  }
   const parts = line.split("\t");
   if (parts[0] !== "SCPROG" || parts.length < 7) return undefined;
   const downloadedBytes = num(parts[2]);

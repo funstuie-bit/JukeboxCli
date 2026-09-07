@@ -45,6 +45,13 @@ export interface QueueItem {
   eta?: number; // seconds
   error?: string;
   /**
+   * Live sub-phase while downloading: "fetch" (bytes moving), or the
+   * post-processor currently at work ("convert" | "tag"). Distinct from
+   * `status` because these all render as one downloading row; this drives
+   * the row's right-edge label so a fast download doesn't look frozen.
+   */
+  phase?: "fetch" | "convert" | "tag";
+  /**
    * Spotify only: true when YouTube matching found no confident result and we
    * fell back to the blind ytsearch1 query, so the audio may be the wrong cut.
    * Shown as "saved, unverified" in the queue UI and exempt from auto-clear.
@@ -104,6 +111,31 @@ function healthyTitle(
   ...candidates: Array<string | undefined>
 ): string | undefined {
   return candidates.find((t) => t !== undefined && !needsTitleHeal(t));
+}
+
+/**
+ * Map a yt-dlp postprocessor name to the phase we surface on the row. The
+ * started-event names the step at work ("ExtractAudio", "Metadata", ...);
+ * finished events are ignored (the next started event tells the story).
+ */
+function phaseForPostprocessor(
+  postprocessor: string,
+  status: string,
+): QueueItem["phase"] | undefined {
+  if (status !== "started") return undefined;
+  switch (postprocessor) {
+    case "ExtractAudio":
+    case "VideoRemuxer":
+    case "FixupM4a":
+    case "FixupM3u8":
+      return "convert";
+    case "Metadata":
+    case "EmbedThumbnail":
+    case "MoveFiles":
+      return "tag";
+    default:
+      return "tag";
+  }
 }
 
 /**
@@ -1163,6 +1195,28 @@ export class DownloadQueue extends EventEmitter {
           if (p.percent !== undefined) item.percent = p.percent;
           if (p.speed !== undefined) item.speed = p.speed;
           if (p.eta !== undefined) item.eta = p.eta;
+          // Post-processor events: name the step so the row keeps moving
+          // through the silent seconds after the bytes stop flowing. A phase
+          // change always paints a frame immediately: the download phase is
+          // often under a second, so waiting for the 250 ms throttle could
+          // skip the only frame a fast track ever gets.
+          if (p.postprocessor) {
+            const next: QueueItem["phase"] = phaseForPostprocessor(
+              p.postprocessor,
+              p.status,
+            );
+            if (next) {
+              if (item.phase !== next) {
+                item.phase = next;
+                lastEmit = 0;
+              }
+            }
+          } else if (p.status === "finished" || p.status === "downloading") {
+            if (item.phase !== "fetch") {
+              item.phase = "fetch";
+              lastEmit = 0;
+            }
+          }
           const now = Date.now();
           if (now - lastEmit > 250) {
             lastEmit = now;
@@ -1179,6 +1233,7 @@ export class DownloadQueue extends EventEmitter {
         // Distinguish a pause (keep it, resumable) from a real cancel.
         item.status = this.pausing.has(item.id) ? "paused" : "canceled";
         item.percent = item.status === "paused" ? item.percent : 0;
+        item.phase = undefined;
       } else if (res.status === "downloaded" && res.meta) {
         const m = res.meta;
         // Never index a song the player can't open: if the reported file isn't
@@ -1292,6 +1347,7 @@ export class DownloadQueue extends EventEmitter {
       this.active--;
       item.speed = undefined;
       item.eta = undefined;
+      item.phase = undefined;
       this.clearIfFinished(item);
       this.emit("update");
       this.scheduleSave();

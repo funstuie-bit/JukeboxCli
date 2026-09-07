@@ -32,6 +32,7 @@ vi.mock("../src/util/recover-path", async (importOriginal) => {
 });
 
 import { downloadTrack, enumerate } from "../src/ytdlp/ytdlp";
+import type { DownloadProgress } from "../src/ytdlp/progress";
 import {
   DownloadQueue,
   isPermanentTrackError,
@@ -1268,5 +1269,103 @@ describe("download queue completion linger", () => {
     await new Promise((r) => setTimeout(r, 100));
     expect(q.items.length).toBe(0);
     expect(q.stats().done).toBe(1);
+  });
+});
+
+describe("download queue live phase", () => {
+  afterEach(() => {
+    vi.mocked(downloadTrack).mockReset();
+    vi.mocked(downloadTrack).mockImplementation(() => new Promise(() => {}));
+    findDownloadedFileMock.mockReset();
+    findDownloadedFileMock.mockImplementation(async (p) => p);
+  });
+
+  it("walks the row through fetch → convert → tag, painting each step", async () => {
+    // Drive a download the way yt-dlp really reports one: a sub-second burst
+    // of byte lines, then post-processor started/finished pairs. The
+    // onProgress callback the queue hands downloadTrack is the exact surface
+    // the real child process feeds.
+    vi.mocked(downloadTrack).mockImplementation(
+      (_params, onProgress?: (p: DownloadProgress) => void) => {
+        void (async () => {
+          onProgress?.({
+            status: "downloading",
+            downloadedBytes: 500,
+            totalBytes: 1000,
+            speed: 4000000,
+            eta: 0,
+            percent: 50,
+          });
+          onProgress?.({
+            status: "finished",
+            downloadedBytes: 1000,
+            totalBytes: 1000,
+            percent: 100,
+          });
+          onProgress?.({ status: "started", postprocessor: "ExtractAudio" });
+          onProgress?.({ status: "finished", postprocessor: "ExtractAudio" });
+          onProgress?.({ status: "started", postprocessor: "Metadata" });
+          onProgress?.({ status: "started", postprocessor: "MoveFiles" });
+        })();
+        return new Promise(() => {});
+      },
+    );
+    const lib = {
+      has: () => false,
+      all: () => [],
+      upsert: vi.fn(async () => {}),
+    } as unknown as Library;
+    const q = new DownloadQueue(defaultConfig, lib, 1);
+    // Every phase transition must emit an update immediately: the whole byte
+    // burst can land inside one 250 ms throttle window, so waiting would mean
+    // a fast track never paints a mid-download frame at all.
+    const phasesSeen: Array<string | undefined> = [];
+    q.on("update", () => {
+      const it = q.getItems()[0];
+      if (it && it.status === "downloading") {
+        if (phasesSeen[phasesSeen.length - 1] !== it.phase) {
+          phasesSeen.push(it.phase);
+        }
+      }
+    });
+    q.enqueue([input("youtube", "a")]);
+    await new Promise((r) => setTimeout(r, 30));
+    // All three phases were observed, in order, without waiting out the
+    // throttle between them (the script fires them back-to-back).
+    expect(phasesSeen).toEqual(["fetch", "convert", "tag"]);
+    // The item stayed in the downloading state throughout the phases.
+    expect(q.getItems()[0]!.status).toBe("downloading");
+  });
+
+  it("keeps showing the last phase when byte lines stop arriving", async () => {
+    // Bytes land, then only post-process events follow: the row must end on
+    // "tag" (MoveFiles), not fall back to "starting…" when speed goes quiet.
+    vi.mocked(downloadTrack).mockImplementation(
+      (_params, onProgress?: (p: DownloadProgress) => void) => {
+        void (async () => {
+          onProgress?.({
+            status: "downloading",
+            downloadedBytes: 900,
+            totalBytes: 1000,
+            percent: 90,
+          });
+          onProgress?.({ status: "started", postprocessor: "ExtractAudio" });
+          onProgress?.({ status: "started", postprocessor: "EmbedThumbnail" });
+        })();
+        return new Promise(() => {});
+      },
+    );
+    const lib = {
+      has: () => false,
+      all: () => [],
+      upsert: vi.fn(async () => {}),
+    } as unknown as Library;
+    const q = new DownloadQueue(defaultConfig, lib, 1);
+    q.enqueue([input("youtube", "a")]);
+    await new Promise((r) => setTimeout(r, 30));
+    const it = q.getItems()[0]!;
+    expect(it.status).toBe("downloading");
+    expect(it.phase).toBe("tag");
+    expect(it.percent).toBe(90);
   });
 });

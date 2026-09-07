@@ -223,6 +223,21 @@ function QueueRow({ item }: { item: QueueItem }) {
   let detailDim = true;
   switch (item.status) {
     case "downloading": {
+      // The right edge names the live step, not just bytes: after the fetch
+      // finishes (often in under a second) the post-processors still run for
+      // seconds, and a frozen "starting…" there read as the whole download
+      // being broken.
+      const phaseLabel =
+        item.phase === "convert"
+          ? "converting…"
+          : item.phase === "tag"
+            ? "tagging…"
+            : null;
+      if (phaseLabel) {
+        detail = phaseLabel;
+        detailDim = false;
+        break;
+      }
       const speed = formatBytesPerSec(item.speed);
       detail =
         item.percent > 0 || speed

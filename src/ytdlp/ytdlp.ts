@@ -195,6 +195,11 @@ export async function downloadTrack(
 
   const progTpl =
     "download:SCPROG\t%(progress.status)s\t%(progress.downloaded_bytes)s\t%(progress.total_bytes)s\t%(progress.total_bytes_estimate)s\t%(progress.speed)s\t%(progress.eta)s";
+  // The download phase of a typical track is over in under a second; the
+  // post-processors (extract, tag, embed cover, move) then run for several
+  // seconds in total silence. This template makes each step report, so rows
+  // show live "converting / tagging" instead of freezing at "starting…".
+  const postTpl = "postprocess:SCPOST\t%(progress.status)s\t%(progress.postprocessor)s";
   const metaTpl =
     "after_move:SCMETA\t" + META_FIELDS.map((f) => `%(${f})s`).join("\t");
 
@@ -223,6 +228,8 @@ export async function downloadTrack(
     outTpl,
     "--progress-template",
     progTpl,
+    "--progress-template",
+    postTpl,
     "--print",
     metaTpl,
     url,
@@ -242,6 +249,9 @@ export async function downloadTrack(
   const errLines: string[] = [];
   const handle = (line: string): void => {
     if (line.startsWith("SCPROG\t")) {
+      const p = parseProgress(line);
+      if (p && onProgress) onProgress(p);
+    } else if (line.startsWith("SCPOST\t")) {
       const p = parseProgress(line);
       if (p && onProgress) onProgress(p);
     } else if (line.startsWith("SCMETA\t")) {
