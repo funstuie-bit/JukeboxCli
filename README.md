@@ -3,7 +3,9 @@
 Mac-first terminal music player combining an offline library with YouTube Music
 discovery and streaming. **This branch: 0.1.0-dev.4** (`development`).
 `main` remains at **0.1.0-dev.3** while the maintainer tests the current clean-Mac install.
-Based on soundcli, with independently implemented ytkew-inspired player features.
+Built on [soundcli by baairon](https://github.com/baairon/soundcli), with player
+design and feature inspiration from [ytkew by dtDhruv](https://github.com/dtDhruv/ytkew).
+See [upstream credit](#upstream-credit) for how each project contributes.
 
 - Search songs, videos, albums, artists and playlists without signing in.
 - Mix streams and saved tracks in an editable, persistent listening queue.
@@ -295,4 +297,16 @@ On macOS, config lives at `~/Library/Preferences/soundcli/config.json` (use `sou
 
 ## Upstream credit
 
-All the base functionality (TUI, library, player, download queue) is [baairon/soundcli](https://github.com/baairon/soundcli), MIT licensed. This fork adds the wizard, cookie support, format control, pacing, CLI flags, and settings screens described above.
+JukeboxCli owes its foundation and direction to these projects and their contributors:
+
+- **[soundcli — baairon](https://github.com/baairon/soundcli):** the original
+  MIT-licensed codebase this project is forked from. Its terminal interface,
+  library, playback and download queue form JukeboxCli's foundation. The original
+  copyright and licence notice is retained in [LICENSE](LICENSE).
+- **[ytkew — dtDhruv](https://github.com/dtDhruv/ytkew):** inspiration for the
+  artwork-led Now Playing screen and the richer listening experience, including
+  queue interaction and online discovery. These features are independently
+  implemented for JukeboxCli's TypeScript/Ink/mpv stack; no ytkew source code is
+  included, and this is not a claim of complete feature parity.
+
+Thank you to both authors and their contributors for sharing their work.
