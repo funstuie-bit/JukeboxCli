@@ -4,6 +4,7 @@ import type { Track } from "../library/types";
 import { MpvPlayer } from "./mpv";
 import { onEndedDecision, shuffledOrder, stepIndex } from "./order";
 import { openPath } from "../util/open-path";
+import type { ListeningSession } from "./session";
 
 export type Engine = "mpv" | "external";
 /**
@@ -125,6 +126,97 @@ export class Playback extends EventEmitter {
     return this.state;
   }
 
+  /** Queue rows in actual play order; index identifies a particular occurrence. */
+  queueEntries(): { index: number; track: Track }[] {
+    return this.order.map((index) => ({ index, track: this.state.list[index]! }));
+  }
+
+  session(): ListeningSession {
+    return { version: 1, ids: this.state.list.map(t => t.id), index: this.state.index,
+      order: [...this.order], backStack: [...this.backStack], position: this.state.position,
+      volume: this.state.volume, shuffle: Boolean(this.state.shuffle), repeat: this.state.repeat };
+  }
+
+  async restoreSession(s: ListeningSession, resolve: (id: string) => Track | undefined): Promise<void> {
+    const list: Track[] = [];
+    const map = new Map<number, number>();
+    s.ids.forEach((id, i) => { const t = resolve(id); if (t) { map.set(i, list.length); list.push(t); } });
+    const remap = (xs: number[]) => xs.flatMap(i => map.has(i) ? [map.get(i)!] : []);
+    this.order = remap(s.order);
+    this.backStack = remap(s.backStack);
+    const index = map.get(s.index) ?? -1;
+    this.update({ list, index, track: list[index] ?? null, position: index < 0 ? 0 : s.position,
+      volume: s.volume, shuffle: s.shuffle, repeat: s.repeat, paused: true });
+    // Restore never opens an external application or starts audible playback.
+    if (index >= 0 && this.mpvPath) {
+      await this.play(list[index]!, list, index, true);
+      if (this.mpv && this.state.engine === "mpv") {
+        await this.mpv.seekAbsolute(s.position).catch(() => {});
+        this.update({ position: s.position, paused: true });
+      }
+    }
+  }
+
+  /** Enqueue is non-interrupting, including when the player is idle. */
+  enqueue(track: Track, next = false): void {
+    const at = next && this.state.index >= 0 ? this.state.index + 1 : this.state.list.length;
+    const list = [...this.state.list];
+    list.splice(at, 0, track);
+    const shift = (i: number) => i >= at ? i + 1 : i;
+    this.order = this.order.map(shift);
+    this.backStack = this.backStack.map(shift);
+    const index = this.state.index >= 0 ? shift(this.state.index) : -1;
+    const pos = next && index >= 0 ? this.order.indexOf(index) + 1 : this.order.length;
+    this.order.splice(pos, 0, at);
+    this.update({ list, index });
+  }
+
+  async playQueueIndex(index: number): Promise<void> {
+    const t = this.state.list[index];
+    if (t) await this.play(t, this.state.list, index);
+  }
+
+  /** Keep queued extras when choosing a song already in the current context. */
+  async selectTrack(track: Track, context: Track[]): Promise<void> {
+    const index = this.state.list.findIndex(t => t.id === track.id);
+    const sameContext = context.length > 1 && context.every(t => this.state.list.some(q => q.id === t.id));
+    if (index >= 0 && sameContext) return this.playQueueIndex(index);
+    if (context.length === 1 && this.state.track) {
+      this.enqueue(track, true);
+      return this.next();
+    }
+    return this.play(track, context);
+  }
+
+  /** Move in actual play order, and retain that edit when shuffle is disabled. */
+  moveQueue(index: number, delta: -1 | 1): void {
+    const pos = this.order.indexOf(index);
+    const other = this.order[pos + delta];
+    if (pos < 0 || other === undefined) return;
+    const oldIndices = this.state.list.map((_, i) => i);
+    oldIndices.splice(index, 1);
+    oldIndices.splice(other, 0, index);
+    const map = new Map(oldIndices.map((old, i) => [old, i]));
+    [this.order[pos], this.order[pos + delta]] = [other, index];
+    this.order = this.order.map(i => map.get(i)!);
+    this.backStack = this.backStack.map(i => map.get(i)!);
+    this.update({ list: oldIndices.map(i => this.state.list[i]!), index: map.get(this.state.index) ?? -1 });
+  }
+
+  async removeQueue(index: number): Promise<void> {
+    if (!this.state.list[index]) return;
+    if (index === this.state.index) {
+      const pos = this.order.indexOf(index);
+      const replacement = this.order[pos + 1] ?? this.order[pos - 1];
+      if (replacement === undefined) { await this.stop(); return; }
+      await this.playQueueIndex(replacement);
+    }
+    const shift = (i: number) => i > index ? i - 1 : i;
+    this.order = this.order.filter(i => i !== index).map(shift);
+    this.backStack = this.backStack.filter(i => i !== index).map(shift);
+    this.update({ list: this.state.list.filter((_, i) => i !== index), index: shift(this.state.index) });
+  }
+
   /** Enable mpv after construction (e.g. once it finishes auto-installing). */
   enableMpv(mpvPath: string): void {
     this.mpvPath = mpvPath;
@@ -216,8 +308,9 @@ export class Playback extends EventEmitter {
    */
   toggleShuffle(): void {
     const shuffle = !this.state.shuffle;
-    this.update({ shuffle });
+    this.state = { ...this.state, shuffle };
     this.rebuildOrder();
+    this.update({});
   }
 
   /**
@@ -230,8 +323,9 @@ export class Playback extends EventEmitter {
     if (!cur || index < 0 || index >= list.length) return;
     if (list[index]!.id !== cur.id) return;
     this.backStack = [];
-    this.update({ list, index });
+    this.state = { ...this.state, list, index };
     this.rebuildOrder();
+    this.update({});
   }
 
   async play(track: Track, list: Track[] = [track], index = -1, startPaused = false): Promise<void> {
@@ -248,7 +342,7 @@ export class Playback extends EventEmitter {
       this.backStack.push(fromIndex);
       if (this.backStack.length > 500) this.backStack.shift();
     }
-    this.update({
+    this.state = { ...this.state,
       track,
       list,
       index: safeIdx,
@@ -256,8 +350,9 @@ export class Playback extends EventEmitter {
       duration: track.durationSec ?? 0,
       paused: startPaused,
       loading: Boolean(this.mpvPath),
-    });
+    };
     if (newList) this.rebuildOrder();
+    this.update({});
 
     const m = this.ensureMpv();
     if (m) {
@@ -282,11 +377,15 @@ export class Playback extends EventEmitter {
       }
     }
     this.update({ engine: "external", canControl: false, loading: false });
-    this.opener(track.filePath);
+    if (!startPaused) this.opener(track.filePath);
   }
 
   async togglePause(): Promise<void> {
-    if (!this.mpv) return;
+    if (!this.mpv) {
+      const index = this.state.index >= 0 ? this.state.index : this.order[0];
+      if (index !== undefined) await this.playQueueIndex(index);
+      return;
+    }
     const was = this.state.paused;
     this.update({ paused: !was });
     try {

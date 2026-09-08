@@ -12,6 +12,9 @@ Existing soundcli config/music paths are retained. For an independent profile:
 config, data, cache, logs and music. Do not run both apps against one profile.
 This development build is not yet a verified Intel/Apple Silicon release.
 
+Listening-queue foundation supports non-interrupting append/play-next, reordering,
+removing individual occurrences, and versioned session storage. UI wiring is in progress.
+
 Own your music. Download your YouTube, SoundCloud, and Spotify libraries to your computer and play them offline, all from your terminal.
 
 **This is a fork of [baairon/soundcli](https://github.com/baairon/soundcli) v1.4.1** with extra features built in: a full first-run wizard, browser/cookie support, total format control, download pacing, custom output location, CLI flags, and a settings screen to change all of it later.
