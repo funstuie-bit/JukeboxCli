@@ -4,7 +4,7 @@ import { useStore, usePlayback } from "../store";
 import { cleanText, formatDuration, trackDisplayTitle } from "../../util/format";
 import stringWidth from "string-width";
 import { COLOR, RULE } from "../theme";
-import { isStream } from "../../player/media";
+import { isLive, isStream } from "../../player/media";
 
 export function ListeningQueue({ height, width, active, framed = false }: {
   height?: number; width?: number; active?: boolean; framed?: boolean;
@@ -54,10 +54,10 @@ export function ListeningQueue({ height, width, active, framed = false }: {
     {entries.slice(start, start + rows).map((row, offset) => {
       const here = start + offset === selected;
       const artist = row.track.artist ? cleanText(row.track.artist) : "—";
-      const title = `${isStream(row.track) ? "[stream] " : ""}${cleanText(trackDisplayTitle(row.track))}`;
+      const title = `${isLive(row.track) ? "[LIVE] " : isStream(row.track) ? "[stream] " : ""}${cleanText(trackDisplayTitle(row.track))}`;
       const marker = row.index === state.index ? "▶ " : here && focused ? "› " : "  ";
       return <Text key={row.index} color={here && focused ? COLOR.selectedText : row.index === state.index ? COLOR.accent : COLOR.text} backgroundColor={here && focused ? COLOR.selection : undefined} wrap="truncate-end">
-        {columns ? queueRow(artist, title, formatDuration(row.track.durationSec), cols, marker) : fitRow(marker + title + " · " + artist, cols)}
+        {columns ? queueRow(artist, title, isLive(row.track) ? "LIVE" : formatDuration(row.track.durationSec), cols, marker) : fitRow(marker + title + " · " + artist, cols)}
       </Text>;
     })}
     {!dense ? <><Box flexGrow={1} />

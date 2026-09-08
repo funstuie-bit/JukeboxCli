@@ -5,7 +5,7 @@ import { loadWaveform, type Waveform } from "../../player/art";
 import { cleanText, formatDuration, trackDisplayTitle } from "../../util/format";
 import { COLOR, RULE } from "../theme";
 import { ListeningQueue } from "./ListeningQueue";
-import { isStream } from "../../player/media";
+import { isLive, isStream } from "../../player/media";
 import { Cover } from "../components/Cover";
 
 export function playerLayout(width: number, height: number) {
@@ -55,21 +55,22 @@ export function NowPlaying({ embedded = false }: { embedded?: boolean }) {
   const progressWidth = Math.max(6, inner - 2);
   const at = Math.min(progressWidth - 1, Math.floor(fraction * progressWidth));
   const t = st.track;
+  const live = isLive(t);
   const details = <Box flexDirection="column" width={inner}>
     <Text color={COLOR.accent} bold wrap="truncate-end">{t ? cleanText(trackDisplayTitle(t)) : "Nothing playing"}</Text>
-    <Text color={COLOR.alt} wrap="truncate-end">{t?.artist ? cleanText(t.artist) : "Pick a song from Library or Discover"}</Text>
+    <Text color={COLOR.alt} wrap="truncate-end">{live ? cleanText(st.broadcastTitle || "Live broadcast · current-song info when supplied") : t?.artist ? cleanText(t.artist) : t ? "Online audio" : "Library · 8 Discover · o Play URL"}</Text>
     {layout.split ? <Text color={COLOR.muted} wrap="truncate-end">{t?.album ? cleanText(t.album) : t?.playlist ? cleanText(t.playlist) : " "}</Text> : null}
     {layout.split ? <Box marginTop={1} flexDirection="column">
-      <Text color={COLOR.muted}>{samples ? "TRACK WAVEFORM" : t && isStream(t) ? "STREAM PROGRESS" : "PLAYBACK"}</Text>
+      <Text color={COLOR.muted}>{live ? "LIVE RADIO / BROADCAST" : samples ? "TRACK WAVEFORM" : t && isStream(t) ? "STREAM PROGRESS" : "PLAYBACK"}</Text>
       <WaveformPanel samples={samples} width={inner} height={layout.waveRows} fraction={fraction} />
     </Box> : null}
-    <Text color={RULE}>{"─".repeat(at)}<Text color={COLOR.accent}>●</Text>{"─".repeat(progressWidth - at - 1)}</Text>
+    {live ? <Text color={COLOR.accent} wrap="truncate-end">LIVE · no seeking or restart</Text> : <Text color={RULE}>{"─".repeat(at)}<Text color={COLOR.accent}>●</Text>{"─".repeat(progressWidth - at - 1)}</Text>}
     <Box justifyContent="space-between">
-      <Text color={COLOR.text}>{st.engine === "mpv" ? `${formatDuration(st.position)} / ${formatDuration(st.duration)}` : "Progress needs mpv"}</Text>
+      <Text color={COLOR.text}>{live ? st.loading ? "Connecting…" : st.paused ? "Disconnected · space reconnects" : "space disconnects / reconnects" : st.engine === "mpv" ? `${formatDuration(st.position)} / ${st.duration > 0 ? formatDuration(st.duration) : "—"}` : "Progress needs mpv"}</Text>
       <Text color={COLOR.alt}>{st.engine === "mpv" ? `${st.volume}%` : ""}</Text>
     </Box>
     <Text color={COLOR.muted} wrap="truncate-end">{`${st.paused ? "Paused" : "Playing"} · shuffle ${st.shuffle ? "on" : "off"} · repeat ${st.repeat}`}</Text>
-    <Text color={st.error ? COLOR.warn : COLOR.muted} wrap="truncate-end">{st.error || (st.loading ? "Loading…" : st.engine === "external" && t ? "Playing in your default app" : t ? `${isStream(t) ? "Streaming" : "Saved locally"}${st.preloading ? " · preparing next…" : st.nextReady ? " · next prepared" : ""}` : "m closes this screen")}</Text>
+    <Text color={st.error ? COLOR.warn : COLOR.muted} wrap="truncate-end">{st.error || (st.loading ? "Loading…" : st.engine === "external" && t ? "Playing in your default app" : t ? `${isStream(t) ? "Streaming · not in Library" : "Saved locally"}${st.preloading ? " · preparing next…" : st.nextReady ? " · next prepared" : ""}` : "m closes this screen")}</Text>
   </Box>;
   return <Box width={width} height={height} flexDirection={layout.split ? "row" : "column"}>
     <Box width={layout.left} height={layout.split ? height : 6} borderStyle={layout.split ? "round" : undefined} borderColor={RULE} flexDirection="column" paddingX={1} flexShrink={0}>

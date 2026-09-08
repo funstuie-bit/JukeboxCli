@@ -10,7 +10,10 @@ This development branch is separate from the installed soundcli command.
 | Saved listening sessions | Implemented; real mpv smoke passes | Intel/Mac matrix |
 | Streaming and next-track preload | Implemented; real mpv HTTP/mixed-queue smoke passes | Wider codecs/networks; not universally gapless |
 | YouTube Music search and browsing | Implemented signed out; search/browse/pagination probes | the maintainer's online workflow; unofficial API can change |
-| Account, likes, radio, lyrics | Planned | Real service acceptance |
+| Play URL: single YouTube item / direct HTTP(S) audio | Implemented dev.4; full App + muted real YouTube playback pass | Fresh Mac/network matrix |
+| Direct internet radio, saved favourites, live transport/metadata | Implemented dev.4; real HTTP/ICY/mpv smoke passes | the maintainer's stations; broadcaster/codec variability |
+| Paged help and streaming entry hints | Implemented dev.4; full App including 60×18 tests | the maintainer's usability check |
+| Account, likes, personalised YouTube radio, lyrics | Planned | Real service acceptance |
 | Two-panel player, column queue, lavender/blue palette | Implemented; responsive/App tests pass | the maintainer's visual acceptance |
 | Sharp artwork and half-block fallback | Implemented; Ghostty protocol/lifecycle tested | Visual screenshot/other terminal matrix |
 | Theme choices, cover-derived colours, iTerm2/sixel | Planned | Capability/resize testing |
@@ -20,4 +23,8 @@ This development branch is separate from the installed soundcli command.
 
 No ytkew source code has been imported. Waveform is precomputed, not a live spectrum.
 Stream history, automatic collection pagination during playback and signed-in
-Music API access are not implemented. Streaming uses existing yt-dlp cookie settings.
+Music API access are not implemented. YouTube streaming uses existing yt-dlp cookie settings;
+direct audio/radio does not. No station directory, PLS/M3U lists, DRM or arbitrary
+website extraction in Play URL. Dev.4 remains on development; main stays dev.3
+while the maintainer tests the current install. Rebuilding this development checkout updates
+its locally linked jukeboxcli command, not a separate machine's main checkout.

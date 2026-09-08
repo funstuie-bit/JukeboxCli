@@ -244,6 +244,8 @@ export class MpvPlayer extends EventEmitter {
     this.write(["observe_property", 3, "pause"]).catch(() => undefined);
     // Observe volume too, so external volume changes surface in the now-playing bar.
     this.write(["observe_property", 4, "volume"]).catch(() => undefined);
+    this.write(["observe_property", 5, "seekable"]).catch(() => undefined);
+    this.write(["observe_property", 6, "metadata"]).catch(() => undefined);
   }
 
   /** Low-level write without waiting on the start handshake. */

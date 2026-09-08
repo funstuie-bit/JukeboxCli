@@ -5,6 +5,7 @@ import { uiTheme } from "../src/ui/theme";
 import { App } from "../src/ui/App";
 import { readSession, sessionFile } from "../src/player/session";
 import { rmSync } from "node:fs";
+import { readStations, stationsFile } from "../src/player/stations";
 
 // Exercise the REAL App, Playback, navigation and persistence. Only external
 // processes, bootstrap I/O and library contents are fixtures.
@@ -63,9 +64,57 @@ vi.mock("../src/sources/music", () => {
 vi.mock("../src/player/resolve", () => ({ createStreamResolver: () => async () => ({ url: "https://example.com/audio", expiresAt: Infinity }) }));
 const app = () => render(<ThemeProvider theme={uiTheme}><App /></ThemeProvider>);
 async function press(view: ReturnType<typeof app>, key: string) { view.stdin.write(key); await tick(); }
-afterEach(() => { cleanup(); rmSync(sessionFile, { force: true }); });
+afterEach(() => { cleanup(); rmSync(sessionFile, { force: true }); rmSync(stationsFile, { force: true }); });
 
 describe("App player workflow", () => {
+  it("opens URLs without downloading, saves radio, reconnects and restores favourites", async () => {
+    const view = app(); await tick(); await tick();
+    expect(view.lastFrame()).toContain("9 Radio / URL");
+    await press(view, "o"); expect(view.lastFrame()).toContain("Paste YouTube");
+    await press(view, "https://youtu.be/dQw4w9WgXcQ?si=secret");
+    await press(view, "\r"); expect(view.lastFrame()).toContain("Ready");
+    await press(view, "A"); await press(view, "7"); expect(view.lastFrame()).toContain("YouTube");
+    await press(view, "9"); expect(view.lastFrame()).toContain("No saved stations");
+    await press(view, "R"); await press(view, "https://example.com/radio"); await press(view, "\r");
+    expect(view.lastFrame()).toContain("[LIVE]");
+    await press(view, "f"); await press(view, "\u0015"); await press(view, "Workday FM"); await press(view, "\r");
+    expect(readStations()[0]?.name).toBe("Workday FM");
+    await press(view, "\r"); await press(view, "m");
+    expect(view.lastFrame()).toContain("LIVE · no seeking");
+    expect(view.lastFrame()).not.toContain("← → Seek");
+    expect(view.lastFrame()).toContain("Queue · 2 tracks"); // idle queue was kept
+    await press(view, " "); expect(view.lastFrame()).toContain("Disconnected");
+    await press(view, " "); expect(view.lastFrame()).toContain("Playing");
+    await press(view, "9"); await press(view, "x"); expect(view.lastFrame()).toContain("Remove favourite?");
+    await press(view, "\u001b"); expect(readStations()).toHaveLength(1);
+    view.unmount(); await tick();
+    const saved = readSession()!;
+    expect(saved.position).toBe(0); expect(saved.ids).toHaveLength(2);
+    expect(JSON.stringify(saved)).not.toContain("secret");
+    const again = app(); await tick(); await tick(); await press(again, "9");
+    expect(again.lastFrame()).toContain("Workday FM");
+    await press(again, "?"); expect(again.lastFrame()).toContain("Radio / URL (9)");
+    expect((again.lastFrame() ?? "").split("\n").length).toBeLessThanOrEqual(24);
+    await press(again, "["); expect(again.lastFrame()).toContain("Discover (YouTube Music)");
+    await press(again, "?");
+    await press(again, "x"); await press(again, "y"); expect(readStations()).toEqual([]);
+    await press(again, "7"); expect(again.lastFrame()).toContain("Queue · 2 tracks");
+  });
+  it("keeps invalid URLs in the form and fits URL entry on a small terminal", async () => {
+    const view = app(); await tick(); await tick();
+    await press(view, "o"); await press(view, "file:///private/no"); await press(view, "\r");
+    expect(view.lastFrame()).toContain("Only HTTP(S)");
+    await press(view, "\u0015");
+    Object.defineProperty(view.stdout, "columns", { configurable: true, value: 60 });
+    Object.defineProperty(view.stdout, "rows", { configurable: true, value: 18 });
+    view.stdout.emit("resize"); await tick();
+    await press(view, "https://example.com/" + "long".repeat(40));
+    expect((view.lastFrame() ?? "").split("\n").length).toBeLessThanOrEqual(18);
+    await press(view, "\u001b"); await press(view, "8");
+    expect(view.lastFrame()).toContain("Discover");
+    await press(view, "?"); await press(view, "\u001b[B");
+    expect((view.lastFrame() ?? "").split("\n").length).toBeLessThanOrEqual(18);
+  });
   it("searches and browses Discover, queues a stream, plays and restores it paused", async () => {
     const view = app(); await tick(); await tick();
     expect(view.lastFrame()).toContain("8 Discover");

@@ -23,6 +23,10 @@ export function createStreamResolver(config: () => Promise<Config>): MediaResolv
   const cache = new Map<string, ResolvedMedia>();
   return async (track, signal, fresh = false) => {
     if (!isHttpUrl(track.streamUrl)) throw new Error("Only HTTP(S) stream links are supported.");
+    signal.throwIfAborted();
+    if (track.streamType === "direct" || track.streamType === "radio") {
+      return { url: track.streamUrl, expiresAt: Infinity };
+    }
     const cached = cache.get(track.streamUrl);
     if (!fresh && cached && cached.expiresAt > Date.now()) return cached;
     signal.throwIfAborted();
@@ -35,7 +39,15 @@ export function createStreamResolver(config: () => Promise<Config>): MediaResolv
         ...jsRuntimeArgs(), ...cookieArgs(cfg), "--", track.streamUrl,
       ], { env: toolEnv(), cancelSignal: signal, timeout: 45_000, maxBuffer: 8 * 1024 * 1024 });
       signal.throwIfAborted();
-      const media = resolvedMedia(JSON.parse(stdout));
+      const info = JSON.parse(stdout);
+      const media = resolvedMedia(info);
+      media.metadata = {
+        title: typeof info.title === "string" ? info.title : track.title,
+        artist: typeof info.artist === "string" ? info.artist : typeof info.uploader === "string" ? info.uploader : track.artist,
+        durationSec: typeof info.duration === "number" && Number.isFinite(info.duration) && info.duration >= 0 ? info.duration : undefined,
+        thumbnailUrl: isHttpUrl(info.thumbnail) ? info.thumbnail : track.thumbnailUrl,
+        isLive: info.is_live === true || info.live_status === "is_live",
+      };
       if (cache.size >= 100) cache.delete(cache.keys().next().value!);
       cache.set(track.streamUrl, media);
       return media;

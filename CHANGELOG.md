@@ -1,5 +1,26 @@
 # Changelog
 
+## 0.1.0-dev.4 — Play URL and internet radio (2026-09-08)
+
+- Global o Play URL and visible 9 Radio / URL. Single YouTube video/Shorts/live
+  links, direct HTTP(S) audio and explicit live radio; enter play, A/P queue.
+  No downloads or library import required; existing idle/running queues retained.
+- Named radio favourites, deduplicated/renamed by URL, atomic private persistence,
+  confirmed removal and visible corruption errors; isolated-profile support.
+- Live status without duration/seeking/restart; space disconnects/reconnects,
+  station-supplied song metadata, no speculative radio prefetch, paused offline
+  restore and queue-preserving EOF/disconnect errors. YouTube metadata enrichment
+  detects live broadcasts. Direct sources never use browser cookies/yt-dlp.
+- Clearer Discover/idle streaming hints; paged, scrollable, terminal-bounded help.
+- Fixed immediate-paste field initialisation and one-off playback replacing an
+  idle queue. URL validation, credential-free labels and documented persistence.
+
+Verification: 539 tests pass / 4 inherited skipped; full App and real mpv radio,
+HTTP mixed-stream and local session checks. Muted real YouTube URL resolution,
+metadata and advancing audio also pass. See docs/listening-online.md for details.
+No new visualiser/lyrics/account functionality or claimed fresh Intel/Mac acceptance.
+Development branch only; main stays at dev.3 for the maintainer's separate-machine test.
+
 ## Repository update — 2026-09-08
 
 - GitHub repository renamed to funstuie-bit/JukeboxCli; tested dev.3 history

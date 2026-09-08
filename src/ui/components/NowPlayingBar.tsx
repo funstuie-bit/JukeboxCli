@@ -4,6 +4,7 @@ import { mpvInstallHint } from "../../player/playback";
 import { cleanText, formatDuration, truncate } from "../../util/format";
 import { GradientBar } from "./GradientBar";
 import { COLOR, ICON } from "../theme";
+import { isLive } from "../../player/media";
 
 /** Bar width that breathes with the terminal, leaving room for the readout. */
 function barWidth(cols: number): number {
@@ -34,7 +35,7 @@ export function NowPlayingBar() {
         </Text>
       );
     }
-    return <Text dimColor>{ICON.play} Nothing playing</Text>;
+    return <Text dimColor wrap="truncate-end">{ICON.play} Nothing playing · 8 search &amp; stream · o Play URL · 9 radio</Text>;
   }
 
   const t = st.track;
@@ -89,13 +90,17 @@ export function NowPlayingBar() {
     );
   }
 
+  if (isLive(t)) return <Box>{left}<Box marginLeft={2} flexShrink={0}>
+    <Text color={COLOR.alt}>LIVE · {st.paused ? "disconnected" : "on air"} · {st.volume}%</Text>
+  </Box></Box>;
+
   // Quantize progress to whole bar cells before it reaches GradientBar: its
   // React.memo then skips the per-second ticks that land on the same cell.
   const width = barWidth(cols);
   const rawPct = st.duration > 0 ? (st.position / st.duration) * 100 : 0;
   const filled = Math.round((Math.max(0, Math.min(100, rawPct)) / 100) * width);
   const pct = (filled / width) * 100;
-  const clock = `${formatDuration(st.position)} / ${formatDuration(st.duration)}`;
+  const clock = `${formatDuration(st.position)} / ${st.duration > 0 ? formatDuration(st.duration) : "—"}`;
 
   return (
     <Box>

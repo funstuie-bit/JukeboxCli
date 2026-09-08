@@ -1,11 +1,13 @@
 # JukeboxCli
 
 Mac-first terminal music player combining an offline library with YouTube Music
-discovery and streaming. **Current build: 0.1.0-dev.3**, available on `main`.
+discovery and streaming. **This branch: 0.1.0-dev.4** (`development`).
+`main` remains at **0.1.0-dev.3** while the maintainer tests the current clean-Mac install.
 Based on soundcli, with independently implemented ytkew-inspired player features.
 
 - Search songs, videos, albums, artists and playlists without signing in.
 - Mix streams and saved tracks in an editable, persistent listening queue.
+- Play a YouTube/audio URL or live radio without downloading; save favourite stations.
 - Sharp artwork, two-panel player, waveform, shuffle/repeat and next-track preparation.
 - Download/import controls for YouTube, SoundCloud and Spotify links, including
   cookies, formats, pacing and conversion. Spotify imports are not Spotify streaming.
@@ -14,7 +16,7 @@ Based on soundcli, with independently implemented ytkew-inspired player features
 [Feature status](FEATURES.md) · [Changelog](CHANGELOG.md) · [Architecture](docs/architecture.md)
 
 New screenshots are being prepared from a clean installation. Account/likes,
-radio, lyrics and a verified Intel/Apple Silicon release remain in development.
+personalised YouTube radio, lyrics and a verified Intel/Apple Silicon release remain in development.
 
 Build with `npm ci && npm run build`, then `npm start` (or `npm run dev`).
 Installation provides `jukeboxcli` and a compatibility `soundcli` alias.
@@ -84,7 +86,7 @@ Local files and streams share one queue. `[stream]` marks remote entries; the
 player shows **Streaming** or **Saved locally**, plus next-track preparation.
 Stream artwork comes from its thumbnail; waveform extraction remains local-only.
 Remote queue entries restore paused without a network lookup until you press play.
-Only stable page URLs/metadata are saved; expiring audio URLs stay in memory.
+For YouTube, only stable page URLs/metadata are saved; extracted expiring audio URLs stay in memory.
 History currently lists saved-library plays only, not streamed plays.
 
 Streaming requires **mpv 0.38 or newer** and yt-dlp. Your current browser-cookie
@@ -92,7 +94,8 @@ settings are used for audio resolution, separately from signed-out Music search.
 First stream resolution can take several seconds (about 16 seconds in one real
 test here); restricted/unavailable results may fail. A rejected media URL is
 refreshed once; errors keep the queue so you can retry with space or skip with `n`.
-No signed-in library, likes, radio or lyrics yet.
+No signed-in library, likes, personalised YouTube radio or lyrics yet. Direct
+internet radio is available in dev.4 as described below.
 
 The next entry is resolved ahead and appended to mpv for prefetch. “Next prepared”
 means queued in mpv, not a guarantee it has buffered all audio. mpv decides when
@@ -102,6 +105,50 @@ Cache limits are 32 MiB forward/4 MiB backward per demuxer; resolved-URL cache i
 guarantee** across codecs, long pauses and network conditions.
 `npx tsx scripts/smoke-streaming.ts` verifies real HTTP prefetch and mixed-queue
 transitions using silent audio and a loopback server, with no library changes.
+
+### Play URL and internet radio (0.1.0-dev.4)
+
+**No library import required.** Press **o** from any normal screen to paste a
+YouTube video or direct HTTP(S) audio URL. Enter accepts the link; **enter again
+plays**, **A** appends or **P** queues it next without interrupting playback.
+YouTube watch, shortened, Shorts and live links resolve title/artist/artwork
+when played. Playlist/channel URLs belong in **8 Discover**, not Play URL.
+Opening a one-off link keeps an existing queue, even if it hasn't started yet.
+
+Press **9** for **Radio / URL**, then **R** to paste a station's direct stream
+URL. Use the audio endpoint, not the station's homepage. Select the accepted
+link and press **f** to name/save a favourite; enter plays it and A/P queues it.
+Favourites reappear in 9 after restart. **f** renames a saved station; **x** asks
+to remove a favourite (or dismisses an unsaved link). Removing a favourite
+doesn't stop playback, remove queue entries or touch music files.
+
+Radio entries show **LIVE**, with no track duration/progress bar or seek/restart.
+**Space disconnects; space again reconnects to the live broadcast**, rather
+than resuming an old buffer. Station-supplied current-song metadata appears in
+the player when available. A detected live YouTube broadcast uses the same live
+transport rules. Radio sessions restore disconnected and paused, with no
+network lookup until play. A dropped/ended broadcast keeps the queue and offers
+space to reconnect or n to skip. Live entries aren't opened speculatively for
+prefetch; repeat/shuffle still apply to queue navigation, not radio seeking.
+
+Direct audio/radio uses mpv without yt-dlp or browser cookies. HTTP(S) audio and
+HLS endpoints are supported when mpv can decode them. PLS/M3U station lists,
+station-directory search, station homepages, authenticated/DRM services and
+arbitrary media-site pages are not supported. Use **R**, not ordinary audio URL
+mode, for live stations; unknown direct URLs cannot reliably be classified as
+live automatically. Availability/geoblocking depends on the broadcaster.
+
+Favourites live in `radio-stations.json` beside `listening-session.json`, not
+the music index. Both are written owner-only and honour `JUKEBOXCLI_HOME`.
+**User-supplied direct URLs are saved verbatim apart from URL normalisation**,
+including query tokens if present: use trusted links and don't share these
+files publicly. Embedded username/password URLs are rejected. Extracted
+YouTube media URLs/headers remain memory-only. Streams never enter download
+jobs or saved-library history merely by playing/queueing them.
+
+Help (**?**) is now paged: **[ / ]** changes group, **up/down** scrolls and
+**? / esc** closes. Radio/Discover open on their own help group. See the
+[online listening implementation and acceptance notes](docs/listening-online.md).
 
 Own your music. Download your YouTube, SoundCloud, and Spotify libraries to your computer and play them offline, all from your terminal.
 
@@ -164,6 +211,7 @@ Full list via `jukeboxcli --help` (`soundcli` remains a compatibility alias):
 ## Install the development version on a Mac
 
 **One-time setup on the new Mac:**
+
 1. Install Node.js 22 or newer and mpv 0.38+. With Homebrew: `brew install node mpv`.
    Ghostty is recommended for sharp artwork; other terminals use the fallback.
 2. Clone and install:
@@ -176,6 +224,19 @@ Full list via `jukeboxcli --help` (`soundcli` remains a compatibility alias):
    ```sh
    jukeboxcli
    ```
+
+The instructions above install `main` (dev.3). To test **dev.4 separately**,
+clone the development branch into a different folder and use `npm start`;
+this does not replace the installed command:
+
+```sh
+git clone --branch development https://github.com/funstuie-bit/JukeboxCli.git ~/projects/JukeboxCli-next
+cd ~/projects/JukeboxCli-next
+npm ci && npm run build
+JUKEBOXCLI_HOME="$HOME/JukeboxCli-next-profile" npm start
+```
+
+Keep the same `JUKEBOXCLI_HOME` for subsequent launches of that test profile.
 
 On first run the app sets up yt-dlp and ffmpeg (under the default profile,
 `~/Library/Caches/soundcli/bin`). Install mpv 0.38+ with `brew install mpv` for

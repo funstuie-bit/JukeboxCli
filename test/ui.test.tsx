@@ -662,8 +662,8 @@ describe("queue copy, banner, overlay, welcome paste", () => {
     expect(frame).toContain("downloader may be out of date");
   });
 
-  it("help overlay keeps every key and label on a single line", () => {
-    const { lastFrame } = render(
+  it("help overlay pages through keys without growing beyond the terminal", async () => {
+    const { lastFrame, stdin } = render(
       wrap(<HelpOverlay />, makeStore({ cols: 100 })),
     );
     const lines = (lastFrame() ?? "").split("\n");
@@ -672,8 +672,10 @@ describe("queue copy, banner, overlay, welcome paste", () => {
     expect(
       lines.some((l) => l.includes("PgUp PgDn") && l.includes("Jump a page")),
     ).toBe(true);
-    expect(lines.some((l) => l.includes("Pause / resume all"))).toBe(true);
-    expect(lines.some((l) => l.includes("Pick: toggle row"))).toBe(true);
+    expect(lines.length).toBeLessThanOrEqual(24);
+    stdin.write("["); await new Promise(r => setTimeout(r, 40));
+    expect(lastFrame()).toContain("Pause / resume all");
+    expect(lastFrame()).toContain("Pick: toggle row");
   });
 
   it("help overlay keeps a complete bordered box when compact", () => {

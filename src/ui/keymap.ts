@@ -25,11 +25,12 @@ const SECTION_ORDER: Section[] = [
   "player",
   "queue",
   "discover",
+  "listen",
 ];
 
-/** Map "1".."5" to its section (the sidebar's display order); null otherwise. */
+/** Map sidebar digit shortcuts to sections; null otherwise. */
 export function sectionForDigit(input: string): Section | null {
-  if (!/^[1-8]$/.test(input)) return null;
+  if (!/^[1-9]$/.test(input)) return null;
   return SECTION_ORDER[Number(input) - 1] ?? null;
 }
 
@@ -41,7 +42,8 @@ export const HELP_GROUPS: HelpGroup[] = [
       { keys: "↑ ↓", label: "Move" },
       { keys: "PgUp PgDn", label: "Jump a page" },
       { keys: "↵", label: "Open / play" },
-      { keys: "1-8", label: "Jump section" },
+      { keys: "1-9", label: "Jump section" },
+      { keys: "o", label: "Play URL (no download)" },
       { keys: "/", label: "Search" },
       { keys: "d", label: "Delete" },
       { keys: "t", label: "Rename" },
@@ -90,6 +92,18 @@ export const HELP_GROUPS: HelpGroup[] = [
     ],
   },
   {
+    title: "Radio / URL (9)",
+    hints: [
+      { keys: "o", label: "YouTube / direct audio URL" },
+      { keys: "R", label: "Enter live radio stream URL" },
+      { keys: "↵", label: "Accept link, then play selected" },
+      { keys: "A P", label: "Append / queue next" },
+      { keys: "f", label: "Save / rename radio favourite" },
+      { keys: "x", label: "Remove favourite (confirm) / new link" },
+      { keys: "space", label: "Live: disconnect / reconnect" },
+    ],
+  },
+  {
     title: "Downloads",
     hints: [
       { keys: "[ ]", label: "Pause / resume all" },
@@ -133,9 +147,12 @@ export function footerHints(
   // In content, esc only mirrors tab (back to the sidebar), so the hint slot
   // goes to tab; esc appears only where it means something else (songs depth).
   switch (section) {
+    case "listen":
+      return [{ keys: "o", label: "Play URL" }, { keys: "R", label: "Radio URL" },
+        { keys: "f", label: "Favourite" }, { keys: "A/P", label: "Queue" }, ALWAYS];
     case "discover":
-      return [{ keys: "/", label: "Search" }, { keys: "[ ]", label: "Type" },
-        { keys: "A/P", label: "Queue" }, { keys: "d", label: "Download" }, ALWAYS];
+      return [{ keys: "/", label: "Search" }, { keys: "↵", label: "Stream" },
+        { keys: "o", label: "Play URL" }, { keys: "A/P", label: "Queue" }, ALWAYS];
     case "player":
     case "queue":
       return [{ keys: "↵", label: "Play" }, { keys: "u D", label: "Move" },

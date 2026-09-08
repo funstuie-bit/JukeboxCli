@@ -18,7 +18,9 @@ profile. Do not run both apps against a shared profile concurrently.
 page URL, no filePath). Session v2 saves stream metadata through an allowlist;
 v1 remains readable. Remote restore is lazy and paused, so offline launch never
 waits for extraction. Local IDs still resolve through Library; streamed history
-is not yet persisted. No signed media URL or extractor headers enter session JSON.
+is not yet persisted. No extracted signed media URL or extractor headers enter session JSON.
+Explicitly supplied direct URLs (including any query tokens) are persisted; see
+[dev.4 online listening](listening-online.md) for that separate trust boundary.
 
 `sources/music.ts` adapts MIT-licensed YouTube.js 18 to plain search/browse pages.
 Signed-out search supports five types; albums/playlists/artists drill down and

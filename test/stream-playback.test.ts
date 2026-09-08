@@ -4,6 +4,7 @@ import { MpvPlayer } from "../src/player/mpv";
 import type { ResolvedMedia, StreamTrack } from "../src/player/media";
 import { persistListeningSession, readSession, sessionFile } from "../src/player/session";
 import { readFileSync, writeFileSync } from "node:fs";
+import { trackFromUrl } from "../src/player/url";
 
 vi.mock("../src/player/mpv", async () => {
   const { EventEmitter } = await import("node:events");
@@ -23,7 +24,8 @@ vi.mock("../src/player/mpv", async () => {
     }
     async stop() { this.next = null; }
     async command() {}
-    async seekAbsolute() {}
+    seekAbsolute = vi.fn(async () => {});
+    seekRelative = vi.fn(async () => {});
     quit() {}
   } };
 });
@@ -37,6 +39,51 @@ const settle = () => new Promise(r => setTimeout(r, 5));
 beforeEach(() => { (MpvPlayer as any).current = undefined; });
 
 describe("stream playback", () => {
+  it("keeps live stations out of prefetch, blocks seeking, reconnects and retains a disconnected queue", async () => {
+    const radio = trackFromUrl("https://example.com/live", true);
+    const resolver = vi.fn(async t => media(t.sourceTrackId));
+    const p = new Playback("fixture", undefined, resolver);
+    await p.play(local, [local, radio]); await settle();
+    expect(resolver).not.toHaveBeenCalled(); expect(engine().next).toBeNull();
+    await p.next(); await settle(); expect(p.getState().track?.id).toBe(radio.id);
+    p.enqueue(b); await settle(); expect(engine().next).toBeNull();
+    engine().emit("property", "duration", 1234);
+    engine().emit("property", "metadata", { "icy-title": "Artist - song" });
+    expect(p.getState().duration).toBe(0); expect(p.getState().broadcastTitle).toBe("Artist - song");
+    await p.seek(15); await p.restart();
+    expect(engine().seekRelative).not.toHaveBeenCalled(); expect(engine().seekAbsolute).not.toHaveBeenCalled();
+    await p.togglePause(); expect(p.getState().paused).toBe(true);
+    await p.togglePause(); expect(resolver.mock.calls).toHaveLength(2);
+    expect(p.getState().paused).toBe(false);
+    engine().emit("property", "time-pos", 72); expect(p.session().position).toBe(0);
+    const saver = persistListeningSession(p); saver.close();
+    expect(readSession()?.streams?.[radio.id]?.streamType).toBe("radio");
+    const q = new Playback("fixture", undefined, resolver);
+    await q.restoreSession({ ...p.session(), position: 100 }, () => undefined);
+    expect(q.getState().paused).toBe(true); expect(q.getState().position).toBe(0);
+    expect(resolver.mock.calls).toHaveLength(2);
+    engine().emit("ended"); await settle();
+    expect(p.getState().error).toContain("Live broadcast"); expect(p.getState().list).toHaveLength(3);
+    await p.next(); expect(p.getState().track?.id).toBe(b.id);
+    expect(p.getState().broadcastTitle).toBeUndefined();
+    p.quit(); q.quit();
+  });
+  it("enriches URL metadata, detects live YouTube and does not preload it", async () => {
+    const p = new Playback("fixture", undefined, async () => ({ ...media("a"), metadata: { title: "Live music", isLive: true } }));
+    await p.play(local, [local, a]); await settle();
+    expect(engine().next).toBeNull();
+    expect(p.getState().list[1]?.title).toBe("Live music");
+    await p.next(); await p.seek(15);
+    expect(engine().seekRelative).not.toHaveBeenCalled();
+    expect(p.session().streams?.[a.id]?.isLive).toBe(true);
+    p.quit();
+  });
+  it("respects mpv non-seekable audio even when not labelled radio", async () => {
+    const p = new Playback("fixture", undefined, async () => media("a"));
+    await p.play(a); engine().emit("property", "seekable", false);
+    await p.seek(15); await p.restart();
+    expect(engine().seekRelative).not.toHaveBeenCalled(); expect(engine().seekAbsolute).not.toHaveBeenCalled(); p.quit();
+  });
   it("prepares one next entry, honours play-next edits, and advances without reloading", async () => {
     const resolver = vi.fn(async t => media(t.sourceTrackId));
     const p = new Playback("fixture", undefined, resolver);

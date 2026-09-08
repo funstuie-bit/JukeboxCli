@@ -18,6 +18,7 @@ import type { Track } from "../library/types";
 import { Playback, type PlaybackState } from "../player/playback";
 import { createStreamResolver } from "../player/resolve";
 import { Discover } from "./sections/Discover";
+import { Listen } from "./sections/Listen";
 import { readSession, persistListeningSession } from "../player/session";
 import { existsSync } from "node:fs";
 import { PlayHistory } from "../player/history";
@@ -65,6 +66,8 @@ interface Boot {
 
 function Content({ section }: { section: Section }) {
   switch (section) {
+    case "listen":
+      return <Listen />;
     case "discover":
       return <Discover />;
     case "player":
@@ -178,6 +181,7 @@ export function App({ initialAdd }: { initialAdd?: string } = {}) {
   const [nowPlayingView, setNowPlayingView] = useState(false);
   const [pendingSearch, setPendingSearch] = useState(false);
   const [pendingAdd, setPendingAdd] = useState<string | null>(null);
+  const [openUrlRequest, setOpenUrlRequest] = useState(0);
   const [playlistsDepth, setPlaylistsDepth] =
     useState<PlaylistsDepth>("sets");
 
@@ -422,13 +426,19 @@ export function App({ initialAdd }: { initialAdd?: string } = {}) {
       }
       // A TextField owns the whole keyboard while the user is typing.
       if (captureMode === "text") return;
-      // While the cheatsheet is up, any key dismisses it and nothing else fires.
+      // Help owns its page/scroll keys; other keys dismiss without playing underneath.
       if (showHelp) {
+        if (input === "[" || input === "]" || key.upArrow || key.downArrow || key.leftArrow || key.rightArrow || key.pageUp || key.pageDown) return;
         setShowHelp(false);
         return;
       }
       if (input === "?") {
         setShowHelp(true);
+        return;
+      }
+      if (input === "o") {
+        setNowPlayingView(false); setSection("listen"); setRegion("content");
+        setOpenUrlRequest(n => n + 1);
         return;
       }
       // `m` toggles the full-screen Now Playing view from any section (text
@@ -595,6 +605,8 @@ export function App({ initialAdd }: { initialAdd?: string } = {}) {
       pendingSearch,
       setPendingSearch,
       pendingAdd,
+      openUrlRequest,
+      setOpenUrlRequest,
       setPendingAdd,
       mpvStatus,
       listRows,
@@ -615,6 +627,7 @@ export function App({ initialAdd }: { initialAdd?: string } = {}) {
     playlistsDepth,
     pendingSearch,
     pendingAdd,
+    openUrlRequest,
     mpvStatus,
     listRows,
     compact,

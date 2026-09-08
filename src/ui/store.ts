@@ -16,7 +16,8 @@ export type Section =
   | "settings"
   | "player"
   | "queue"
-  | "discover";
+  | "discover"
+  | "listen";
 
 /**
  * Which pane currently owns up/down/enter. "help" means the `?` cheatsheet is
@@ -64,6 +65,9 @@ export interface Store {
    *  section to consume; the consumer clears it. */
   pendingAdd: string | null;
   setPendingAdd: (v: string | null) => void;
+  /** One-shot intent from the global o shortcut, consumed by Listen. */
+  openUrlRequest?: number;
+  setOpenUrlRequest?: (value: number) => void;
   /** Status line while mpv auto-installs in the background (null when idle). */
   mpvStatus: string | null;
   /** How many rows a scrolling list may use, so the layout fits the terminal. */

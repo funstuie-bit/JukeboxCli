@@ -1,87 +1,35 @@
-import { Box, Text } from "ink";
+import { useState } from "react";
+import { Box, Text, useInput } from "ink";
 import { HELP_GROUPS } from "../keymap";
 import { useStore } from "../store";
-import { COLOR, RULE, lerpHex } from "../theme";
+import { COLOR, RULE } from "../theme";
 
-/** The card border: divider gray warmed toward the accent, so the cheatsheet
- *  reads as part of the brand without shouting over its contents. */
-const CARD_BORDER = lerpHex(COLOR.accent, RULE, 0.55);
-
-// Column geometry derives from the hints themselves, so no key or label ever
-// wraps: each key cell fits its group's longest chord, each column its
-// longest label. Touching keymap.ts re-sizes the card automatically.
-const KEY_GAP = 2;
-const COL_GAP = 2;
-const KEY_W = HELP_GROUPS.map(
-  (g) => Math.max(...g.hints.map((h) => h.keys.length)) + KEY_GAP,
-);
-const COL_W = HELP_GROUPS.map(
-  (g, i) => KEY_W[i]! + Math.max(...g.hints.map((h) => h.label.length)),
-);
-/** Width of the side-by-side card: columns + gaps + padding (2) + border (2). */
-const CARD_W =
-  COL_W.reduce((a, b) => a + b, 0) + (HELP_GROUPS.length - 1) * COL_GAP + 4;
-/** Stacked mode shares one key cell so the groups align down the page. */
-const KEY_W_STACKED = Math.max(...KEY_W);
-
-/**
- * The full keyboard cheatsheet, shown only when the user presses `?`. Rendered
- * as a self-contained card: three columns on a roomy terminal, stacked when
- * narrow so nothing ever overlaps.
- */
+/** Bounded, keyboard-paged help: adding a feature must not push its keys offscreen. */
 export function HelpOverlay() {
-  const { cols, compact } = useStore();
-  const columns = cols >= CARD_W;
-
-  return (
-    <Box
-      flexDirection="column"
-      alignSelf="flex-start"
-      borderStyle="round"
-      borderColor={CARD_BORDER}
-      paddingX={columns ? 1 : 2}
-      paddingY={compact ? 0 : 1}
-    >
-      <Box>
-        <Text bold color={COLOR.accent}>
-          Keyboard
-        </Text>
-        {/* Short terminals can't spare the standalone footer row, so the close
-            hint rides the header instead of clipping off the bottom border. */}
-        {compact ? <Text dimColor>{"  "}? esc to close</Text> : null}
-      </Box>
-      <Box
-        marginTop={compact ? 0 : 1}
-        flexDirection={columns ? "row" : "column"}
-      >
-        {HELP_GROUPS.map((group, gi) => (
-          <Box
-            key={group.title}
-            flexDirection="column"
-            width={columns ? COL_W[gi] : undefined}
-            marginRight={columns && gi < HELP_GROUPS.length - 1 ? COL_GAP : 0}
-            marginTop={!columns && gi > 0 ? 1 : 0}
-          >
-            <Text bold>{group.title}</Text>
-            {group.hints.map((h) => (
-              <Box key={h.keys + h.label}>
-                <Box
-                  width={columns ? KEY_W[gi] : KEY_W_STACKED}
-                  flexShrink={0}
-                >
-                  <Text color={COLOR.alt}>{h.keys}</Text>
-                </Box>
-                <Text dimColor>{h.label}</Text>
-              </Box>
-            ))}
-          </Box>
-        ))}
-      </Box>
-      {compact ? null : (
-        <Box marginTop={1}>
-          <Text dimColor>Press ? or esc to close</Text>
-        </Box>
-      )}
-    </Box>
-  );
+  const { cols, rows, compact, section } = useStore();
+  const [page, setPage] = useState(section === "listen" ? 4 : section === "discover" ? 3 : section === "player" ? 1 : section === "queue" ? 2 : 0);
+  const [offset, setOffset] = useState(0);
+  const width = Math.max(20, Math.min(cols - 2, 78));
+  const height = Math.max(8, rows - 4);
+  const visibleRows = height - 6;
+  const group = HELP_GROUPS[page]!;
+  const start = Math.min(offset, Math.max(0, group.hints.length - visibleRows));
+  useInput((input, key) => {
+    if (input === "[" || input === "]" || key.leftArrow || key.rightArrow || key.pageUp || key.pageDown) {
+      const back = input === "[" || key.leftArrow || key.pageUp;
+      setPage(p => (p + (back ? HELP_GROUPS.length - 1 : 1)) % HELP_GROUPS.length); setOffset(0);
+    } else if (key.upArrow) setOffset(Math.max(0, start - 1));
+    else if (key.downArrow) setOffset(Math.min(Math.max(0, group.hints.length - visibleRows), start + 1));
+  });
+  return <Box width={width} height={height} borderStyle="round" borderColor={RULE} paddingX={1} flexDirection="column">
+    <Text bold color={COLOR.accent} wrap="truncate-end">Keyboard · {page + 1}/{HELP_GROUPS.length}{compact ? " · ? esc to close" : ""}</Text>
+    <Text bold wrap="truncate-end">{group.title}</Text>
+    {group.hints.slice(start, start + visibleRows).map(h => <Box key={h.keys + h.label}>
+      <Box width={12} flexShrink={0}><Text color={COLOR.alt}>{h.keys}</Text></Box>
+      <Text dimColor wrap="truncate-end">{h.label}</Text>
+    </Box>)}
+    <Box flexGrow={1} />
+    <Text color={COLOR.muted} wrap="truncate-end">[ ] group · ↑↓ scroll{group.hints.length > visibleRows ? ` · ${start + 1}–${Math.min(group.hints.length, start + visibleRows)}/${group.hints.length}` : ""}</Text>
+    <Text color={COLOR.muted} wrap="truncate-end">Press ? or esc to close</Text>
+  </Box>;
 }

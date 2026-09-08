@@ -42,6 +42,8 @@ export function readSession(file = sessionFile): ListeningSession | null {
             !["youtube", "soundcloud", "link"].includes(t.source) || !isHttpUrl(t.streamUrl) ||
             [t.artist, t.album, t.playlist, t.addedAt].some(v => v !== undefined && typeof v !== "string") ||
             (t.thumbnailUrl !== undefined && !isHttpUrl(t.thumbnailUrl)) ||
+            (t.streamType !== undefined && !["extractor", "direct", "radio"].includes(t.streamType)) ||
+            (t.isLive !== undefined && typeof t.isLive !== "boolean") ||
             (t.durationSec !== undefined && (!Number.isFinite(t.durationSec) || t.durationSec < 0))) return null;
         streams[id] = streamMetadata(t);
       }

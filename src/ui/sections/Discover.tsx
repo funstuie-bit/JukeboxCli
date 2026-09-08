@@ -80,8 +80,8 @@ export function Discover() {
     <Text dimColor wrap="truncate-end">{filters.map(f => f === kind ? `[${f}]` : f).join("  ")}</Text>
     {focused && editing ? <TextField defaultValue={query} placeholder="Search music…" onChange={setQuery}
       onSubmit={value => { setQuery(value); void load(() => searchMusic(value, kind), "search"); }} />
-      : <Text dimColor wrap="truncate-end">{busy ? "Loading… esc cancels" : notice || "/ search · [ ] type · enter play/open · A/P queue · d download"}</Text>}
-    {page.items.length === 0 && !busy ? <Text dimColor>Search songs, videos, albums, artists or playlists.</Text> : null}
+      : <Text dimColor wrap="truncate-end">{busy ? "Loading… esc cancels" : notice || "/ search · [ ] type · enter stream/open · A/P queue · d download"}</Text>}
+    {page.items.length === 0 && !busy ? <Text dimColor>Listen without downloading: / search · o Play URL · 9 radio</Text> : null}
     {page.items.slice(start, start + rows).map((item, i) => <Text key={`${start + i}:${item.id}`}
       color={focused && selected === start + i ? COLOR.accent : undefined} wrap="truncate-end">
       {selected === start + i ? "› " : "  "}{truncate(cleanText(`${item.title}${item.subtitle ? ` · ${item.subtitle}` : ""} [${item.kind}]`), contentWidth - 2)}

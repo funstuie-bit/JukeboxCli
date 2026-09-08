@@ -10,6 +10,12 @@ const list = [track("a"), track("b"), track("c")];
 const ids = (p: Playback) => p.queueEntries().map(e => e.track.id);
 
 describe("listening queue", () => {
+  it("playing a one-off URL preserves an idle queued list", async () => {
+    const p = new Playback(null, () => {});
+    p.enqueue(list[0]!); p.enqueue(list[1]!);
+    const x = track("x"); await p.selectTrack(x, [x]);
+    expect(ids(p)).toEqual(["a", "b", "x"]); expect(p.getState().track?.id).toBe("x");
+  });
   it("appends without playing and starts from space when idle", async () => {
     const opened: string[] = []; const p = new Playback(null, f => { opened.push(f); });
     p.enqueue(list[0]!); p.enqueue(list[1]!);
