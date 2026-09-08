@@ -12,12 +12,19 @@ export function ListeningQueue({ height, width, active }: {
   const entries = store.playback.queueEntries();
   const [cursor, setCursor] = useState(() => Math.max(0, entries.findIndex(e => e.index === state.index)));
   const [error, setError] = useState("");
+  const [confirmClear, setConfirmClear] = useState(false);
   const rows = Math.max(1, (height ?? store.listRows) - 2);
   const cols = width ?? store.contentWidth;
   const selected = Math.min(cursor, Math.max(0, entries.length - 1));
   const focused = active ?? store.region === "content";
   const run = (action: Promise<void>) => { void action.catch(e => setError(String(e))); };
   useInput((input, key) => {
+    if (confirmClear) {
+      if (input === "y") { setConfirmClear(false); run(store.playback.stop()); }
+      else if (key.escape || input === "N") setConfirmClear(false);
+      return;
+    }
+    if (input === "X") { setConfirmClear(true); return; }
     if (key.upArrow) setCursor(Math.max(0, selected - 1));
     else if (key.downArrow) setCursor(Math.min(entries.length - 1, selected + 1));
     else if (key.pageUp) setCursor(Math.max(0, selected - rows));
@@ -38,7 +45,7 @@ export function ListeningQueue({ height, width, active }: {
   const start = Math.max(0, Math.min(selected - Math.floor(rows / 2), entries.length - rows));
   return <Box flexDirection="column" width={cols}>
     <Text bold color={COLOR.alt}>Queue · {entries.length} tracks · {state.shuffle ? "shuffled" : "in order"}</Text>
-    <Text dimColor wrap="truncate-end">{error || (entries.length ? "↑↓ select  enter play  u/D move  x remove (keeps file)" : "Empty · select a song in Library, then A append or P play next")}</Text>
+    <Text dimColor wrap="truncate-end">{confirmClear ? "Clear queue and stop? y clear · esc cancel (files stay)" : error || (entries.length ? "↑↓ select  enter play  u/D move  x remove  X clear" : "Empty · select a song in Library, then A append or P play next")}</Text>
     {entries.slice(start, start + rows).map((row, offset) => {
       const here = start + offset === selected;
       return <Text key={row.index} color={here && focused ? COLOR.accent : undefined} wrap="truncate-end">

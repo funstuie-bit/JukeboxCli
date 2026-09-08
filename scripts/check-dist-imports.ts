@@ -12,6 +12,7 @@
  */
 import { readFileSync } from "node:fs";
 import { builtinModules } from "node:module";
+import { importedSpecifiers } from "./dist-imports";
 
 let failed = false;
 const fail = (msg: string): void => {
@@ -26,14 +27,7 @@ const declared = new Set(Object.keys(pkg.dependencies ?? {}));
 const builtins = new Set(builtinModules);
 
 const dist = readFileSync("dist/index.js", "utf8");
-// The minified ESM output references externals only as string literals in
-// import statements / dynamic import() calls.
-const specifiers = new Set<string>();
-for (const m of dist.matchAll(
-  /(?:from\s*|import\s*\(?\s*)["']([^"']+)["']/g,
-)) {
-  specifiers.add(m[1]!);
-}
+const specifiers = importedSpecifiers(dist);
 
 for (const spec of specifiers) {
   if (spec.startsWith(".") || spec.startsWith("node:")) continue;

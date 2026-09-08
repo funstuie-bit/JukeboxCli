@@ -72,6 +72,7 @@ export const HELP_GROUPS: HelpGroup[] = [
       { keys: "↵", label: "Queue: play selected" },
       { keys: "u D", label: "Queue: move up / down" },
       { keys: "x", label: "Queue: remove (keeps file)" },
+      { keys: "X", label: "Queue: clear and stop (confirm)" },
     ],
   },
   {

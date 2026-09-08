@@ -18,7 +18,7 @@ if [ "$NODE_MAJOR" -lt 22 ]; then
 fi
 
 echo "Installing dependencies..."
-npm install
+npm ci
 
 echo "Building..."
 npm run build
@@ -27,5 +27,5 @@ echo "Installing global command..."
 npm install -g .
 
 echo ""
-echo "Done. Run it from anywhere with:  soundcli"
-command -v soundcli >/dev/null 2>&1 && echo "Installed at: $(command -v soundcli)"
+echo "Done. Run it from anywhere with:  jukeboxcli (soundcli is a compatibility alias)"
+command -v jukeboxcli >/dev/null 2>&1 && echo "Installed at: $(command -v jukeboxcli)"

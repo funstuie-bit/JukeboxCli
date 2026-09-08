@@ -114,12 +114,21 @@ export function parseCliArgs(argv: string[]): CliCommand {
   };
 }
 
-export const HELP_TEXT = `soundcli, own your music
+export const HELP_TEXT = `JukeboxCli — your music, your queue
 
 usage
-  soundcli                  open the dashboard
-  soundcli <link>           download that song on launch
-  soundcli --version        print the version
+  jukeboxcli                open the player and library
+  jukeboxcli <link>         download that song on launch
+  jukeboxcli --version      print the version
+  soundcli <link>           compatibility alias
+
+player keys
+  m / 6                    Now Playing
+  7                        listening queue
+  A / P                    append / play next (selected library song)
+  u / D / x                move up / down / remove (queue)
+  X                        clear queue and stop (confirm)
+  ?                        all keys
 
 download options (override config.json)
   --format <fmt>            audio format: best, mp3, flac, wav, m4a, opus, vorbis

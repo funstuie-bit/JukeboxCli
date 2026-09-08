@@ -388,6 +388,11 @@ export class Playback extends EventEmitter {
   }
 
   async togglePause(): Promise<void> {
+    if (!this.state.track) {
+      const first = this.order[0];
+      if (first !== undefined) await this.playQueueIndex(first);
+      return;
+    }
     if (!this.mpv) {
       const index = this.state.index >= 0 ? this.state.index : this.order[0];
       if (index !== undefined) await this.playQueueIndex(index);

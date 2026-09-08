@@ -41,11 +41,11 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/baairon/soundcli.git"
+    "url": "git+https://github.com/funstuie-bit/soundcli-fork.git"
   },
-  "homepage": "https://github.com/baairon/soundcli#readme",
+  "homepage": "https://github.com/funstuie-bit/soundcli-fork/tree/development#readme",
   "bugs": {
-    "url": "https://github.com/baairon/soundcli/issues"
+    "url": "https://github.com/funstuie-bit/soundcli-fork/issues"
   },
   "publishConfig": {
     "access": "public"

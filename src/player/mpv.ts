@@ -45,6 +45,7 @@ export class MpvPlayer extends EventEmitter {
    */
   private loaded = false;
   private loadChain: Promise<void> = Promise.resolve();
+  private loadEpoch = 0;
 
   constructor(mpvPath: string) {
     super();
@@ -246,15 +247,21 @@ export class MpvPlayer extends EventEmitter {
   }
 
   async loadFile(file: string, startPaused = false): Promise<void> {
+    const epoch = this.loadEpoch;
     const load = async () => {
+      if (epoch !== this.loadEpoch) throw new Error("mpv load cancelled");
       // Set pause before loading, so session restore never leaks an audio burst.
       await this.command(["set_property", "pause", startPaused]);
+      if (epoch !== this.loadEpoch) throw new Error("mpv load cancelled");
       this.loaded = false;
       let timer: ReturnType<typeof setTimeout>;
       let loaded: () => void;
+      let cancelled: () => void;
       const ready = new Promise<void>((resolve, reject) => {
         loaded = resolve;
+        cancelled = () => reject(new Error("mpv load cancelled"));
         this.once("loaded", loaded);
+        this.once("load-cancelled", cancelled);
         timer = setTimeout(() => reject(new Error("mpv file load timed out")), 10000);
       });
       try {
@@ -262,6 +269,7 @@ export class MpvPlayer extends EventEmitter {
       } finally {
         clearTimeout(timer!);
         this.off("loaded", loaded!);
+        this.off("load-cancelled", cancelled!);
       }
     };
     const pending = this.loadChain.then(load);
@@ -297,6 +305,8 @@ export class MpvPlayer extends EventEmitter {
 
   /** Stop playback and unload the current file without killing the process. */
   async stop(): Promise<void> {
+    this.loadEpoch++;
+    this.emit("load-cancelled");
     this.loaded = false;
     await this.command(["stop"]);
   }
@@ -306,6 +316,8 @@ export class MpvPlayer extends EventEmitter {
    * and (on unix) unlink the socket file. Safe to call more than once.
    */
   quit(): void {
+    this.loadEpoch++;
+    this.emit("load-cancelled");
     this.quitting = true;
     this.loaded = false;
     try {

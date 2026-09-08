@@ -22,7 +22,6 @@ import {
 } from "../../util/format";
 import { ACCENT_RAMP, COLOR, ICON, RULE, lerpHex } from "../theme";
 import { GradientBar } from "../components/GradientBar";
-import type { Track } from "../../library/types";
 import { ListeningQueue } from "./ListeningQueue";
 
 /** Amplitude → block-glyph ramp (same trusted glyph block as GradientBar). */
@@ -127,7 +126,7 @@ function ArtPlaceholder({
 export function NowPlaying({ embedded = false }: { embedded?: boolean }) {
   const store = useStore();
   const st = usePlayback(store.playback);
-  const { playback, cols, listRows } = store;
+  const { cols, listRows } = store;
 
   // Geometry. The view owns the body's rows (listRows + the header+slack the
   // body reserves) and the full terminal width minus root padding.
@@ -150,8 +149,8 @@ export function NowPlaying({ embedded = false }: { embedded?: boolean }) {
 
   // Extraction state, keyed to the file it belongs to: a stale frame can
   // never paint the previous track's cover over the new title. `visual` is
-  // null while extracting (spinner placeholder) and set once both loaders
-  // settle — a null art/wave inside it means "resolved, none available".
+  // null while extracting. Each loader publishes independently, so a slow
+  // waveform cannot delay the cover. Failed probes retain their fallback.
   const [visual, setVisual] = useState<{
     file: string;
     art: CoverArt | null;

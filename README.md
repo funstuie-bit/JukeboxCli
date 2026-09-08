@@ -17,12 +17,19 @@ are visible in navigation. In Library, History or playlist songs, select a song
 and press `A` to append or `P` to play next without interrupting the current song.
 In Queue: arrows select, enter plays, `u`/`D` moves up/down, and `x` removes only
 that queue occurrence (never its file). Space starts an idle queue.
+`X` asks to clear the queue and stop; confirm with `y`. Music files stay intact.
 
 The listening queue, position, volume, shuffle and repeat are saved in
 `listening-session.json` alongside the library index and restored paused.
 Missing library entries/files are dropped. An empty saved queue stays empty.
 Artwork loads independently of the waveform. The expanded player shows its
 editable queue when space permits; `7` always opens the full queue.
+
+Verification includes full App keyboard/session tests with a fixture audio engine;
+real mpv acceptance passes on the development Mac; clean Mac installation is pending.
+`npx tsx scripts/smoke-listening.ts` checks real mpv with generated silent audio
+in an isolated temporary profile (requires ffmpeg and mpv on PATH).
+See [changelog and verification](CHANGELOG.md) for this build's scope and limitations.
 
 Own your music. Download your YouTube, SoundCloud, and Spotify libraries to your computer and play them offline, all from your terminal.
 
@@ -52,11 +59,11 @@ The first time you run it, a guided setup walks you through everything — every
 - Source 403/rate-limit blocks trigger jittered backoff with narrowed concurrency and an honest pause banner, not silent failures
 - Failed rows retry (`f`); the bundled yt-dlp self-heals if it goes missing and auto-updates on launch
 
-### Now Playing screen (press `m`)
-A full-screen player view, toggled from any section (`m` or `esc` closes, transport keys stay live):
+### Now Playing screen (press `m`, or choose `6 Now Playing`)
+A player view with visible navigation (`m` or `esc` closes the expanded view, transport keys stay live):
 - **Truecolor cover art** rendered as half-blocks from the embedded art — no `ascii` mush
 - **Waveform progress bar** precomputed from the audio's loudness envelope, filled along the accent ramp to the play position
-- **Up next** — the shuffle-aware upcoming list
+- **Editable queue** — actual play order, selectable and reorderable; use `7` for the dedicated queue view
 - Degrades honestly: no embedded art → tidy placeholder; no waveform data → gradient bar; external player → a clear note instead of a fake progress bar
 
 ### CLI flags (override config without opening the TUI)
@@ -82,23 +89,26 @@ Full list via `soundcli --help`:
 | `--reencode <true\|false>` | force re-encode even if format matches |
 | `soundcli <link>` | download that song/playlist on launch |
 
-## Install on any Mac
+## Install the development version on a Mac
 
 **One-time setup on the new Mac:**
 1. Install Node.js 22 or newer — either from [nodejs.org](https://nodejs.org) or `brew install node@22`
 2. Clone and install:
    ```sh
-   git clone https://github.com/funstuie-bit/JukeboxCli.git ~/Developer/soundcli-fork
-   cd ~/Developer/soundcli-fork && ./install.sh
+   git clone --branch development https://github.com/funstuie-bit/soundcli-fork.git ~/projects/JukeboxCli
+   cd ~/projects/JukeboxCli && ./install.sh
    ```
 3. Run it from anywhere:
    ```sh
-   soundcli
+   jukeboxcli
    ```
 
 That's it — on first run soundcli downloads yt-dlp and ffmpeg itself (into `~/Library/Caches/soundcli/bin`), so no other dependencies are needed. mpv for in-terminal playback is optional: `brew install mpv` (without it, tracks open in your default player).
 
-**What `install.sh` does:** `npm install`, `npm run build`, `npm install -g .` — which puts a global `soundcli` command on your PATH.
+**What `install.sh` does:** installs locked dependencies, builds, then installs the
+package globally. This installs `jukeboxcli` AND replaces the `soundcli` alias.
+To retain an existing installation, use `npm start` from this checkout instead.
+Homebrew distribution and clean Intel/Apple Silicon acceptance are still planned.
 
 ## Dev
 
@@ -106,7 +116,7 @@ That's it — on first run soundcli downloads yt-dlp and ffmpeg itself (into `~/
 npm install          # Node 22+
 npm run dev          # run from source
 npm run build        # build dist/
-npm test             # 480 tests
+npm test             # isolated unit + App interaction tests
 npm run typecheck
 ```
 
