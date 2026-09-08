@@ -31,6 +31,11 @@ real mpv acceptance passes on the development Mac; clean Mac installation is pen
 in an isolated temporary profile (requires ffmpeg and mpv on PATH).
 See [changelog and verification](CHANGELOG.md) for this build's scope and limitations.
 
+Streaming/discovery development: the provider foundation now separates remote
+metadata from downloaded files, resolves audio through yt-dlp with current cookie
+settings, and keeps signed media URLs in a bounded memory cache. YouTube Music
+search uses YouTube.js, signed out. Player/UI integration is in progress.
+
 Own your music. Download your YouTube, SoundCloud, and Spotify libraries to your computer and play them offline, all from your terminal.
 
 **This is a fork of [baairon/soundcli](https://github.com/baairon/soundcli) v1.4.1** with extra features built in: a full first-run wizard, browser/cookie support, total format control, download pacing, custom output location, CLI flags, and a settings screen to change all of it later.

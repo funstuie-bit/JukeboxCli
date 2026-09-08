@@ -55,7 +55,8 @@
     "execa": "^9.6.1",
     "ink": "^7.0.5",
     "react": "^19.2.7",
-    "string-width": "^8.2.1"
+    "string-width": "^8.2.1",
+    "youtubei.js": "^18.0.0"
   },
   "devDependencies": {
     "@inkjs/ui": "^2.0.0",
