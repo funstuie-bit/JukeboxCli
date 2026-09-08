@@ -16,6 +16,7 @@ export interface MusicPage {
 
 /** Thin data boundary, independent of YouTube.js parser classes in UI/tests. */
 export function musicResult(raw: any, fallback: MusicFilter = "song"): MusicResult | null {
+  if (!raw || typeof raw !== "object") return null;
   const kind = raw.item_type ?? fallback;
   if (!["song", "video", "album", "artist", "playlist"].includes(kind)) return null;
   const id = raw.id ?? raw.endpoint?.payload?.browseId ?? raw.endpoint?.payload?.videoId;
@@ -46,8 +47,9 @@ async function musicClient() {
 function rows(items: readonly unknown[] | undefined, kind: MusicFilter): MusicResult[] {
   return (items ?? []).map(item => musicResult(item, kind)).filter((x): x is MusicResult => x !== null);
 }
-function searchPage(page: any, kind: MusicFilter, title: string): MusicPage {
-  const contents = page.contents ?? [];
+export function searchPage(page: any, kind: MusicFilter, title: string): MusicPage {
+  // First page is a shelf array; continuations wrap a single shelf.
+  const contents = Array.isArray(page.contents) ? page.contents : page.contents ? [page.contents] : [];
   const items = contents.flatMap((shelf: any) => shelf.contents ?? [shelf]);
   return { title, items: rows(items, kind),
     more: page.has_continuation ? async () => searchPage(await page.getContinuation(), kind, title) : undefined };

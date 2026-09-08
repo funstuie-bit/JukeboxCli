@@ -65,7 +65,7 @@ describe("listening sessions", () => {
   });
   it("rejects malformed sessions and unknown versions", async () => {
     const p = new Playback(null, () => {}); const saver = persistListeningSession(p); saver.close();
-    for (const patch of [{ version: 2 }, { position: -1 }, { ids: ["x"], order: [2] }, { volume: 101 }]) {
+    for (const patch of [{ version: 3 }, { position: -1 }, { ids: ["x"], order: [2] }, { volume: 101 }]) {
       writeFileSync(sessionFile, JSON.stringify({ ...p.session(), ...patch })); expect(readSession()).toBeNull();
     }
   });

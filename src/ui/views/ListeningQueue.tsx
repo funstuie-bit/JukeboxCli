@@ -3,6 +3,7 @@ import { Box, Text, useInput } from "ink";
 import { useStore, usePlayback } from "../store";
 import { cleanText, truncate } from "../../util/format";
 import { COLOR } from "../theme";
+import { isStream } from "../../player/media";
 
 export function ListeningQueue({ height, width, active }: {
   height?: number; width?: number; active?: boolean;
@@ -50,7 +51,7 @@ export function ListeningQueue({ height, width, active }: {
       const here = start + offset === selected;
       return <Text key={row.index} color={here && focused ? COLOR.accent : undefined} wrap="truncate-end">
         {here && focused ? "› " : "  "}{row.index === state.index ? "▶ " : "  "}
-        {truncate(cleanText(`${row.track.title}${row.track.artist ? ` · ${row.track.artist}` : ""}`), Math.max(1, cols - 4))}
+        {truncate(cleanText(`${isStream(row.track) ? "[stream] " : ""}${row.track.title}${row.track.artist ? ` · ${row.track.artist}` : ""}`), Math.max(1, cols - 4))}
       </Text>;
     })}
   </Box>;

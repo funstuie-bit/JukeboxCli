@@ -2,9 +2,11 @@ import { mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { paths } from "../config/paths";
 import type { Playback } from "./playback";
+import { isHttpUrl, streamMetadata, type StreamTrack } from "./media";
 
 export interface ListeningSession {
-  version: 1;
+  version: 1 | 2;
+  streams?: Record<string, StreamTrack>;
   ids: string[];
   index: number;
   order: number[];
@@ -19,7 +21,7 @@ export const sessionFile = path.join(paths.data, "listening-session.json");
 export function readSession(file = sessionFile): ListeningSession | null {
   try {
     const s = JSON.parse(readFileSync(file, "utf8"));
-    if (s.version !== 1 || !Array.isArray(s.ids) || s.ids.length > 10000 ||
+    if (![1, 2].includes(s.version) || (s.version === 2 && (!s.streams || typeof s.streams !== "object")) || !Array.isArray(s.ids) || s.ids.length > 10000 ||
         !s.ids.every((id: unknown) => typeof id === "string") ||
         !Number.isInteger(s.index) || s.index < -1 || s.index >= s.ids.length ||
         !Array.isArray(s.order) || s.order.length !== s.ids.length ||
@@ -30,6 +32,21 @@ export function readSession(file = sessionFile): ListeningSession | null {
         !Number.isFinite(s.position) || s.position < 0 ||
         !Number.isFinite(s.volume) || s.volume < 0 || s.volume > 100 ||
         typeof s.shuffle !== "boolean" || !["off", "all", "one"].includes(s.repeat)) return null;
+    if (s.version === 2) {
+      if (Array.isArray(s.streams) || Object.keys(s.streams).length > 10000) return null;
+      const streams: Record<string, StreamTrack> = {};
+      for (const [id, value] of Object.entries(s.streams)) {
+        const t = value as StreamTrack;
+        if (!t || t.kind !== "stream" || t.id !== id || !id.startsWith("stream:") ||
+            typeof t.title !== "string" || typeof t.sourceTrackId !== "string" ||
+            !["youtube", "soundcloud", "link"].includes(t.source) || !isHttpUrl(t.streamUrl) ||
+            [t.artist, t.album, t.playlist, t.addedAt].some(v => v !== undefined && typeof v !== "string") ||
+            (t.thumbnailUrl !== undefined && !isHttpUrl(t.thumbnailUrl)) ||
+            (t.durationSec !== undefined && (!Number.isFinite(t.durationSec) || t.durationSec < 0))) return null;
+        streams[id] = streamMetadata(t);
+      }
+      s.streams = streams;
+    }
     return s as ListeningSession;
   } catch { return null; }
 }

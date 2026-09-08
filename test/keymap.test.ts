@@ -14,7 +14,8 @@ describe("sectionForDigit", () => {
     expect(sectionForDigit("0")).toBeNull();
     expect(sectionForDigit("6")).toBe("player");
     expect(sectionForDigit("7")).toBe("queue");
-    expect(sectionForDigit("8")).toBeNull();
+    expect(sectionForDigit("8")).toBe("discover");
+    expect(sectionForDigit("9")).toBeNull();
     expect(sectionForDigit("a")).toBeNull();
     expect(sectionForDigit("")).toBeNull();
     expect(sectionForDigit("12")).toBeNull();

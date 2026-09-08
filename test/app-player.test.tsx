@@ -33,7 +33,11 @@ vi.mock("../src/player/mpv", async () => {
   return { MpvPlayer: class extends EventEmitter {
     paused = false; volume = 100;
     setInitialVolume(v: number) { this.volume = v; }
-    async loadFile(_file: string, paused: boolean) { this.paused = paused; }
+    async loadMedia(_media: unknown, paused: boolean) { this.paused = paused; }
+    async clearNext() {}
+    async preloadNext() {}
+    async playPrepared() { return false; }
+    async command() {}
     async getVolume() { return this.volume; }
     async setVolume(v: number) { this.volume = v; }
     async togglePause() { this.paused = !this.paused; this.emit("property", "pause", this.paused); }
@@ -45,11 +49,41 @@ vi.mock("../src/player/mpv", async () => {
 });
 
 const tick = () => new Promise(r => setTimeout(r, 40));
+vi.mock("../src/sources/music", () => {
+  const track = { kind: "stream", id: "stream:youtube:fixture", source: "youtube", sourceTrackId: "fixture",
+    title: "Online fixture song", artist: "Fixture artist", streamUrl: "https://music.youtube.com/watch?v=fixture", addedAt: "2026-09-07" };
+  const song = { id: "fixture", kind: "song", title: track.title, track };
+  return {
+    searchMusic: async (_query: string, kind: string) => ({ title: "Fixture results", items: kind === "album"
+      ? [{ id: "album", kind: "album", title: "Fixture album" }] : [song],
+      more: async () => ({ title: "Fixture results", items: [{ ...song, id: "second", title: "More results" }] }) }),
+    browseMusic: async () => ({ title: "Inside album", items: [song] }),
+  };
+});
+vi.mock("../src/player/resolve", () => ({ createStreamResolver: () => async () => ({ url: "https://example.com/audio", expiresAt: Infinity }) }));
 const app = () => render(<ThemeProvider theme={uiTheme}><App /></ThemeProvider>);
 async function press(view: ReturnType<typeof app>, key: string) { view.stdin.write(key); await tick(); }
 afterEach(() => { cleanup(); rmSync(sessionFile, { force: true }); });
 
 describe("App player workflow", () => {
+  it("searches and browses Discover, queues a stream, plays and restores it paused", async () => {
+    const view = app(); await tick(); await tick();
+    expect(view.lastFrame()).toContain("8 Discover");
+    await press(view, "8"); await press(view, "/"); await press(view, "fixture"); await press(view, "\r");
+    expect(view.lastFrame()).toContain("Online fixture song");
+    await press(view, "L"); expect(view.lastFrame()).toContain("More results");
+    await press(view, "]"); await press(view, "]"); expect(view.lastFrame()).toContain("Fixture album");
+    await press(view, "\r"); expect(view.lastFrame()).toContain("Inside album");
+    await press(view, "A"); expect(view.lastFrame()).toContain("Added to queue");
+    await press(view, "7"); expect(view.lastFrame()).toContain("[stream]");
+    await press(view, "\r"); await press(view, "m"); expect(view.lastFrame()).toContain("Streaming");
+    view.unmount(); await tick();
+    const saved = readSession()!; expect(saved.streams?.[saved.ids[0]!]!.streamUrl).toContain("music.youtube.com");
+    const again = app(); await tick(); await tick(); await press(again, "m");
+    expect(again.lastFrame()).toContain("Paused · shuffle off");
+    expect(again.lastFrame()).toContain("Online fixture song");
+    await press(again, " "); expect(again.lastFrame()).toContain("Playing · shuffle off");
+  });
   it("advertises player, queues from Library, edits in player, and restores through a new App", async () => {
     const view = app(); await tick(); await tick();
     expect(view.lastFrame()).toContain("m Player");

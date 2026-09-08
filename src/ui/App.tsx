@@ -16,6 +16,8 @@ import { reconcileLibrary } from "../library/reconcile";
 import { legacyArchiveFile } from "../config/paths";
 import type { Track } from "../library/types";
 import { Playback, type PlaybackState } from "../player/playback";
+import { createStreamResolver } from "../player/resolve";
+import { Discover } from "./sections/Discover";
 import { readSession, persistListeningSession } from "../player/session";
 import { existsSync } from "node:fs";
 import { PlayHistory } from "../player/history";
@@ -63,6 +65,8 @@ interface Boot {
 
 function Content({ section }: { section: Section }) {
   switch (section) {
+    case "discover":
+      return <Discover />;
     case "player":
       return <NowPlayingView embedded />;
     case "queue":
@@ -196,7 +200,7 @@ export function App({ initialAdd }: { initialAdd?: string } = {}) {
       // Library is now the source of truth, so drop the legacy yt-dlp archive.
       void fs.rm(legacyArchiveFile, { force: true }).catch(() => {});
       const binaries = await ensureBinaries(setStatus);
-      const playback = new Playback(binaries.mpv);
+      const playback = new Playback(binaries.mpv, undefined, createStreamResolver(loadConfig));
 
       // Recently played: record every track the player actually starts,
       // including auto-advance and next/prev, not just explicit picks.
@@ -236,7 +240,7 @@ export function App({ initialAdd }: { initialAdd?: string } = {}) {
 
       playback.on("state", (s: PlaybackState) => {
         const id = s.track?.id;
-        if (id && id !== lastPlayedId) {
+        if (id && library.has(id) && id !== lastPlayedId) {
           lastPlayedId = id;
           history.record(id);
         }
@@ -507,7 +511,7 @@ export function App({ initialAdd }: { initialAdd?: string } = {}) {
         quitAll();
         return;
       }
-      if (captureMode === "none") {
+      if (captureMode === "none" || captureMode === "esc") {
         // Digits jump straight to a section, no sidebar round-trip.
         const jump = sectionForDigit(input);
         if (jump) {
@@ -522,7 +526,7 @@ export function App({ initialAdd }: { initialAdd?: string } = {}) {
           if (
             section === "playlists" ||
             section === "download" ||
-            section === "history"
+            section === "history" || section === "discover"
           )
             return;
           setSection("library");

@@ -24,11 +24,12 @@ const SECTION_ORDER: Section[] = [
   "settings",
   "player",
   "queue",
+  "discover",
 ];
 
 /** Map "1".."5" to its section (the sidebar's display order); null otherwise. */
 export function sectionForDigit(input: string): Section | null {
-  if (!/^[1-7]$/.test(input)) return null;
+  if (!/^[1-8]$/.test(input)) return null;
   return SECTION_ORDER[Number(input) - 1] ?? null;
 }
 
@@ -40,7 +41,7 @@ export const HELP_GROUPS: HelpGroup[] = [
       { keys: "↑ ↓", label: "Move" },
       { keys: "PgUp PgDn", label: "Jump a page" },
       { keys: "↵", label: "Open / play" },
-      { keys: "1-7", label: "Jump section" },
+      { keys: "1-8", label: "Jump section" },
       { keys: "/", label: "Search" },
       { keys: "d", label: "Delete" },
       { keys: "t", label: "Rename" },
@@ -73,6 +74,18 @@ export const HELP_GROUPS: HelpGroup[] = [
       { keys: "u D", label: "Queue: move up / down" },
       { keys: "x", label: "Queue: remove (keeps file)" },
       { keys: "X", label: "Queue: clear and stop (confirm)" },
+    ],
+  },
+  {
+    title: "Discover (YouTube Music)",
+    hints: [
+      { keys: "8 /", label: "Open Discover / search" },
+      { keys: "[ ]", label: "Song / video / album / artist / playlist" },
+      { keys: "↵", label: "Stream song or browse collection" },
+      { keys: "A P", label: "Append / queue next" },
+      { keys: "d", label: "Download selected song" },
+      { keys: "L", label: "Load more results" },
+      { keys: "esc", label: "Back / cancel loading" },
     ],
   },
   {
@@ -119,6 +132,9 @@ export function footerHints(
   // In content, esc only mirrors tab (back to the sidebar), so the hint slot
   // goes to tab; esc appears only where it means something else (songs depth).
   switch (section) {
+    case "discover":
+      return [{ keys: "/", label: "Search" }, { keys: "[ ]", label: "Type" },
+        { keys: "A/P", label: "Queue" }, { keys: "d", label: "Download" }, ALWAYS];
     case "player":
     case "queue":
       return [{ keys: "↵", label: "Play" }, { keys: "u D", label: "Move" },

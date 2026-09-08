@@ -23,6 +23,7 @@ import {
 import { ACCENT_RAMP, COLOR, ICON, RULE, lerpHex } from "../theme";
 import { GradientBar } from "../components/GradientBar";
 import { ListeningQueue } from "./ListeningQueue";
+import { isStream } from "../../player/media";
 
 /** Amplitude → block-glyph ramp (same trusted glyph block as GradientBar). */
 const WAVE_GLYPHS = ["▁", "▂", "▃", "▄", "▅", "▆", "▇", "█"] as const;
@@ -146,6 +147,7 @@ export function NowPlaying({ embedded = false }: { embedded?: boolean }) {
   const buckets = Math.max(8, Math.min(infoW, 64));
 
   const file = st.track?.filePath;
+  const visualSource = st.track && isStream(st.track) ? st.track.thumbnailUrl : file;
 
   // Extraction state, keyed to the file it belongs to: a stale frame can
   // never paint the previous track's cover over the new title. `visual` is
@@ -159,28 +161,29 @@ export function NowPlaying({ embedded = false }: { embedded?: boolean }) {
   } | null>(null);
 
   useEffect(() => {
-    if (!file || !rich) return;
+    if (!visualSource || !rich) return;
+    const file = visualSource;
     let cancelled = false;
     setVisual(null);
     // Art paints as soon as it arrives; a full audio scan never holds it back.
     void loadCoverArt(file, artCols, artRows).then(art => {
       if (!cancelled) setVisual(v => ({ file, art, wave: v?.file === file ? v.wave : null, artReady: true }));
     });
-    void loadWaveform(file, buckets).then(wave => {
+    if (st.track && !isStream(st.track)) void loadWaveform(file, buckets).then(wave => {
       if (!cancelled) setVisual(v => ({ file, wave, art: v?.file === file ? v.art : null, artReady: v?.file === file && v.artReady }));
     });
     return () => {
       cancelled = true;
     };
-  }, [file, rich, artCols, artRows, buckets]);
+  }, [visualSource, file, rich, artCols, artRows, buckets]);
 
   // Guarded by the file check so a stale extraction never paints the previous
   // track's art over the new title while its own extraction runs.
   const mine =
-    visual !== null && visual.file === file ? visual : null;
+    visual !== null && visual.file === visualSource ? visual : null;
   const art: CoverArt | null = mine?.art ?? null;
   const wave: Waveform | null = mine?.wave ?? null;
-  const artReady = mine?.artReady ?? false;
+  const artReady = mine?.artReady ?? !visualSource;
 
   if (!st.track) {
     return (
@@ -265,6 +268,9 @@ export function NowPlaying({ embedded = false }: { embedded?: boolean }) {
         </Box>
       )}
       <Text dimColor wrap="truncate-end">{`${st.paused ? "Paused" : "Playing"} · shuffle ${st.shuffle ? "on" : "off"} · repeat ${st.repeat}`}</Text>
+      <Text color={st.error ? COLOR.warn : undefined} dimColor={!st.error} wrap="truncate-end">
+        {st.error || `${isStream(t) ? "Streaming" : "Saved locally"}${st.preloading ? " · preparing next…" : st.nextReady ? " · next prepared" : ""}`}
+      </Text>
     </Box>
   );
 

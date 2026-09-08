@@ -31,10 +31,39 @@ real mpv acceptance passes on the development Mac; clean Mac installation is pen
 in an isolated temporary profile (requires ffmpeg and mpv on PATH).
 See [changelog and verification](CHANGELOG.md) for this build's scope and limitations.
 
-Streaming/discovery development: the provider foundation now separates remote
-metadata from downloaded files, resolves audio through yt-dlp with current cookie
-settings, and keeps signed media URLs in a bounded memory cache. YouTube Music
-search uses YouTube.js, signed out. Player/UI integration is in progress.
+### Discover and stream (development build 0.1.0-dev.2)
+
+Press `8` for **Discover**, then `/` to search YouTube Music without signing in.
+`[` / `]` switches songs, videos, albums, artists and playlists. Enter streams a
+song or opens a collection; `esc` goes back. `L` loads more results when offered.
+`A` appends the selected song, `P` queues it next, and `d` opens the existing
+download workflow to save it. Streaming itself never adds a file to your library.
+A search selection is a one-off in your running queue; playing inside a browsed
+collection uses its currently loaded songs as the playback context. Load more
+before playing if you want those additional songs included too.
+
+Local files and streams share one queue. `[stream]` marks remote entries; the
+player shows **Streaming** or **Saved locally**, plus next-track preparation.
+Stream artwork comes from its thumbnail; waveform extraction remains local-only.
+Remote queue entries restore paused without a network lookup until you press play.
+Only stable page URLs/metadata are saved; expiring audio URLs stay in memory.
+History currently lists saved-library plays only, not streamed plays.
+
+Streaming requires **mpv 0.38 or newer** and yt-dlp. Your current browser-cookie
+settings are used for audio resolution, separately from signed-out Music search.
+First stream resolution can take several seconds (about 16 seconds in one real
+test here); restricted/unavailable results may fail. A rejected media URL is
+refreshed once; errors keep the queue so you can retry with space or skip with `n`.
+No signed-in library, likes, radio or lyrics yet.
+
+The next entry is resolved ahead and appended to mpv for prefetch. “Next prepared”
+means queued in mpv, not a guarantee it has buffered all audio. mpv decides when
+to read ahead; changing the queue while paused may defer new buffering until play.
+Cache limits are 32 MiB forward/4 MiB backward per demuxer; resolved-URL cache is
+100 entries with at most five minutes' reuse. This is **not a universal gapless
+guarantee** across codecs, long pauses and network conditions.
+`npx tsx scripts/smoke-streaming.ts` verifies real HTTP prefetch and mixed-queue
+transitions using silent audio and a loopback server, with no library changes.
 
 Own your music. Download your YouTube, SoundCloud, and Spotify libraries to your computer and play them offline, all from your terminal.
 
@@ -108,7 +137,10 @@ Full list via `soundcli --help`:
    jukeboxcli
    ```
 
-That's it — on first run soundcli downloads yt-dlp and ffmpeg itself (into `~/Library/Caches/soundcli/bin`), so no other dependencies are needed. mpv for in-terminal playback is optional: `brew install mpv` (without it, tracks open in your default player).
+On first run the app sets up yt-dlp and ffmpeg (under the default profile,
+`~/Library/Caches/soundcli/bin`). Install mpv 0.38+ with `brew install mpv` for
+streaming and in-terminal playback. Without mpv, saved files can open in your
+default player, but streaming is unavailable.
 
 **What `install.sh` does:** installs locked dependencies, builds, then installs the
 package globally. This installs `jukeboxcli` AND replaces the `soundcli` alias.

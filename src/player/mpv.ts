@@ -4,6 +4,7 @@ import net from "node:net";
 import os from "node:os";
 import path from "node:path";
 import fs from "node:fs";
+import type { ResolvedMedia } from "./media";
 
 interface Pending {
   resolve: (value: unknown) => void;
@@ -46,6 +47,9 @@ export class MpvPlayer extends EventEmitter {
   private loaded = false;
   private loadChain: Promise<void> = Promise.resolve();
   private loadEpoch = 0;
+  private currentEntryId: number | null = null;
+  private nextEntry: { id: number; token: number } | null = null;
+  private lastAdvancedToken: number | null = null;
 
   constructor(mpvPath: string) {
     super();
@@ -75,6 +79,9 @@ export class MpvPlayer extends EventEmitter {
    * Used both on an unexpected exit (auto-respawn) and during teardown.
    */
   private resetConnection(): void {
+    this.nextEntry = null;
+    this.currentEntryId = null;
+    this.lastAdvancedToken = null;
     this.loaded = false;
     if (this.sock) {
       try {
@@ -117,6 +124,10 @@ export class MpvPlayer extends EventEmitter {
           "--no-video",
           "--no-terminal",
           "--really-quiet",
+          "--prefetch-playlist=yes",
+          "--cache=yes",
+          "--demuxer-max-bytes=32MiB",
+          "--demuxer-max-back-bytes=4MiB",
           `--volume=${this.initialVolume}`,
           `--input-ipc-server=${this.ipcPath}`,
         ],
@@ -194,9 +205,16 @@ export class MpvPlayer extends EventEmitter {
         continue;
       }
       if (typeof msg.event === "string") {
-        if (msg.event === "file-loaded") {
+        if (msg.event === "start-file") {
+          this.currentEntryId = Number(msg.playlist_entry_id);
+        } else if (msg.event === "file-loaded") {
           this.loaded = true;
+          this.notifyAdvance();
           this.emit("loaded");
+        } else if (msg.event === "end-file" && msg.reason === "error") {
+          this.loaded = false;
+          this.emit("load-cancelled");
+          this.emit("media-error", this.nextEntry?.id === Number(msg.playlist_entry_id) ? this.nextEntry.token : null);
         } else if (msg.event === "property-change") {
           this.emit("property", msg.name as string, msg.data);
         } else if (
@@ -247,9 +265,24 @@ export class MpvPlayer extends EventEmitter {
   }
 
   async loadFile(file: string, startPaused = false): Promise<void> {
+    return this.loadMedia({ url: file, expiresAt: Infinity }, startPaused);
+  }
+
+  private mediaCommand(media: ResolvedMedia, action: "replace" | "append") {
+    const options: Record<string, string> = { "ytdl": "no", "http-header-fields": "" };
+    // mpv's string-list escaping uses backslashes for commas and backslashes.
+    if (media.headers && Object.keys(media.headers).length) {
+      options["http-header-fields"] = Object.entries(media.headers)
+        .map(([name, value]) => `${name}: ${value}`.replace(/\\/g, "\\\\").replace(/,/g, "\\,")) .join(",");
+    }
+    return ["loadfile", media.url, action, -1, options];
+  }
+
+  async loadMedia(media: ResolvedMedia, startPaused = false): Promise<void> {
     const epoch = this.loadEpoch;
     const load = async () => {
       if (epoch !== this.loadEpoch) throw new Error("mpv load cancelled");
+      this.nextEntry = null;
       // Set pause before loading, so session restore never leaks an audio burst.
       await this.command(["set_property", "pause", startPaused]);
       if (epoch !== this.loadEpoch) throw new Error("mpv load cancelled");
@@ -265,7 +298,7 @@ export class MpvPlayer extends EventEmitter {
         timer = setTimeout(() => reject(new Error("mpv file load timed out")), 10000);
       });
       try {
-        await Promise.all([this.command(["loadfile", file, "replace"]), ready]);
+        await Promise.all([this.command(this.mediaCommand(media, "replace")), ready]);
       } finally {
         clearTimeout(timer!);
         this.off("loaded", loaded!);
@@ -275,6 +308,58 @@ export class MpvPlayer extends EventEmitter {
     const pending = this.loadChain.then(load);
     this.loadChain = pending.catch(() => {});
     return pending;
+  }
+
+  private notifyAdvance(): void {
+    if (this.loaded && this.nextEntry && this.currentEntryId === this.nextEntry.id) {
+      const token = this.nextEntry.token;
+      this.lastAdvancedToken = token;
+      this.nextEntry = null;
+      this.emit("advanced", token);
+    }
+  }
+
+  clearNext(): Promise<void> {
+    this.nextEntry = null;
+    const epoch = this.loadEpoch;
+    const work = this.loadChain.then(async () => {
+      if (epoch === this.loadEpoch && this.sock) await this.command(["playlist-clear"]);
+    });
+    this.loadChain = work.catch(() => {});
+    return work;
+  }
+
+  preloadNext(media: ResolvedMedia, token: number, signal: AbortSignal): Promise<void> {
+    const epoch = this.loadEpoch;
+    const work = this.loadChain.then(async () => {
+      if (epoch !== this.loadEpoch || signal.aborted) return;
+      await this.command(["playlist-clear"]);
+      if (epoch !== this.loadEpoch || signal.aborted) return;
+      await this.command(this.mediaCommand(media, "append"));
+      const entries = await this.command(["get_property", "playlist"]) as { id: number }[];
+      if (epoch !== this.loadEpoch || signal.aborted) {
+        if (epoch === this.loadEpoch) await this.command(["playlist-clear"]);
+        return;
+      }
+      const next = entries.at(-1);
+      if (next) { this.nextEntry = { id: next.id, token }; this.notifyAdvance(); }
+    });
+    this.loadChain = work.catch(() => {});
+    return work;
+  }
+
+  async playPrepared(token: number): Promise<boolean> {
+    if (this.lastAdvancedToken === token) return true;
+    if (this.nextEntry?.token !== token) return false;
+    // Natural advance may already be loading this entry; never load it twice.
+    if (this.currentEntryId === this.nextEntry.id) return true;
+    const entries = await this.command(["get_property", "playlist"]) as { id: number }[];
+    if (this.nextEntry?.token !== token) return this.lastAdvancedToken === token;
+    if (this.currentEntryId === this.nextEntry.id) return true;
+    const at = entries.findIndex(e => e.id === this.nextEntry!.id);
+    if (at < 0) return false;
+    await this.command(["playlist-play-index", at]);
+    return true;
   }
 
   async togglePause(): Promise<void> {
@@ -305,6 +390,7 @@ export class MpvPlayer extends EventEmitter {
 
   /** Stop playback and unload the current file without killing the process. */
   async stop(): Promise<void> {
+    this.nextEntry = null;
     this.loadEpoch++;
     this.emit("load-cancelled");
     this.loaded = false;
@@ -316,6 +402,7 @@ export class MpvPlayer extends EventEmitter {
    * and (on unix) unlink the socket file. Safe to call more than once.
    */
   quit(): void {
+    this.nextEntry = null;
     this.loadEpoch++;
     this.emit("load-cancelled");
     this.quitting = true;

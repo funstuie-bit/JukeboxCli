@@ -1,6 +1,7 @@
 import { EventEmitter } from "node:events";
 import { existsSync } from "node:fs";
-import type { Track } from "../library/types";
+import type { Track as LibraryTrack } from "../library/types";
+import { isStream, streamMetadata, type PlayableTrack as Track, type MediaResolver, type ResolvedMedia } from "./media";
 import { MpvPlayer } from "./mpv";
 import { onEndedDecision, shuffledOrder, stepIndex } from "./order";
 import { openPath } from "../util/open-path";
@@ -30,6 +31,9 @@ export interface PlaybackState {
   loading?: boolean;
   /** True when transport controls actually work (engine === 'mpv'). */
   canControl?: boolean;
+  error?: string;
+  preloading?: boolean;
+  nextReady?: boolean;
 }
 
 export type Opener = (file: string) => void;
@@ -100,8 +104,13 @@ export class Playback extends EventEmitter {
   /** True while prev() replays a popped entry, so it isn't pushed back. */
   private popping = false;
   private playRequest = 0;
+  private resolving: AbortController | null = null;
+  private prefetchAbort: AbortController | null = null;
+  private prefetchWork: Promise<void> = Promise.resolve();
+  private prefetchToken = 0;
+  private prepared: { token: number; index: number; track: Track; media: ResolvedMedia } | null = null;
 
-  constructor(mpvPath: string | null, opener: Opener = defaultOpener) {
+  constructor(mpvPath: string | null, opener: Opener = defaultOpener, private readonly resolver?: MediaResolver) {
     super();
     this.mpvPath = mpvPath;
     this.opener = opener;
@@ -133,15 +142,16 @@ export class Playback extends EventEmitter {
   }
 
   session(): ListeningSession {
-    return { version: 1, ids: this.state.list.map(t => t.id), index: this.state.index,
+    const streams = Object.fromEntries(this.state.list.filter(isStream).map(t => [t.id, streamMetadata(t)]));
+    return { version: 2, streams, ids: this.state.list.map(t => t.id), index: this.state.index,
       order: [...this.order], backStack: [...this.backStack], position: this.state.position,
       volume: this.state.volume, shuffle: Boolean(this.state.shuffle), repeat: this.state.repeat };
   }
 
-  async restoreSession(s: ListeningSession, resolve: (id: string) => Track | undefined): Promise<void> {
+  async restoreSession(s: ListeningSession, resolve: (id: string) => LibraryTrack | undefined): Promise<void> {
     const list: Track[] = [];
     const map = new Map<number, number>();
-    s.ids.forEach((id, i) => { const t = resolve(id); if (t) { map.set(i, list.length); list.push(t); } });
+    s.ids.forEach((id, i) => { const t = resolve(id) ?? s.streams?.[id]; if (t) { map.set(i, list.length); list.push(t); } });
     const remap = (xs: number[]) => xs.flatMap(i => map.has(i) ? [map.get(i)!] : []);
     this.order = remap(s.order);
     this.backStack = remap(s.backStack);
@@ -149,7 +159,8 @@ export class Playback extends EventEmitter {
     this.update({ list, index, track: list[index] ?? null, position: index < 0 ? 0 : s.position,
       volume: s.volume, shuffle: s.shuffle, repeat: s.repeat, paused: true });
     // Restore never opens an external application or starts audible playback.
-    if (index >= 0 && this.mpvPath) {
+    // Remote restoration is lazy: offline launch remains usable and silent.
+    if (index >= 0 && this.mpvPath && !isStream(list[index]!)) {
       await this.play(list[index]!, list, index, true);
       if (this.mpv && this.state.engine === "mpv") {
         await this.mpv.seekAbsolute(s.position).catch(() => {});
@@ -233,6 +244,42 @@ export class Playback extends EventEmitter {
   private update(patch: Partial<PlaybackState>): void {
     this.state = { ...this.state, ...patch };
     this.emit("state", this.state);
+    if (patch.list || patch.repeat !== undefined) this.schedulePrefetch();
+  }
+
+  private cancelPrefetch(): void {
+    this.prefetchAbort?.abort(); this.prefetchAbort = null;
+    this.prefetchToken++; this.prepared = null;
+    this.update({ preloading: false, nextReady: false });
+  }
+
+  private async media(track: Track, signal: AbortSignal, fresh = false): Promise<ResolvedMedia> {
+    if (!isStream(track)) return { url: track.filePath, expiresAt: Infinity };
+    if (!this.resolver) throw new Error("Streaming is not available in this player.");
+    return this.resolver(track, signal, fresh);
+  }
+
+  private schedulePrefetch(): void {
+    this.cancelPrefetch();
+    const m = this.mpv;
+    if (!m || this.state.loading || !this.state.track) return;
+    const signal = (this.prefetchAbort = new AbortController()).signal;
+    const token = this.prefetchToken;
+    const index = onEndedDecision(this.order, this.state.index, this.state.repeat);
+    const track = index === "stop" ? undefined : this.state.list[index];
+    this.prefetchWork = (async () => {
+      await m.clearNext();
+      if (signal.aborted) return;
+      if (!track || index === "stop") { this.update({ preloading: false, nextReady: false }); return; }
+      this.update({ preloading: true, nextReady: false });
+      const media = await this.media(track, signal);
+      if (signal.aborted) return;
+      this.prepared = { token, track, index, media };
+      await m.preloadNext(media, token, signal);
+      if (!signal.aborted) this.update({ preloading: false, nextReady: true });
+    })().catch(() => {
+      if (!signal.aborted) { this.prepared = null; this.update({ preloading: false, nextReady: false }); }
+    });
   }
 
   private ensureMpv(): MpvPlayer | null {
@@ -253,7 +300,27 @@ export class Playback extends EventEmitter {
         if (vol !== this.state.volume) this.update({ volume: vol });
       }
     });
-    m.on("ended", () => void this.onEnded());
+    m.on("ended", () => void this.onEnded().catch(() => this.update({ error: "Could not advance playback. Select a queue entry to retry." })));
+    m.on("advanced", (token: number) => {
+      const next = this.prepared;
+      if (!next || next.token !== token) return;
+      this.playRequest++;
+      if (this.state.index >= 0 && next.index !== this.state.index) this.backStack.push(this.state.index);
+      this.backStack = this.backStack.slice(-500);
+      this.prepared = null;
+      this.update({ track: next.track, index: next.index, position: 0,
+        duration: next.track.durationSec ?? 0, loading: false, engine: "mpv", canControl: true, error: undefined });
+      this.schedulePrefetch();
+    });
+    m.on("media-error", (token: number | null) => {
+      if (this.state.loading) return; // foreground load handles its own retry
+      const next = this.prepared;
+      if (next && next.token === token) {
+        void this.play(next.track, this.state.list, next.index, this.state.paused, true);
+      } else {
+        this.update({ error: "Playback interrupted. Press enter on the track in Queue to retry, or n to skip.", loading: false });
+      }
+    });
     // If mpv dies unexpectedly mid-session, drop our handle so the next play()
     // spins up a fresh process (MpvPlayer also resets its own socket state).
     m.on("quit", () => {
@@ -275,6 +342,10 @@ export class Playback extends EventEmitter {
 
   /** A track finished on its own: honor repeat/shuffle via the pure decision. */
   private async onEnded(): Promise<void> {
+    const request = this.playRequest;
+    await this.prefetchWork;
+    if (request !== this.playRequest) return;
+    if (this.prepared && this.prepared.media.expiresAt > Date.now() && await this.mpv?.playPrepared(this.prepared.token)) return;
     const decision = onEndedDecision(
       this.order,
       this.state.index,
@@ -313,6 +384,7 @@ export class Playback extends EventEmitter {
     this.state = { ...this.state, shuffle };
     this.rebuildOrder();
     this.update({});
+    this.schedulePrefetch();
   }
 
   /**
@@ -328,10 +400,14 @@ export class Playback extends EventEmitter {
     this.state = { ...this.state, list, index };
     this.rebuildOrder();
     this.update({});
+    this.schedulePrefetch();
   }
 
-  async play(track: Track, list: Track[] = [track], index = -1, startPaused = false): Promise<void> {
+  async play(track: Track, list: Track[] = [track], index = -1, startPaused = false, fresh = false): Promise<void> {
     const request = ++this.playRequest;
+    this.resolving?.abort();
+    const signal = (this.resolving = new AbortController()).signal;
+    this.cancelPrefetch();
     const idx = index >= 0 ? index : list.findIndex((t) => t.id === track.id);
     const safeIdx = idx < 0 ? 0 : idx;
     // A continuation of the same list (e.g. from next()/prev()) keeps the
@@ -353,6 +429,7 @@ export class Playback extends EventEmitter {
       duration: track.durationSec ?? 0,
       paused: startPaused,
       loading: Boolean(this.mpvPath),
+      error: undefined, nextReady: false, preloading: false,
     };
     if (newList) this.rebuildOrder();
     this.update({});
@@ -360,7 +437,19 @@ export class Playback extends EventEmitter {
     const m = this.ensureMpv();
     if (m) {
       try {
-        await m.loadFile(track.filePath, startPaused);
+        // Cancel any old audible/preloaded entry before a slow URL lookup.
+        await m.stop();
+        if (request !== this.playRequest) return;
+        const media = await this.media(track, signal, fresh);
+        if (request !== this.playRequest) return;
+        try { await m.loadMedia(media, startPaused); }
+        catch (error) {
+          if (!isStream(track) || fresh || signal.aborted) throw error;
+          await m.stop();
+          const renewed = await this.media(track, signal, true);
+          if (request !== this.playRequest) return;
+          await m.loadMedia(renewed, startPaused);
+        }
         if (request !== this.playRequest) return;
         const volume = clampVolume(await m.getVolume());
         if (request !== this.playRequest) return;
@@ -370,9 +459,18 @@ export class Playback extends EventEmitter {
           loading: false,
           volume,
         });
+        this.schedulePrefetch();
         return;
-      } catch {
+      } catch (error) {
         if (request !== this.playRequest) return;
+        if (isStream(track)) {
+          await m.stop().catch(() => {});
+          if (request !== this.playRequest) return;
+          this.update({ engine: "mpv", canControl: true, loading: false, paused: true,
+            error: error instanceof Error && /^(Streaming|Could not resolve|Only HTTP)/.test(error.message)
+              ? error.message : "Could not play this stream. Select it in Queue to retry, or n to skip." });
+          return;
+        }
         // mpv failed to start or load: fall through to the external opener.
         // The failed instance may still own a live process, its IPC socket,
         // and our listeners; quit() tears all of that down (it is safe on an
@@ -384,10 +482,15 @@ export class Playback extends EventEmitter {
       }
     }
     this.update({ engine: "external", canControl: false, loading: false });
-    if (!startPaused) this.opener(track.filePath);
+    if (isStream(track)) {
+      this.update({ error: "Streaming needs mpv. Install mpv, then restart JukeboxCli.", paused: true });
+    } else if (!startPaused) this.opener(track.filePath);
   }
 
   async togglePause(): Promise<void> {
+    if (this.state.error && this.state.track) {
+      await this.play(this.state.track, this.state.list, this.state.index, false, true); return;
+    }
     if (!this.state.track) {
       const first = this.order[0];
       if (first !== undefined) await this.playQueueIndex(first);
@@ -395,7 +498,12 @@ export class Playback extends EventEmitter {
     }
     if (!this.mpv) {
       const index = this.state.index >= 0 ? this.state.index : this.order[0];
-      if (index !== undefined) await this.playQueueIndex(index);
+      const position = this.state.position;
+      if (index !== undefined) {
+        await this.playQueueIndex(index);
+        const m = this.mpv as MpvPlayer | null;
+        if (m && position > 0) await m.seekAbsolute(position).catch(() => {});
+      }
       return;
     }
     const was = this.state.paused;
@@ -465,7 +573,8 @@ export class Playback extends EventEmitter {
    * later play() resumes normally; for mpv this unloads the file too.
    */
   async stop(): Promise<void> {
-    this.playRequest++;
+    this.resolving?.abort(); this.cancelPrefetch();
+    const request = ++this.playRequest;
     if (this.mpv) {
       try {
         await this.mpv.stop();
@@ -473,6 +582,7 @@ export class Playback extends EventEmitter {
         // ignore, we still clear our own state below
       }
     }
+    if (request !== this.playRequest) return;
     this.order = [];
     this.backStack = [];
     this.update({
@@ -483,6 +593,7 @@ export class Playback extends EventEmitter {
       duration: 0,
       paused: false,
       loading: false,
+      error: undefined, preloading: false, nextReady: false,
     });
   }
 
@@ -490,6 +601,11 @@ export class Playback extends EventEmitter {
     if (!this.state.list.length) return;
     const ni = stepIndex(this.order, this.state.index, this.state.repeat, 1);
     if (ni === null) return; // end of the list
+    const prepared = this.prepared;
+    if (prepared?.index === ni && prepared.media.expiresAt > Date.now()) {
+      await this.mpv?.command(["set_property", "pause", false]);
+      if (await this.mpv?.playPrepared(prepared.token)) { this.update({ paused: false }); return; }
+    }
     await this.play(this.state.list[ni]!, this.state.list, ni);
   }
 
@@ -543,6 +659,7 @@ export class Playback extends EventEmitter {
   }
 
   quit(): void {
+    this.resolving?.abort(); this.cancelPrefetch();
     this.playRequest++;
     this.mpv?.quit();
     this.mpv = null;

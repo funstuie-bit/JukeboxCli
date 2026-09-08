@@ -16,6 +16,7 @@ const NAV: NavItem[] = [
   { key: "settings", label: "Settings" },
   { key: "player", label: "Now Playing" },
   { key: "queue", label: "Queue" },
+  { key: "discover", label: "Discover" },
 ];
 
 export function Sidebar() {

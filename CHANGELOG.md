@@ -1,5 +1,28 @@
 # Changelog
 
+## 0.1.0-dev.2 — streaming and public discovery (2026-09-07)
+
+- Visible Discover (8): signed-out YouTube Music search, five result types,
+  album/artist/playlist browsing, pagination, stream/queue/download actions.
+- Mixed local/remote queues, next-track preparation through mpv, cancellable URL
+  resolution, one refresh on rejected media URLs and visible retry/skip errors.
+- Stream thumbnails, explicit saved/streaming state and remote session v2 restore
+  without network access until play. v1 sessions remain readable; music is unchanged.
+- Corrected numbered navigation inside drill-downs and stale next-ready status.
+
+Verification: 504 tests passed, 4 inherited skipped; typecheck/build/distribution
+import guard clean, runtime npm audit zero findings. Real mpv 0.41 on this Mac passed silent HTTP prefetch with per-file
+headers, stream→stream→local automatic transitions exactly once, next-entry edits
+and prepared skip. Existing real local restore/transport smoke also passes.
+A real public YouTube Music song loaded paused/muted through yt-dlp in ~16 seconds.
+Automated App tests cover search/browse/pagination/queue/stream/paused reopening;
+provider-boundary tests include the service's distinct continuation shelf shape.
+
+Limits: mpv 0.38+ required for streaming. Preparation is not a buffered/gapless
+guarantee. Search is signed out; account/likes/radio/lyrics and streamed history
+remain future work. Collections queue currently loaded songs only. No clean-Mac
+or Intel acceptance claimed; existing cookies/import controls remain unchanged.
+
 ## 0.1.0-dev.1 — first JukeboxCli development build (2026-09-07)
 
 - Visible Now Playing (6/m) and Queue (7), persistent shortcut hints and JukeboxCli branding.

@@ -38,6 +38,7 @@ export function NowPlayingBar() {
   }
 
   const t = st.track;
+  if (st.error) return <Text color={COLOR.warn} wrap="truncate-end">{st.error}</Text>;
   // Hard caps on top of the flexbox truncation: a single absurd title must
   // never crowd the time/volume readout off the line.
   const title = truncate(cleanText(t.title), 56);
