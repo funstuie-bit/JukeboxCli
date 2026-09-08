@@ -6,6 +6,7 @@ export interface StreamTrack extends Omit<Track, "filePath"> {
   filePath?: never;
   streamUrl: string;
   thumbnailUrl?: string;
+  stationWebsite?: string;
   /** Absent on legacy entries: resolve a provider page through yt-dlp. */
   streamType?: "extractor" | "direct" | "radio";
   isLive?: boolean;
@@ -35,5 +36,5 @@ export function streamMetadata(t: StreamTrack): StreamTrack {
     title: t.title, artist: t.artist, album: t.album, durationSec: t.durationSec,
     playlist: t.playlist, addedAt: t.addedAt, streamUrl: t.streamUrl,
     webpageUrl: t.streamUrl, thumbnailUrl: t.thumbnailUrl,
-    streamType: t.streamType, isLive: t.isLive };
+    streamType: t.streamType, isLive: t.isLive, stationWebsite: t.stationWebsite };
 }

@@ -191,6 +191,13 @@ export class Playback extends EventEmitter {
     if (t) await this.play(t, this.state.list, index);
   }
 
+  /** Rename matching radio entries in place, never reload audio or add duplicates. */
+  renameStation(url: string, title: string): void {
+    const rename = (t: Track): Track => isStream(t) && t.streamType === "radio" && t.streamUrl === url ? { ...t, title } : t;
+    this.state = { ...this.state, list: this.state.list.map(rename), track: this.state.track ? rename(this.state.track) : null };
+    this.update({});
+  }
+
   /** Keep queued extras when choosing a song already in the current context. */
   async selectTrack(track: Track, context: Track[]): Promise<void> {
     const index = this.state.list.findIndex(t => t.id === track.id);

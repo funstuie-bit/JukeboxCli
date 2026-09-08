@@ -94,11 +94,11 @@ export const HELP_GROUPS: HelpGroup[] = [
   {
     title: "Radio / URL (9)",
     hints: [
-      { keys: "o", label: "YouTube / direct audio URL" },
-      { keys: "R", label: "Enter live radio stream URL" },
+      { keys: "o", label: "YouTube / website / audio URL" },
+      { keys: "R", label: "Detect radio website / feed / playlist" },
       { keys: "↵", label: "Accept link, then play selected" },
       { keys: "A P", label: "Append / queue next" },
-      { keys: "f", label: "Save / rename radio favourite" },
+      { keys: "f / t", label: "Save / rename radio favourite" },
       { keys: "x", label: "Remove favourite (confirm) / new link" },
       { keys: "space", label: "Live: disconnect / reconnect" },
     ],
@@ -149,7 +149,7 @@ export function footerHints(
   switch (section) {
     case "listen":
       return [{ keys: "o", label: "Play URL" }, { keys: "R", label: "Radio URL" },
-        { keys: "f", label: "Favourite" }, { keys: "A/P", label: "Queue" }, ALWAYS];
+        { keys: "f/t", label: "Save/rename" }, { keys: "A/P", label: "Queue" }, ALWAYS];
     case "discover":
       return [{ keys: "/", label: "Search" }, { keys: "↵", label: "Stream" },
         { keys: "o", label: "Play URL" }, { keys: "A/P", label: "Queue" }, ALWAYS];

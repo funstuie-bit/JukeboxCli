@@ -62,11 +62,26 @@ vi.mock("../src/sources/music", () => {
   };
 });
 vi.mock("../src/player/resolve", () => ({ createStreamResolver: () => async () => ({ url: "https://example.com/audio", expiresAt: Infinity }) }));
+vi.mock("../src/player/feeds", async importOriginal => {
+  const actual = await importOriginal<typeof import("../src/player/feeds")>();
+  return { ...actual, discoverFeeds: (url: string, radio: boolean, signal: AbortSignal) => actual.discoverFeeds(url, radio, signal,
+    async () => url.includes("slow.example") ? new Promise<Response>((_resolve, reject) => signal.addEventListener("abort", () => reject(Error("Cancelled")), { once: true })) : new Response('<title>Fixture FM</title><meta property="og:image" content="/logo.png"><audio src="/live.mp3"></audio><audio src="/other.mp3"></audio>',
+      { headers: { "content-type": "text/html" } })) };
+});
 const app = () => render(<ThemeProvider theme={uiTheme}><App /></ThemeProvider>);
 async function press(view: ReturnType<typeof app>, key: string) { view.stdin.write(key); await tick(); }
 afterEach(() => { cleanup(); rmSync(sessionFile, { force: true }); rmSync(stationsFile, { force: true }); });
 
 describe("App player workflow", () => {
+  it("cancels website detection and accepts a new link without saving anything", async () => {
+    const view = app(); await tick(); await tick();
+    await press(view, "o"); await press(view, "https://slow.example/"); await press(view, "\r");
+    expect(view.lastFrame()).toContain("Looking for audio feeds");
+    await press(view, "\u001b"); expect(view.lastFrame()).not.toContain("Looking for audio feeds");
+    await press(view, "R"); await press(view, "https://example.com/radio"); await press(view, "\r");
+    expect(view.lastFrame()).toContain("Found 2 feeds");
+    expect(readStations()).toEqual([]);
+  });
   it("opens URLs without downloading, saves radio, reconnects and restores favourites", async () => {
     const view = app(); await tick(); await tick();
     expect(view.lastFrame()).toContain("9 Radio / URL");
@@ -77,8 +92,11 @@ describe("App player workflow", () => {
     await press(view, "9"); expect(view.lastFrame()).toContain("No saved stations");
     await press(view, "R"); await press(view, "https://example.com/radio"); await press(view, "\r");
     expect(view.lastFrame()).toContain("[LIVE]");
-    await press(view, "f"); await press(view, "\u0015"); await press(view, "Workday FM"); await press(view, "\r");
+    await press(view, "f"); await press(view, "Workday FM"); await press(view, "\r");
     expect(readStations()[0]?.name).toBe("Workday FM");
+    expect(readStations()[0]?.thumbnailUrl).toBe("https://example.com/logo.png");
+    await press(view, "t"); await press(view, "\r");
+    expect(readStations()).toHaveLength(1);
     await press(view, "\r"); await press(view, "m");
     expect(view.lastFrame()).toContain("LIVE · no seeking");
     expect(view.lastFrame()).not.toContain("← → Seek");

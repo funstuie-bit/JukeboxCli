@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.1.0-dev.5 — Website feed detection (2026-09-08)
+
+- Paste station websites or PLS/M3U lists in o/R, then select a discovered feed.
+  Static audio/player links only; cancellable 15-second/1-MiB/12-result limits.
+  HLS stays a single feed. No script execution, recursive crawling or bulk probes.
+- Known DKFM and requested Deeper Shades Radio Garden links; not general Radio
+  Garden support. Website-advertised station artwork persists with favourites.
+  DKFM's known stream still has no artwork.
+- f/t naming starts empty: type replacement or enter to retain current name.
+  Rename updates playing/queued radio without reconnecting; same-URL favourites
+  retain names on rediscovery. Existing favourites/music are not migrated/deleted.
+
+Verification: 549 tests pass / 4 inherited skipped; full App discovery, cancellation,
+naming/restore and isolated real mpv website-to-radio/ICY/reconnect smoke pass.
+Development branch only; main remains dev.3.
+
 ## 0.1.0-dev.4 — Play URL and internet radio (2026-09-08)
 
 - Global o Play URL and visible 9 Radio / URL. Single YouTube video/Shorts/live

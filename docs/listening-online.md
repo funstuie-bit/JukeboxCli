@@ -1,4 +1,34 @@
-# Online listening — dev.4
+# Online listening — dev.5
+
+## Website discovery addition
+
+`player/feeds.ts` validates and inspects HTTP(S) responses with a 15-second abort,
+five-request redirect bound, 1-MiB text limit and 12 deduplicated results. Audio
+response bodies are cancelled after headers; candidate audio/artwork is not
+prefetched. Static audio/source tags, explicit audio links and common player
+data attributes/quoted stream fields are recognised. PLS/M3U are expanded once;
+HLS stays one feed. No JavaScript execution or nested crawling. Blocked/unsupported
+sites produce a direct-feed suggestion rather than a claim of universal support.
+Discovery requests use no browser cookies. LAN feeds remain intentionally allowed.
+
+Ibiza Stardust uses its canonical www page and published player data. DKFM root
+and /dkfm-2 plus the exact requested Deeper Shades Radio Garden URL have explicit
+compatibility mappings verified 2026-09-08; other Garden pages are unsupported.
+DKFM and Garden pages were challenge-protected: no bypass is attempted.
+Optional og:image station artwork and source website are allowlisted in private
+favourites/session metadata. DKFM's known mapping has no artwork; this feature
+does not find current-song album art. Legacy favourites still load unchanged.
+
+Listen shows candidate choices, esc cancels, and abandoning the section aborts
+pending detection. A new probe replaces unsaved candidates only. Existing exact
+URLs keep saved names; different aliases may still produce separate favourites.
+f/t accepts replacement text or blank to keep a name; renaming changes current
+and queued matching radio titles without reloading audio. Favourites live in 9,
+not the downloaded music Library. No automatic duplicate cleanup is performed.
+
+Added parser/network-boundary tests, full-App multi-feed/cancellation/naming tests
+and real mpv website→radio discovery plus no-reconnect rename checks in
+smoke-radio.ts. Earlier dev.4 implementation and acceptance details follow.
 
 Scope: user-requested Play URL, direct internet radio, favourites and clearer
 streaming controls. No library/download mutation, account sign-in, station

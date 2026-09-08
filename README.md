@@ -1,7 +1,7 @@
 # JukeboxCli
 
 Mac-first terminal music player combining an offline library with YouTube Music
-discovery and streaming. **This branch: 0.1.0-dev.4** (`development`).
+discovery and streaming. **This branch: 0.1.0-dev.5** (`development`).
 `main` remains at **0.1.0-dev.3** while the maintainer tests the current clean-Mac install.
 Built on [soundcli by baairon](https://github.com/baairon/soundcli), with player
 design and feature inspiration from [ytkew by dtDhruv](https://github.com/dtDhruv/ytkew).
@@ -108,7 +108,7 @@ guarantee** across codecs, long pauses and network conditions.
 `npx tsx scripts/smoke-streaming.ts` verifies real HTTP prefetch and mixed-queue
 transitions using silent audio and a loopback server, with no library changes.
 
-### Play URL and internet radio (0.1.0-dev.4)
+### Play URL and internet radio (0.1.0-dev.5)
 
 **No library import required.** Press **o** from any normal screen to paste a
 YouTube video or direct HTTP(S) audio URL. Enter accepts the link; **enter again
@@ -117,10 +117,12 @@ YouTube watch, shortened, Shorts and live links resolve title/artist/artwork
 when played. Playlist/channel URLs belong in **8 Discover**, not Play URL.
 Opening a one-off link keeps an existing queue, even if it hasn't started yet.
 
-Press **9** for **Radio / URL**, then **R** to paste a station's direct stream
-URL. Use the audio endpoint, not the station's homepage. Select the accepted
-link and press **f** to name/save a favourite; enter plays it and A/P queues it.
-Favourites reappear in 9 after restart. **f** renames a saved station; **x** asks
+Press **9** for **Radio / URL**, then **R** to paste a station website, direct
+feed or PLS/M3U playlist. **o** also accepts websites. Detection lists available
+feeds: select one and press enter to play, A/P to queue or **f** to save.
+Press esc to cancel detection. Nothing is saved until you choose to save it.
+Favourites reappear in 9 after restart. **t** (or **f**) renames a saved station:
+type a replacement directly, or enter keeps its current name. **x** asks
 to remove a favourite (or dismisses an unsaved link). Removing a favourite
 doesn't stop playback, remove queue entries or touch music files.
 
@@ -134,9 +136,17 @@ space to reconnect or n to skip. Live entries aren't opened speculatively for
 prefetch; repeat/shuffle still apply to queue navigation, not radio seeking.
 
 Direct audio/radio uses mpv without yt-dlp or browser cookies. HTTP(S) audio and
-HLS endpoints are supported when mpv can decode them. PLS/M3U station lists,
-station-directory search, station homepages, authenticated/DRM services and
-arbitrary media-site pages are not supported. Use **R**, not ordinary audio URL
+HLS endpoints are supported when mpv can decode them. Website detection reads
+static audio/player links and optional website artwork, without running scripts.
+Ibiza Stardust's site is supported; DKFM and the requested Deeper Shades Radio
+Garden link have explicit known-feed mappings. This is **not general Radio Garden
+support**. Other protected/JavaScript-only pages may need a direct feed.
+Station artwork is retained when advertised; DKFM's known feed currently has no
+artwork, and station artwork is not current-song album art. There is no station
+directory search, nested playlist crawling or authenticated/DRM playback.
+Detection is bounded to 15 seconds, 1 MiB and 12 results; audio responses are
+closed after inspecting headers. Only the selected feed is played.
+Use **R**, not ordinary audio URL
 mode, for live stations; unknown direct URLs cannot reliably be classified as
 live automatically. Availability/geoblocking depends on the broadcaster.
 
@@ -227,7 +237,7 @@ Full list via `jukeboxcli --help` (`soundcli` remains a compatibility alias):
    jukeboxcli
    ```
 
-The instructions above install `main` (dev.3). To test **dev.4 separately**,
+The instructions above install `main` (dev.3). To test **dev.5 separately**,
 clone the development branch into a different folder and use `npm start`;
 this does not replace the installed command:
 

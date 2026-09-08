@@ -11,6 +11,7 @@ process.env.JUKEBOXCLI_HOME = profile;
 const { Playback } = await import("../src/player/playback");
 const { createStreamResolver } = await import("../src/player/resolve");
 const { trackFromUrl } = await import("../src/player/url");
+const { discoverFeeds } = await import("../src/player/feeds");
 const { saveStation, readStations } = await import("../src/player/stations");
 const { persistListeningSession, readSession } = await import("../src/player/session");
 const file = path.join(profile, "silence.mp3");
@@ -21,6 +22,7 @@ const connections = new Set<ServerResponse>();
 const meta = Buffer.alloc(16 * 4); meta.write("StreamTitle='Fixture artist - Silent broadcast';");
 const server = createServer((req, res) => {
   requests.push(req.url!);
+  if (req.url === "/station") { res.writeHead(200, { "Content-Type": "text/html" }); res.end('<title>Fixture FM</title><audio src="/live"></audio>'); return; }
   if (req.url === "/audio") { res.writeHead(200, { "Content-Type": "audio/mpeg", "Content-Length": audio.length }); res.end(audio); return; }
   if (req.url !== "/live") { res.writeHead(404); res.end(); return; }
   connections.add(res);
@@ -37,7 +39,9 @@ const server = createServer((req, res) => {
 await new Promise<void>(r => server.listen(0, "127.0.0.1", r));
 const address = server.address(); assert(address && typeof address !== "string");
 const base = `http://127.0.0.1:${address.port}`;
-const radio = { ...trackFromUrl(`${base}/live`, true), title: "Fixture FM" };
+const radio = (await discoverFeeds(`${base}/station`, true, new AbortController().signal)).tracks[0]!;
+assert.equal(radio.title, "Fixture FM");
+assert(!requests.includes("/live"));
 const direct = trackFromUrl(`${base}/audio`);
 const resolver = createStreamResolver(async () => { throw Error("Direct/radio must not read cookies/config"); });
 const p = new Playback("mpv", () => { throw Error("Unexpected external app"); }, resolver);
@@ -55,6 +59,11 @@ try {
   await waitFor(() => !!p.getState().broadcastTitle);
   assert.match(p.getState().broadcastTitle!, /Silent broadcast/);
   assert.equal(p.getState().duration, 0); assert.equal(p.getState().nextReady, false);
+  const loadsBeforeRename = requests.length;
+  p.renameStation(radio.streamUrl, "Renamed FM");
+  assert.equal(p.getState().track?.title, "Renamed FM");
+  assert.equal(requests.length, loadsBeforeRename);
+  assert.equal(p.getState().list.length, 2);
   await p.seek(15); await p.restart(); assert.equal(p.getState().track?.id, radio.id);
   await p.togglePause(); await waitFor(() => connections.size === 0);
   assert.equal(p.getState().paused, true);

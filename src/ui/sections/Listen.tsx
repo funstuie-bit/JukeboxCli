@@ -1,10 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Box, Text, useInput } from "ink";
 import { useStore } from "../store";
 import { TextField } from "../components/TextField";
 import { COLOR } from "../theme";
 import { cleanText } from "../../util/format";
-import { trackFromUrl } from "../../player/url";
+import { discoverFeeds } from "../../player/feeds";
 import { readStations, removeStation, saveStation, stationTrack, type Station } from "../../player/stations";
 import type { StreamTrack } from "../../player/media";
 
@@ -18,39 +18,52 @@ export function Listen() {
   });
   const [stations, setStations] = useState(loaded.stations);
   const [notice, setNotice] = useState(loaded.error);
-  const [draft, setDraft] = useState<StreamTrack | null>(null);
-  const [mode, setMode] = useState<"list" | "url" | "radio" | "name" | "remove">(openUrlRequest ? "url" : "list");
+  const [drafts, setDrafts] = useState<StreamTrack[]>([]);
+  const [mode, setMode] = useState<"list" | "url" | "radio" | "name" | "remove" | "finding">(openUrlRequest ? "url" : "list");
   const [cursor, setCursor] = useState(0);
   const [target, setTarget] = useState<StreamTrack | null>(null);
-  useEffect(() => { if (openUrlRequest) { setMode("url"); setNotice(""); setOpenUrlRequest?.(0); } }, [openUrlRequest, setOpenUrlRequest]);
+  const [urlText, setUrlText] = useState("");
+  const request = useRef<AbortController | null>(null);
+  useEffect(() => () => request.current?.abort(), []);
+  useEffect(() => { if (openUrlRequest) { request.current?.abort(); setMode("url"); setUrlText(""); setNotice(""); setOpenUrlRequest?.(0); } }, [openUrlRequest, setOpenUrlRequest]);
   useEffect(() => {
-    setCaptureMode(focused && mode !== "list" ? "text" : "none");
+    setCaptureMode(focused && mode !== "list" ? mode === "finding" ? "esc" : "text" : "none");
     return () => setCaptureMode("none");
   }, [focused, mode, setCaptureMode]);
-  const entries = [...(draft ? [draft] : []), ...stations.map(stationTrack)];
+  const entries = [...drafts, ...stations.map(stationTrack)];
   const selected = Math.min(cursor, Math.max(0, entries.length - 1));
   const track = entries[selected];
   const rows = Math.max(1, listRows - 7);
   const start = Math.max(0, Math.min(selected - Math.floor(rows / 2), entries.length - rows));
   const fail = (error: unknown) => setNotice(error instanceof Error ? error.message : "Action failed. Please try again.");
-  const submitUrl = (value: string) => {
+  const submitUrl = async (value: string) => {
+    request.current?.abort();
+    const controller = new AbortController(); request.current = controller;
+    const radio = mode === "radio";
+    setMode("finding"); setNotice("Identifying feeds… esc cancels");
     try {
-      const next = trackFromUrl(value, mode === "radio");
-      setDraft(next); setCursor(0); setMode("list");
-      setNotice("Ready · enter plays · A appends · P queues next · no download");
-    } catch (e) { fail(e); }
+      const result = await discoverFeeds(value, radio, controller.signal);
+      if (controller.signal.aborted) return;
+      const existing = new Set(stations.map(s => s.url));
+      const fresh = result.tracks.filter(t => !existing.has(t.streamUrl));
+      setDrafts(fresh);
+      setCursor(fresh.length ? 0 : Math.max(0, stations.findIndex(s => s.url === result.tracks[0]?.streamUrl)));
+      setMode("list"); setNotice(`Ready · ${result.note}`);
+    } catch (e) {
+      if (!controller.signal.aborted) { setMode(radio ? "radio" : "url"); fail(e); }
+    }
   };
   useInput((input, key) => {
     if (mode !== "list") {
-      if (key.escape) { setMode("list"); setNotice(""); }
+      if (key.escape) { request.current?.abort(); setMode("list"); setNotice(""); }
       else if (mode === "remove" && input === "y" && target) {
         try { setStations(removeStation(target.streamUrl)); setNotice("Favourite removed. Playback and queue unchanged."); setMode("list"); }
         catch (e) { fail(e); }
       }
       return;
     }
-    if (input === "R") { setMode("radio"); setNotice(""); return; }
-    if (input === "o" || (key.return && !track)) { setMode("url"); setNotice(""); return; }
+    if (input === "R") { request.current?.abort(); setMode("radio"); setUrlText(""); setNotice(""); return; }
+    if (input === "o" || (key.return && !track)) { request.current?.abort(); setMode("url"); setUrlText(""); setNotice(""); return; }
     if (key.upArrow) setCursor(Math.max(0, selected - 1));
     else if (key.downArrow) setCursor(Math.min(entries.length - 1, selected + 1));
     else if (key.pageUp) setCursor(Math.max(0, selected - rows));
@@ -63,37 +76,45 @@ export function Listen() {
         }).catch(() => setNotice("Could not start playback. Select the entry in Queue to retry."));
       } else if (input === "A" || input === "P") {
         playback.enqueue(track, input === "P"); setNotice(input === "P" ? "Queued next · 7 Queue" : "Added to queue · 7 Queue");
-      } else if (input === "f" && track.streamType === "radio") {
+      } else if ((input === "f" || input === "t") && track.streamType === "radio") {
         setTarget(track); setMode("name"); setNotice("");
       } else if (input === "x") {
-        if (draft && selected === 0) { setDraft(null); setNotice("Link dismissed; queue unchanged."); }
+        if (selected < drafts.length) { setDrafts(d => d.filter((_, i) => i !== selected)); setNotice("Link dismissed; queue unchanged."); }
         else { setTarget(track); setMode("remove"); }
       }
     }
   }, { isActive: focused });
   return <Box flexDirection="column" width={contentWidth}>
     <Text bold color={COLOR.alt}>Listen online · Radio / URL</Text>
-    <Text color={COLOR.muted} wrap="truncate-end">o YouTube / audio URL · R live radio URL · 8 search music</Text>
+    <Text color={COLOR.muted} wrap="truncate-end">o YouTube / website · R radio website/feed · 8 search music</Text>
     <Text color={COLOR.muted} wrap="truncate-end">Streams play without importing or downloading music.</Text>
     {mode === "url" || mode === "radio" ? <>
-      <Text color={COLOR.accent} wrap="truncate-end">{mode === "radio" ? "Paste direct radio stream (not homepage):" : "Paste YouTube / direct audio URL:"}</Text>
-      {focused ? <TextField key={mode} width={contentWidth - 1} placeholder="https://…" onSubmit={submitUrl} /> : null}
+      <Text color={COLOR.accent} wrap="truncate-end">{mode === "radio" ? "Paste radio website, playlist or audio URL:" : "Paste YouTube / website / audio URL:"}</Text>
+      {focused ? <TextField key={mode} defaultValue={urlText} onChange={setUrlText} width={contentWidth - 1} placeholder="https://…" onSubmit={submitUrl} /> : null}
     </> : mode === "name" ? <>
-      <Text color={COLOR.accent} wrap="truncate-end">Station name (same URL updates name):</Text>
-      {focused ? <TextField width={contentWidth - 1} defaultValue={target?.title} onSubmit={name => {
+      <Text color={COLOR.accent} wrap="truncate-end">Name: {target?.title} · type replacement or enter to keep</Text>
+      {focused ? <TextField key={target?.id} width={contentWidth - 1} placeholder="New name (or enter to keep current)…" onSubmit={name => {
         if (!target) return;
         try {
-          const next = saveStation(name, target.streamUrl); setStations(next); setDraft(null);
-          setCursor(next.findIndex(s => s.url === target.streamUrl)); setMode("list"); setNotice("Station saved · available after restart");
+          const title = name.trim() || target.title;
+          const next = saveStation(title, target.streamUrl, undefined, {
+            ...(target.thumbnailUrl ? { thumbnailUrl: target.thumbnailUrl } : {}),
+            ...(target.stationWebsite ? { websiteUrl: target.stationWebsite } : {}),
+          });
+          const remaining = drafts.filter(t => t.streamUrl !== target.streamUrl);
+          setStations(next); setDrafts(remaining); playback.renameStation(target.streamUrl, cleanText(title));
+          setCursor(remaining.length + next.findIndex(s => s.url === target.streamUrl)); setMode("list");
+          setNotice("Station saved · in 9 favourites, not the music Library");
         } catch (e) { fail(e); }
       }} /> : null}
-    </> : mode === "remove" ? <Text color={COLOR.warn}>Remove favourite? y confirms · esc cancels (music and queue stay)</Text> : <>
-      <Text color={COLOR.muted} wrap="truncate-end">enter play · A/P queue · f save/rename radio · x remove</Text>
+    </> : mode === "finding" ? <Text color={COLOR.accent}>Looking for audio feeds… esc cancels</Text>
+      : mode === "remove" ? <Text color={COLOR.warn}>Remove favourite? y confirms · esc cancels (music and queue stay)</Text> : <>
+      <Text color={COLOR.muted} wrap="truncate-end">enter play · A/P queue · f save · t rename · x remove</Text>
       {!entries.length ? <Text color={COLOR.muted}>No saved stations yet. Press R to add a radio stream.</Text> : null}
       {entries.slice(start, start + rows).map((entry, i) => <Text key={`${i}:${entry.id}`} wrap="truncate-end"
         color={focused && selected === start + i ? COLOR.selectedText : COLOR.text}
         backgroundColor={focused && selected === start + i ? COLOR.selection : undefined}>
-        {selected === start + i ? "› " : "  "}{draft && start + i === 0 ? "[new] " : "★ "}{entry.streamType === "radio" ? "[LIVE] " : ""}{cleanText(entry.title)}
+        {selected === start + i ? "› " : "  "}{start + i < drafts.length ? "[found] " : "★ "}{entry.streamType === "radio" ? "[LIVE] " : ""}{cleanText(entry.title)}
       </Text>)}
     </>}
     <Text color={notice ? COLOR.alt : COLOR.muted} wrap="truncate-end">{notice || "Direct URLs are saved in your private listening session; use trusted links."}</Text>

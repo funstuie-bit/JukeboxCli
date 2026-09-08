@@ -49,6 +49,13 @@ describe("radio favourites", () => {
     expect(() => saveStation("", "https://example.com/live")).toThrow();
     expect(() => saveStation("YouTube", "https://youtu.be/dQw4w9WgXcQ")).toThrow();
   });
+  it("preserves station artwork and website when renamed", () => {
+    saveStation("Logo FM", "https://example.com/live", undefined, { thumbnailUrl: "https://example.com/logo.png", websiteUrl: "https://example.com/" });
+    saveStation("New name", "https://example.com/live");
+    expect(stationTrack(readStations()[0]!)).toMatchObject({ title: "New name", thumbnailUrl: "https://example.com/logo.png", stationWebsite: "https://example.com/" });
+    expect(() => saveStation("Bad", "https://example.com/other", undefined, { thumbnailUrl: "file:///private/image" })).toThrow();
+    removeStation("https://example.com/live");
+  });
   it("does not overwrite a corrupt favourites file", () => {
     writeFileSync(stationsFile, "broken");
     expect(() => readStations()).toThrow(/invalid/);
