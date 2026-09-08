@@ -1,7 +1,20 @@
 # JukeboxCli
 
-Mac-first terminal music player, evolving the maintainer's soundcli fork. Development branch:
-`development`. See [feature status](FEATURES.md) and [architecture](docs/architecture.md).
+Mac-first terminal music player combining an offline library with YouTube Music
+discovery and streaming. **Current build: 0.1.0-dev.3**, available on `main`.
+Based on soundcli, with independently implemented ytkew-inspired player features.
+
+- Search songs, videos, albums, artists and playlists without signing in.
+- Mix streams and saved tracks in an editable, persistent listening queue.
+- Sharp artwork, two-panel player, waveform, shuffle/repeat and next-track preparation.
+- Download/import controls for YouTube, SoundCloud and Spotify links, including
+  cookies, formats, pacing and conversion. Spotify imports are not Spotify streaming.
+
+[Install on a Mac](#install-the-development-version-on-a-mac) ·
+[Feature status](FEATURES.md) · [Changelog](CHANGELOG.md) · [Architecture](docs/architecture.md)
+
+New screenshots are being prepared from a clean installation. Account/likes,
+radio, lyrics and a verified Intel/Apple Silicon release remain in development.
 
 Build with `npm ci && npm run build`, then `npm start` (or `npm run dev`).
 Installation provides `jukeboxcli` and a compatibility `soundcli` alias.
@@ -127,12 +140,12 @@ A player view with visible navigation (`m` or `esc` closes the expanded view, tr
 
 ### CLI flags (override config without opening the TUI)
 ```sh
-soundcli --format mp3 --cookies-from-browser chrome:Default "https://..."
-soundcli --output-dir ~/Music/MyLibrary --quality 5 @somehandle
-soundcli --sleep 2 --max-sleep 10 --retries 10
+jukeboxcli --format mp3 --cookies-from-browser chrome:Default "https://..."
+jukeboxcli --output-dir ~/Music/MyLibrary --quality 5 @somehandle
+jukeboxcli --sleep 2 --max-sleep 10 --retries 10
 ```
 
-Full list via `soundcli --help`:
+Full list via `jukeboxcli --help` (`soundcli` remains a compatibility alias):
 
 | Flag | What it does |
 | --- | --- |
@@ -146,15 +159,17 @@ Full list via `soundcli --help`:
 | `--sleep <sec>` / `--max-sleep <sec>` | pacing between downloads |
 | `--retries <n>` | retries on failure |
 | `--reencode <true\|false>` | force re-encode even if format matches |
-| `soundcli <link>` | download that song/playlist on launch |
+| `jukeboxcli <link>` | download that song/playlist on launch |
 
 ## Install the development version on a Mac
 
 **One-time setup on the new Mac:**
-1. Install Node.js 22 or newer — either from [nodejs.org](https://nodejs.org) or `brew install node@22`
+1. Install Node.js 22 or newer and mpv 0.38+. With Homebrew: `brew install node mpv`.
+   Ghostty is recommended for sharp artwork; other terminals use the fallback.
 2. Clone and install:
    ```sh
-   git clone --branch development https://github.com/funstuie-bit/soundcli-fork.git ~/projects/JukeboxCli
+   mkdir -p ~/projects
+   git clone https://github.com/funstuie-bit/JukeboxCli.git ~/projects/JukeboxCli
    cd ~/projects/JukeboxCli && ./install.sh
    ```
 3. Run it from anywhere:
@@ -172,10 +187,43 @@ package globally. This installs `jukeboxcli` AND replaces the `soundcli` alias.
 To retain an existing installation, use `npm start` from this checkout instead.
 Homebrew distribution and clean Intel/Apple Silicon acceptance are still planned.
 
+On the welcome screen, press **esc** to skip importing a library. Then **8** opens
+Discover, **/** starts search, **A/P** adds songs to the queue and **m** opens the
+player. Use a wide window for the two-panel layout. You do not need old library
+data or personal credentials to browse public search results.
+
+For clean screenshots on a Mac that already has soundcli data, use a separate
+profile: `JUKEBOXCLI_HOME="$HOME/JukeboxCli-demo" jukeboxcli`. Keep that same
+setting for subsequent launches of the demo profile. Existing music is untouched.
+
+## Update an existing JukeboxCli checkout
+
+The GitHub repository was renamed from `soundcli-fork` to `JukeboxCli`; history
+and the compatibility data paths are preserved. New clones use `main` by default.
+
+```sh
+cd ~/projects/JukeboxCli
+git pull --ff-only
+npm ci
+npm run build
+jukeboxcli --version
+```
+
+If you cloned the earlier development branch, it is retained and updated too.
+To move a clean checkout onto main, run `git fetch` then `git switch main` before
+the update commands. If Git reports local changes or divergence, preserve those
+changes first; do not force-reset. An old remote URL can be updated with
+`git remote set-url origin https://github.com/funstuie-bit/JukeboxCli.git`
+(use your actual GitHub remote name if it is not `origin`).
+
+The global command normally links to this checkout: rebuilding updates its next
+launch. If you moved the checkout, rerun `./install.sh`. Keep a copy of the config
+and data directories below before changing versions; music is not removed by updates.
+
 ## Dev
 
 ```sh
-npm install          # Node 22+
+npm ci               # Node 22+, locked dependencies
 npm run dev          # run from source
 npm run build        # build dist/
 npm test             # isolated unit + App interaction tests

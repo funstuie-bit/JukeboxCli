@@ -2,7 +2,7 @@
   "name": "jukeboxcli",
   "version": "0.1.0-dev.3",
   "private": true,
-  "description": "Own your music. Download your YouTube, SoundCloud, and Spotify libraries to your computer and play them offline, all from your terminal. Fork of baairon/soundcli with wizard, cookies, format control, and CLI flags.",
+  "description": "Mac-first terminal music player with YouTube Music discovery, streaming, an offline library, editable queues and sharp artwork. Based on soundcli.",
   "type": "module",
   "bin": {
     "jukeboxcli": "./dist/index.js",
@@ -41,11 +41,11 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/funstuie-bit/soundcli-fork.git"
+    "url": "git+https://github.com/funstuie-bit/JukeboxCli.git"
   },
-  "homepage": "https://github.com/funstuie-bit/soundcli-fork/tree/development#readme",
+  "homepage": "https://github.com/funstuie-bit/JukeboxCli#readme",
   "bugs": {
-    "url": "https://github.com/funstuie-bit/soundcli-fork/issues"
+    "url": "https://github.com/funstuie-bit/JukeboxCli/issues"
   },
   "publishConfig": {
     "access": "public"

@@ -1,5 +1,5 @@
 #!/bin/sh
-# Install soundcli-fork globally on this Mac.
+# Install JukeboxCli globally on this Mac (includes the soundcli alias).
 # Run from the repo root: ./install.sh
 # Requires Node.js 22+ (brew install node@22 or https://nodejs.org)
 

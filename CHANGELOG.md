@@ -1,5 +1,13 @@
 # Changelog
 
+## Repository update — 2026-09-08
+
+- GitHub repository renamed to funstuie-bit/JukeboxCli; tested dev.3 history
+  promoted to main so default clones and the repository front page are current.
+- Package links, overview, clean-Mac setup, screenshot-profile and update
+  instructions refreshed. Development branch retained; no music/data migration.
+- private mirror remains admin/soundcli-fork with the same history mirrored to main.
+
 ## 0.1.0-dev.3 — player presentation (2026-09-07)
 
 - Two-panel player: artwork/details/waveform left, full-height editable queue
