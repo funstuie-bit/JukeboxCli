@@ -86,7 +86,7 @@ npm test             # 480 tests
 npm run typecheck
 ```
 
-Config lives at `~/Library/Application Support/soundcli/config.json` (use `soundcli` itself or the Settings screen to change it).
+On macOS, config lives at `~/Library/Preferences/soundcli/config.json` (use `soundcli` itself or the Settings screen to change it). The library index, download queue and listening history live in `~/Library/Application Support/soundcli/`.
 
 ## Upstream credit
 
