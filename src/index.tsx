@@ -84,12 +84,17 @@ async function main(): Promise<void> {
       await saveConfig(merged);
     }
 
+    const { probeGraphics, enableGraphics } = await import("./player/graphics");
+    if (await probeGraphics()) enableGraphics();
+    const graphics = await import("./player/graphics");
     const { waitUntilExit } = render(
       <ThemeProvider theme={uiTheme}>
         <App initialAdd={command.initialAdd} />
       </ThemeProvider>,
+      { onRender: () => { setImmediate(() => graphics.graphicsPainter?.paint()); } },
     );
     await waitUntilExit();
+    graphics.graphicsPainter?.clear();
   } finally {
     restore();
   }

@@ -25,7 +25,9 @@ export function musicResult(raw: any, fallback: MusicFilter = "song"): MusicResu
   const artist = raw.artists?.map((a: any) => a.name).join(", ") ?? raw.author?.name;
   const result: MusicResult = { id, kind, title, subtitle: artist ?? raw.subtitle?.toString() };
   if (kind === "song" || kind === "video") {
-    const thumbnail = raw.thumbnails?.[0]?.url ?? raw.thumbnail?.contents?.[0]?.url;
+    const candidates = raw.thumbnails ?? raw.thumbnail?.contents ?? [];
+    const thumbnail = [...candidates].filter((t: any) => isHttpUrl(t.url))
+      .sort((a: any, b: any) => (b.width ?? 0) * (b.height ?? 1) - (a.width ?? 0) * (a.height ?? 1))[0]?.url;
     result.track = { kind: "stream", id: `stream:youtube:${id}`, source: "youtube", sourceTrackId: id,
       title, artist, album: raw.album?.name, durationSec: raw.duration?.seconds,
       streamUrl: `https://music.youtube.com/watch?v=${encodeURIComponent(id)}`,

@@ -1,6 +1,6 @@
 {
   "name": "jukeboxcli",
-  "version": "0.1.0-dev.2",
+  "version": "0.1.0-dev.3",
   "private": true,
   "description": "Own your music. Download your YouTube, SoundCloud, and Spotify libraries to your computer and play them offline, all from your terminal. Fork of baairon/soundcli with wizard, cookies, format control, and CLI flags.",
   "type": "module",

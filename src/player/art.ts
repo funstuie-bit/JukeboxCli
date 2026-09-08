@@ -1,5 +1,25 @@
 import { execa } from "execa";
 import { ffmpegPath } from "../bin/binaries";
+import type { CoverImage } from "./graphics";
+
+const images = new Map<string, Promise<CoverImage | null>>();
+/** Keep real image detail. Fit happens at placement, never by cropping the source. */
+export function loadCoverImage(source: string): Promise<CoverImage | null> {
+  const cached = images.get(source); if (cached) return cached;
+  const work = (async () => {
+    try {
+      const { stdout } = await execa(ffmpegPath(), ["-nostdin", "-v", "error", "-i", source,
+        "-map", "0:v:0", "-frames:v", "1", "-vf", "scale=1024:1024:force_original_aspect_ratio=decrease",
+        "-f", "image2pipe", "-c:v", "png", "pipe:1"], { encoding: "buffer", timeout: 8000, maxBuffer: 5 * 1024 * 1024 });
+      const png = Buffer.from(stdout);
+      if (png.length < 24 || png.toString("hex", 0, 8) !== "89504e470d0a1a0a") return null;
+      return { png, width: png.readUInt32BE(16), height: png.readUInt32BE(20) };
+    } catch { return null; }
+  })();
+  if (images.size >= 12) images.delete(images.keys().next().value!);
+  images.set(source, work);
+  return work;
+}
 
 /**
  * Cover art and waveform extraction for the Now Playing screen.
@@ -56,6 +76,7 @@ function entryFor(filePath: string): CacheEntry {
 
 /** Drop an entry (the file changed or was deleted). */
 export function forgetArt(filePath: string): void {
+  images.delete(filePath);
   cache.delete(filePath);
   inflight.delete(filePath);
 }
@@ -101,7 +122,7 @@ export async function loadCoverArt(
         "1",
         // Crop to the render aspect (cover-fit), then scale to exact pixels.
         "-vf",
-        `scale=${cols}:${px}:force_original_aspect_ratio=increase,crop=${cols}:${px}`,
+        `scale=${cols}:${px}:force_original_aspect_ratio=decrease,pad=${cols}:${px}:(ow-iw)/2:(oh-ih)/2`,
         "-f",
         "rawvideo",
         "-pix_fmt",

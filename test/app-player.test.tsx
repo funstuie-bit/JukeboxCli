@@ -97,6 +97,10 @@ describe("App player workflow", () => {
     await press(view, "7"); expect(view.lastFrame()).toContain("Queue · 2 tracks");
     await press(view, "\r"); await press(view, "m");
     expect(view.lastFrame()).toContain("Playing · shuffle off · repeat off");
+    await press(view, "b"); expect(view.lastFrame()).toContain("Artwork hidden");
+    await press(view, "b");
+    await press(view, "?"); expect(view.lastFrame()).not.toContain("TRACK WAVEFORM");
+    await press(view, "?"); expect(view.lastFrame()).toContain("TRACK WAVEFORM");
     expect(view.lastFrame()).toMatch(/[▁▂▃▄▅▆▇█]/);
     await press(view, " "); expect(view.lastFrame()).toContain("Paused · shuffle off");
     await press(view, "r"); await press(view, "-"); await press(view, "\u001b[C");

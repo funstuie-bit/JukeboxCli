@@ -22,8 +22,33 @@ that queue occurrence (never its file). Space starts an idle queue.
 The listening queue, position, volume, shuffle and repeat are saved in
 `listening-session.json` alongside the library index and restored paused.
 Missing library entries/files are dropped. An empty saved queue stays empty.
-Artwork loads independently of the waveform. The expanded player shows its
-editable queue when space permits; `7` always opens the full queue.
+Artwork loads independently of the waveform. Wider screens have two full-height
+bordered panels: cover/track/transport left, editable queue right. Artist, title
+and duration have separate columns where space permits, with a solid selection
+highlight and distinct playing marker. Smaller windows use a compact stacked
+layout; `7` always opens the full queue.
+
+### Sharper artwork and player layout (0.1.0-dev.3)
+
+Ghostty and compatible terminals display a real PNG, up to 1024 pixels on its
+longest side, not a tiny text mosaic. The app probes Kitty image support and
+character-cell dimensions first. Original proportions are preserved: a wide
+YouTube thumbnail stays wide. Online results use the largest supplied thumbnail.
+Old queued streams can retain their earlier thumbnail; search/select again to
+refresh their metadata.
+
+Press `b` in the player to hide/show artwork (view-local toggle). Images disappear
+behind help and on screen changes, and reposition after resize. Unsupported
+terminals, missing size replies and tmux/screen use proportional half-blocks.
+Force fallback with `JUKEBOXCLI_ART=blocks jukeboxcli`. Native iTerm2/sixel image
+renderers are not implemented yet. After changing terminal fonts, restart if
+their character proportions differ; ordinary window resizing works live.
+
+The default palette is now lavender/blue with explicit readable player text.
+The larger **TRACK WAVEFORM** shows precomputed loudness, not a live spectrum.
+Streaming shows progress without downloading the whole song for visualisation.
+Cover-derived themes and live Mac spectrum remain future work. A trailing
+`;1994`-style year is tidied for display only; stored metadata/files stay intact.
 
 Verification includes full App keyboard/session tests with a fixture audio engine;
 real mpv acceptance passes on the development Mac; clean Mac installation is pending.
@@ -95,10 +120,10 @@ The first time you run it, a guided setup walks you through everything — every
 
 ### Now Playing screen (press `m`, or choose `6 Now Playing`)
 A player view with visible navigation (`m` or `esc` closes the expanded view, transport keys stay live):
-- **Truecolor cover art** rendered as half-blocks from the embedded art — no `ascii` mush
-- **Waveform progress bar** precomputed from the audio's loudness envelope, filled along the accent ramp to the play position
+- **Sharp cover art** through Kitty graphics where probed, with a half-block fallback
+- **Multi-row waveform** from the track's loudness envelope, with separate playback progress
 - **Editable queue** — actual play order, selectable and reorderable; use `7` for the dedicated queue view
-- Degrades honestly: no embedded art → tidy placeholder; no waveform data → gradient bar; external player → a clear note instead of a fake progress bar
+- Degrades honestly: no embedded art → placeholder; no waveform → progress line; external player → a clear note
 
 ### CLI flags (override config without opening the TUI)
 ```sh

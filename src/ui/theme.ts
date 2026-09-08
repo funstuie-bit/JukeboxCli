@@ -5,15 +5,15 @@
 import { defaultTheme, extendTheme } from "@inkjs/ui";
 
 export const COLOR = {
-  /** Brand accent: deep flame orange. Used for focus, cursors, and progress. */
-  accent: "#ff6a3d",
-  /** Warm off-white for prominent body text, so it doesn't read as harsh
-   *  default-white against the warm palette. */
-  text: "#ece4da",
-  /** Secondary accent (honey brass) for paths, inline keys, and group
-   *  headers: a warm gold-sand that reads as hardware next to the flame
-   *  accent, sandier than `warn` so warning banners still read hotter. */
-  alt: "#e0b380",
+  /** Soft lavender focus and progress, paired with clear blue secondary text. */
+  accent: "#b8a5ed",
+  /** Explicit foreground avoids inheriting low-contrast terminal theme colours. */
+  text: "#e3e7f2",
+  /** Secondary blue for artists, headers and key labels. */
+  alt: "#8fb9ed",
+  muted: "#9aa8c3",
+  selection: "#b8a5ed",
+  selectedText: "#171b2b",
   /** Now-playing / success: soft mint-green, kept clearly apart from the warm
    *  accent so the playing marker reads at a glance. */
   good: "#86d6a2",
@@ -48,8 +48,8 @@ export const ICON = {
   bar: "▌",
 } as const;
 
-/** A soft warm gray used for separators and rules so they recede behind content. */
-export const RULE = "#6b635d";
+/** Slate separators sit behind the brighter text and selection. */
+export const RULE = "#52617c";
 
 /** Parse "#rrggbb" into [r, g, b]. */
 function rgb(hex: string): [number, number, number] {
@@ -69,17 +69,15 @@ export function lerpHex(a: string, b: string, t: number): string {
 }
 
 /**
- * The accent's glow ramp (deep flame → sunlit amber). Progress fills and the
- * wordmark sweep this same pair, so the orange reads as one warm material
- * throughout the app instead of a flat fill.
+ * Shared lavender-to-blue ramp for progress and the wordmark.
  */
 export const ACCENT_RAMP: readonly [string, string] = [
   COLOR.accent,
-  COLOR.amber,
+  COLOR.alt,
 ];
 
 /**
- * @inkjs/ui theme override so its Select and Spinner share our orange accent
+ * @inkjs/ui theme override so its Select and Spinner share our lavender accent
  * instead of their default green/blue. Without this the list cursor and
  * loading spinners would clash with the brand color.
  */

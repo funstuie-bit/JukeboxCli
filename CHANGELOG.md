@@ -1,5 +1,30 @@
 # Changelog
 
+## 0.1.0-dev.3 — player presentation (2026-09-07)
+
+- Two-panel player: artwork/details/waveform left, full-height editable queue
+  right. Artist/title/duration columns, solid selection, slate borders and
+  lavender/blue player text; compact layout on smaller screens.
+- Kitty PNG artwork after protocol and cell-size probes; longest edge 1024px,
+  original proportions preserved, largest online thumbnail preferred. Block
+  fallback uses contain/padding instead of cropping; b toggles artwork.
+- Image cleanup across help, embedded/expanded player switches, resize and exit.
+  Chunked/cached PNG transmission, placements after Ink redraw, cursor preserved.
+  tmux/screen fall back safely.
+- Multi-row whole-track waveform with separate progress. Trailing semicolon/year
+  tidied for display only; no library/file mutation.
+
+Verification: 515 tests pass, 4 inherited skipped; typecheck/build/import guard
+clean. Both real mpv local/session and HTTP mixed-stream smoke tests pass.
+Coverage includes layout/columns/protocol/lifecycle and full App workflows.
+Real Ghostty confirms Kitty support and sends a 1024×576 cover; a fixture cycles
+visible→hidden→visible correctly. macOS denied automated window screenshots,
+so final visual appearance needs the maintainer's acceptance, not a claimed screenshot check.
+The fixture is read-only and does not play or download music.
+
+Pending: cover-derived theme selection, native iTerm2/sixel artwork, live Mac
+spectrum. This is a visual pass, not the account/radio/lyrics milestone.
+
 ## 0.1.0-dev.2 — streaming and public discovery (2026-09-07)
 
 - Visible Discover (8): signed-out YouTube Music search, five result types,

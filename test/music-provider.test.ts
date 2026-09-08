@@ -20,4 +20,12 @@ describe("YouTube Music boundary", () => {
     const album = musicResult({ item_type: "album", title: "Album", endpoint: { payload: { browseId: "MPRE" } } });
     expect(album?.id).toBe("MPRE"); expect(album?.track).toBeUndefined();
   });
+  it("uses the largest valid thumbnail for sharp artwork", () => {
+    const item = musicResult({ ...raw, thumbnails: [
+      { url: "https://example.com/small", width: 60, height: 60 },
+      { url: "https://example.com/large", width: 1200, height: 1200 },
+      { url: "file:///invalid", width: 5000, height: 5000 },
+    ] });
+    expect(item?.track?.thumbnailUrl).toBe("https://example.com/large");
+  });
 });

@@ -11,7 +11,9 @@ This development branch is separate from the installed soundcli command.
 | Streaming and next-track preload | Implemented; real mpv HTTP/mixed-queue smoke passes | Wider codecs/networks; not universally gapless |
 | YouTube Music search and browsing | Implemented signed out; search/browse/pagination probes | the maintainer's online workflow; unofficial API can change |
 | Account, likes, radio, lyrics | Planned | Real service acceptance |
-| Themes, cover colours, richer artwork | Planned | Capability/resize testing |
+| Two-panel player, column queue, lavender/blue palette | Implemented; responsive/App tests pass | the maintainer's visual acceptance |
+| Sharp artwork and half-block fallback | Implemented; Ghostty protocol/lifecycle tested | Visual screenshot/other terminal matrix |
+| Theme choices, cover-derived colours, iTerm2/sixel | Planned | Capability/resize testing |
 | Mouse actions and Vim preset | Planned | Input/focus regression |
 | Mac live spectrum and media controls | Feasibility pending | Working Mac prototype |
 | Homebrew releases, Intel and Apple Silicon | Planned | Clean Mac matrix |

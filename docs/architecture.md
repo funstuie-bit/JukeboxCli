@@ -49,3 +49,36 @@ profiles. App tests cover Discover navigation, browsing, queueing and remote
 paused restore; service and real-player probes supplement the fixture tests.
 
 See ../FEATURES.md for status; the shared vault holds roadmap and session history.
+
+## Player rendering (dev.3)
+
+`playerLayout` splits at 86 content columns/16 body rows; smaller views stack.
+Queue formatting measures terminal cells, not JS string length. Explicit player
+colours avoid inheriting low-contrast terminal defaults. Art and waveform load
+independently; visual failures never block playback.
+
+Before Ink takes stdin, `probeGraphics` requests Kitty direct-image support and
+CSI 16t cell dimensions (700ms timeout). Both must respond. Redirected I/O,
+tmux/screen, missing replies or JUKEBOXCLI_ART=blocks select half-blocks. Early
+keystrokes survive the probe; TERM_PROGRAM never enables graphics by itself.
+
+`Cover` reserves an Ink box and registers its geometry. `GraphicsPainter` chooses
+the latest visible registration; an expanded player can hide an embedded player
+without losing its registration. Coordinates sum Yoga ancestor offsets;
+display:none ancestors suppress pixel art too. Ink 7's onRender callback precedes
+stdout output, so painting is deferred with setImmediate. Cursor save/restore and
+Kitty C=1 preserve Ink's cursor. Only this app's image ID is deleted.
+
+PNG extraction is limited to 1024px/5MiB/8 seconds, cached for 12 source entries
+per process. Transmission uses 4096-character base64 chunks and quiet replies.
+A placement ID is reused for moves/resizes. Only width is sent, so the terminal
+preserves source aspect; probed cell dimensions budget height. Restart after
+changing font proportions if needed; window size changes are handled live.
+
+`scripts/visual-player.tsx <audio>` is a real-terminal, read-only fixture with
+actual embedded art and fake playback; b/?/q test visibility. `--auto` cycles help
+and returns then exits. JUKEBOXCLI_VISUAL_REPORT optionally records placement
+diagnostics. Run from the repo (or set TSX_TSCONFIG_PATH). Tests cover chunking,
+probe/cleanup/stacked registrations, responsive layouts, Unicode queue columns
+and App input/persistence. Ghostty native protocol/lifecycle was exercised;
+OS screenshot capture was denied, so final visual acceptance remains open.

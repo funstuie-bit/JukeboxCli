@@ -180,7 +180,7 @@ export function trackDisplayTitle(track: {
   downloadUrl?: string;
 }): string {
   const t = cleanText(track.title || "");
-  if (t !== "Untitled" && !/^\d+$/.test(t)) return t;
+  if (t !== "Untitled" && !/^\d+$/.test(t)) return t.replace(/;\s*((?:19|20)\d{2})$/, " ($1)");
   const fromSlug = slugTitle(track.downloadUrl);
   if (fromSlug) return fromSlug;
   return track.artist ? cleanText(track.artist) : "Untitled track";
