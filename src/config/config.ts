@@ -82,7 +82,7 @@ export async function loadConfig(): Promise<Config> {
     // True first run (no config yet): ask the OS where Music really lives.
     // Once a config file exists this never runs again, so the registry is
     // queried at most once per machine.
-    return { ...defaultConfig, libraryDir: await resolveDefaultLibraryDir() };
+    return { ...defaultConfig, libraryDir: process.env.JUKEBOXCLI_HOME ? defaultLibraryDir : await resolveDefaultLibraryDir() };
   }
   try {
     const parsed = JSON.parse(raw) as Partial<Config>;

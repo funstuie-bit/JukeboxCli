@@ -5,6 +5,7 @@ import { defineConfig } from "vitest/config";
 // the shell running the suite. Pin rendering to plain text everywhere.
 export default defineConfig({
   test: {
+    setupFiles: ["./test/isolate.ts"],
     env: {
       FORCE_COLOR: "0",
       // Rows flash "saved" for ~1.2s in the real app; tests were written

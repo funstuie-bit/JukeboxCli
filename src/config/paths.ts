@@ -5,13 +5,20 @@ import envPaths from "env-paths";
 export const APP_NAME = "soundcli";
 
 /** OS-appropriate config / data / cache directories. */
-export const paths = envPaths(APP_NAME, { suffix: "" });
+const legacyPaths = envPaths(APP_NAME, { suffix: "" });
+/** Isolated portable profile; default retains existing soundcli data. */
+const profile = process.env.JUKEBOXCLI_HOME;
+export const paths = profile
+  ? { config: path.resolve(profile, "config"), data: path.resolve(profile, "data"),
+      cache: path.resolve(profile, "cache"), log: path.resolve(profile, "logs"),
+      temp: path.resolve(profile, "temp") }
+  : legacyPaths;
 
 /** Directory where downloaded tool binaries (yt-dlp) are cached. */
 export const binDir = path.join(paths.cache, "bin");
 
 /** Default location for the downloaded music library. */
-export const defaultLibraryDir = path.join(os.homedir(), "Music", APP_NAME);
+export const defaultLibraryDir = profile ? path.resolve(profile, "music") : path.join(os.homedir(), "Music", APP_NAME);
 
 /** Path to the JSON config file. */
 export const configFile = path.join(paths.config, "config.json");

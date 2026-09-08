@@ -1,4 +1,16 @@
-# soundcli-fork
+# JukeboxCli
+
+Mac-first terminal music player, evolving the maintainer's soundcli fork. Development branch:
+`development`. See [feature status](FEATURES.md) and [architecture](docs/architecture.md).
+
+Build with `npm ci && npm run build`, then `npm start` (or `npm run dev`).
+Installation provides `jukeboxcli` and a compatibility `soundcli` alias.
+The previous installed soundcli is unchanged until this checkout is installed.
+
+Existing soundcli config/music paths are retained. For an independent profile:
+`JUKEBOXCLI_HOME=/absolute/path/to/profile npm start`. This directory holds
+config, data, cache, logs and music. Do not run both apps against one profile.
+This development build is not yet a verified Intel/Apple Silicon release.
 
 Own your music. Download your YouTube, SoundCloud, and Spotify libraries to your computer and play them offline, all from your terminal.
 
