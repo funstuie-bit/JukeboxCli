@@ -99,6 +99,7 @@ export class Playback extends EventEmitter {
   private backStack: number[] = [];
   /** True while prev() replays a popped entry, so it isn't pushed back. */
   private popping = false;
+  private playRequest = 0;
 
   constructor(mpvPath: string | null, opener: Opener = defaultOpener) {
     super();
@@ -179,7 +180,8 @@ export class Playback extends EventEmitter {
   /** Keep queued extras when choosing a song already in the current context. */
   async selectTrack(track: Track, context: Track[]): Promise<void> {
     const index = this.state.list.findIndex(t => t.id === track.id);
-    const sameContext = context.length > 1 && context.every(t => this.state.list.some(q => q.id === t.id));
+    const queuedIds = new Set(this.state.list.map(t => t.id));
+    const sameContext = context.length > 1 && context.every(t => queuedIds.has(t.id));
     if (index >= 0 && sameContext) return this.playQueueIndex(index);
     if (context.length === 1 && this.state.track) {
       this.enqueue(track, true);
@@ -329,6 +331,7 @@ export class Playback extends EventEmitter {
   }
 
   async play(track: Track, list: Track[] = [track], index = -1, startPaused = false): Promise<void> {
+    const request = ++this.playRequest;
     const idx = index >= 0 ? index : list.findIndex((t) => t.id === track.id);
     const safeIdx = idx < 0 ? 0 : idx;
     // A continuation of the same list (e.g. from next()/prev()) keeps the
@@ -358,14 +361,18 @@ export class Playback extends EventEmitter {
     if (m) {
       try {
         await m.loadFile(track.filePath, startPaused);
+        if (request !== this.playRequest) return;
+        const volume = clampVolume(await m.getVolume());
+        if (request !== this.playRequest) return;
         this.update({
           engine: "mpv",
           canControl: true,
           loading: false,
-          volume: clampVolume(await m.getVolume()),
+          volume,
         });
         return;
       } catch {
+        if (request !== this.playRequest) return;
         // mpv failed to start or load: fall through to the external opener.
         // The failed instance may still own a live process, its IPC socket,
         // and our listeners; quit() tears all of that down (it is safe on an
@@ -453,6 +460,7 @@ export class Playback extends EventEmitter {
    * later play() resumes normally; for mpv this unloads the file too.
    */
   async stop(): Promise<void> {
+    this.playRequest++;
     if (this.mpv) {
       try {
         await this.mpv.stop();
@@ -530,6 +538,7 @@ export class Playback extends EventEmitter {
   }
 
   quit(): void {
+    this.playRequest++;
     this.mpv?.quit();
     this.mpv = null;
   }

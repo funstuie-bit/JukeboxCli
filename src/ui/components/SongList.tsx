@@ -42,6 +42,7 @@ interface SongListProps {
   numbered?: boolean;
   /** When set, `t` on an item row (never the action row) asks to rename it. */
   onRename?: (value: string) => void;
+  onQueue?: (value: string, next: boolean) => void;
 }
 
 type Row =
@@ -84,9 +85,11 @@ export function SongList({
   deleteTargetsPlaying,
   numbered,
   onRename,
+  onQueue,
 }: SongListProps) {
   const { listRows } = useStore();
   const [cursor, setCursor] = useState(0);
+  const [notice, setNotice] = useState("");
 
   // Flatten to display rows, numbering only the selectable ones. Memoized on
   // the data itself: a cursor move or playback tick must only pay for the
@@ -143,6 +146,12 @@ export function SongList({
       else if (key.return) {
         const v = values[clamped];
         if (v) onSelect(v);
+      } else if ((input === "A" || input === "P") && onQueue) {
+        const row = rows[rowOfIdx[clamped] ?? -1];
+        if (row?.kind === "item") {
+          onQueue(row.item.value, input === "P");
+          setNotice(`${input === "P" ? "Playing next" : "Added to queue"}: ${cleanText(row.item.title)} · 7 Queue`);
+        }
       } else if (input === "d" && onDelete) {
         // deleteTargetsPlaying: 'd' acts on the playing song (like scrub keys)
         // rather than the cursor row. Falls back to cursor when nothing plays.
@@ -163,13 +172,14 @@ export function SongList({
   // Scroll window: keep the cursor row visible, centred when possible. The
   // window must fit within the lines the section left us, or the body overflows
   // the terminal and Ink's incremental redraw mangles rows (merged / dropped).
-  const height = Math.max(1, listRows - reserveRows);
+  const height = Math.max(1, listRows - reserveRows - (notice ? 1 : 0));
   const cursorRow = rowOfIdx[clamped] ?? -1;
   const start = scrollStart(rows, cursorRow, height);
   const visible = rows.slice(start, start + height);
 
   return (
     <Box flexDirection="column">
+      {notice ? <Text color={COLOR.good} wrap="truncate-end">{notice}</Text> : null}
       {visible.map((r, i) => {
         if (r.kind === "header") {
           return (

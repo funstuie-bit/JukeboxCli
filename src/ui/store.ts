@@ -13,7 +13,9 @@ export type Section =
   | "playlists"
   | "history"
   | "download"
-  | "settings";
+  | "settings"
+  | "player"
+  | "queue";
 
 /**
  * Which pane currently owns up/down/enter. "help" means the `?` cheatsheet is

@@ -14,6 +14,8 @@ const NAV: NavItem[] = [
   { key: "history", label: "History" },
   { key: "download", label: "Download" },
   { key: "settings", label: "Settings" },
+  { key: "player", label: "Now Playing" },
+  { key: "queue", label: "Queue" },
 ];
 
 export function Sidebar() {
@@ -34,7 +36,7 @@ export function Sidebar() {
 
   return (
     <Box flexDirection="column" width={20} marginRight={1}>
-      {NAV.map((item) => {
+      {NAV.map((item, i) => {
         const selected = item.key === section;
         // Settings is a utility, so set it off from the content sections.
         const pinned = item.key === "settings";
@@ -52,7 +54,7 @@ export function Sidebar() {
               dimColor={!selected}
               bold={selected && focused}
             >
-              {item.label}
+              {`${i + 1} ${item.label}`}
             </Text>
             {item.key === "download" && active > 0 ? (
               <Text dimColor>{` (${active})`}</Text>

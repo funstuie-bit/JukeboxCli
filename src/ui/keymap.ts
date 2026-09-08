@@ -22,11 +22,13 @@ const SECTION_ORDER: Section[] = [
   "history",
   "download",
   "settings",
+  "player",
+  "queue",
 ];
 
 /** Map "1".."5" to its section (the sidebar's display order); null otherwise. */
 export function sectionForDigit(input: string): Section | null {
-  if (!/^[1-5]$/.test(input)) return null;
+  if (!/^[1-7]$/.test(input)) return null;
   return SECTION_ORDER[Number(input) - 1] ?? null;
 }
 
@@ -38,7 +40,7 @@ export const HELP_GROUPS: HelpGroup[] = [
       { keys: "↑ ↓", label: "Move" },
       { keys: "PgUp PgDn", label: "Jump a page" },
       { keys: "↵", label: "Open / play" },
-      { keys: "1-5", label: "Jump section" },
+      { keys: "1-7", label: "Jump section" },
       { keys: "/", label: "Search" },
       { keys: "d", label: "Delete" },
       { keys: "t", label: "Rename" },
@@ -62,6 +64,17 @@ export const HELP_GROUPS: HelpGroup[] = [
     ],
   },
   {
+    title: "Listening queue",
+    hints: [
+      { keys: "A", label: "Append selected song" },
+      { keys: "P", label: "Queue selected song next" },
+      { keys: "7", label: "Open queue" },
+      { keys: "↵", label: "Queue: play selected" },
+      { keys: "u D", label: "Queue: move up / down" },
+      { keys: "x", label: "Queue: remove (keeps file)" },
+    ],
+  },
+  {
     title: "Downloads",
     hints: [
       { keys: "[ ]", label: "Pause / resume all" },
@@ -74,6 +87,11 @@ export const HELP_GROUPS: HelpGroup[] = [
 ];
 
 const ALWAYS: Hint = { keys: "?", label: "Keys" };
+const PLAYER: Hint = { keys: "m", label: "Player" };
+export const PLAYER_HINTS: Hint[] = [
+  { keys: "m/esc", label: "Back" }, { keys: "space", label: "Pause" },
+  { keys: "← →", label: "Seek" }, { keys: "7", label: "Queue" }, ALWAYS,
+];
 // tab is the one movement key the arrows can't cover (they belong to lists
 // and seeking), so every footer variant advertises it under the same name.
 const PANE: Hint = { keys: "tab", label: "Pane" };
@@ -92,6 +110,7 @@ export function footerHints(
       { keys: "↑↓", label: "Move" },
       { keys: "↵", label: "Open" },
       PANE,
+      PLAYER,
       ALWAYS,
       { keys: "q", label: "Quit" },
     ];
@@ -99,6 +118,10 @@ export function footerHints(
   // In content, esc only mirrors tab (back to the sidebar), so the hint slot
   // goes to tab; esc appears only where it means something else (songs depth).
   switch (section) {
+    case "player":
+    case "queue":
+      return [{ keys: "↵", label: "Play" }, { keys: "u D", label: "Move" },
+        { keys: "x", label: "Remove" }, PANE, PLAYER, ALWAYS];
     case "settings":
       return [
         { keys: "↵", label: "Choose" },

@@ -271,6 +271,7 @@ export function History() {
           deleteTargetsPlaying
           onDelete={handleDelete}
           onSelect={handleSelect}
+          onQueue={(id, next) => { const t = library.get(id); if (t) playback.enqueue(t, next); }}
         />
       )}
     </Box>

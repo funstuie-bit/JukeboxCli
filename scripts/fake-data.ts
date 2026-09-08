@@ -154,6 +154,10 @@ export function makeFakePlayback(
     // list after the current index; makeFakePlayback callers get a sane view.
     upNext: (count: number) =>
       state.list.slice(state.index + 1, state.index + 1 + count),
+    queueEntries: () => state.list.map((track, index) => ({ track, index })),
+    playQueueIndex: async () => {},
+    removeQueue: async () => {},
+    moveQueue: () => {},
   } as unknown as Playback;
 }
 

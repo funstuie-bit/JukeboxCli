@@ -23,6 +23,7 @@ import {
 import { ACCENT_RAMP, COLOR, ICON, RULE, lerpHex } from "../theme";
 import { GradientBar } from "../components/GradientBar";
 import type { Track } from "../../library/types";
+import { ListeningQueue } from "./ListeningQueue";
 
 /** Amplitude → block-glyph ramp (same trusted glyph block as GradientBar). */
 const WAVE_GLYPHS = ["▁", "▂", "▃", "▄", "▅", "▆", "▇", "█"] as const;
@@ -123,24 +124,24 @@ function ArtPlaceholder({
   );
 }
 
-export function NowPlaying() {
+export function NowPlaying({ embedded = false }: { embedded?: boolean }) {
   const store = useStore();
   const st = usePlayback(store.playback);
   const { playback, cols, listRows } = store;
 
   // Geometry. The view owns the body's rows (listRows + the header+slack the
   // body reserves) and the full terminal width minus root padding.
-  const width = Math.max(30, cols - 2);
+  const width = Math.max(10, embedded ? store.contentWidth : cols - 2);
   const viewH = listRows + 2;
   // Rich layout needs room for art beside info plus an up-next list; small
   // terminals get the honest minimal stack instead of a squeezed collage.
   const rich = viewH >= 10 && width >= 50;
-  const upNextCount = viewH >= 14 ? 3 : viewH >= 12 ? 2 : 0;
+  const upNextCount = viewH >= 12 ? 3 : 0;
   const artCols = Math.max(16, Math.min(34, Math.floor(width * 0.38)));
   // Art height: what remains beside the info column after the up-next block.
   const artRows = Math.max(
-    4,
-    Math.min(14, viewH - (upNextCount ? upNextCount + 2 : 0) - 4),
+    6,
+    Math.min(12, viewH - (upNextCount ? upNextCount + 3 : 0) - 2),
   );
   const infoW = rich ? Math.max(24, width - artCols - 2) : width;
   const buckets = Math.max(8, Math.min(infoW, 64));
@@ -155,19 +156,20 @@ export function NowPlaying() {
     file: string;
     art: CoverArt | null;
     wave: Waveform | null;
+    artReady: boolean;
   } | null>(null);
 
   useEffect(() => {
     if (!file || !rich) return;
     let cancelled = false;
     setVisual(null);
-    void (async () => {
-      const [art, wave] = await Promise.all([
-        loadCoverArt(file, artCols, artRows),
-        loadWaveform(file, buckets),
-      ]);
-      if (!cancelled) setVisual({ file, art, wave });
-    })();
+    // Art paints as soon as it arrives; a full audio scan never holds it back.
+    void loadCoverArt(file, artCols, artRows).then(art => {
+      if (!cancelled) setVisual(v => ({ file, art, wave: v?.file === file ? v.wave : null, artReady: true }));
+    });
+    void loadWaveform(file, buckets).then(wave => {
+      if (!cancelled) setVisual(v => ({ file, wave, art: v?.file === file ? v.art : null, artReady: v?.file === file && v.artReady }));
+    });
     return () => {
       cancelled = true;
     };
@@ -179,7 +181,7 @@ export function NowPlaying() {
     visual !== null && visual.file === file ? visual : null;
   const art: CoverArt | null = mine?.art ?? null;
   const wave: Waveform | null = mine?.wave ?? null;
-  const artReady = mine !== null;
+  const artReady = mine?.artReady ?? false;
 
   if (!st.track) {
     return (
@@ -191,6 +193,7 @@ export function NowPlaying() {
             <Text color={COLOR.alt}>m</Text> closes this screen
           </Text>
         </Box>
+        <ListeningQueue height={Math.max(3, viewH - 4)} width={width - 2} active={!embedded || store.region === "content"} />
       </Box>
     );
   }
@@ -262,10 +265,9 @@ export function NowPlaying() {
           </Text>
         </Box>
       )}
+      <Text dimColor wrap="truncate-end">{`${st.paused ? "Paused" : "Playing"} · shuffle ${st.shuffle ? "on" : "off"} · repeat ${st.repeat}`}</Text>
     </Box>
   );
-
-  const upNext: Track[] = upNextCount ? playback.upNext(upNextCount) : [];
 
   return (
     <Box flexDirection="column" width={width}>
@@ -287,26 +289,9 @@ export function NowPlaying() {
       ) : (
         info
       )}
-      {upNext.length ? (
-        <Box marginTop={1} flexDirection="column">
-          <Text color={COLOR.alt} bold>
-            Up next
-          </Text>
-          {upNext.map((u, i) => (
-            <Box key={u.id}>
-              <Text dimColor>{` ${i + 1} `}</Text>
-              <Text wrap="truncate-end">
-                <Text color={COLOR.text}>
-                  {truncate(cleanText(trackDisplayTitle(u)), width - 8)}
-                </Text>
-                {u.artist ? (
-                  <Text dimColor>{` · ${truncate(cleanText(u.artist), 30)}`}</Text>
-                ) : null}
-              </Text>
-            </Box>
-          ))}
-        </Box>
-      ) : null}
+      {upNextCount ? <Box marginTop={1}>
+        <ListeningQueue height={Math.max(3, viewH - (rich ? artRows : 6) - 1)} width={width} active={!embedded || store.region === "content"} />
+      </Box> : <Text dimColor>7 Queue · space pause · n/p skip · +/- volume</Text>}
     </Box>
   );
 }

@@ -16,6 +16,8 @@ import { reconcileLibrary } from "../library/reconcile";
 import { legacyArchiveFile } from "../config/paths";
 import type { Track } from "../library/types";
 import { Playback, type PlaybackState } from "../player/playback";
+import { readSession, persistListeningSession } from "../player/session";
+import { existsSync } from "node:fs";
 import { PlayHistory } from "../player/history";
 import {
   StoreContext,
@@ -32,7 +34,7 @@ import { Footer } from "./components/Footer";
 import { HelpOverlay } from "./components/HelpOverlay";
 import { Logo } from "./components/Logo";
 import { LOGO_LINES } from "./logo";
-import { footerHints, sectionForDigit } from "./keymap";
+import { footerHints, sectionForDigit, PLAYER_HINTS } from "./keymap";
 import {
   handlePlayerMode,
   handlePlayerTransport,
@@ -46,6 +48,7 @@ import { History } from "./sections/History";
 import { Download } from "./sections/Download";
 import { Settings } from "./sections/Settings";
 import { NowPlaying as NowPlayingView } from "./views/NowPlaying";
+import { ListeningQueue } from "./views/ListeningQueue";
 import { Welcome } from "./views/Welcome";
 import { useMouseWheel } from "./hooks/useMouseWheel";
 
@@ -55,10 +58,15 @@ interface Boot {
   queue: DownloadQueue;
   playback: Playback;
   history: PlayHistory;
+  session?: ReturnType<typeof persistListeningSession>;
 }
 
 function Content({ section }: { section: Section }) {
   switch (section) {
+    case "player":
+      return <NowPlayingView embedded />;
+    case "queue":
+      return <ListeningQueue />;
     case "library":
       return <LibrarySection />;
     case "playlists":
@@ -195,7 +203,13 @@ export function App({ initialAdd }: { initialAdd?: string } = {}) {
       const history = await PlayHistory.load();
       let lastPlayedId: string | undefined;
 
-      const lastId = history.ids()[0];
+      const session = readSession();
+      if (session) {
+        await playback.restoreSession(session, id => {
+          const t = library.get(id); return t && existsSync(t.filePath) ? t : undefined;
+        });
+      }
+      const lastId = session ? undefined : history.ids()[0];
       if (lastId) {
         const lastTrack = library.all().find((t) => t.id === lastId);
         if (lastTrack) {
@@ -297,7 +311,7 @@ export function App({ initialAdd }: { initialAdd?: string } = {}) {
           .catch(() => {});
       }
       setConfigState(cfg);
-      setBoot({ library, binaries, queue, playback, history });
+      setBoot({ library, binaries, queue, playback, history, session: persistListeningSession(playback) });
       // Silent drift hygiene (drop dead entries + dupes) runs behind the
       // first paint: a full music-dir walk on a big library kept the user on
       // the boot spinner, and every heal bumps the library version so the UI
@@ -343,6 +357,7 @@ export function App({ initialAdd }: { initialAdd?: string } = {}) {
       // Library writes are debounced; flush synchronously so a mutation made
       // in the last half second still lands before the process goes away.
       boot?.library.flushSync();
+      boot?.session?.close();
       boot?.playback.quit();
     },
     [boot],
@@ -386,6 +401,7 @@ export function App({ initialAdd }: { initialAdd?: string } = {}) {
   }, [section, runReconcile]);
 
   const quitAll = useCallback(() => {
+    boot?.session?.flush();
     boot?.queue.suspend();
     boot?.library.flushSync();
     boot?.playback.quit();
@@ -418,6 +434,18 @@ export function App({ initialAdd }: { initialAdd?: string } = {}) {
         setNowPlayingView((v) => !v);
         return;
       }
+      if (nowPlayingView && key.escape) {
+        setNowPlayingView(false);
+        return;
+      }
+      if (nowPlayingView && sectionForDigit(input)) {
+        setNowPlayingView(false);
+        setSection(sectionForDigit(input)!);
+        setRegion("content");
+        return;
+      }
+      // Keep navigation within the visible player; do not focus hidden forms.
+      if (nowPlayingView && (key.tab || input === "/")) return;
       const pb = boot?.playback;
       // Player transport runs before pane/section keys so downloads never
       // steal space/k, j/l, n/p, etc. (text capture already returned above).
@@ -534,7 +562,7 @@ export function App({ initialAdd }: { initialAdd?: string } = {}) {
 
   const playTrack = useCallback(
     (t: Track, list?: Track[]) => {
-      void boot?.playback.play(t, list ?? [t]);
+      void boot?.playback.selectTrack(t, list ?? [t]);
     },
     [boot],
   );
@@ -632,6 +660,7 @@ export function App({ initialAdd }: { initialAdd?: string } = {}) {
       <Box flexDirection="column" paddingX={1}>
         <Box justifyContent="space-between">
           {showLogo ? <Logo /> : null}
+          {!welcome ? <Text dimColor>m Player · 7 Queue · ? Keys</Text> : null}
           {mpvStatus ? <Text dimColor>{mpvStatus}</Text> : null}
         </Box>
         {showTopRule ? <Rule width={ruleWidth} /> : null}
@@ -683,18 +712,12 @@ export function App({ initialAdd }: { initialAdd?: string } = {}) {
               display={showHelp ? "none" : "flex"}
             >
             {showDivider ? <Rule width={ruleWidth} /> : null}
-            <NowPlayingBar />
+            {!nowPlayingView && section !== "player" ? <NowPlayingBar /> : null}
             {showFooter ? (
               <Footer
                 hints={
                   nowPlayingView
-                    ? [
-                        { keys: "m", label: "Back to library" },
-                        { keys: "space", label: "Play / pause" },
-                        { keys: "← →", label: "Seek" },
-                        { keys: "n p", label: "Next / prev" },
-                        { keys: "q", label: "Quit" },
-                      ]
+                    ? PLAYER_HINTS
                     : footerHints(region, section, playlistsDepth)
                 }
               />

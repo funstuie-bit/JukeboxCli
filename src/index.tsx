@@ -11,7 +11,7 @@ const ALT_LEAVE = "\x1b[?1049l"; // restore the normal screen
 // ours, and pop the old one back on exit. Terminals without the stack just
 // ignore the push/pop and keep our title, which is still the right look.
 const TITLE_PUSH = "\x1b[22;0t";
-const TITLE_SET = "\x1b]0;♪ soundcli\x07";
+const TITLE_SET = "\x1b]0;♪ JukeboxCli\x07";
 const TITLE_POP = "\x1b[23;0t";
 
 // A music TUI must never die from a stray background async error (e.g. an mpv

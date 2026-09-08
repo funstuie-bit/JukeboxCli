@@ -474,9 +474,7 @@ describe("settings move music folder", () => {
     await openFolderPage(stdin);
     const frame = lastFrame() ?? "";
     expect(frame).toContain("Move music folder");
-    // defaultConfig.libraryDir collapses to a home-relative path.
-    expect(frame).toContain("~");
-    expect(frame).toContain("soundcli");
+    expect(frame).toContain(defaultConfig.libraryDir);
   });
 
   it("rejects a folder nested inside the current one (quoted paste ok)", async () => {
@@ -485,7 +483,7 @@ describe("settings move music folder", () => {
     stdin.write(CTRL_U); // clear the prefill
     await tick();
     // Quoted like Windows Explorer's "Copy as path"; the quotes must strip.
-    stdin.write('"~/Music/soundcli/inner"');
+    stdin.write(`"${defaultConfig.libraryDir}/inner"`);
     await tick();
     stdin.write("\r");
     await tick();
@@ -961,7 +959,7 @@ describe("now playing full-screen view", () => {
     // PLACEHOLDER_TRACKS[0] = "Song Title" / "Artist Name".
     expect(frame).toContain("Song Title");
     expect(frame).toContain("Artist Name");
-    expect(frame).toContain("Up next");
+    expect(frame).toContain("Queue");
     // list slice after index 0: tracks 2..4.
     expect(frame).toContain("Another Song");
   });
@@ -976,7 +974,7 @@ describe("now playing full-screen view", () => {
     const frame = lastFrame() ?? "";
     expect(frame).toContain("Song Title");
     // A gradient fallback bar leaves no waveform block glyphs row.
-    expect(frame).not.toContain("Up nextAA");
+    expect(frame).toContain("1:23 / 3:35");
   });
 
   it("external engine gets the honest message, not a progress bar", () => {

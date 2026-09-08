@@ -44,6 +44,7 @@ export class MpvPlayer extends EventEmitter {
    * after the last track, after stop), so transport commands are gated on this.
    */
   private loaded = false;
+  private loadChain: Promise<void> = Promise.resolve();
 
   constructor(mpvPath: string) {
     super();
@@ -192,7 +193,10 @@ export class MpvPlayer extends EventEmitter {
         continue;
       }
       if (typeof msg.event === "string") {
-        if (msg.event === "property-change") {
+        if (msg.event === "file-loaded") {
+          this.loaded = true;
+          this.emit("loaded");
+        } else if (msg.event === "property-change") {
           this.emit("property", msg.name as string, msg.data);
         } else if (
           msg.event === "end-file" &&
@@ -242,9 +246,27 @@ export class MpvPlayer extends EventEmitter {
   }
 
   async loadFile(file: string, startPaused = false): Promise<void> {
-    await this.command(["loadfile", file, "replace"]);
-    this.loaded = true;
-    await this.command(["set_property", "pause", startPaused]);
+    const load = async () => {
+      // Set pause before loading, so session restore never leaks an audio burst.
+      await this.command(["set_property", "pause", startPaused]);
+      this.loaded = false;
+      let timer: ReturnType<typeof setTimeout>;
+      let loaded: () => void;
+      const ready = new Promise<void>((resolve, reject) => {
+        loaded = resolve;
+        this.once("loaded", loaded);
+        timer = setTimeout(() => reject(new Error("mpv file load timed out")), 10000);
+      });
+      try {
+        await Promise.all([this.command(["loadfile", file, "replace"]), ready]);
+      } finally {
+        clearTimeout(timer!);
+        this.off("loaded", loaded!);
+      }
+    };
+    const pending = this.loadChain.then(load);
+    this.loadChain = pending.catch(() => {});
+    return pending;
   }
 
   async togglePause(): Promise<void> {
