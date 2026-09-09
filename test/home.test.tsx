@@ -50,4 +50,15 @@ describe("listening-first Home", () => {
       }
     }
   });
+  it("centres the speaker grille under the selection buttons in both marks", () => {
+    for (const mark of [JUKEBOX_MARK, ASCII_JUKEBOX]) {
+      const lines = mark.split("\n");
+      const buttons = lines[6]!;
+      const centre = (buttons.indexOf("[") + buttons.indexOf("]")) / 2;
+      for (const row of lines.slice(7, 9)) {
+        const dot = row.includes("⠿") ? "⠿" : ":";
+        expect((row.indexOf(dot) + row.lastIndexOf(dot)) / 2).toBe(centre);
+      }
+    }
+  });
 });
