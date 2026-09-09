@@ -39,10 +39,19 @@ export class BandMeter {
 }
 export function spectrumRows(db: number[], width: number, height: number): string[] {
   width = Math.max(1, Math.floor(width)); height = Math.max(1, Math.floor(height));
-  const glyphs = " ▁▂▃▄▅▆▇█";
-  return Array.from({ length: height }, (_, row) => Array.from({ length: width }, (_, col) => {
-    const value = db[Math.min(db.length - 1, Math.floor(col * db.length / width))] ?? -120;
-    const amplitude = Math.max(0, Math.min(1, (value + 65) / 55));
-    return glyphs[Math.max(0, Math.min(8, Math.round((amplitude * height - (height - row - 1)) * 8)))];
-  }).join(""));
+  const cells = Array.from({ length: height }, () => Array<number>(width).fill(0));
+  const dots = [[1, 2, 4, 64], [8, 16, 32, 128]];
+  const levels = db.map(value => Number.isFinite(value) ? Math.max(0, Math.min(1, (value + 65) / 55)) : 0);
+  // Interpolate the existing bands for presentation, not extra frequency resolution.
+  // One dot per horizontal sample leaves the terminal background visible.
+  for (let x = 0; x < width * 2; x++) {
+    const band = x * Math.max(0, levels.length - 1) / (width * 2 - 1);
+    const left = Math.floor(band), blend = band - left;
+    const amplitude = (levels[left] ?? 0) * (1 - blend) + (levels[left + 1] ?? levels[left] ?? 0) * blend;
+    if (amplitude <= 0) continue;
+    const y = Math.round((1 - amplitude) * (height * 4 - 1));
+    const row = cells[Math.floor(y / 4)]!, column = Math.floor(x / 2);
+    row[column] = row[column]! | dots[x % 2]![y % 4]!;
+  }
+  return cells.map(row => row.map(bits => bits ? String.fromCharCode(0x2800 + bits) : " ").join(""));
 }

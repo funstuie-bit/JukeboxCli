@@ -2,11 +2,13 @@
 
 ## Unreleased prototype — Mac visualiser (2026-09-08)
 
+- Preview now uses a sparse Braille-dot contour with muted foreground colour
+  instead of solid blocks; NO_COLOR supported. Audio analyser unchanged.
 - Isolated mpv-native eight-band audio-energy prototype and terminal demo;
   same decoded stream, no system capture or second media download. Timestamped,
   bounded metadata, unchanged stereo playback branch, pause/seek/silence tests.
 - Real PCM graph comparison and mpv acceptance, repeated baseline/filtered CPU
-  harness; 594 tests pass / 4 inherited skips. See docs/visualiser-prototype.md.
+  harness; 596 tests pass / 4 inherited skips. See docs/visualiser-prototype.md.
 - Separate YouTube Music sign-in removed from scope at the maintainer's request; existing
   browser-cookie playback/downloads retained. Account APIs are not implied.
 - Not integrated into Now Playing; production version remains dev.10 and public

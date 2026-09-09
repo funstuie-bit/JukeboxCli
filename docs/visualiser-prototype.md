@@ -13,6 +13,13 @@ an analysis branch. The latter measures eight octave-spaced frequency bands
 energy**, not an FFT and not decorative/random animation. Analysis runs at
 20 frames/sec; the terminal demo redraws at 10 frames/sec.
 
+The preview uses a thin Braille-dot contour, interpolated between those same
+eight readings, with a muted slate/lavender foreground and no background fill.
+This is a lighter presentation, not extra frequency resolution or a time-domain
+waveform. It leaves the terminal background visible; it does not change terminal
+opacity. Set `NO_COLOR=1` for uncoloured dots. This is a single, non-blocking polish
+pass requested by the maintainer, not a commitment to further visual parity work.
+
 No microphone/system-audio capture, capture permissions, loopback driver, Python,
 native helper or second media download. The prototype uses the existing mpv
 process's libavfilter and inherits eight metadata pipes from its parent. FFmpeg
@@ -21,7 +28,7 @@ playback. Audio on the playback branch is never downmixed for analysis.
 
 Band readings carry media timestamps. The renderer chooses readings near mpv's
 playback position, not simply the most recently decoded frame (which can be
-ahead of the audible output). Pause blanks the demo, silence yields no bars,
+ahead of the audible output). Pause blanks the demo, silence yields no dots,
 and seek clears old histories. Stale/missing samples render blank. Measurements
 are pre-volume: muting makes the test silent but does not erase source energy.
 
@@ -69,7 +76,8 @@ The demo responds to current terminal size; unit tests cover small dimensions.
   run measured 4.0%/4.0% baseline versus 6.6%/6.6% filtered (about 2.6 percentage
   points additional mpv CPU). RSS varied 147–179 MiB baseline / 148–150 MiB
   filtered, so no memory-overhead conclusion is drawn from this short run.
-- 594 tests pass / 4 inherited skips, including bounded metadata parsing,
+- 596 tests pass / 4 inherited skips, including Braille mapping/interpolation,
+  missing/non-finite readings, bounded metadata parsing,
   timestamp selection, stale history clearing and honest silent rendering.
   Typecheck, build and distribution-import guard pass. App runtime is unchanged.
 
@@ -98,7 +106,7 @@ claim of system-wide visualisation or native media-key support.
 documentation lookup's web route checked the primary [FFmpeg filter documentation](https://ffmpeg.org/ffmpeg-filters.html):
 `asplit`, `aresample`, `asetnsamples`, `bandpass`, `astats`, `ametadata`, `anullsink`.
 Installed filter help and actual mpv execution verified the available options.
-`scripts/spectrum-core.ts` builds the graph/parses metadata/renders bounded bars;
+`scripts/spectrum-core.ts` builds the graph/parses metadata/renders dotted contours;
 `scripts/prototype-visualiser.ts` is the real-player acceptance/demo harness;
 `scripts/benchmark-spectrum.ts` compares baseline and filtered mpv. None is
 imported into production playback.

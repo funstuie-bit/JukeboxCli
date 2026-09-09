@@ -101,8 +101,11 @@ try {
       const width = Math.max(8, Math.min(100, (process.stdout.columns || 80) - 2));
       const values = meters.map(m => paused ? -120 : m.at(position)?.db ?? -120);
       const rows = spectrumRows(values, width, Math.max(1, Math.min(8, (process.stdout.rows || 24) - 5)));
-      process.stdout.write("\x1b[H\x1b[J" + "JukeboxCli · LIVE BAND ENERGY · muted prototype\n" +
-        `${position.toFixed(2)}s · ${paused ? "paused / blank" : "125 Hz → 4 kHz → silence"}\n` + rows.join("\n") + "\n60 Hz                         →                         8 kHz\n");
+      const colour = process.env.NO_COLOR === undefined ? "\x1b[38;5;103m" : "";
+      const reset = colour ? "\x1b[0m" : "";
+      process.stdout.write("\x1b[H\x1b[J" + "JukeboxCli · LIVE BAND ENERGY · dotted / muted prototype\n" +
+        `${position.toFixed(2)}s · ${paused ? "paused / blank" : "125 Hz → 4 kHz → silence"}\n` +
+        colour + rows.join("\n") + reset + "\n60 Hz                         →                         8 kHz\n");
     }, 100);
   }
   await until(() => position >= 0.8 && meters.every(m => !!m.at(position)));
