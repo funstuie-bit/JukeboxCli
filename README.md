@@ -15,7 +15,7 @@ See [upstream credit](#upstream-credit) for how each project contributes.
   cookies, formats, pacing and conversion. Spotify imports are not Spotify streaming.
 
 [Install on a Mac](#install-the-development-version-on-a-mac) ·
-[Feature status](FEATURES.md) · [Changelog](CHANGELOG.md) · [Architecture](docs/architecture.md)
+[Feature status](FEATURES.md) · [Roadmap](docs/roadmap.md) · [Changelog](CHANGELOG.md) · [Architecture](docs/architecture.md)
 
 New screenshots are being prepared from a clean installation. Account/likes,
 personalised YouTube radio and a verified Intel/Apple Silicon release remain in development.

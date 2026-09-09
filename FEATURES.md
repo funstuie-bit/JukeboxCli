@@ -10,6 +10,7 @@ This development branch is separate from the installed soundcli command.
 | Saved listening sessions | Implemented; real mpv smoke passes | Intel/Mac matrix |
 | Streaming and next-track preload | Implemented; real mpv HTTP/mixed-queue smoke passes | Wider codecs/networks; not universally gapless |
 | YouTube Music search and browsing | Implemented signed out; search/browse/pagination probes | the maintainer's online workflow; unofficial API can change |
+| Local/YouTube search bar inside Now Playing | Planned, non-urgent; [scope and sequence](docs/roadmap.md) | Input routing, panel restoration, play/queue/download actions; no implicit downloads |
 | Play URL: single YouTube item / direct HTTP(S) audio | Implemented dev.4; full App + muted real YouTube playback pass | Fresh Mac/network matrix |
 | Direct internet radio, saved favourites, live transport/metadata | Implemented dev.4; real HTTP/ICY/mpv smoke passes | the maintainer's stations; broadcaster/codec variability |
 | Paged help and streaming entry hints | Implemented dev.4; full App including 60×18 tests | the maintainer's usability check |
