@@ -82,7 +82,7 @@ describe("App player workflow", () => {
     expect(view.lastFrame()).toContain("Already queued"); expect(readStations()).toEqual([]);
     await press(view, "7"); expect(view.lastFrame()).toContain("Playback queue · 2 tracks");
     await press(view, "\r"); await press(view, "m");
-    expect(view.lastFrame()).toContain("[LIVE]");
+    expect(view.lastFrame()).toContain("LIVE");
     expect(view.lastFrame()).not.toContain("No cover art");
     await press(view, "T"); await press(view, "V");
     await press(view, "\u001b"); await press(view, "5"); await press(view, "\u001b[F"); await press(view, "\r");
@@ -161,7 +161,7 @@ describe("App player workflow", () => {
     await press(view, "]"); await press(view, "]"); expect(view.lastFrame()).toContain("Fixture album");
     await press(view, "\r"); expect(view.lastFrame()).toContain("Inside album");
     await press(view, "A"); expect(view.lastFrame()).toContain("Added to queue");
-    await press(view, "7"); expect(view.lastFrame()).toContain("[ONLINE]");
+    await press(view, "7"); expect(view.lastFrame()).toContain("NET"); expect(view.lastFrame()).not.toContain("[ONLINE]");
     await press(view, "\r"); await press(view, "m"); expect(view.lastFrame()).toContain("Streaming");
     view.unmount(); await tick();
     const saved = readSession()!; expect(saved.streams?.[saved.ids[0]!]!.streamUrl).toContain("music.youtube.com");

@@ -1,5 +1,5 @@
 import { Box, Text } from "ink";
-import { COLOR } from "../theme";
+import { playerPalette } from "../theme";
 import type { Hint } from "../keymap";
 import { useStore, usePlayback } from "../store";
 import { isLive } from "../../player/media";
@@ -10,7 +10,8 @@ import { isLive } from "../../player/media";
  * labels are dimmed. Deliberately short, the `?` overlay carries the rest.
  */
 export function Footer({ hints }: { hints: Hint[] }) {
-  const { playback } = useStore();
+  const { playback, config } = useStore();
+  const COLOR = playerPalette(config.playerTheme);
   const live = isLive(usePlayback(playback).track);
   const visible = live ? hints.filter(h => h.label !== "Seek").map(h => h.label === "Pause" ? { ...h, label: "Reconnect/pause" } : h) : hints;
   return (
@@ -18,9 +19,9 @@ export function Footer({ hints }: { hints: Hint[] }) {
       <Text>
         {visible.map((h, i) => (
           <Text key={h.keys + h.label}>
-            {i > 0 ? <Text dimColor>{"   "}</Text> : null}
+            {i > 0 ? <Text color={COLOR.muted}>{"   "}</Text> : null}
             <Text color={COLOR.alt}>{h.keys}</Text>
-            <Text dimColor>{` ${h.label}`}</Text>
+            <Text color={COLOR.muted}>{` ${h.label}`}</Text>
           </Text>
         ))}
       </Text>

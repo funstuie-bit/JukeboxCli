@@ -1,7 +1,7 @@
 import { Box, Text, useInput } from "ink";
 import { useStore, type Section } from "../store";
 import { wrapStep } from "../move";
-import { ACCENT_RAMP, COLOR, ICON } from "../theme";
+import { playerPalette, ICON } from "../theme";
 
 interface NavItem {
   key: Section;
@@ -21,7 +21,8 @@ const NAV: NavItem[] = [
 ];
 
 export function Sidebar() {
-  const { section, setSection, region, setRegion, queue } = useStore();
+  const { section, setSection, region, setRegion, queue, config } = useStore();
+  const COLOR = playerPalette(config.playerTheme);
   const focused = region === "sidebar";
   const idx = NAV.findIndex((n) => n.key === section);
   const active = queue.activeCount;
@@ -47,19 +48,18 @@ export function Sidebar() {
             {selected ? (
               // The lit edge: the marker takes the ramp's sunlit end while the
               // label stays brand flame, a subtle two-tone glow.
-              <Text color={ACCENT_RAMP[1]} bold={focused}>{`${ICON.bar} `}</Text>
+              <Text color={COLOR.alt} bold={focused}>{`${ICON.bar} `}</Text>
             ) : (
               <Text>{"  "}</Text>
             )}
             <Text
-              color={selected ? COLOR.accent : undefined}
-              dimColor={!selected}
+              color={selected ? COLOR.accent : COLOR.muted}
               bold={selected && focused}
             >
               {`${i + 1} ${item.label}`}
             </Text>
             {item.key === "download" && active > 0 ? (
-              <Text dimColor>{` (${active})`}</Text>
+              <Text color={COLOR.muted}>{` (${active})`}</Text>
             ) : null}
           </Box>
         );

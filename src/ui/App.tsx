@@ -44,7 +44,7 @@ import {
   playerCanControl,
   shouldBlockPlayerSpace,
 } from "./player-keys";
-import { COLOR, ICON, RULE } from "./theme";
+import { COLOR, ICON, RULE, playerPalette } from "./theme";
 import { Library as LibrarySection } from "./sections/Library";
 import { Playlists } from "./sections/Playlists";
 import { History } from "./sections/History";
@@ -677,7 +677,7 @@ export function App({ initialAdd }: { initialAdd?: string } = {}) {
       <Box flexDirection="column" paddingX={1}>
         <Box justifyContent="space-between">
           {showLogo ? <Logo /> : null}
-          {!welcome ? <Text dimColor>m Player · 7 Queue · ? Keys</Text> : null}
+          {!welcome ? <Text color={playerPalette(config?.playerTheme).muted}>m Player · 7 Queue · ? Keys</Text> : null}
           {mpvStatus ? <Text dimColor>{mpvStatus}</Text> : null}
         </Box>
         {showTopRule ? <Rule width={ruleWidth} /> : null}

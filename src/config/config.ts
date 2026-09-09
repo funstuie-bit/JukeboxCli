@@ -6,7 +6,7 @@ import { configFile, defaultLibraryDir } from "./paths";
 import { resolveDefaultLibraryDir } from "./music-dir";
 
 export interface Config {
-  /** Player/queue palette; navigation retains the shared app palette. */
+  /** Player/queue and navigation chrome palette. */
   playerTheme?: "lavender" | "calm";
   /** Disable decorative fallback animation (default true). */
   reducedMotion?: boolean;

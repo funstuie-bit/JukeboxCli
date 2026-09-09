@@ -12,7 +12,7 @@ import { RadioFallback } from "../components/RadioFallback";
 export function playerLayout(width: number, height: number) {
   const split = width >= 86 && height >= 16;
   const left = split ? Math.min(56, Math.max(40, Math.floor(width * 0.36))) : width;
-  const waveRows = height >= 26 ? 5 : height >= 19 ? 3 : 1;
+  const waveRows = height >= 26 ? 2 : 1;
   const artRows = split ? Math.min(12, Math.max(3, height - 11 - waveRows)) : 0;
   return { split, left, right: width - left - 1, waveRows, artRows };
 }
@@ -83,7 +83,7 @@ export function NowPlaying({ embedded = false }: { embedded?: boolean }) {
     <Text color={st.error ? COLOR.warn : COLOR.muted} wrap="truncate-end">{st.error || (st.loading ? "Loading…" : st.engine === "external" && t ? "Playing in your default app" : t ? `${isStream(t) ? "Streaming · not in Library" : "Saved locally"}${st.preloading ? " · preparing next…" : st.nextReady ? " · next prepared" : ""}` : "m closes this screen")}</Text>
   </Box>;
   return <Box width={width} height={height} flexDirection={layout.split ? "row" : "column"}>
-    <Box width={layout.left} height={layout.split ? Math.min(height, 30) : 6} alignSelf={layout.split ? "center" : undefined} borderStyle={layout.split ? "round" : undefined} borderColor={RULE} flexDirection="column" paddingX={1} flexShrink={0}>
+    <Box width={layout.left} height={layout.split ? undefined : 6} alignSelf="flex-start" borderStyle={layout.split ? "round" : undefined} borderColor={RULE} flexDirection="column" paddingX={1} flexShrink={0}>
       {layout.split ? <Box justifyContent="space-between"><Text bold color={COLOR.alt}>NOW PLAYING</Text><Text color={COLOR.muted}>{st.index >= 0 ? `${store.playback.queueEntries().findIndex(e => e.index === st.index) + 1}/${st.list.length}` : ""}</Text></Box> : null}
       {heading}
       {layout.split ? <Box alignItems="center" justifyContent="center" flexShrink={0}>
@@ -91,7 +91,7 @@ export function NowPlaying({ embedded = false }: { embedded?: boolean }) {
           fallback={<RadioFallback live={live} rows={artRows} palette={COLOR}
             animate={active && !st.paused && !st.loading && !!t && store.config.reducedMotion === false} />} />
       </Box> : null}
-      {layout.split ? <Box flexGrow={1} /> : null}
+      {layout.split && height >= 23 ? <Box height={1} /> : null}
       {details}
       {layout.split && height >= 23 ? <Text color={COLOR.muted} wrap="truncate-end">T {store.config.playerTheme === "calm" ? "Calm" : "Lavender"} · V Motion {store.config.reducedMotion === false ? "on" : "off"}</Text> : null}
     </Box>

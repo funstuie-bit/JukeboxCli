@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.1.0-dev.7 — Screenshot-driven layout polish (2026-09-08)
+
+- Top-align the content-height player with the queue; remove centring and the
+  expanding blank gap. Waveform is one/two rows rather than a five-row slab.
+- Compact FILE/NET/LIVE TYPE column replaces repeated source prefixes in titles,
+  retaining separate selected/playing markers and cell-correct Unicode widths.
+- Sidebar, footer and top navigation hints use explicit palette colours; Calm
+  also styles navigation chrome, without changing terminal preferences/background.
+- No saved-station or playback metadata migration. Old station entries without
+  artwork metadata still use the fallback; this is not an artwork repair release.
+
+Verification: 556 tests pass / 4 inherited skipped; typecheck/build/import guard,
+terminal radio fixture and isolated real mpv radio/local/mixed-stream checks.
+Development branch only; main stays dev.3 pending coordinated promotion.
+
 ## 0.1.0-dev.6 — Clearer player and radio presentation (2026-09-08)
 
 - Capped, vertically centred player card beside full-height Playback queue;

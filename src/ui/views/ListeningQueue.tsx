@@ -51,14 +51,15 @@ export function ListeningQueue({ height, width, active, framed = false }: {
   return <Box flexDirection="column" width={width ?? store.contentWidth} height={height} borderStyle={framed ? "round" : undefined} borderColor={RULE} paddingX={framed ? 1 : 0}>
     <Text bold color={COLOR.alt} wrap="truncate-end">Playback queue · {entries.length} tracks · {state.shuffle ? "shuffled" : "in order"}</Text>
     {!dense || confirmClear || error || !entries.length ? <Text color={COLOR.muted} wrap="truncate-end">{confirmClear ? "Clear queue and stop? y clear · esc cancel (files stay)" : error || (entries.length ? "↑↓ select  enter play  u/D move  x remove  X clear" : "Empty · select a song in Library, then A append or P play next")}</Text> : null}
-    {columns ? <Text color={COLOR.muted}>{queueRow("ARTIST", "TITLE", "TIME", cols)}</Text> : null}
+    {columns ? <Text color={COLOR.muted}>{queueRow("ARTIST", "TITLE", "TIME", cols, "  ", "TYPE")}</Text> : null}
     {entries.slice(start, start + rows).map((row, offset) => {
       const here = start + offset === selected;
       const artist = row.track.artist ? cleanText(row.track.artist) : "—";
-      const title = `[${isLive(row.track) ? "LIVE" : isStream(row.track) ? "ONLINE" : "LOCAL"}] ${cleanText(trackDisplayTitle(row.track)).replace(/^Radio · /, "")}`;
+      const source = isLive(row.track) ? "LIVE" : isStream(row.track) ? "NET" : "FILE";
+      const title = cleanText(trackDisplayTitle(row.track)).replace(/^Radio · /, "");
       const marker = `${here && focused ? "›" : " "}${row.index === state.index ? state.paused ? "Ⅱ" : "▶" : " "}`;
       return <Text key={row.index} color={here && focused ? COLOR.selectedText : row.index === state.index ? COLOR.accent : COLOR.text} backgroundColor={here && focused ? COLOR.selection : undefined} wrap="truncate-end">
-        {columns ? queueRow(artist, title, isLive(row.track) ? "LIVE" : formatDuration(row.track.durationSec), cols, marker) : fitRow(marker + title + " · " + artist, cols)}
+        {columns ? queueRow(artist, title, isLive(row.track) ? "LIVE" : formatDuration(row.track.durationSec), cols, marker, source) : fitRow(marker + source.padEnd(4) + " " + title + " · " + artist, cols)}
       </Text>;
     })}
     {!dense ? <><Box flexGrow={1} />
@@ -73,8 +74,9 @@ export function fitRow(text: string, width: number): string {
   for (const ch of text) { if (stringWidth(out + ch) > limit) break; out += ch; }
   return out + " ".repeat(Math.max(0, limit - stringWidth(out)));
 }
-export function queueRow(artist: string, title: string, time: string, width: number, marker = "  "): string {
-  const artistW = Math.min(24, Math.floor(width * 0.3));
+export function queueRow(artist: string, title: string, time: string, width: number, marker = "  ", source = ""): string {
+  const sourceW = source ? 5 : 0;
+  const artistW = Math.min(24, Math.floor(width * (source ? 0.26 : 0.3)));
   const timeW = 8;
-  return marker + fitRow(artist, artistW) + " " + fitRow(title, width - artistW - timeW - 4) + " " + fitRow(time.padStart(timeW), timeW);
+  return marker + (source ? fitRow(source, 4) + " " : "") + fitRow(artist, artistW) + " " + fitRow(title, width - artistW - timeW - 4 - sourceW) + " " + fitRow(time.padStart(timeW), timeW);
 }

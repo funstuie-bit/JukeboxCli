@@ -18,8 +18,8 @@ describe("responsive listening layout", () => {
     expect(view.lastFrame()).toContain("›▶");
     view.stdin.write("\u001b[B"); await new Promise(r => setTimeout(r, 30));
     expect(view.lastFrame()).not.toContain("›▶");
-    expect(view.lastFrame()).toContain(" ▶Artist Name");
-    expect(view.lastFrame()).toContain("› Artist Name");
+    expect(view.lastFrame()).toContain(" ▶FILE Artist Name");
+    expect(view.lastFrame()).toContain("› FILE Artist Name");
     expect(store.playback.getState().index).toBe(0);
   });
   it("caps artwork and fits radio with long broadcast text at every size", async () => {
@@ -53,7 +53,7 @@ describe("responsive listening layout", () => {
     expect(clear).toHaveBeenCalledWith(interval.mock.results[timerIndex]!.value);
     view.unmount(); interval.mockRestore(); clear.mockRestore();
   });
-  it("uses two full-height panels on wide screens and stacks on small ones", () => {
+  it("top-aligns the compact player with the queue and stacks on small screens", () => {
     expect(playerLayout(138, 38)).toMatchObject({ split: true });
     expect(playerLayout(58, 12).split).toBe(false);
     for (const [cols, height] of [[140, 38], [100, 18], [80, 16], [60, 12]]) {
@@ -63,13 +63,22 @@ describe("responsive listening layout", () => {
       expect(frame).toContain("Playback queue"); expect(frame).toContain("Song Title");
       expect(frame.split("\n").length).toBeLessThanOrEqual(height!);
       expect(Math.max(...frame.split("\n").map(s => stringWidth(s)))).toBeLessThanOrEqual(cols!);
-      if (cols! >= 100) { expect(frame).toContain("NOW PLAYING"); expect(frame).toContain("TITLE"); }
+      if (cols! >= 100) {
+        expect(frame.split("\n")[1]).toContain("NOW PLAYING");
+        expect(frame.split("\n")[1]).toContain("Playback queue");
+        expect(frame).toContain("TITLE"); expect(frame).toContain("TYPE");
+        expect(frame).not.toContain("[LOCAL]");
+      }
       view.unmount();
     }
   });
   it("keeps column widths exact for wide characters and long names", () => {
     expect(stringWidth(fitRow("東京 🎵 test", 8))).toBe(8);
     expect(stringWidth(queueRow("東京 🎵".repeat(8), "Long title".repeat(20), "1:23:45", 68))).toBe(68);
+    for (const width of [48, 60, 90, 130]) {
+      expect(stringWidth(queueRow("東京 🎵".repeat(8), "Long title".repeat(20), "1:23:45", width, "›▶", "LIVE"))).toBe(width);
+    }
+    expect(playerLayout(180, 50).waveRows).toBe(2);
   });
   it("cleans an appended year for display without editing the stored title", () => {
     const track = { title: "Renegade Soundwave - Leftfield Remix;1994" };

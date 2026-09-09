@@ -420,7 +420,7 @@ export function Settings() {
   }
 
   if (mode === "appearance") {
-    return frame("Player appearance", <SelectField title="Player and queue colours; motion is decorative, not audio-reactive."
+    return frame("Player appearance", <SelectField title="Player and navigation colours; motion is decorative, not audio-reactive."
       focused={focused} options={[
         { label: `Theme: ${config.playerTheme === "calm" ? "Calm" : "Lavender"} (toggle)`, value: "theme" },
         { label: `Reduced motion: ${config.reducedMotion === false ? "off" : "on"} (toggle)`, value: "motion" },
