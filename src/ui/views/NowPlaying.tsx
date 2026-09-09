@@ -8,6 +8,7 @@ import { ListeningQueue } from "./ListeningQueue";
 import { isLive, isStream } from "../../player/media";
 import { Cover } from "../components/Cover";
 import { RadioFallback } from "../components/RadioFallback";
+import { LyricsPanel } from "../components/LyricsPanel";
 
 export function playerLayout(width: number, height: number) {
   const split = width >= 86 && height >= 16;
@@ -42,11 +43,13 @@ export function NowPlaying({ embedded = false }: { embedded?: boolean }) {
   const file = st.track?.filePath;
   const source = st.track && isStream(st.track) ? st.track.thumbnailUrl : file;
   const [artVisible, setArtVisible] = useState(true);
+  const [lyricsVisible, setLyricsVisible] = useState(false);
   const [wave, setWave] = useState<{ file: string; data: Waveform | null }>();
   // App unmounts expanded player for help; hidden embedded views get region=help.
   const active = !embedded || store.region === "content";
   useInput(input => {
     if (input === "b") setArtVisible(v => !v);
+    if (input === "l") setLyricsVisible(v => !v);
     if (input === "T") store.setConfig({ ...store.config, playerTheme: store.config.playerTheme === "calm" ? "lavender" : "calm" });
     if (input === "V") store.setConfig({ ...store.config, reducedMotion: !(store.config.reducedMotion ?? true) });
   }, { isActive: active });
@@ -96,7 +99,10 @@ export function NowPlaying({ embedded = false }: { embedded?: boolean }) {
       {layout.split && height >= 23 ? <Text color={COLOR.muted} wrap="truncate-end">T {store.config.playerTheme === "calm" ? "Calm" : "Lavender"} · V Motion {store.config.reducedMotion === false ? "on" : "off"}</Text> : null}
     </Box>
     <Box marginLeft={layout.split ? 1 : 0} width={layout.split ? layout.right : width} height={layout.split ? height : Math.max(3, height - 6)}>
-      <ListeningQueue height={layout.split ? height : Math.max(3, height - 6)} width={layout.split ? layout.right : width} active={active} framed />
+      <Box display={lyricsVisible ? "none" : "flex"}>
+        <ListeningQueue height={layout.split ? height : Math.max(3, height - 6)} width={layout.split ? layout.right : width} active={active && !lyricsVisible} framed />
+      </Box>
+      {lyricsVisible ? <LyricsPanel height={layout.split ? height : Math.max(3, height - 6)} width={layout.split ? layout.right : width} active={active} /> : null}
     </Box>
   </Box>;
 }

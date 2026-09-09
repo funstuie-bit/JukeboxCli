@@ -15,7 +15,8 @@ This development branch is separate from the installed soundcli command.
 | Paged help and streaming entry hints | Implemented dev.4; full App including 60×18 tests | the maintainer's usability check |
 | Website/PLS/M3U feed detection, station artwork, easier naming | Implemented dev.5; bounded static discovery and known DKFM/Deeper Shades links | the maintainer's station-site tests; DKFM artwork unavailable |
 | Refresh existing station/queue artwork; visible x/d removal | Implemented dev.8; exact-URL metadata refresh preserves names/audio | the maintainer's end-to-end website refresh check |
-| Account, likes, personalised YouTube radio, lyrics | Planned | Real service acceptance |
+| Optional local LRC / offline cache / opt-in LRCLIB lyrics | Implemented dev.9 on development; App tests, live lookup and real mpv timing | the maintainer's tracks/terminal acceptance; coverage varies |
+| Account, likes, personalised YouTube radio | Planned | Real service acceptance |
 | Top-aligned compact player, radio/disc fallback, queue source column, slim waveform | Implemented dev.7; responsive/App tests pass | the maintainer's visual acceptance |
 | Sharp artwork and half-block fallback | Implemented; Ghostty protocol/lifecycle tested | Visual screenshot/other terminal matrix |
 | Lavender/Calm player and navigation palettes, reduced-motion setting | Implemented dev.7; persisted, default motion off | the maintainer's terminal colour check |

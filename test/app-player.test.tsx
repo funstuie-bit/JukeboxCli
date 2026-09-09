@@ -29,6 +29,14 @@ vi.mock("../src/player/art", () => ({
   loadCoverArt: async () => null,
   loadWaveform: async (_file: string, buckets: number) => ({ samples: Array.from({ length: buckets }, (_, i) => (i % 8 + 1) / 8) }),
 }));
+vi.mock("../src/player/lyrics", async importOriginal => {
+  const actual = await importOriginal<typeof import("../src/player/lyrics")>();
+  return { ...actual, loadLyrics: actual.createLyricsService({ spacing: 0, fetcher: async input => {
+    const params = new URL(String(input)).searchParams;
+    return Response.json({ trackName: params.get("track_name"), artistName: params.get("artist_name"),
+      duration: Number(params.get("duration")), syncedLyrics: "[00:00] Opening fixture\n[00:10] Middle fixture\n[00:20] Closing fixture" });
+  } }) };
+});
 vi.mock("../src/player/mpv", async () => {
   const { EventEmitter } = await import("node:events");
   return { MpvPlayer: class extends EventEmitter {
@@ -73,6 +81,30 @@ async function press(view: ReturnType<typeof app>, key: string) { view.stdin.wri
 afterEach(() => { cleanup(); rmSync(sessionFile, { force: true }); rmSync(stationsFile, { force: true }); });
 
 describe("App player workflow", () => {
+  it("opts into lyrics, follows seeking/pausing and keeps lyric controls out of the queue", async () => {
+    const view = app(); await tick(); await tick();
+    await press(view, "1"); await press(view, "\u001b[B"); await press(view, "A");
+    await press(view, "7"); await press(view, "\r"); await press(view, "m");
+    expect(view.lastFrame()).toContain("l Lyrics");
+    await press(view, "l"); await new Promise(r => setTimeout(r, 500));
+    expect(view.lastFrame()).toContain("No local/cached lyrics");
+    await press(view, "L"); await new Promise(r => setTimeout(r, 500));
+    expect(view.lastFrame()).toContain("› Opening fixture");
+    await press(view, "\u001b[C"); expect(view.lastFrame()).toContain("› Middle fixture");
+    await press(view, " "); expect(view.lastFrame()).toContain("› Middle fixture");
+    await press(view, "\u001b[B"); await press(view, "x");
+    expect(view.lastFrame()).toContain("Synced lines · browsing");
+    await press(view, "f"); expect(view.lastFrame()).toContain("following playback");
+    Object.defineProperty(view.stdout, "columns", { configurable: true, value: 60 });
+    Object.defineProperty(view.stdout, "rows", { configurable: true, value: 18 });
+    view.stdout.emit("resize"); await tick();
+    expect((view.lastFrame() ?? "").split("\n").length).toBeLessThanOrEqual(18);
+    await press(view, "l"); expect(view.lastFrame()).toContain("Playback queue · 1 tracks");
+    await press(view, "6"); await press(view, "l"); await new Promise(r => setTimeout(r, 500));
+    expect(view.lastFrame()).toContain("LYRICS");
+    view.unmount(); await tick(); expect(readSession()?.ids).toHaveLength(1);
+    expect(readSession()?.position).toBe(15); // Neither player's l toggle seeks.
+  });
   it("refreshes an old favourite and queued artwork while retaining names, then removes via d", async () => {
     saveStation("My custom radio", "https://example.com/live.mp3");
     const view = app(); await tick(); await tick(); await press(view, "9");

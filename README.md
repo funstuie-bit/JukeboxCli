@@ -2,7 +2,7 @@
 
 Mac-first terminal music player combining an offline library with YouTube Music
 discovery and streaming. **Current public build: 0.1.0-dev.8** on `main`.
-Ongoing development happens on `development`.
+**Development build: 0.1.0-dev.9 (lyrics)** on `development`.
 Built on [soundcli by baairon](https://github.com/baairon/soundcli), with player
 design and feature inspiration from [ytkew by dtDhruv](https://github.com/dtDhruv/ytkew).
 See [upstream credit](#upstream-credit) for how each project contributes.
@@ -18,7 +18,8 @@ See [upstream credit](#upstream-credit) for how each project contributes.
 [Feature status](FEATURES.md) · [Changelog](CHANGELOG.md) · [Architecture](docs/architecture.md)
 
 New screenshots are being prepared from a clean installation. Account/likes,
-personalised YouTube radio, lyrics and a verified Intel/Apple Silicon release remain in development.
+personalised YouTube radio and a verified Intel/Apple Silicon release remain in development.
+Optional lyrics are available on the development branch; see [lyrics](docs/lyrics.md).
 
 Build with `npm ci && npm run build`, then `npm start` (or `npm run dev`).
 Installation provides `jukeboxcli` and a compatibility `soundcli` alias.
@@ -106,7 +107,7 @@ A search selection is a one-off in your running queue; playing inside a browsed
 collection uses its currently loaded songs as the playback context. Load more
 before playing if you want those additional songs included too.
 
-Local files and streams share one queue. `[stream]` marks remote entries; the
+Local files and streams share one queue. FILE/NET/LIVE identify their source; the
 player shows **Streaming** or **Saved locally**, plus next-track preparation.
 Stream artwork comes from its thumbnail; waveform extraction remains local-only.
 Remote queue entries restore paused without a network lookup until you press play.
@@ -118,7 +119,7 @@ settings are used for audio resolution, separately from signed-out Music search.
 First stream resolution can take several seconds (about 16 seconds in one real
 test here); restricted/unavailable results may fail. A rejected media URL is
 refreshed once; errors keep the queue so you can retry with space or skip with `n`.
-No signed-in library, likes, personalised YouTube radio or lyrics yet. Direct
+No signed-in library, likes or personalised YouTube radio yet. Direct
 internet radio is available in dev.4 as described below.
 
 The next entry is resolved ahead and appended to mpv for prefetch. “Next prepared”
@@ -129,6 +130,22 @@ Cache limits are 32 MiB forward/4 MiB backward per demuxer; resolved-URL cache i
 guarantee** across codecs, long pauses and network conditions.
 `npx tsx scripts/smoke-streaming.ts` verifies real HTTP prefetch and mixed-queue
 transitions using silent audio and a loopback server, with no library changes.
+
+### Lyrics (development build 0.1.0-dev.9)
+
+In the player (`m` or section `6`), press **l** to swap the queue for lyrics;
+press it again to return. **L** in that panel enables/disables online LRCLIB
+lookup (off by default; sends artist/title, optional album and duration).
+Local `Song.lrc` beside `Song.mp3` takes priority; previously cached lyrics work
+offline. No songs or library metadata are modified. Scroll with ↑/↓ or Page
+Up/Down, **f** resumes following; ←/→ still seek. The old `l` seek alias only
+works outside the focused player now.
+
+Timed lyrics follow mpv position; untimed lyrics stay plain. Radio can look up
+an unambiguous `Artist - Song` broadcast title, but never claims synced timing;
+DJ mixes and unclear metadata are skipped. Coverage is not guaranteed, long
+lines truncate to panel width, and there is no word-by-word karaoke or manual
+search/editor yet. [Setup, privacy and implementation details](docs/lyrics.md).
 
 ### Play URL and internet radio (0.1.0-dev.8)
 

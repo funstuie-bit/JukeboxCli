@@ -67,6 +67,10 @@ export const HELP_GROUPS: HelpGroup[] = [
       { keys: "b", label: "Player: show / hide artwork" },
       { keys: "T", label: "Player: lavender / calm theme" },
       { keys: "V", label: "Player: decorative motion on / off" },
+      { keys: "l", label: "Player: lyrics / queue panel" },
+      { keys: "L", label: "Lyrics: enable / disable online lookup" },
+      { keys: "↑↓ / Pg", label: "Lyrics: scroll (does not edit queue)" },
+      { keys: "f", label: "Lyrics: follow timed lines again" },
     ],
   },
   {
@@ -122,7 +126,7 @@ const ALWAYS: Hint = { keys: "?", label: "Keys" };
 const PLAYER: Hint = { keys: "m", label: "Player" };
 export const PLAYER_HINTS: Hint[] = [
   { keys: "m/esc", label: "Back" }, { keys: "space", label: "Pause" },
-  { keys: "← →", label: "Seek" }, { keys: "b", label: "Artwork" }, { keys: "T/V", label: "Look/motion" }, { keys: "7", label: "Queue" }, ALWAYS,
+  { keys: "← →", label: "Seek" }, { keys: "l", label: "Lyrics" }, { keys: "b", label: "Artwork" }, { keys: "T/V", label: "Look/motion" }, { keys: "7", label: "Queue" }, ALWAYS,
 ];
 // tab is the one movement key the arrows can't cover (they belong to lists
 // and seeking), so every footer variant advertises it under the same name.
@@ -157,6 +161,7 @@ export function footerHints(
       return [{ keys: "/", label: "Search" }, { keys: "↵", label: "Stream" },
         { keys: "o", label: "Play URL" }, { keys: "A/P", label: "Queue" }, ALWAYS];
     case "player":
+      return [{ keys: "l", label: "Lyrics/queue" }, { keys: "← →", label: "Seek" }, PANE, PLAYER, ALWAYS];
     case "queue":
       return [{ keys: "↵", label: "Play" }, { keys: "u D", label: "Move" },
         { keys: "x", label: "Remove" }, PANE, PLAYER, ALWAYS];

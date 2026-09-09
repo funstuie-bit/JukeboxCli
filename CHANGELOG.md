@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.1.0-dev.9 — Optional lyrics (2026-09-08)
+
+- Player l toggles queue/lyrics without seeking; ←/→ retain transport controls.
+- Adjacent local LRC first, private bounded offline cache, then optional LRCLIB
+  exact-metadata lookup. L explicitly enables network lookup; default is off.
+- Timed lines follow mpv position/seeks, plain fallback and instrumental state.
+  Radio uses conservative Artist - Song metadata and never claims synchronisation.
+- Scroll/follow controls, cancellation on hide/track change, small-panel bounds,
+  identified sequential provider requests, timeout and Retry-After handling.
+- Public main was promoted to tested dev.8 before this work; dev.9 remains on
+  development for user acceptance. No word sync, lyrics editor or Mac spectrum.
+
+Verification: 575 tests pass / 4 inherited skipped, typecheck/build/import guard;
+full App lyrics/transport/queue isolation and responsive/stale-response tests;
+real muted mpv local-LRC seek/pause/advancing timing; live LRCLIB lookup plus
+offline cache reuse. Real-track/terminal and clean Mac matrix acceptance pending.
+
 ## 0.1.0-dev.8 — Station artwork refresh and removal (2026-09-08)
 
 - Website rediscovery atomically refreshes metadata on existing exact-URL

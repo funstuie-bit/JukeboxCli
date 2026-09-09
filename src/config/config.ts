@@ -6,6 +6,8 @@ import { configFile, defaultLibraryDir } from "./paths";
 import { resolveDefaultLibraryDir } from "./music-dir";
 
 export interface Config {
+  /** Explicit opt-in to LRCLIB metadata queries while the lyrics panel is open. */
+  lyricsOnline?: boolean;
   /** Player/queue and navigation chrome palette. */
   playerTheme?: "lavender" | "calm";
   /** Disable decorative fallback animation (default true). */
@@ -57,6 +59,7 @@ export function stripDeprecatedConfig(config: Config): Config {
 }
 
 export const defaultConfig: Config = {
+  lyricsOnline: false,
   playerTheme: "lavender",
   reducedMotion: true,
   libraryDir: defaultLibraryDir,
@@ -93,6 +96,7 @@ export async function loadConfig(): Promise<Config> {
   try {
     const parsed = JSON.parse(raw) as Partial<Config>;
     const cfg = { ...defaultConfig, ...parsed };
+    cfg.lyricsOnline = parsed.lyricsOnline === true;
     cfg.playerTheme = parsed.playerTheme === "calm" ? "calm" : "lavender";
     cfg.reducedMotion = typeof parsed.reducedMotion === "boolean" ? parsed.reducedMotion : true;
     if (!cfg.spotifyHandle && parsed.spotifyProfile) {

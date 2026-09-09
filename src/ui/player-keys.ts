@@ -15,7 +15,8 @@ export function playerCanControl(playback: Playback): boolean {
  * Handle play/pause, seek, skip, volume, restart. Returns true when the key
  * was a player-transport binding (even if mpv is momentarily busy).
  * Seek: j / ← back 15s, l / → forward 15s (arrows are free everywhere
- * except text fields, which own captureMode "text").
+ * except text fields, which own captureMode "text"). App reserves l for
+ * the lyrics toggle while the player view owns focus; → still seeks there.
  */
 export function handlePlayerTransport(
   playback: Playback,
