@@ -2,7 +2,7 @@ name: Mac install checks
 on:
   push:
     branches: [main, development]
-    paths: ["src/**", "test/**", "scripts/**", "package*.json", "install.sh", "update.sh", ".github/workflows/mac-install.yml"]
+    paths: ["src/**", "test/**", "scripts/**", "Formula/**", "package*.json", "install.sh", "update.sh", ".github/workflows/mac-install.yml"]
   workflow_dispatch:
 permissions:
   contents: read
@@ -26,3 +26,12 @@ jobs:
       - run: npm run build && npx tsx scripts/check-dist-imports.ts
       - name: Independent install and reinstall with an isolated profile
         run: npx tsx scripts/smoke-install.ts
+      - name: Private source formula install and functional test
+        env:
+          GH_TOKEN: ${{ github.token }}
+          HOMEBREW_NO_AUTO_UPDATE: "1"
+        run: |
+          gh auth setup-git
+          brew tap funstuie-bit/jukeboxcli "$GITHUB_WORKSPACE"
+          brew install --build-from-source funstuie-bit/jukeboxcli/jukeboxcli
+          brew test funstuie-bit/jukeboxcli/jukeboxcli

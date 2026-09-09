@@ -54,10 +54,26 @@ tools may still work even when doctor reports a PATH tool missing.
 ## Homebrew packaging
 
 The formula is maintained in this repository's Formula directory, using an
-immutable source commit and SHA-256, locked npm dependencies, declared node/mpv/
+immutable Git source revision, locked npm dependencies, declared node/mpv/
 ffmpeg/yt-dlp dependencies, private libexec installation and a single jukeboxcli
 wrapper (no conflicting soundcli alias). It is a third-party, source-built tap,
-not homebrew/core, a bottled release or an npm registry publication.
+not homebrew/core, a bottled release or an npm registry publication. The GitHub
+repo is private: anonymous archive downloads return404. Visibility is unchanged;
+Git must already have access via your credential helper. No tokens are embedded.
+
+For this development preview (formula is not on main yet):
+
+```sh
+brew tap funstuie-bit/jukeboxcli https://github.com/funstuie-bit/JukeboxCli.git
+git -C "$(brew --repository funstuie-bit/jukeboxcli)" switch development
+brew install funstuie-bit/jukeboxcli/jukeboxcli
+brew test funstuie-bit/jukeboxcli/jukeboxcli
+```
+
+Do not use force/overwrite if Homebrew reports an existing jukeboxcli command;
+keep the current installation until you decide to switch. Future formula revisions
+pin a newly verified source commit; `brew update` and `brew upgrade jukeboxcli`
+then install that version. Merely advancing the app branch does not update the pin.
 
 The wrapper sets JUKEBOXCLI_SYSTEM_TOOLS=1 and uses the declared dependencies on
 PATH. In this mode, JukeboxCli neither downloads replacement tools nor stages

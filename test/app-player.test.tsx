@@ -151,7 +151,7 @@ describe("App player workflow", () => {
     view.unmount(); await tick();
     expect(readSession()?.ids).toHaveLength(1); expect(readSession()?.position).toBe(0);
     expect(readSession()?.volume).toBe(100);
-  });
+  }, 15000); // Multi-step debounced workflow exceeds 5s on shared Mac CI runners.
   it("opts into lyrics, follows seeking/pausing and keeps lyric controls out of the queue", async () => {
     const view = app(); await tick(); await tick();
     await press(view, "1"); await press(view, "\u001b[B"); await press(view, "A");

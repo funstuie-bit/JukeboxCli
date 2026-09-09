@@ -356,6 +356,8 @@ Alternatively use `sh install.sh --prefix /absolute/private/prefix`. `sh update.
 updates a clean checkout by fast-forward and reinstalls; existing user data stays.
 `jukeboxcli --doctor` checks tools without setup/downloads. See the
 [Homebrew and Mac acceptance notes](docs/mac-controls-and-install.md).
+The development Homebrew formula uses this **private** repository and requires
+your GitHub access; it is not an anonymous public tap or a bottled release.
 
 On the welcome screen, press **esc** to skip importing a library. Then **8** opens
 Discover, **/** starts search, **A/P** adds songs to the queue and **m** opens the
