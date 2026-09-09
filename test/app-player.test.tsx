@@ -89,6 +89,42 @@ async function press(view: ReturnType<typeof app>, key: string) { view.stdin.wri
 afterEach(() => { cleanup(); rmSync(sessionFile, { force: true }); rmSync(stationsFile, { force: true }); rmSync(path.join(paths.cache, "lyrics-v1.json"), { force: true }); });
 
 describe("App player workflow", () => {
+  it("searches inside player, isolates typing, queues online results and restores lyrics", async () => {
+    const view = app(); await tick(); await tick();
+    await press(view, "1"); await press(view, "\u001b[B"); await press(view, "A");
+    await press(view, "7"); await press(view, "\r"); await press(view, "m");
+    await press(view, "S"); expect(view.lastFrame()).toContain("SEARCH · Local");
+    await press(view, "l: no match m n p 9 X ?");
+    expect(view.lastFrame()).toContain("SEARCH · Local");
+    await press(view, "\r"); expect(view.lastFrame()).toContain("No local matches");
+    await press(view, "/"); await press(view, "\u0015"); await press(view, "s: fixture"); await press(view, "\r");
+    expect(view.lastFrame()).toContain("Online fixture song");
+    await press(view, "A"); expect(view.lastFrame()).toContain("Appended to queue");
+    await press(view, "P"); expect(view.lastFrame()).toContain("Queued next");
+    await press(view, "\u001b"); expect(view.lastFrame()).toContain("Playback queue · 3 tracks");
+    await press(view, "l"); await press(view, "L"); await new Promise(r => setTimeout(r, 500));
+    await press(view, "\u001b[B"); expect(view.lastFrame()).toContain("browsing");
+    await press(view, "S"); await press(view, "\u001b"); await new Promise(r => setTimeout(r, 500));
+    expect(view.lastFrame()).toContain("browsing");
+    await press(view, "/"); expect(view.lastFrame()).toContain("Search LRCLIB");
+    await press(view, "\u001b");
+    view.unmount(); await tick();
+    expect(readSession()?.ids).toHaveLength(3); expect(readSession()?.position).toBe(0);
+    expect(readSession()?.volume).toBe(100);
+  });
+  it("searches from the embedded player, fits a small terminal and opens explicit download", async () => {
+    const view = app(); await tick(); await tick(); await press(view, "6");
+    await press(view, "/"); await press(view, "v: fixture"); await press(view, "\r");
+    expect(view.lastFrame()).toContain("Online videos");
+    Object.defineProperty(view.stdout, "columns", { configurable: true, value: 60 });
+    Object.defineProperty(view.stdout, "rows", { configurable: true, value: 18 });
+    view.stdout.emit("resize"); await tick();
+    expect((view.lastFrame() ?? "").split("\n").length).toBeLessThanOrEqual(18);
+    await press(view, "\u001b"); await press(view, "m"); await press(view, "S");
+    await press(view, "s: fixture"); await press(view, "\r"); await press(view, "d");
+    expect(view.lastFrame()).not.toContain("SEARCH ·");
+    expect(view.lastFrame()).not.toContain("NOW PLAYING");
+  });
   it("searches/selects lyrics, isolates typed shortcuts, cancels and tries the plain provider", async () => {
     const view = app(); await tick(); await tick();
     await press(view, "1"); await press(view, "\u001b[B"); await press(view, "A");

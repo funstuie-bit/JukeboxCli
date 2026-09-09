@@ -29,9 +29,12 @@ export function LyricsPanel({ width, height, active }: { width: number; height: 
     return () => store.setCaptureMode("none");
   }, [active, captures, store.setCaptureMode]);
   useEffect(() => {
+    setManual(null); setSelection(0);
+  }, [requestKey, action]);
+  useEffect(() => {
     if (!active || editing) return;
     setLoading(!!track);
-    setManual(null); setSelection(0); setResult({ message: track ? "Loading lyrics…" : "Play a song to see lyrics." });
+    setResult({ message: track ? "Loading lyrics…" : "Play a song to see lyrics." });
     if (!track) return;
     const controller = new AbortController();
     const timer = setTimeout(() => {

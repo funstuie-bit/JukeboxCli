@@ -461,7 +461,7 @@ export function App({ initialAdd }: { initialAdd?: string } = {}) {
       // Keep navigation within the visible player; do not focus hidden forms.
       if (nowPlayingView && (key.tab || input === "/")) return;
       // The visible player owns l for lyrics, not the legacy seek alias.
-      if (["l", "/", "O", "R"].includes(input) && (nowPlayingView || (section === "player" && region === "content"))) return;
+      if (["l", "/", "O", "R", "S"].includes(input) && (nowPlayingView || (section === "player" && region === "content"))) return;
       const pb = boot?.playback;
       // Player transport runs before pane/section keys so downloads never
       // steal space/k, j/l, n/p, etc. (text capture already returned above).
@@ -704,7 +704,7 @@ export function App({ initialAdd }: { initialAdd?: string } = {}) {
               // vertically compressed, and the body stays mounted (display
               // none) so the section you left is exactly what returns.
               <Box marginTop={1}>
-                <NowPlayingView />
+                <NowPlayingView onDownload={() => setNowPlayingView(false)} />
               </Box>
             ) : null}
             <Box

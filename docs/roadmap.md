@@ -1,5 +1,28 @@
 # JukeboxCli roadmap
 
+## Current milestone: Now Playing search — dev.11
+
+the maintainer authorised moving to the next feature after parking the visualiser. The
+previously planned search panel is implemented on development; user acceptance
+is next. S opens it from queue or lyrics, / opens it from queue only, preserving
+lyrics' existing / search. l: local (also the default), s: songs, v: videos.
+Enter submits then plays the selected result; A/P append/next; d explicitly
+starts the existing download workflow. Esc restores queue/lyrics and selection.
+Typing/results own the keyboard; ordinary transport shortcuts resume on Esc.
+Requests abort on close/edit/hide; late responses are ignored. Shared client
+initialisation has its existing 20-second network timeout and is not cancelled
+for other consumers. Online pages deduplicate/cap at 200; local search caps at
+200 and requires a narrower query beyond that. No automatic downloads.
+
+Full App tests cover both layouts, keyboard isolation, queue actions, lyrics
+restoration and 60×18 sizing. The isolated smoke-player-search.tsx harness checks
+real muted mpv advancing during local search plus append/next/play/Esc. A live
+Oasis Acquiesce query returned 20 playable songs and 20 playable videos through
+the updated service; both offered further pages. 604 tests pass / 4 inherited
+skips; typecheck/build/import guard pass. Other-Mac/terminal and end-to-end online
+workflow acceptance remain with the maintainer. Public main
+is not promoted by this milestone; visualiser still comes last.
+
 ## Parked until all other work is finished: macOS visualiser
 
 Parked explicitly by the maintainer on 2026-09-08 after testing the dotted preview: better
@@ -21,11 +44,10 @@ Keychain authentication project. Cookies do not by themselves implement Music
 account APIs. Own playlists/likes and personalised radio remain unimplemented,
 not a reason to reintroduce sign-in without a new explicit request.
 
-## Parked, non-urgent: search within Now Playing
+## Original scope: search within Now Playing (now implemented above)
 
-Added 2026-09-08 at the maintainer's request. Planned, non-urgent; not implemented.
-the maintainer reports dev.10 lyrics are working. This item does not authorise a new build
-or promotion to main by itself.
+Added 2026-09-08 at the maintainer's request, initially non-urgent. The following original
+scope informed dev.11; it does not authorise promotion to main by itself.
 
 Bring existing local-library search, online discovery and download/queue actions
 into the player, inspired by the search bar in the supplied Mousiki screenshot.

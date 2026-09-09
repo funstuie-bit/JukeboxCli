@@ -2,7 +2,7 @@
 
 Mac-first terminal music player combining an offline library with YouTube Music
 discovery and streaming. **Current public build: 0.1.0-dev.8** on `main`.
-**Development build: 0.1.0-dev.10 (smarter lyrics)** on `development`.
+**Development build: 0.1.0-dev.11 (Now Playing search)** on `development`.
 Built on [soundcli by baairon](https://github.com/baairon/soundcli), with player
 design and feature inspiration from [ytkew by dtDhruv](https://github.com/dtDhruv/ytkew).
 See [upstream credit](#upstream-credit) for how each project contributes.
@@ -134,6 +134,26 @@ Cache limits are 32 MiB forward/4 MiB backward per demuxer; resolved-URL cache i
 guarantee** across codecs, long pauses and network conditions.
 `npx tsx scripts/smoke-streaming.ts` verifies real HTTP prefetch and mixed-queue
 transitions using silent audio and a loopback server, with no library changes.
+
+### Search without leaving Now Playing (development build dev.11)
+
+Press **S** (Shift+s) in the player, then type **l: artist/song** for local files,
+**s: artist/song** for online songs or **v: query** for videos. Bare queries are
+local; pasted `/l:` and `/s:` prefixes also work. Enter submits the search.
+Music keeps playing while the results replace the queue/lyrics panel.
+
+In results: **Enter** plays the selection, **A** appends, **P** queues next,
+**d** explicitly starts the existing download workflow for an online result.
+Browsing, playing and queueing do not download a library copy. **↑↓/PgUp/PgDn**
+select, **L** loads another online page (200 unique results maximum), **/** edits,
+and **Esc** cancels and restores the previous panel. Local results are capped at
+200; narrow the query for more specific matches. Transport/navigation shortcuts
+are suppressed while search owns the keyboard; Esc returns those controls.
+
+**/** also opens music search from the queue panel. In lyrics it still searches
+lyrics; **S** opens music search from either panel. Both full-screen and embedded
+players support this. Signed-out discovery and existing browser-cookie playback
+are reused; no separate sign-in or new search service.
 
 ### Lyrics (development build 0.1.0-dev.10)
 

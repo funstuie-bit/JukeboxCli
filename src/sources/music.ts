@@ -1,4 +1,12 @@
 import { isHttpUrl, type StreamTrack } from "../player/media";
+import { AsyncLocalStorage } from "node:async_hooks";
+
+// Per-request cancellation without a shared mutable signal across UI consumers.
+const requestSignal = new AsyncLocalStorage<AbortSignal>();
+function cancellable<T>(signal: AbortSignal | undefined, task: () => Promise<T>): Promise<T> {
+  signal?.throwIfAborted();
+  return signal ? requestSignal.run(signal, task) : task();
+}
 
 export type MusicFilter = "song" | "video" | "album" | "artist" | "playlist";
 export interface MusicResult {
@@ -11,7 +19,7 @@ export interface MusicResult {
 export interface MusicPage {
   title: string;
   items: MusicResult[];
-  more?: () => Promise<MusicPage>;
+  more?: (signal?: AbortSignal) => Promise<MusicPage>;
 }
 
 /** Thin data boundary, independent of YouTube.js parser classes in UI/tests. */
@@ -42,7 +50,10 @@ async function musicClient() {
     const { Innertube, Log } = await import("youtubei.js");
     Log.setLevel(Log.Level.ERROR);
     return Innertube.create({ retrieve_player: false, lang: "en", location: "US",
-      fetch: (input, init) => fetch(input, { ...init, signal: AbortSignal.timeout(20_000) }) });
+      fetch: (input, init) => fetch(input, { ...init, signal: AbortSignal.any([
+        AbortSignal.timeout(20_000), ...(init?.signal ? [init.signal] : []),
+        ...(requestSignal.getStore() ? [requestSignal.getStore()!] : []),
+      ]) }) });
   })().catch(e => { client = undefined; throw e; });
   return (await client).music;
 }
@@ -54,12 +65,15 @@ export function searchPage(page: any, kind: MusicFilter, title: string): MusicPa
   const contents = Array.isArray(page.contents) ? page.contents : page.contents ? [page.contents] : [];
   const items = contents.flatMap((shelf: any) => shelf.contents ?? [shelf]);
   return { title, items: rows(items, kind),
-    more: page.has_continuation ? async () => searchPage(await page.getContinuation(), kind, title) : undefined };
+    more: page.has_continuation ? signal => cancellable(signal, async () => searchPage(await page.getContinuation(), kind, title)) : undefined };
 }
-export async function searchMusic(query: string, kind: MusicFilter): Promise<MusicPage> {
+export async function searchMusic(query: string, kind: MusicFilter, signal?: AbortSignal): Promise<MusicPage> {
   const clean = query.trim();
   if (!clean) return { title: "Search YouTube Music", items: [] };
-  return searchPage(await (await musicClient()).search(clean, { type: kind }), kind, clean);
+  // Shared client setup is bounded independently; cancelling one search must
+  // not cancel another consumer's client initialisation.
+  const music = await musicClient();
+  return cancellable(signal, async () => searchPage(await music.search(clean, { type: kind }), kind, clean));
 }
 function playlistPage(page: any, title: string): MusicPage {
   return { title, items: rows(page.items ?? page.contents, "song"),

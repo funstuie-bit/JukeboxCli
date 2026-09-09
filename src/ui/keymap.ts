@@ -68,6 +68,8 @@ export const HELP_GROUPS: HelpGroup[] = [
       { keys: "T", label: "Player: lavender / calm theme" },
       { keys: "V", label: "Player: decorative motion on / off" },
       { keys: "l", label: "Player: lyrics / queue panel" },
+      { keys: "S", label: "Player search: l: local, s: songs, v: videos; Esc back" },
+      { keys: "/", label: "Player queue: music search; lyrics panel: lyrics search" },
       { keys: "L", label: "Lyrics: enable / disable online lookup" },
       { keys: "↑↓ / Pg", label: "Lyrics: scroll (does not edit queue)" },
       { keys: "f", label: "Lyrics: follow timed lines again" },

@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.1.0-dev.11 — Search inside Now Playing (2026-09-08)
+
+- S opens local/online search in both player layouts; l: local, s: songs,
+  v: videos, default local. Existing signed-out discovery service reused.
+- Results replace queue/lyrics without stopping playback; Enter plays, A/P
+  append/next, d explicitly invokes existing download flow. No implicit downloads.
+- Esc restores previous panel; queue cursor and lyrics browsing position retained.
+  / still searches lyrics there, and searches music in the queue panel.
+- Captured keyboard prevents typing from changing transport/navigation/queue;
+  abort on edit/close/hide, stale-response guards, bounded/deduplicated results.
+- App/component/provider tests and generated-fixture real muted mpv search smoke.
+  604 tests pass / 4 inherited skips; typecheck/build/import guard pass. Live
+  song/video queries returned 20 playable results each through the updated service.
+  Development only; public main stays dev.8. Visualiser remains parked until last.
+
 ## Unreleased prototype — Mac visualiser (2026-09-08)
 
 - Preview now uses a sparse Braille-dot contour with muted foreground colour
