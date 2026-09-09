@@ -17,8 +17,10 @@ See [upstream credit](#upstream-credit) for how each project contributes.
 [Install on a Mac](#install-the-development-version-on-a-mac) ·
 [Feature status](FEATURES.md) · [Roadmap](docs/roadmap.md) · [Changelog](CHANGELOG.md) · [Architecture](docs/architecture.md)
 
-New screenshots are being prepared from a clean installation. Account/likes,
-personalised YouTube radio and a verified Intel/Apple Silicon release remain in development.
+New screenshots are being prepared from a clean installation. Account playlists/likes
+and personalised YouTube radio remain unimplemented/deferred; separate Music
+sign-in is no longer planned. Existing browser cookies remain the playback/download
+authentication route. A verified Intel/Apple Silicon release is still outstanding.
 Optional lyrics are available on the development branch; see [lyrics](docs/lyrics.md).
 
 Build with `npm ci && npm run build`, then `npm start` (or `npm run dev`).
@@ -87,7 +89,8 @@ their character proportions differ; ordinary window resizing works live.
 The default palette is now lavender/blue with explicit readable player text.
 The slim one/two-row **TRACK WAVEFORM** shows precomputed loudness, not a live spectrum.
 Streaming shows progress without downloading the whole song for visualisation.
-Cover-derived themes and live Mac spectrum remain future work. A trailing
+Cover-derived themes remain future work. A [Mac audio-reactive visualiser prototype](docs/visualiser-prototype.md)
+is being tested separately; it is not yet part of Now Playing. A trailing
 `;1994`-style year is tidied for display only; stored metadata/files stay intact.
 
 Verification includes full App keyboard/session tests with a fixture audio engine;

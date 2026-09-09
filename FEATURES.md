@@ -19,13 +19,15 @@ This development branch is separate from the installed soundcli command.
 | Optional local LRC / offline cache / opt-in LRCLIB lyrics | Implemented dev.9 on development; App tests, live lookup and real mpv timing | the maintainer's tracks/terminal acceptance; coverage varies |
 | Smarter matching, manual lyrics search/selection/retry, explicit lyrics.ovh plain lookup | Implemented dev.10; live Oasis normalised match/offline cache and alternate provider checked | Wider recording/provider coverage |
 | Centred/wrapped focused lyrics and enhanced-LRC word highlighting | Implemented dev.10; supplied timestamps only, radio/mismatches stay plain | the maintainer's visual acceptance; no guaranteed online word-timed catalogue |
-| Account, likes, personalised YouTube radio | Planned | Real service acceptance |
+| Separate YouTube Music sign-in/sign-out | Removed from scope at the maintainer's request | Existing browser-cookie playback/download workflow retained |
+| Account playlists/likes, personalised YouTube radio | Unimplemented; deferred | Cookies alone do not implement these API features; no new sign-in work planned |
 | Top-aligned compact player, radio/disc fallback, queue source column, slim waveform | Implemented dev.7; responsive/App tests pass | the maintainer's visual acceptance |
 | Sharp artwork and half-block fallback | Implemented; Ghostty protocol/lifecycle tested | Visual screenshot/other terminal matrix |
 | Lavender/Calm player and navigation palettes, reduced-motion setting | Implemented dev.7; persisted, default motion off | the maintainer's terminal colour check |
 | App-wide/cover-derived colours, iTerm2/sixel | Planned | Capability/resize testing |
 | Mouse actions and Vim preset | Planned | Input/focus regression |
-| Mac live spectrum and media controls | Feasibility pending | Working Mac prototype |
+| Mac audio-reactive band visualiser | Isolated prototype; [scope/results](docs/visualiser-prototype.md) | Not in Now Playing yet; integration and wider Mac/stream acceptance |
+| Mac native media controls | Feasibility pending | Separate from visualiser |
 | Homebrew releases, Intel and Apple Silicon | Planned | Clean Mac matrix |
 
 No ytkew source code has been imported. Waveform is precomputed, not a live spectrum.

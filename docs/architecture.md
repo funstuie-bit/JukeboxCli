@@ -27,8 +27,10 @@ Signed-out search supports five types; albums/playlists/artists drill down and
 continuations normalise their different shelf shape. The UI uses request tokens
 to ignore stale results; each provider fetch has a 20-second timeout. Leaving a
 view cancels its result publication, not the already-issued remote request.
-Music API authentication remains separate from yt-dlp cookies; account features
-are future work. No ytkew source is imported.
+Music API authentication is distinct from yt-dlp cookies. Separate Music sign-in
+was removed from scope at the maintainer's request; retain browser-cookie playback/downloads.
+Account playlists/likes remain unimplemented/deferred, not implicitly provided by
+cookies. No ytkew source is imported.
 
 `player/resolve.ts` runs yt-dlp metadata-only extraction with the configured cookie
 source, abort signals and a 45-second timeout. Direct media URLs and whitelisted

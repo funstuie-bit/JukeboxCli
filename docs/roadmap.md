@@ -1,6 +1,22 @@
 # JukeboxCli roadmap
 
-## Next usability improvement: search within Now Playing
+## Current priority: macOS audio-reactive visualiser prototype
+
+Authorised 2026-09-08. Prove an mpv-native analysis tap, stereo preservation,
+playback-clock alignment, pause/seek/silence behaviour, bounded memory and CPU
+cost before integrating it into Now Playing. No system-audio capture permission
+or extra stream download should be required. The prototype stays outside the
+production player; see [visualiser prototype](visualiser-prototype.md).
+
+## Removed from scope: separate YouTube Music sign-in
+
+the maintainer explicitly removed separate Music sign-in/sign-out on 2026-09-08. Keep the
+existing browser-cookie playback/download workflow; no new login UI, OAuth or
+Keychain authentication project. Cookies do not by themselves implement Music
+account APIs. Own playlists/likes and personalised radio remain unimplemented,
+not a reason to reintroduce sign-in without a new explicit request.
+
+## Parked, non-urgent: search within Now Playing
 
 Added 2026-09-08 at the maintainer's request. Planned, non-urgent; not implemented.
 the maintainer reports dev.10 lyrics are working. This item does not authorise a new build

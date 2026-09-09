@@ -1,5 +1,17 @@
 # Changelog
 
+## Unreleased prototype — Mac visualiser (2026-09-08)
+
+- Isolated mpv-native eight-band audio-energy prototype and terminal demo;
+  same decoded stream, no system capture or second media download. Timestamped,
+  bounded metadata, unchanged stereo playback branch, pause/seek/silence tests.
+- Real PCM graph comparison and mpv acceptance, repeated baseline/filtered CPU
+  harness; 594 tests pass / 4 inherited skips. See docs/visualiser-prototype.md.
+- Separate YouTube Music sign-in removed from scope at the maintainer's request; existing
+  browser-cookie playback/downloads retained. Account APIs are not implied.
+- Not integrated into Now Playing; production version remains dev.10 and public
+  main stays dev.8. Search-bar idea remains parked/non-urgent.
+
 ## 0.1.0-dev.10 — Smarter matching and focused lyrics (2026-09-08)
 
 - Explicit online-disabled prompt; no misleading plain-lyrics status before load.
