@@ -23,13 +23,15 @@ skips; typecheck/build/import guard pass. Other-Mac/terminal and end-to-end onli
 workflow coverage remain ongoing. Public main now includes dev.11 following
 the maintainer's approval; visualiser still comes last.
 
-## Suggested next work (not yet authorised)
+## Current work: media controls and installation — authorised 2026-09-09
 
-Mac native media-controls feasibility: keyboard play/pause and next/previous,
-then assess macOS Now Playing integration. Prove a portable approach and failure
-fallback before committing to a native helper. Follow with clean-install/update
-verification and Homebrew packaging across Intel and Apple Silicon. Keep the
-visualiser parked until all other work is finished.
+the maintainer authorised both. Dev.12 uses mpv's existing macOS integration, routing media
+keys through JukeboxCli's full queue with safe fallback and descriptive titles;
+no native helper needed. Physical keys/system presentation still need acceptance.
+Independent npm-archive installer, fast-forward update script, read-only doctor,
+managed Homebrew tools and source-formula packaging accompany isolated install/
+reinstall checks and Intel/Apple Silicon CI. See [details and limits](mac-controls-and-install.md).
+Visualiser remains parked; public main is not automatically promoted.
 
 ## Parked until all other work is finished: macOS visualiser
 

@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.1.0-dev.12 — Mac controls and installation (2026-09-09)
+
+- mpv-native media keys routed through JukeboxCli's full queue; descriptive system
+  title, stop-as-pause, optional bridge fallback and JUKEBOXCLI_MEDIA_KEYS=0 opt-out.
+  Physical keys/Control Centre acceptance outstanding; no new native helper.
+- Read-only --doctor; independent package installer with --prefix/--check,
+  dirty-checkout-safe fast-forward update script, source-relocation/reinstall smoke.
+- Managed system tools mode for Homebrew: no automatic binary fetch/update,
+  with pinned source-formula packaging and Mac architecture CI.
+- Development only; main remains dev.11, visualiser parked.
+
 ## Public main promotion — 2026-09-09
 
 - the maintainer tested dev.11 and approved promotion to main on GitHub and private mirror.

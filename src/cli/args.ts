@@ -4,6 +4,7 @@
 import type { Config } from "../config/config";
 
 export type CliCommand =
+  | { kind: "doctor" }
   | { kind: "version" }
   | { kind: "help" }
   | { kind: "run"; initialAdd?: string; overrides?: Partial<Config> }
@@ -73,6 +74,7 @@ export function parseCliArgs(argv: string[]): CliCommand {
   // Check for version/help first
   if (args.length === 1) {
     const a = args[0]!;
+    if (a === "--doctor") return { kind: "doctor" };
     if (a === "--version" || a === "-v") return { kind: "version" };
     if (a === "--help" || a === "-h") return { kind: "help" };
   }
@@ -120,6 +122,7 @@ usage
   jukeboxcli                open the player and library
   jukeboxcli <link>         download that song on launch
   jukeboxcli --version      print the version
+  jukeboxcli --doctor       read-only installation/tool diagnostics
   soundcli <link>           compatibility alias
 
 player keys

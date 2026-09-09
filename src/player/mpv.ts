@@ -5,8 +5,10 @@ import os from "node:os";
 import path from "node:path";
 import fs from "node:fs";
 import type { ResolvedMedia } from "./media";
+import { mediaAction, mediaBindings, MEDIA_SECTION } from "./media-keys";
 
 interface Pending {
+  timer: ReturnType<typeof setTimeout>;
   resolve: (value: unknown) => void;
   reject: (err: Error) => void;
 }
@@ -94,7 +96,7 @@ export class MpvPlayer extends EventEmitter {
     this.ready = null;
     this.buf = "";
     // Fail any in-flight requests so awaiters do not hang forever.
-    for (const [, p] of this.pending) p.reject(new Error("mpv connection reset"));
+    for (const [, p] of this.pending) { clearTimeout(p.timer); p.reject(new Error("mpv connection reset")); }
     this.pending.clear();
     // On unix the socket file lingers; best-effort unlink before the next spawn.
     this.unlinkSocket();
@@ -124,6 +126,7 @@ export class MpvPlayer extends EventEmitter {
           "--no-video",
           "--no-terminal",
           "--really-quiet",
+          ...(process.platform === "darwin" && process.env.JUKEBOXCLI_MEDIA_KEYS === "0" ? ["--input-media-keys=no"] : []),
           "--prefetch-playlist=yes",
           "--cache=yes",
           "--demuxer-max-bytes=32MiB",
@@ -169,7 +172,8 @@ export class MpvPlayer extends EventEmitter {
           void this.write(["set_property", "volume", this.initialVolume]).catch(
             () => undefined,
           );
-          resolve();
+          // Failure only disables the optional bridge, never ordinary playback.
+          void this.setupMediaKeys().finally(resolve);
         });
         sock.on("error", () => {
           sock.destroy();
@@ -205,7 +209,10 @@ export class MpvPlayer extends EventEmitter {
         continue;
       }
       if (typeof msg.event === "string") {
-        if (msg.event === "start-file") {
+        if (msg.event === "client-message") {
+          const action = mediaAction(msg.args);
+          if (action && this.mediaKeysReady) this.emit("media-key", action);
+        } else if (msg.event === "start-file") {
           this.currentEntryId = Number(msg.playlist_entry_id);
         } else if (msg.event === "file-loaded") {
           this.loaded = true;
@@ -227,6 +234,7 @@ export class MpvPlayer extends EventEmitter {
       } else if (typeof msg.request_id === "number") {
         const p = this.pending.get(msg.request_id);
         if (p) {
+          clearTimeout(p.timer);
           this.pending.delete(msg.request_id);
           if (msg.error && msg.error !== "success") {
             p.reject(new Error(String(msg.error)));
@@ -248,6 +256,26 @@ export class MpvPlayer extends EventEmitter {
     this.write(["observe_property", 6, "metadata"]).catch(() => undefined);
   }
 
+  private mediaKeysReady = false;
+  private async setupMediaKeys(): Promise<void> {
+    this.mediaKeysReady = false;
+    if (process.platform !== "darwin" || process.env.JUKEBOXCLI_MEDIA_KEYS === "0") return;
+    try {
+      const enabled = await this.write(["get_property", "options/input-media-keys"]);
+      if (enabled !== true) return;
+      await this.write(["define-section", MEDIA_SECTION, mediaBindings, "force"]);
+      await this.write(["enable-section", MEDIA_SECTION]);
+      this.mediaKeysReady = true;
+    } catch {
+      await this.write(["disable-section", MEDIA_SECTION]).catch(() => {});
+    }
+  }
+
+  /** No startup or network work just to set descriptive Now Playing text. */
+  setMediaTitle(title: string): void {
+    if (this.sock && this.mediaKeysReady) void this.write(["set_property", "force-media-title", title.slice(0, 500)]).catch(() => {});
+  }
+
   /** Low-level write without waiting on the start handshake. */
   private write(command: unknown[]): Promise<unknown> {
     return new Promise((resolve, reject) => {
@@ -256,7 +284,8 @@ export class MpvPlayer extends EventEmitter {
         return;
       }
       const id = this.reqId++;
-      this.pending.set(id, { resolve, reject });
+      const timer = setTimeout(() => { this.pending.delete(id); reject(new Error("mpv command timed out")); }, 5000);
+      this.pending.set(id, { resolve, reject, timer });
       this.sock.write(JSON.stringify({ command, request_id: id }) + "\n");
     });
   }
@@ -420,7 +449,7 @@ export class MpvPlayer extends EventEmitter {
       // ignore
     }
     this.sock = null;
-    for (const [, p] of this.pending) p.reject(new Error("mpv quit"));
+    for (const [, p] of this.pending) { clearTimeout(p.timer); p.reject(new Error("mpv quit")); }
     this.pending.clear();
     try {
       this.proc?.kill();

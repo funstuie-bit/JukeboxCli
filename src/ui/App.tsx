@@ -269,7 +269,7 @@ export function App({ initialAdd }: { initialAdd?: string } = {}) {
       // Auto-install mpv in the background so the rich player "just works".
       // Retried on every launch while it's missing: a one-time flag here once
       // left playback silently broken forever after a single failed attempt.
-      if (!binaries.mpv) {
+      if (!binaries.mpv && process.env.JUKEBOXCLI_SYSTEM_TOOLS !== "1") {
         const failed = (): void => {
           // One calm line, then quiet again: the NowPlayingBar hint stays the
           // durable nudge while songs keep opening in the OS default app.
@@ -309,7 +309,7 @@ export function App({ initialAdd }: { initialAdd?: string } = {}) {
       // binary is staged, then promoted right away unless a download is
       // already running the current one (then it applies next launch).
       // Offline stays completely normal.
-      if (cfg.ytdlpAutoUpdate !== false) {
+      if (cfg.ytdlpAutoUpdate !== false && process.env.JUKEBOXCLI_SYSTEM_TOOLS !== "1") {
         void maybeUpdateYtDlp()
           .then(async (staged) => {
             if (staged && queue.stats().downloading === 0) {

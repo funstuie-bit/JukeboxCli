@@ -1,0 +1,27 @@
+// Isolated source-copy → packaged install → reinstall; no real profile/global bin.
+import { cp, mkdtemp, readFile, realpath, rename, writeFile, mkdir } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import path from "node:path";
+import assert from "node:assert/strict";
+import { execa } from "execa";
+const root = path.resolve(import.meta.dirname, "..");
+const temp = await mkdtemp(path.join(tmpdir(), "jukeboxcli-install-check-"));
+const source = path.join(temp, "source checkout"), prefix = path.join(temp, "install prefix"), profile = path.join(temp, "profile");
+await cp(root, source, { recursive: true, filter: file => !path.relative(root, file).split(path.sep).some(part => ["node_modules", ".git", "dist"].includes(part)) });
+await mkdir(profile); await writeFile(path.join(profile, "keep.json"), '{"fixture":"must survive"}');
+const env = { ...process.env, JUKEBOXCLI_HOME: profile, JUKEBOXCLI_SYSTEM_TOOLS: "1", JUKEBOXCLI_MEDIA_KEYS: "0" };
+await execa("sh", ["./install.sh", "--prefix", prefix], { cwd: source, env, timeout: 180000, stdout: "inherit", stderr: "inherit" });
+const command = path.join(prefix, "bin", "jukeboxcli");
+assert.ok((await realpath(command)).startsWith(await realpath(prefix) + path.sep));
+const pkg = JSON.parse(await readFile(path.join(root, "package.json"), "utf8"));
+assert.equal((await execa(command, ["--version"], { env })).stdout.trim(), pkg.version);
+await rename(source, path.join(temp, "moved source"));
+assert.match((await execa(command, ["--help"], { env })).stdout, /--doctor/);
+const doctor = await execa(command, ["--doctor"], { env, reject: false });
+assert.equal(JSON.parse(doctor.stdout).toolsMode, "managed (no tool downloads/updates)");
+assert.equal(await readFile(path.join(profile, "keep.json"), "utf8"), '{"fixture":"must survive"}');
+// Reinstall into the same prefix from the moved checkout to exercise replacement.
+await execa("sh", ["./install.sh", "--prefix", prefix], { cwd: path.join(temp, "moved source"), env, timeout: 180000, stdout: "inherit", stderr: "inherit" });
+assert.equal((await execa(command, ["--version"], { env })).stdout.trim(), pkg.version);
+assert.equal(await readFile(path.join(profile, "keep.json"), "utf8"), '{"fixture":"must survive"}');
+console.log(`PASS: independent package, path spaces, source relocation, reinstall, profile preservation. Fixtures: ${temp}`);

@@ -4,6 +4,8 @@ Mac-first terminal music player combining an offline library with YouTube Music
 discovery and streaming. **Current public build: 0.1.0-dev.11** on `main`.
 the maintainer tested and approved the lyrics and Now Playing search build for promotion on
 2026-09-09. Further development continues on `development`.
+**Development: dev.12** adds queue-aware Mac media keys, read-only `--doctor`,
+independent package installs and Homebrew packaging. [Setup and limits](docs/mac-controls-and-install.md).
 Built on [soundcli by baairon](https://github.com/baairon/soundcli), with player
 design and feature inspiration from [ytkew by dtDhruv](https://github.com/dtDhruv/ytkew).
 See [upstream credit](#upstream-credit) for how each project contributes.
@@ -346,10 +348,14 @@ On first run the app sets up yt-dlp and ffmpeg (under the default profile,
 streaming and in-terminal playback. Without mpv, saved files can open in your
 default player, but streaming is unavailable.
 
-**What `install.sh` does:** installs locked dependencies, builds, then installs the
-package globally. This installs `jukeboxcli` AND replaces the `soundcli` alias.
+**What `install.sh` does (dev.12):** installs locked dependencies, checks the build,
+then installs an independent package archive globally (not a source-checkout link).
+It includes `jukeboxcli` and the `soundcli` alias; unrelated commands are not force-overwritten.
 To retain an existing installation, use `npm start` from this checkout instead.
-Homebrew distribution and clean Intel/Apple Silicon acceptance are still planned.
+Alternatively use `sh install.sh --prefix /absolute/private/prefix`. `sh update.sh`
+updates a clean checkout by fast-forward and reinstalls; existing user data stays.
+`jukeboxcli --doctor` checks tools without setup/downloads. See the
+[Homebrew and Mac acceptance notes](docs/mac-controls-and-install.md).
 
 On the welcome screen, press **esc** to skip importing a library. Then **8** opens
 Discover, **/** starts search, **A/P** adds songs to the queue and **m** opens the

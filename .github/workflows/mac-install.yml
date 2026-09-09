@@ -1,0 +1,28 @@
+name: Mac install checks
+on:
+  push:
+    branches: [main, development]
+    paths: ["src/**", "test/**", "scripts/**", "package*.json", "install.sh", "update.sh", ".github/workflows/mac-install.yml"]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  install:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-15, macos-15-intel]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run typecheck
+      - run: npm run build && npx tsx scripts/check-dist-imports.ts
+      - name: Independent install and reinstall with an isolated profile
+        run: npx tsx scripts/smoke-install.ts

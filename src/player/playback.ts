@@ -3,6 +3,7 @@ import { existsSync } from "node:fs";
 import type { Track as LibraryTrack } from "../library/types";
 import { isLive, isStream, isHttpUrl, streamMetadata, type StreamTrack, type PlayableTrack as Track, type MediaResolver, type ResolvedMedia } from "./media";
 import { MpvPlayer } from "./mpv";
+import { dispatchMediaAction } from "./media-keys";
 import { onEndedDecision, shuffledOrder, stepIndex } from "./order";
 import { openPath } from "../util/open-path";
 import type { ListeningSession } from "./session";
@@ -263,6 +264,10 @@ export class Playback extends EventEmitter {
 
   private update(patch: Partial<PlaybackState>): void {
     this.state = { ...this.state, ...patch };
+    if (patch.track !== undefined || patch.broadcastTitle !== undefined || patch.loading === false) {
+      const track = this.state.track;
+      this.mpv?.setMediaTitle?.(track ? [track.artist, track.title, this.state.broadcastTitle].filter(Boolean).join(" · ") : "JukeboxCli");
+    }
     this.emit("state", this.state);
     if (patch.list || patch.repeat !== undefined) this.schedulePrefetch();
   }
@@ -322,6 +327,9 @@ export class Playback extends EventEmitter {
     if (this.mpv) return this.mpv;
     const m = new MpvPlayer(this.mpvPath);
     m.setInitialVolume(this.state.volume);
+    m.on("media-key", (action: string) => {
+      void dispatchMediaAction(this, action).catch(() => this.update({ error: "Media control failed; use the player keys to retry." }));
+    });
     m.on("property", (name: string, data: unknown) => {
       if (name === "time-pos" && typeof data === "number") {
         const pos = Math.floor(data);

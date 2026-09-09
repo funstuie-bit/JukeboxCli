@@ -259,6 +259,12 @@ async function doEnsure(
   // Resolved already this process (bundled verified or system found): the
   // per-download queue gate can return without re-probing.
   if (resolvedFfmpeg && resolvedFfprobe) return;
+  if (process.env.JUKEBOXCLI_SYSTEM_TOOLS === "1") {
+    const pair = await detect();
+    if (!pair) throw new Error("Managed tools: ffmpeg/ffprobe missing. Run brew install ffmpeg.");
+    resolvedFfmpeg = pair.ffmpeg; resolvedFfprobe = pair.ffprobe;
+    return;
+  }
   await fs.mkdir(binDir, { recursive: true });
   const haveFfmpeg = await present(ffmpegBinPath());
   const haveFfprobe = await present(ffprobeBinPath());

@@ -234,8 +234,10 @@ export async function ensureBinaries(
   // ffmpeg + ffprobe ride in the background: a first-run ~56 MB fetch must
   // never block first paint. The download queue gates on its own ensure, so
   // nothing that needs the pair can start before it lands.
-  void ensureFfmpeg(onStatus).catch(() => {});
-  const mpv = await resolveMpv();
+  if (process.env.JUKEBOXCLI_SYSTEM_TOOLS === "1") await ensureFfmpeg(onStatus);
+  else void ensureFfmpeg(onStatus).catch(() => {});
+  const mpv = process.env.JUKEBOXCLI_SYSTEM_TOOLS === "1" ? await detectMpv() : await resolveMpv();
+  if (!mpv && process.env.JUKEBOXCLI_SYSTEM_TOOLS === "1") throw new Error("Managed tools: mpv missing. Run brew install mpv.");
   return {
     ffmpeg: resolvedFfmpegPath(),
     ffprobe: resolvedFfprobePath(),

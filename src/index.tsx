@@ -34,6 +34,14 @@ process.on("uncaughtException", (err) => {
 async function main(): Promise<void> {
   const command = parseCliArgs(process.argv.slice(2));
 
+  if (command.kind === "doctor") {
+    const { installationReport } = await import("./cli/doctor");
+    const report = await installationReport();
+    console.log(JSON.stringify(report, null, 2));
+    process.exitCode = report.ok ? 0 : 1;
+    return;
+  }
+
   if (command.kind === "version") {
     const { createRequire } = await import("node:module");
     const require = createRequire(import.meta.url);

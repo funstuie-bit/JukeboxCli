@@ -234,6 +234,12 @@ export function ensureYtDlp(onStatus?: (msg: string) => void): Promise<string> {
 
 async function doEnsure(onStatus?: (msg: string) => void): Promise<string> {
   if (resolvedYtDlp) return resolvedYtDlp;
+  if (process.env.JUKEBOXCLI_SYSTEM_TOOLS === "1") {
+    const system = await detectSystemYtDlp();
+    if (!system) throw new Error("Managed tools: yt-dlp is missing. Run brew install yt-dlp.");
+    resolvedYtDlp = system;
+    return system;
+  }
   // A staged update (from the daily check) applies before first use.
   await finalizeStagedYtDlp().catch(() => false);
   resolvedYtDlp = await resolveYtDlp(onStatus, {
