@@ -6,6 +6,8 @@ the maintainer tested and approved the lyrics and Now Playing search build for p
 2026-09-09. Further development continues on `development`.
 **Development: dev.12** adds queue-aware Mac media keys, read-only `--doctor`,
 independent package installs and Homebrew packaging. [Setup and limits](docs/mac-controls-and-install.md).
+Automated installation and Homebrew checks pass on Intel and Apple Silicon;
+physical media keys and normal GUI first-run acceptance still need hands-on testing.
 Built on [soundcli by baairon](https://github.com/baairon/soundcli), with player
 design and feature inspiration from [ytkew by dtDhruv](https://github.com/dtDhruv/ytkew).
 See [upstream credit](#upstream-credit) for how each project contributes.

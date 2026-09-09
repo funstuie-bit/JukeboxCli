@@ -67,7 +67,8 @@ Git must have access. Install gh, sign in with `gh auth login` and run
 Homebrew strips transient GH_TOKEN/GIT_CONFIG environment variables at startup;
 it does read global Git credential helpers during downloads. CI uses its supported
 HOMEBREW_GITHUB_API_TOKEN with a helper referring to that variable, not the token
-value. Local read-only staging operations suppress global Git config separately.
+value. The CI helper uses gh's absolute executable path because Homebrew also
+filters PATH. Local read-only staging operations suppress global Git config separately.
 
 For this development preview (formula is not on main yet):
 
@@ -99,8 +100,13 @@ tools. Remove only the formula to uninstall; user music/profile data is retained
 - Isolated source copy, prefix with spaces, install, source relocation and
   reinstall, verifying the installed package does not point back into the source.
 - A read-only diagnostic run on this Apple Silicon Mac finds all four tools.
-- CI covers source package install/reinstall on macos-15 (arm64) and
-  macos-15-intel (x64), using Node22; results must be checked, not assumed.
+- [CI run 34365507402](https://github.com/funstuie-bit/JukeboxCli/actions/runs/34365507402)
+  passed on 2026-09-09 at c5aedb0 on macos-15 (arm64) and macos-15-intel
+  (x64): full tests, typecheck/build/import guard, independent package
+  install/relocation/reinstall with Node22, and actual private Homebrew formula
+  install plus version/help/doctor/profile-isolation tests with Homebrew's Node.
+  Locally, 609 tests passed with four inherited skips; real muted mpv routing
+  and the isolated bundled-package installation also passed.
 - Physical media controls, clean end-user GUI first run, browsers/cookies and
   long-running radio across both architectures remain separate acceptance work.
 - npm reports two existing moderate development-dependency advisories during

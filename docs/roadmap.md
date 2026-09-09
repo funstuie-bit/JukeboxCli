@@ -31,6 +31,9 @@ no native helper needed. Physical keys/system presentation still need acceptance
 Independent npm-archive installer, fast-forward update script, read-only doctor,
 managed Homebrew tools and source-formula packaging accompany isolated install/
 reinstall checks and Intel/Apple Silicon CI. See [details and limits](mac-controls-and-install.md).
+Both architecture jobs passed run34365507402, including actual Homebrew install/test.
+Next is the maintainer's physical media-key/background-window and clean first-launch acceptance,
+then promotion of the accepted dev.12 build; no further visualiser work implied.
 Visualiser remains parked; public main is not automatically promoted.
 
 ## Parked until all other work is finished: macOS visualiser
