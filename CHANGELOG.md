@@ -1,5 +1,28 @@
 # Changelog
 
+## 0.1.0-dev.10 — Smarter matching and focused lyrics (2026-09-08)
+
+- Explicit online-disabled prompt; no misleading plain-lyrics status before load.
+- Exact lookup, then mastering-label/primary-artist fallback constrained by
+  duration. Preserve live/remix/edit distinctions; ambiguous results need selection.
+- / manual LRCLIB search, artist/title/album/duration choices, Enter selects,
+  Esc cancels, R retries while respecting provider cooldown. Chosen lyrics are
+  cached against the original song; mismatched/unknown timing is plain only.
+- O explicitly opens lyrics.ovh Artist - Song lookup, plain/unverified and
+  separately labelled. Never automatic, no new installation dependency.
+- Centred cell-aware wrapping, active lyric plus two neighbouring lines each
+  side, dimmed context; scroll/follow controls retained. Genuine enhanced-LRC
+  timestamps underline the current word; no inferred word/letter animations.
+- Search captures keyboard input without seeking, pausing or changing queue;
+  stale/hidden requests are cancelled. Normalised selections survive offline.
+- Development only; public main remains tested dev.8. No changes to real music,
+  favourites, queue or stored configuration during development/testing.
+
+Verification: 589 tests pass / 4 inherited skipped; full App manual search,
+selection, typing/cancellation/provider/queue isolation; matching and Unicode
+layout tests; real muted mpv enhanced-LRC timing; live normalised Oasis lookup,
+offline cache reuse and explicit lyrics.ovh result. Clean Mac/the maintainer acceptance pending.
+
 ## 0.1.0-dev.9 — Optional lyrics (2026-09-08)
 
 - Player l toggles queue/lyrics without seeking; ←/→ retain transport controls.

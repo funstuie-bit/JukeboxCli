@@ -48,6 +48,7 @@ export function NowPlaying({ embedded = false }: { embedded?: boolean }) {
   // App unmounts expanded player for help; hidden embedded views get region=help.
   const active = !embedded || store.region === "content";
   useInput(input => {
+    if (store.captureMode === "text") return;
     if (input === "b") setArtVisible(v => !v);
     if (input === "l") setLyricsVisible(v => !v);
     if (input === "T") store.setConfig({ ...store.config, playerTheme: store.config.playerTheme === "calm" ? "lavender" : "calm" });

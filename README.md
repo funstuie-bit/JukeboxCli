@@ -2,7 +2,7 @@
 
 Mac-first terminal music player combining an offline library with YouTube Music
 discovery and streaming. **Current public build: 0.1.0-dev.8** on `main`.
-**Development build: 0.1.0-dev.9 (lyrics)** on `development`.
+**Development build: 0.1.0-dev.10 (smarter lyrics)** on `development`.
 Built on [soundcli by baairon](https://github.com/baairon/soundcli), with player
 design and feature inspiration from [ytkew by dtDhruv](https://github.com/dtDhruv/ytkew).
 See [upstream credit](#upstream-credit) for how each project contributes.
@@ -131,21 +131,36 @@ guarantee** across codecs, long pauses and network conditions.
 `npx tsx scripts/smoke-streaming.ts` verifies real HTTP prefetch and mixed-queue
 transitions using silent audio and a loopback server, with no library changes.
 
-### Lyrics (development build 0.1.0-dev.9)
+### Lyrics (development build 0.1.0-dev.10)
 
 In the player (`m` or section `6`), press **l** to swap the queue for lyrics;
-press it again to return. **L** in that panel enables/disables online LRCLIB
+press it again to return. **Shift+L** in that panel enables/disables online LRCLIB
 lookup (off by default; sends artist/title, optional album and duration).
-Local `Song.lrc` beside `Song.mp3` takes priority; previously cached lyrics work
+Local `Song.lrc` beside `Song.mp3` takes priority unless you explicitly selected
+another match; previously cached lyrics work
 offline. No songs or library metadata are modified. Scroll with ↑/↓ or Page
 Up/Down, **f** resumes following; ←/→ still seek. The old `l` seek alias only
 works outside the focused player now.
 
+Lyrics now wrap and centre, with just the active line and nearby lines in follow
+mode; surrounding text is dimmed. Enhanced LRC word timestamps underline the
+current word when supplied—ordinary line timing is never faked into karaoke.
+
+Lookup first uses exact tags, then tries remaster/primary-artist normalisation
+with a duration check, without stripping live/remix/edit distinctions. Ambiguous
+results show artist, title, album and duration for **↑/↓ + Enter** selection.
+**/** opens manual LRCLIB search, **R** retries, and **Esc** cancels search/selection.
+**O** opens a separate **lyrics.ovh** prompt: Enter sends `Artist - Song` to that
+provider for plain, unverified lyrics. No additional Python/package setup needed;
+lyrics.ovh is never queried automatically. Manual choices are cached for the
+original track, without retagging music. Different/unknown recording timings
+stay plain rather than displaying misleading synchronisation.
+
 Timed lyrics follow mpv position; untimed lyrics stay plain. Radio can look up
 an unambiguous `Artist - Song` broadcast title, but never claims synced timing;
-DJ mixes and unclear metadata are skipped. Coverage is not guaranteed, long
-lines truncate to panel width, and there is no word-by-word karaoke or manual
-search/editor yet. [Setup, privacy and implementation details](docs/lyrics.md).
+DJ mixes and unclear metadata are skipped. Coverage is not guaranteed; no lyric
+editor, translation or guaranteed online word-timing source is included.
+[Setup, privacy and implementation details](docs/lyrics.md).
 
 ### Play URL and internet radio (0.1.0-dev.8)
 

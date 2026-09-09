@@ -71,6 +71,9 @@ export const HELP_GROUPS: HelpGroup[] = [
       { keys: "L", label: "Lyrics: enable / disable online lookup" },
       { keys: "↑↓ / Pg", label: "Lyrics: scroll (does not edit queue)" },
       { keys: "f", label: "Lyrics: follow timed lines again" },
+      { keys: "/", label: "Lyrics: search / choose recording" },
+      { keys: "R", label: "Lyrics: retry lookup" },
+      { keys: "O", label: "Lyrics: other provider (plain)" },
     ],
   },
   {

@@ -11,6 +11,30 @@ const fixture: LyricsResult = { message: "", lyrics: { source: "LRCLIB", lines: 
 const wait = (ms = 450) => new Promise(r => setTimeout(r, ms));
 afterEach(() => { cleanup(); vi.resetAllMocks(); });
 describe("lyrics panel boundaries", () => {
+  it("centres a small neighbourhood around the active line instead of showing the whole song", async () => {
+    const lines = Array.from({ length: 20 }, (_, i) => ({ at: i, text: `Fixture number ${i}` }));
+    vi.mocked(loadLyrics).mockResolvedValue({ message: "", lyrics: { source: "LRCLIB", lines, plain: lines.map(l => l.text) } });
+    const store = makeStore({ playback: makeFakePlayback({ position: 7 }) });
+    const view = render(<StoreContext.Provider value={store}><LyricsPanel width={70} height={30} active /></StoreContext.Provider>);
+    await wait();
+    const frame = view.lastFrame()!;
+    expect(frame).toContain("› Fixture number 7"); expect(frame).not.toContain("Fixture number 0"); expect(frame).not.toContain("Fixture number 19");
+    const activeRow = frame.split("\n").findIndex(row => row.includes("› Fixture"));
+    expect(activeRow).toBeGreaterThan(10); expect(activeRow).toBeLessThan(19);
+    view.stdin.write("\u001b[A"); await wait(30); expect(view.lastFrame()).toContain("browsing");
+    view.stdin.write("f"); await wait(30); expect(view.lastFrame()).toContain("following playback");
+    expect(loadLyrics).toHaveBeenCalledTimes(1);
+  });
+  it("wraps long active lines within a narrow panel and shows genuine word-sync status", async () => {
+    const words = [{ at: 0, text: "First" }, { at: 1, text: "second" }, { at: 2, text: "東京🎵" }, { at: 3, text: "longlonglongword" }];
+    const text = words.map(w => w.text).join(" ");
+    vi.mocked(loadLyrics).mockResolvedValue({ message: "", lyrics: { source: "Local LRC", lines: [{ at: 0, text, words }], plain: [text] } });
+    const store = makeStore({ playback: makeFakePlayback({ position: 2 }) });
+    const view = render(<StoreContext.Provider value={store}><LyricsPanel width={35} height={14} active /></StoreContext.Provider>);
+    await wait(); const rows = view.lastFrame()!.split("\n");
+    expect(view.lastFrame()).toContain("Word-synced"); expect(view.lastFrame()).toContain("longlonglongword");
+    expect(rows.length).toBeLessThanOrEqual(14); expect(Math.max(...rows.map(stringWidth))).toBeLessThanOrEqual(35);
+  });
   it("never invents radio sync even when timed lyrics are available", async () => {
     vi.mocked(loadLyrics).mockResolvedValue(fixture);
     const t = trackFromUrl("https://example.com/live", true);

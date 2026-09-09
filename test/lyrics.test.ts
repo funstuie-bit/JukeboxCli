@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { mkdtempSync, writeFileSync, readFileSync, statSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { createLyricsService, parseLrc, lyricIndex, lyricsSignature } from "../src/player/lyrics";
+import { createLyricsService, parseLrc, lyricIndex, lyricsSignature, lyricTitle, safeLyricMatch } from "../src/player/lyrics";
 import { trackFromUrl } from "../src/player/url";
 
 const song = { ...trackFromUrl("https://example.com/audio.mp3"), title: "Fixture Song", artist: "Fixture Artist", durationSec: 30 };
@@ -12,6 +12,19 @@ const options = (online = true) => ({ online, signal: new AbortController().sign
 const cacheFile = () => path.join(mkdtempSync(path.join(tmpdir(), "lyrics-test-")), "cache.json");
 
 describe("LRC parsing and timing", () => {
+  it("preserves genuine word timings and rejects ambiguous or out-of-order word stamps", () => {
+    expect(parseLrc("[offset:100]\n[00:01]<00:01> Hello <00:02> world").lines[0]).toEqual({
+      at: 1.1, text: "Hello world", words: [{ at: 1.1, text: "Hello" }, { at: 2.1, text: "world" }],
+    });
+    for (const row of ["[00:01]<00:02> Hello <00:01> world", "[00:01][00:03]<00:01> Hello <00:02> world",
+      "[00:01] Prefix <00:01> Hello <00:02> world"]) expect(parseLrc(row).lines[0]?.words).toBeUndefined();
+  });
+  it("normalises mastering labels but preserves recording versions", () => {
+    for (const t of ["Song (Remastered)", "Song - 2014 Remaster", "Song [Remastered 2014]"])
+      expect(lyricTitle(t)).toBe("Song");
+    for (const t of ["Song (Live)", "Song - Radio Edit", "Song (Remix)", "Song (Acoustic)", "Song (Unplugged)"])
+      expect(lyricTitle(t)).toBe(t);
+  });
   it("handles repeated timestamps, offsets, fractional precision and empty instrumental gaps", () => {
     const r = parseLrc("\uFEFF[ar:Fixture]\n[offset:-100]\n[00:02.1][00:04.123] line\n[00:03.00]\n[00:01.12]<00:01.12> earlier");
     expect(r.lines).toEqual([{ at: 1.02, text: "earlier" }, { at: 2, text: "line" }, { at: 2.9, text: "" }, { at: 4.023, text: "line" }]);
@@ -31,6 +44,72 @@ describe("LRC parsing and timing", () => {
 });
 
 describe("lyrics service", () => {
+  const found = { ...record, id: 1, albumName: "Fixture album" };
+  const shaped = { id: 1, title: song.title, artist: song.artist, album: "Fixture album", duration: 30,
+    plainLyrics: record.plainLyrics, syncedLyrics: record.syncedLyrics, instrumental: false };
+  it("finds remasters with primary artist and duration, then caches under the original tags", async () => {
+    const file = cacheFile();
+    const tagged = { ...song, title: "Fixture Song (Remastered)", artist: "Fixture Artist, Guest", album: "Edition" };
+    const fetcher = vi.fn(async input => {
+      const url = new URL(String(input));
+      return url.searchParams.has("album_name") ? new Response(null, { status: 404 }) : Response.json(found);
+    });
+    const service = createLyricsService({ cacheFile: file, fetcher, spacing: 0 });
+    expect((await service(tagged, options())).lyrics?.match).toBe("Fixture Artist — Fixture Song");
+    expect(fetcher).toHaveBeenCalledTimes(2);
+    expect(String(fetcher.mock.calls[1]![0])).toContain("duration=30");
+    expect((await service(tagged, options(false))).lyrics?.source).toBe("Cache · LRCLIB");
+  });
+  it("requires duration and version compatibility for relaxed automatic matching", () => {
+    expect(safeLyricMatch({ title: song.title, artist: song.artist!, duration: 30 }, shaped)).toBe(true);
+    for (const patch of [{ duration: undefined }, { duration: 40 }, { title: "Fixture Song (Live)" }, { artist: "Different" }])
+      expect(safeLyricMatch({ title: song.title, artist: song.artist!, duration: 30, ...patch }, shaped)).toBe(false);
+  });
+  it("offers ambiguous results, bounds/deduplicates them and does not cache a guess", async () => {
+    const file = cacheFile();
+    const fetcher = vi.fn(async input => String(input).includes("/search") ? Response.json([
+      found, found, { ...found, id: 2 }, { ...found, id: "bad" }, { ...found, id: 3, duration: null },
+    ]) : new Response(null, { status: 404 }));
+    const service = createLyricsService({ cacheFile: file, fetcher, spacing: 0 });
+    const r = await service(song, options());
+    expect(r.lyrics).toBeUndefined(); expect(r.candidates?.map(c => c.id)).toEqual([1, 2]);
+    expect((await service(song, options(false))).lyrics).toBeUndefined();
+  });
+  it("manual selection remembers the original track, keeps wrong versions plain and works offline", async () => {
+    const service = createLyricsService({ cacheFile: cacheFile(), fetcher: vi.fn(), spacing: 0 });
+    const r = await service(song, { ...options(), candidate: { ...shaped, title: "Fixture Song (Live)", duration: 300 } });
+    expect(r.lyrics?.plainOnly).toBe(true);
+    expect((await service(song, options(false))).lyrics).toMatchObject({ plainOnly: true, source: "Cache · LRCLIB" });
+    expect((await service({ ...song, id: "different", title: "Different" }, options(false))).lyrics).toBeUndefined();
+  });
+  it("manual search bypasses a cached miss and retry still respects provider cooldown", async () => {
+    const fetcher = vi.fn(async input => String(input).includes("q=manual") ? Response.json([found]) : new Response(null, { status: 404 }));
+    const service = createLyricsService({ cacheFile: cacheFile(), fetcher, spacing: 0 });
+    await service(song, options());
+    expect((await service(song, { ...options(), query: "manual" })).candidates).toHaveLength(1);
+    await service(song, { ...options(), retry: true }); expect(fetcher).toHaveBeenCalledTimes(5);
+    const limited = vi.fn(async () => new Response(null, { status: 429 }));
+    const throttled = createLyricsService({ cacheFile: cacheFile(), fetcher: limited, spacing: 0 });
+    await throttled(song, options()); await throttled(song, { ...options(), retry: true });
+    expect(limited).toHaveBeenCalledTimes(1);
+  });
+  it("never broadens radio lookup automatically", async () => {
+    const fetcher = vi.fn(async () => new Response(null, { status: 404 }));
+    const service = createLyricsService({ cacheFile: cacheFile(), fetcher, spacing: 0 });
+    await service(trackFromUrl("https://example.com/live", true), { ...options(), broadcast: "Artist - Song" });
+    expect(fetcher).toHaveBeenCalledTimes(1);
+  });
+  it("contacts the alternate provider only on explicit online request and caches unverified plain text", async () => {
+    const fetcher = vi.fn(async () => Response.json({ lyrics: "Other fixture" }));
+    const service = createLyricsService({ cacheFile: cacheFile(), fetcher, spacing: 0 });
+    const alternate = { artist: "Artist / Name", title: "Title ?" };
+    await service(song, { ...options(false), alternate }); expect(fetcher).not.toHaveBeenCalled();
+    const r = await service(song, { ...options(), alternate });
+    expect(r.lyrics).toMatchObject({ source: "lyrics.ovh", plainOnly: true, lines: [] });
+    expect(String(fetcher.mock.calls[0]![0])).toBe("https://api.lyrics.ovh/v1/Artist%20%2F%20Name/Title%20%3F");
+    expect((await service(song, options(false))).lyrics?.source).toBe("Cache · lyrics.ovh");
+    expect(fetcher).toHaveBeenCalledTimes(1);
+  });
   it("reads adjacent LRC first without provider requests or writing beside music", async () => {
     const file = cacheFile(); const audio = path.join(path.dirname(file), "song.mp3");
     writeFileSync(audio.replace(".mp3", ".lrc"), "[00:01] Local fixture");
@@ -41,7 +120,7 @@ describe("lyrics service", () => {
   });
   it("does not send any network request before opt-in", async () => {
     const fetcher = vi.fn(); const service = createLyricsService({ fetcher, cacheFile: cacheFile() });
-    expect((await service(song, options(false))).message).toContain("L enables");
+    expect((await service(song, options(false))).message).toContain("Shift+L to enable");
     expect(fetcher).not.toHaveBeenCalled();
   });
   it("identifies client, uses exact metadata, caches privately and reopens offline", async () => {
@@ -60,7 +139,7 @@ describe("lyrics service", () => {
   it("does not accept wrong artist, title or recording duration", async () => {
     for (const patch of [{ artistName: "Other" }, { trackName: "Other" }, { duration: 300 }]) {
       const service = createLyricsService({ cacheFile: cacheFile(), fetcher: async () => Response.json({ ...record, ...patch }), spacing: 0 });
-      expect((await service(song, options())).message).toContain("different recording");
+      expect((await service(song, options())).lyrics).toBeUndefined();
     }
   });
   it("supports instrumental and plain-only results", async () => {
@@ -83,7 +162,7 @@ describe("lyrics service", () => {
     const fetcher = vi.fn(async () => new Response(null, { status: 404 }));
     const service = createLyricsService({ fetcher, cacheFile: file, spacing: 0 });
     expect((await service(song, options())).message).toContain("unavailable");
-    await service(song, options()); expect(fetcher).toHaveBeenCalledTimes(1);
+    await service(song, options()); expect(fetcher).toHaveBeenCalledTimes(2); // exact + search, then cached miss
     expect(readFileSync(file, "utf8")).toBe("broken");
   });
   it("bounds responses and rejects cancelled results without writing cache", async () => {

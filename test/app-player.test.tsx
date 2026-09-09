@@ -5,6 +5,8 @@ import { uiTheme } from "../src/ui/theme";
 import { App } from "../src/ui/App";
 import { readSession, sessionFile } from "../src/player/session";
 import { rmSync } from "node:fs";
+import path from "node:path";
+import { paths } from "../src/config/paths";
 import { readStations, saveStation, stationsFile } from "../src/player/stations";
 
 // Exercise the REAL App, Playback, navigation and persistence. Only external
@@ -31,8 +33,14 @@ vi.mock("../src/player/art", () => ({
 }));
 vi.mock("../src/player/lyrics", async importOriginal => {
   const actual = await importOriginal<typeof import("../src/player/lyrics")>();
-  return { ...actual, loadLyrics: actual.createLyricsService({ spacing: 0, fetcher: async input => {
-    const params = new URL(String(input)).searchParams;
+  return { ...actual, loadLyrics: actual.createLyricsService({ spacing: 0, fetcher: async (input, init) => {
+    const url = new URL(String(input)), params = url.searchParams;
+    if (params.get("q") === "slow") return new Promise<Response>((_resolve, reject) => init?.signal?.addEventListener("abort", () => reject(Error("Cancelled")), { once: true }));
+    if (url.hostname === "api.lyrics.ovh") return Response.json({ lyrics: "Other provider fixture" });
+    if (url.pathname.endsWith("/search")) return Response.json([
+      { id: 101, trackName: "Song Title", artistName: "Artist Name", albumName: "Fixture album", duration: 233, syncedLyrics: "[00:00] Manual fixture" },
+      { id: 102, trackName: "Other version", artistName: "Artist Name", albumName: "Live", duration: 250, plainLyrics: "Plain fixture" },
+    ]);
     return Response.json({ trackName: params.get("track_name"), artistName: params.get("artist_name"),
       duration: Number(params.get("duration")), syncedLyrics: "[00:00] Opening fixture\n[00:10] Middle fixture\n[00:20] Closing fixture" });
   } }) };
@@ -78,22 +86,49 @@ vi.mock("../src/player/feeds", async importOriginal => {
 });
 const app = () => render(<ThemeProvider theme={uiTheme}><App /></ThemeProvider>);
 async function press(view: ReturnType<typeof app>, key: string) { view.stdin.write(key); await tick(); }
-afterEach(() => { cleanup(); rmSync(sessionFile, { force: true }); rmSync(stationsFile, { force: true }); });
+afterEach(() => { cleanup(); rmSync(sessionFile, { force: true }); rmSync(stationsFile, { force: true }); rmSync(path.join(paths.cache, "lyrics-v1.json"), { force: true }); });
 
 describe("App player workflow", () => {
+  it("searches/selects lyrics, isolates typed shortcuts, cancels and tries the plain provider", async () => {
+    const view = app(); await tick(); await tick();
+    await press(view, "1"); await press(view, "\u001b[B"); await press(view, "A");
+    await press(view, "7"); await press(view, "\r"); await press(view, "m"); await press(view, "l");
+    await press(view, "L"); await new Promise(r => setTimeout(r, 500));
+    await press(view, "/"); expect(view.lastFrame()).toContain("Search LRCLIB");
+    await press(view, "\u0015"); await press(view, "plain remix n p l m ? 9");
+    expect(view.lastFrame()).toContain("Search LRCLIB");
+    await press(view, "\r"); await new Promise(r => setTimeout(r, 500));
+    expect(view.lastFrame()).toContain("Fixture album");
+    await press(view, "\u001b[B"); await press(view, "\u001b[A"); await press(view, "\r");
+    await new Promise(r => setTimeout(r, 500)); expect(view.lastFrame()).toContain("› Manual fixture");
+    await press(view, "/"); await press(view, "\u0015"); await press(view, "slow"); await press(view, "\r");
+    await new Promise(r => setTimeout(r, 500)); await press(view, "\u001b");
+    await new Promise(r => setTimeout(r, 500)); expect(view.lastFrame()).toContain("› Manual fixture");
+    await press(view, "O"); expect(view.lastFrame()).toContain("lyrics.ovh · plain only");
+    await press(view, "\u0015"); await press(view, "invalid"); await press(view, "\r");
+    expect(view.lastFrame()).toContain("Use Artist - Song");
+    await press(view, "\u001b"); expect(view.lastFrame()).toContain("LYRICS");
+    await press(view, "O"); await press(view, "\r"); await new Promise(r => setTimeout(r, 500));
+    expect(view.lastFrame()).toContain("Other provider fixture");
+    expect(view.lastFrame()).not.toContain("› Other provider");
+    await press(view, "l"); expect(view.lastFrame()).toContain("Playback queue · 1 tracks");
+    view.unmount(); await tick();
+    expect(readSession()?.ids).toHaveLength(1); expect(readSession()?.position).toBe(0);
+    expect(readSession()?.volume).toBe(100);
+  });
   it("opts into lyrics, follows seeking/pausing and keeps lyric controls out of the queue", async () => {
     const view = app(); await tick(); await tick();
     await press(view, "1"); await press(view, "\u001b[B"); await press(view, "A");
     await press(view, "7"); await press(view, "\r"); await press(view, "m");
     expect(view.lastFrame()).toContain("l Lyrics");
     await press(view, "l"); await new Promise(r => setTimeout(r, 500));
-    expect(view.lastFrame()).toContain("No local/cached lyrics");
+    expect(view.lastFrame()).toContain("Online lyrics disabled");
     await press(view, "L"); await new Promise(r => setTimeout(r, 500));
     expect(view.lastFrame()).toContain("› Opening fixture");
     await press(view, "\u001b[C"); expect(view.lastFrame()).toContain("› Middle fixture");
     await press(view, " "); expect(view.lastFrame()).toContain("› Middle fixture");
     await press(view, "\u001b[B"); await press(view, "x");
-    expect(view.lastFrame()).toContain("Synced lines · browsing");
+    expect(view.lastFrame()).toContain("Line-synced · browsing");
     await press(view, "f"); expect(view.lastFrame()).toContain("following playback");
     Object.defineProperty(view.stdout, "columns", { configurable: true, value: 60 });
     Object.defineProperty(view.stdout, "rows", { configurable: true, value: 18 });
