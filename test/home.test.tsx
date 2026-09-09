@@ -61,4 +61,18 @@ describe("listening-first Home", () => {
       }
     }
   });
+  it("centres the arch, CLI buttons and grille on the cabinet axis", () => {
+    for (const mark of [JUKEBOX_MARK, ASCII_JUKEBOX]) {
+      const lines = mark.split("\n");
+      expect(lines.every(row => row.length === 25)).toBe(true);
+      for (const row of lines) {
+        expect(row.search(/\S/) + row.trimEnd().length - 1).toBe(24);
+      }
+      expect(lines[1]!.indexOf("JUKEBOX") + 3).toBe(12);
+      expect(lines[6]!.indexOf("[ C L I ]") + 4).toBe(12);
+      for (const row of lines.slice(7, 9)) {
+        expect(row.indexOf(mark === JUKEBOX_MARK ? "⠿" : ":") + 4).toBe(12);
+      }
+    }
+  });
 });

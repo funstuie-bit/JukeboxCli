@@ -15,20 +15,20 @@
     <text x="118.4" y="84" textLength="9.6" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#b3a7ed" font-weight="600">l</text>
     <text x="128" y="84" textLength="9.6" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#b8a5ed" font-weight="600">i</text>
     <text x="41.6" y="106" textLength="748.8" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#52617c">──────────────────────────────────────────────────────────────────────────────</text>
-    <text x="99.2" y="150" textLength="115.2" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#8fb9ed">.----------.</text>
+    <text x="99.2" y="150" textLength="124.8" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#8fb9ed">.-----------.</text>
     <text x="310.4" y="150" textLength="201.6" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#b8a5ed" font-weight="600">Welcome to JukeboxCli</text>
-    <text x="80" y="172" textLength="163.2" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#8fb9ed">.'  JUKEBOX    '.</text>
+    <text x="80" y="172" textLength="163.2" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#8fb9ed">.'   JUKEBOX   '.</text>
     <text x="310.4" y="172" textLength="374.4" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#e3e7f2">Local music. Online tracks. Live radio.</text>
-    <text x="70.4" y="194" textLength="172.8" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#8fb9ed">/   .--------.   \</text>
+    <text x="70.4" y="194" textLength="182.4" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#8fb9ed">/   .---------.   \</text>
     <text x="310.4" y="194" textLength="422.4" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#aab4ce">Listen first. Download only when you choose.</text>
-    <text x="60.8" y="216" textLength="192" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#8fb9ed">|   /  ♫    ♬  \   |</text>
+    <text x="60.8" y="216" textLength="201.6" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#8fb9ed">|   /  ♫     ♬  \   |</text>
     <text x="310.4" y="216" textLength="278.4" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#aab4ce">Downloads: ~/Music/JukeboxCli</text>
-    <text x="60.8" y="238" textLength="192" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#8fb9ed">|  |   ──────   |  |</text>
-    <text x="60.8" y="260" textLength="192" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#8fb9ed">|  '------------'  |</text>
-    <text x="60.8" y="282" textLength="192" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#8fb9ed">|   [ A B C D ]    |</text>
-    <text x="60.8" y="304" textLength="192" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#8fb9ed">|    ⠿⠿⠿⠿⠿⠿⠿⠿⠿     |</text>
-    <text x="60.8" y="326" textLength="192" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#8fb9ed">|    ⠿⠿⠿⠿⠿⠿⠿⠿⠿     |</text>
-    <text x="60.8" y="348" textLength="192" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#8fb9ed">'------------------'</text>
+    <text x="60.8" y="238" textLength="201.6" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#8fb9ed">|  |   ───────   |  |</text>
+    <text x="60.8" y="260" textLength="201.6" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#8fb9ed">|  '-------------'  |</text>
+    <text x="60.8" y="282" textLength="201.6" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#8fb9ed">|     [ C L I ]     |</text>
+    <text x="60.8" y="304" textLength="201.6" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#8fb9ed">|     ⠿⠿⠿⠿⠿⠿⠿⠿⠿     |</text>
+    <text x="60.8" y="326" textLength="201.6" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#8fb9ed">|     ⠿⠿⠿⠿⠿⠿⠿⠿⠿     |</text>
+    <text x="60.8" y="348" textLength="201.6" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#8fb9ed">'-------------------'</text>
     <text x="41.6" y="392" textLength="230.4" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#b8a5ed" font-weight="600">› Search and play online</text>
     <text x="60.8" y="414" textLength="182.4" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#e3e7f2">Radio / paste a URL</text>
     <text x="60.8" y="436" textLength="182.4" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#e3e7f2">Local music library</text>

@@ -277,7 +277,8 @@ saved stations. `JUKEBOXCLI_LOGO=ascii jukeboxcli` selects the ASCII-only mark.
 Small windows keep the choices and omit the large artwork.
 The ASCII and Braille cabinet walls share fixed-width padding so the lower
 right edge lines up with the base.
-The speaker grille is centred beneath the selection buttons in both variants.
+The arch, `C L I` selection buttons and speaker grille share the cabinet's centre
+line in both variants.
 
 Main dev.11 still uses the older source/handle/format/cookies/output wizard.
 Dev.13 moves those optional download/settings tasks out of the first-run path;
