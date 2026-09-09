@@ -64,6 +64,10 @@ try {
   assert.equal(p.getState().track?.title, "Renamed FM");
   assert.equal(requests.length, loadsBeforeRename);
   assert.equal(p.getState().list.length, 2);
+  p.refreshStationArtwork({ ...radio, thumbnailUrl: `${base}/logo.png`, stationWebsite: `${base}/station` });
+  assert.equal(requests.length, loadsBeforeRename);
+  assert.equal(p.getState().track?.title, "Renamed FM");
+  assert.equal((p.getState().track as typeof radio).thumbnailUrl, `${base}/logo.png`);
   await p.seek(15); await p.restart(); assert.equal(p.getState().track?.id, radio.id);
   await p.togglePause(); await waitFor(() => connections.size === 0);
   assert.equal(p.getState().paused, true);
@@ -74,6 +78,7 @@ try {
   const saver = persistListeningSession(p); saver.close();
   await q.restoreSession(readSession()!, () => undefined);
   assert.equal(q.getState().paused, true); assert.equal(q.getState().position, 0);
+  assert.equal((q.getState().track as typeof radio).thumbnailUrl, `${base}/logo.png`);
   assert.equal(connections.size, 1); // no second connection on restore
   for (const res of connections) res.end();
   await waitFor(() => !!p.getState().error, 15_000);

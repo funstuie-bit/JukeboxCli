@@ -5,7 +5,7 @@ import { TextField } from "../components/TextField";
 import { COLOR } from "../theme";
 import { cleanText } from "../../util/format";
 import { discoverFeeds } from "../../player/feeds";
-import { readStations, removeStation, saveStation, stationTrack, type Station } from "../../player/stations";
+import { readStations, removeStation, saveStation, refreshStations, stationTrack, type Station } from "../../player/stations";
 import type { StreamTrack } from "../../player/media";
 
 /** Listening is deliberately separate from Download and the saved library. */
@@ -44,11 +44,16 @@ export function Listen() {
     try {
       const result = await discoverFeeds(value, radio, controller.signal);
       if (controller.signal.aborted) return;
-      const existing = new Set(stations.map(s => s.url));
+      const refreshed = result.tracks.some(t => t.streamType === "radio" && (t.thumbnailUrl || t.stationWebsite))
+        ? refreshStations(result.tracks) : { stations, count: 0 };
+      setStations(refreshed.stations);
+      for (const found of result.tracks) playback.refreshStationArtwork(found);
+      const existing = new Set(refreshed.stations.map(s => s.url));
       const fresh = result.tracks.filter(t => !existing.has(t.streamUrl));
       setDrafts(fresh);
-      setCursor(fresh.length ? 0 : Math.max(0, stations.findIndex(s => s.url === result.tracks[0]?.streamUrl)));
-      setMode("list"); setNotice(`Ready · ${result.note}`);
+      const savedAt = refreshed.stations.findIndex(s => s.url === result.tracks[0]?.streamUrl);
+      setCursor(savedAt >= 0 ? fresh.length + savedAt : 0);
+      setMode("list"); setNotice(refreshed.count ? `Refreshed ${refreshed.count} saved station(s) · names kept · ${result.tracks.some(t => t.thumbnailUrl) ? "artwork updated" : "no artwork supplied"}` : `Ready · ${result.note}`);
     } catch (e) {
       if (!controller.signal.aborted) { setMode(radio ? "radio" : "url"); fail(e); }
     }
@@ -79,7 +84,10 @@ export function Listen() {
         playback.enqueue(track, input === "P"); setNotice(already ? "Already queued · added another occurrence · 7 Playback queue" : input === "P" ? "Queued next · 7 Queue" : "Added to queue · 7 Queue");
       } else if ((input === "f" || input === "t") && track.streamType === "radio") {
         setTarget(track); setMode("name"); setNotice("");
-      } else if (input === "x") {
+      } else if (input === "g" && track.streamType === "radio") {
+        setMode("radio"); setUrlText(track.stationWebsite || "");
+        setNotice("Paste the station WEBSITE to refresh matching feeds/artwork; names are kept.");
+      } else if (input === "x" || input === "d") {
         if (selected < drafts.length) { setDrafts(d => d.filter((_, i) => i !== selected)); setNotice("Link dismissed; queue unchanged."); }
         else { setTarget(track); setMode("remove"); }
       }
@@ -109,8 +117,8 @@ export function Listen() {
         } catch (e) { fail(e); }
       }} /> : null}
     </> : mode === "finding" ? <Text color={COLOR.accent}>Looking for audio feeds… esc cancels</Text>
-      : mode === "remove" ? <Text color={COLOR.warn}>Remove favourite? y confirms · esc cancels (music and queue stay)</Text> : <>
-      <Text color={COLOR.muted} wrap="truncate-end">enter play · A/P queue · f save · t rename · x remove</Text>
+      : mode === "remove" ? <><Text color={COLOR.warn} wrap="truncate-end">Remove favourite? {target ? cleanText(target.title) : ""}</Text><Text color={COLOR.warn}>y confirms · esc cancels (music and queue stay)</Text></> : <>
+      <Text color={COLOR.muted} wrap="truncate-end">enter play · A/P queue · f save · t rename · x/d remove · g artwork</Text>
       {!entries.length ? <Text color={COLOR.muted}>No saved stations yet. Press R to add a radio stream.</Text> : null}
       {entries.slice(start, start + rows).map((entry, i) => <Text key={`${i}:${entry.id}`} wrap="truncate-end"
         color={focused && selected === start + i ? COLOR.selectedText : COLOR.text}

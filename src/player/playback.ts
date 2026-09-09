@@ -1,7 +1,7 @@
 import { EventEmitter } from "node:events";
 import { existsSync } from "node:fs";
 import type { Track as LibraryTrack } from "../library/types";
-import { isLive, isStream, streamMetadata, type PlayableTrack as Track, type MediaResolver, type ResolvedMedia } from "./media";
+import { isLive, isStream, isHttpUrl, streamMetadata, type StreamTrack, type PlayableTrack as Track, type MediaResolver, type ResolvedMedia } from "./media";
 import { MpvPlayer } from "./mpv";
 import { onEndedDecision, shuffledOrder, stepIndex } from "./order";
 import { openPath } from "../util/open-path";
@@ -189,6 +189,15 @@ export class Playback extends EventEmitter {
   async playQueueIndex(index: number): Promise<void> {
     const t = this.state.list[index];
     if (t) await this.play(t, this.state.list, index);
+  }
+
+  /** Refresh trusted station metadata without reconnecting or replacing names. */
+  refreshStationArtwork(track: StreamTrack): void {
+    if (track.streamType !== "radio") return;
+    const enrich = (t: Track): Track => isStream(t) && t.streamType === "radio" && t.streamUrl === track.streamUrl
+      ? { ...t, ...(isHttpUrl(track.thumbnailUrl) ? { thumbnailUrl: track.thumbnailUrl } : {}),
+        ...(isHttpUrl(track.stationWebsite) ? { stationWebsite: track.stationWebsite } : {}) } : t;
+    this.update({ list: this.state.list.map(enrich), track: this.state.track ? enrich(this.state.track) : null });
   }
 
   /** Rename matching radio entries in place, never reload audio or add duplicates. */

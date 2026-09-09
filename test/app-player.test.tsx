@@ -5,7 +5,7 @@ import { uiTheme } from "../src/ui/theme";
 import { App } from "../src/ui/App";
 import { readSession, sessionFile } from "../src/player/session";
 import { rmSync } from "node:fs";
-import { readStations, stationsFile } from "../src/player/stations";
+import { readStations, saveStation, stationsFile } from "../src/player/stations";
 
 // Exercise the REAL App, Playback, navigation and persistence. Only external
 // processes, bootstrap I/O and library contents are fixtures.
@@ -73,6 +73,25 @@ async function press(view: ReturnType<typeof app>, key: string) { view.stdin.wri
 afterEach(() => { cleanup(); rmSync(sessionFile, { force: true }); rmSync(stationsFile, { force: true }); });
 
 describe("App player workflow", () => {
+  it("refreshes an old favourite and queued artwork while retaining names, then removes via d", async () => {
+    saveStation("My custom radio", "https://example.com/live.mp3");
+    const view = app(); await tick(); await tick(); await press(view, "9");
+    expect(view.lastFrame()).toContain("x/d Remove");
+    await press(view, "\r"); // start the legacy favourite without artwork
+    await press(view, "g"); expect(view.lastFrame()).toContain("Paste the station WEBSITE");
+    await press(view, "https://example.com/radio"); await press(view, "\r");
+    expect(view.lastFrame()).toContain("Refreshed 1 saved station");
+    expect(readStations()).toEqual([{ name: "My custom radio", url: "https://example.com/live.mp3",
+      thumbnailUrl: "https://example.com/logo.png", websiteUrl: "https://example.com/radio" }]);
+    await press(view, "d"); expect(view.lastFrame()).toContain("Remove favourite? My custom radio");
+    await press(view, "\u001b"); expect(readStations()).toHaveLength(1);
+    await press(view, "d"); await press(view, "y"); expect(readStations()).toEqual([]);
+    await press(view, "7"); expect(view.lastFrame()).toContain("Playback queue · 1 tracks");
+    view.unmount(); await tick();
+    const session = readSession()!;
+    expect(session.ids).toHaveLength(1);
+    expect(Object.values(session.streams!)[0]).toMatchObject({ title: "My custom radio", thumbnailUrl: "https://example.com/logo.png" });
+  });
   it("changes player appearance, keeps queue repeats explicit and separates favourites", async () => {
     const view = app(); await tick(); await tick();
     await press(view, "R"); // not a global radio shortcut

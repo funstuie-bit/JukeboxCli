@@ -101,7 +101,8 @@ export const HELP_GROUPS: HelpGroup[] = [
       { keys: "↵", label: "Accept link, then play selected" },
       { keys: "A P", label: "Append / queue next" },
       { keys: "f / t", label: "Save / rename radio favourite" },
-      { keys: "x", label: "Remove favourite (confirm) / new link" },
+      { keys: "x / d", label: "Remove favourite (confirm) / new link" },
+      { keys: "g", label: "Refresh artwork from station website" },
       { keys: "space", label: "Live: disconnect / reconnect" },
     ],
   },
@@ -151,7 +152,7 @@ export function footerHints(
   switch (section) {
     case "listen":
       return [{ keys: "o", label: "Play URL" }, { keys: "R", label: "Radio URL" },
-        { keys: "f/t", label: "Save/rename" }, { keys: "A/P", label: "Queue" }, ALWAYS];
+        { keys: "x/d", label: "Remove" }, { keys: "g", label: "Artwork" }, { keys: "f/t", label: "Save/rename" }, ALWAYS];
     case "discover":
       return [{ keys: "/", label: "Search" }, { keys: "↵", label: "Stream" },
         { keys: "o", label: "Play URL" }, { keys: "A/P", label: "Queue" }, ALWAYS];

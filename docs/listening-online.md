@@ -1,4 +1,21 @@
-# Online listening — dev.5
+# Online listening — dev.8
+
+## Existing station refresh (dev.8)
+
+`refreshStations` reads current favourites and atomically merges only supplied
+thumbnail/website fields onto exact-URL matches. It validates before writing,
+retains names/URLs/missing artwork, adds no new favourites and fails visibly on
+corruption/write errors. Listen filters unsaved candidates only after this refresh;
+it selects the first returned existing favourite when applicable. No URL aliases
+are inferred. `Playback.refreshStationArtwork` updates allowlisted metadata on
+matching current/queued radio entries with no engine command or queue-order edit.
+The existing session saver persists the enrichment. Aborted probes cannot write.
+
+g opens radio input for a station website (prefilled if known); it does not silently
+search other sites. x/d removes with a named confirmation and is in the footer.
+Full-App regression seeds an artwork-less favourite, starts it, rediscovers its
+website, checks preserved name/enriched session, then cancels/confirms removal.
+Real mpv smoke checks metadata refresh does not open another audio connection.
 
 ## Website discovery addition
 
@@ -21,7 +38,7 @@ does not find current-song album art. Legacy favourites still load unchanged.
 
 Listen shows candidate choices, esc cancels, and abandoning the section aborts
 pending detection. A new probe replaces unsaved candidates only. Existing exact
-URLs keep saved names; different aliases may still produce separate favourites.
+URLs keep saved names and now refresh supplied metadata; different aliases may still produce separate favourites.
 f/t accepts replacement text or blank to keep a name; renaming changes current
 and queued matching radio titles without reloading audio. Favourites live in 9,
 not the downloaded music Library. No automatic duplicate cleanup is performed.

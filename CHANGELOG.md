@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.1.0-dev.8 — Station artwork refresh and removal (2026-09-08)
+
+- Website rediscovery atomically refreshes metadata on existing exact-URL
+  favourites, keeping names/URLs and previously saved artwork if none is supplied.
+- Update artwork on matching queued/playing radio without reconnecting, renaming
+  or adding occurrences. Enriched session metadata survives restart.
+- g opens a website artwork-refresh prompt, prefilled when a website is known.
+- x/d removal is visible in the footer; named confirmation, y accepts/esc cancels.
+  Removal never deletes music or changes current playback/queue.
+
+Verification: 558 tests pass / 4 skipped; full App legacy-favourite rediscovery,
+queued/session artwork and removal, atomic metadata boundaries, real mpv no-reload
+refresh and paused restore. General URL alias matching/current-song album art remain
+unsupported. Development branch only; main remains dev.3.
+
 ## 0.1.0-dev.7 — Screenshot-driven layout polish (2026-09-08)
 
 - Top-align the content-height player with the queue; remove centring and the

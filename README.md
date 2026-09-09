@@ -1,7 +1,7 @@
 # JukeboxCli
 
 Mac-first terminal music player combining an offline library with YouTube Music
-discovery and streaming. **This branch: 0.1.0-dev.7** (`development`).
+discovery and streaming. **This branch: 0.1.0-dev.8** (`development`).
 `main` remains at **0.1.0-dev.3** while the maintainer tests the current clean-Mac install.
 Built on [soundcli by baairon](https://github.com/baairon/soundcli), with player
 design and feature inspiration from [ytkew by dtDhruv](https://github.com/dtDhruv/ytkew).
@@ -130,7 +130,7 @@ guarantee** across codecs, long pauses and network conditions.
 `npx tsx scripts/smoke-streaming.ts` verifies real HTTP prefetch and mixed-queue
 transitions using silent audio and a loopback server, with no library changes.
 
-### Play URL and internet radio (0.1.0-dev.5)
+### Play URL and internet radio (0.1.0-dev.8)
 
 **No library import required.** Press **o** from any normal screen to paste a
 YouTube video or direct HTTP(S) audio URL. Enter accepts the link; **enter again
@@ -142,11 +142,23 @@ Opening a one-off link keeps an existing queue, even if it hasn't started yet.
 Press **9** for **Radio / URL**, then **R** to paste a station website, direct
 feed or PLS/M3U playlist. **o** also accepts websites. Detection lists available
 feeds: select one and press enter to play, A/P to queue or **f** to save.
-Press esc to cancel detection. Nothing is saved until you choose to save it.
+Press esc to cancel detection. New stations are saved only when you choose to save.
+Rediscovery refreshes artwork/website metadata on existing exact-URL favourites
+while keeping their names and feed URLs. Matching queued/playing radio entries
+refresh too, without reconnecting, changing queue order or adding another entry.
 Favourites reappear in 9 after restart. **t** (or **f**) renames a saved station:
-type a replacement directly, or enter keeps its current name. **x** asks
-to remove a favourite (or dismisses an unsaved link). Removing a favourite
+type a replacement directly, or enter keeps its current name. **x** or **d** asks
+to remove the highlighted favourite: **y** confirms, **esc** cancels. The prompt
+names the station; both removal keys are shown in the bottom footer.
+On an unsaved candidate, x/d dismisses only that candidate. Removing a favourite
 doesn't stop playback, remove queue entries or touch music files.
+
+**Refresh station artwork:** select the station in **9**, press **g**, and enter
+its **website**, not its audio feed. A known website is prefilled; otherwise paste
+one. For Ibiza Stardust use `https://www.ibizastardustradio.com/`. There is no need
+to delete/recreate the favourite. Direct audio URLs generally do not supply artwork;
+no automatic cross-site search or alias matching is performed. Missing artwork in
+a later response does not erase a previously saved image URL.
 
 Radio entries show **LIVE**, with no track duration/progress bar or seek/restart.
 **Space disconnects; space again reconnects to the live broadcast**, rather
@@ -259,7 +271,7 @@ Full list via `jukeboxcli --help` (`soundcli` remains a compatibility alias):
    jukeboxcli
    ```
 
-The instructions above install `main` (dev.3). To test **dev.7 separately**,
+The instructions above install `main` (dev.3). To test **dev.8 separately**,
 clone the development branch into a different folder and use `npm start`;
 this does not replace the installed command:
 

@@ -54,3 +54,22 @@ export function removeStation(url: string, file = stationsFile): Station[] {
   try { writeStations(stations, file); } catch { throw new Error("Could not remove station. Check file permissions and free space."); }
   return stations;
 }
+
+/** Refresh only metadata on existing exact-URL favourites, in one atomic write. */
+export function refreshStations(tracks: StreamTrack[], file = stationsFile): { stations: Station[]; count: number } {
+  const found = new Map(tracks.filter(t => t.streamType === "radio").map(t => [t.streamUrl, t]));
+  let count = 0;
+  const stations = readStations(file).map(station => {
+    const track = found.get(station.url);
+    if (!track) return station;
+    const next = { ...station, ...(track.thumbnailUrl ? { thumbnailUrl: track.thumbnailUrl } : {}),
+      ...(track.stationWebsite ? { websiteUrl: track.stationWebsite } : {}) };
+    stationTrack(next); // validate before any write; never replace names or feeds
+    if (next.thumbnailUrl !== station.thumbnailUrl || next.websiteUrl !== station.websiteUrl) count++;
+    return next;
+  });
+  if (count) {
+    try { writeStations(stations, file); } catch { throw new Error("Could not refresh station artwork. Check file permissions and free space."); }
+  }
+  return { stations, count };
+}

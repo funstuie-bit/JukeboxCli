@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { readFileSync, statSync, writeFileSync } from "node:fs";
 import { trackFromUrl } from "../src/player/url";
-import { readStations, saveStation, removeStation, stationsFile, stationTrack } from "../src/player/stations";
+import { readStations, saveStation, refreshStations, removeStation, stationsFile, stationTrack } from "../src/player/stations";
 import { createStreamResolver } from "../src/player/resolve";
 import { isLive } from "../src/player/media";
 
@@ -56,10 +56,23 @@ describe("radio favourites", () => {
     expect(() => saveStation("Bad", "https://example.com/other", undefined, { thumbnailUrl: "file:///private/image" })).toThrow();
     removeStation("https://example.com/live");
   });
+  it("refreshes exact matches atomically without losing names/artwork or adding candidates", () => {
+    saveStation("My name", "https://example.com/live");
+    const found = { ...trackFromUrl("https://example.com/live", true), title: "Provider title", thumbnailUrl: "https://example.com/logo.png", stationWebsite: "https://example.com/" };
+    expect(refreshStations([found, trackFromUrl("https://example.com/other", true)]).count).toBe(1);
+    expect(readStations()).toHaveLength(1); expect(readStations()[0]?.name).toBe("My name");
+    expect(refreshStations([trackFromUrl(found.streamUrl, true)]).count).toBe(0);
+    expect(readStations()[0]?.thumbnailUrl).toBe(found.thumbnailUrl);
+    const before = readFileSync(stationsFile, "utf8");
+    expect(() => refreshStations([{ ...found, thumbnailUrl: "file:///private/image" }])).toThrow();
+    expect(readFileSync(stationsFile, "utf8")).toBe(before);
+    removeStation(found.streamUrl);
+  });
   it("does not overwrite a corrupt favourites file", () => {
     writeFileSync(stationsFile, "broken");
     expect(() => readStations()).toThrow(/invalid/);
     expect(() => saveStation("Test", "https://example.com/live")).toThrow();
+    expect(() => refreshStations([])).toThrow();
     expect(readFileSync(stationsFile, "utf8")).toBe("broken");
   });
 });
