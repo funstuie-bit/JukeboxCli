@@ -8,12 +8,13 @@ import { COLOR } from "../theme";
 
 const filters: MusicFilter[] = ["song", "video", "album", "artist", "playlist"];
 export function Discover() {
-  const { region, setCaptureMode, playback, setPendingAdd, setSection, listRows, contentWidth } = useStore();
+  const { region, setCaptureMode, playback, setPendingAdd, setSection, listRows, contentWidth, pendingSearch, setPendingSearch } = useStore();
   const focused = region === "content";
   const [query, setQuery] = useState("");
   const [kind, setKind] = useState<MusicFilter>("song");
   const [editing, setEditing] = useState(false);
-  const [page, setPage] = useState<MusicPage>({ title: "YouTube Music · signed out", items: [] });
+  const [page, setPage] = useState<MusicPage>({ title: "YouTube Music · no sign-in needed", items: [] });
+  useEffect(() => { if (pendingSearch) { setEditing(true); setPendingSearch(false); } }, [pendingSearch, setPendingSearch]);
   const [parents, setParents] = useState<{ page: MusicPage; cursor: number }[]>([]);
   const [cursor, setCursor] = useState(0);
   const [busy, setBusy] = useState(false);
@@ -78,11 +79,11 @@ export function Discover() {
   const start = Math.max(0, Math.min(selected - Math.floor(rows / 2), page.items.length - rows));
   return <Box flexDirection="column" width={contentWidth}>
     <Text bold color={COLOR.alt} wrap="truncate-end">Discover · {cleanText(page.title)}</Text>
-    <Text dimColor wrap="truncate-end">{filters.map(f => f === kind ? `[${f}]` : f).join("  ")}</Text>
+    <Text color={COLOR.muted} wrap="truncate-end">{filters.map(f => f === kind ? `[${f}]` : f).join("  ")}</Text>
     {focused && editing ? <TextField defaultValue={query} placeholder="Search music…" onChange={setQuery}
       onSubmit={value => { setQuery(value); void load(() => searchMusic(value, kind), "search"); }} />
-      : <Text dimColor wrap="truncate-end">{busy ? "Loading… esc cancels" : notice || "/ search · [ ] type · enter stream/open · A/P queue · d download"}</Text>}
-    {page.items.length === 0 && !busy ? <Text dimColor>Listen without downloading: / search · o Play URL · 9 radio</Text> : null}
+      : <Text color={COLOR.muted} wrap="truncate-end">{busy ? "Loading… esc cancels" : notice || "/ search · [ ] type · enter stream/open · A/P queue · d download"}</Text>}
+    {page.items.length === 0 && !busy ? <Text color={COLOR.muted}>Listen without downloading: / search · o Play URL · 9 radio</Text> : null}
     {page.items.slice(start, start + rows).map((item, i) => <Text key={`${start + i}:${item.id}`}
       color={focused && selected === start + i ? COLOR.accent : undefined} wrap="truncate-end">
       {selected === start + i ? "› " : "  "}{truncate(cleanText(`${item.title}${item.subtitle ? ` · ${item.subtitle}` : ""} [${item.kind}]`), contentWidth - 2)}

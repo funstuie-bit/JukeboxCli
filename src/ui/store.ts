@@ -9,6 +9,7 @@ import type { PlayHistory } from "../player/history";
 
 /** Sidebar sections. */
 export type Section =
+  | "home"
   | "library"
   | "playlists"
   | "history"

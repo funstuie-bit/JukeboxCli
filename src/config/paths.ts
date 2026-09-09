@@ -1,24 +1,34 @@
 import os from "node:os";
 import path from "node:path";
 import envPaths from "env-paths";
+import { existsSync } from "node:fs";
 
-export const APP_NAME = "soundcli";
+export const APP_NAME = "JukeboxCli";
 
 /** OS-appropriate config / data / cache directories. */
-const legacyPaths = envPaths(APP_NAME, { suffix: "" });
+const legacyPaths = envPaths("soundcli", { suffix: "" });
+const brandedPaths = envPaths(APP_NAME, { suffix: "" });
+/** Never move or merge profiles implicitly. Prefer an existing branded profile. */
+export function useLegacyProfile(branded: boolean, legacy: boolean): boolean {
+  return !branded && legacy;
+}
+export const legacyProfile = !process.env.JUKEBOXCLI_HOME && useLegacyProfile(
+  existsSync(brandedPaths.config) || existsSync(brandedPaths.data),
+  existsSync(legacyPaths.config) || existsSync(legacyPaths.data) || existsSync(path.join(os.homedir(), "Music", "soundcli")),
+);
 /** Isolated portable profile; default retains existing soundcli data. */
 const profile = process.env.JUKEBOXCLI_HOME;
 export const paths = profile
   ? { config: path.resolve(profile, "config"), data: path.resolve(profile, "data"),
       cache: path.resolve(profile, "cache"), log: path.resolve(profile, "logs"),
       temp: path.resolve(profile, "temp") }
-  : legacyPaths;
+  : legacyProfile ? legacyPaths : brandedPaths;
 
 /** Directory where downloaded tool binaries (yt-dlp) are cached. */
 export const binDir = path.join(paths.cache, "bin");
 
 /** Default location for the downloaded music library. */
-export const defaultLibraryDir = profile ? path.resolve(profile, "music") : path.join(os.homedir(), "Music", APP_NAME);
+export const defaultLibraryDir = profile ? path.resolve(profile, "music") : path.join(os.homedir(), "Music", legacyProfile ? "soundcli" : APP_NAME);
 
 /** Path to the JSON config file. */
 export const configFile = path.join(paths.config, "config.json");

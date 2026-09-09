@@ -303,12 +303,12 @@ export function Library() {
     return (
       <Box flexDirection="column">
         <Header title="Library" focused={focused} />
-        <Text dimColor>Nothing here yet.</Text>
+        <Text color={COLOR.muted}>Nothing here yet. Stream now, or save music for offline listening.</Text>
         <Box marginTop={1}>
           <Select
             isDisabled={!focused}
-            options={[{ label: "Download ›", value: "download" }]}
-            onChange={() => setSection("download")}
+            options={[{ label: "Search and stream ›", value: "discover" }, { label: "Download ›", value: "download" }, { label: "Music folder settings ›", value: "settings" }]}
+            onChange={value => setSection(value as "discover" | "download" | "settings")}
           />
         </Box>
       </Box>

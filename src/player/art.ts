@@ -4,20 +4,22 @@ import type { CoverImage } from "./graphics";
 
 const images = new Map<string, Promise<CoverImage | null>>();
 /** Keep real image detail. Fit happens at placement, never by cropping the source. */
-export function loadCoverImage(source: string): Promise<CoverImage | null> {
-  const cached = images.get(source); if (cached) return cached;
+export function loadCoverImage(source: string, maxSize = 1024): Promise<CoverImage | null> {
+  const cacheKey = `${source}:${maxSize}`;
+  const cached = images.get(cacheKey); if (cached) return cached;
   const work = (async () => {
     try {
       const { stdout } = await execa(ffmpegPath(), ["-nostdin", "-v", "error", "-i", source,
-        "-map", "0:v:0", "-frames:v", "1", "-vf", "scale=1024:1024:force_original_aspect_ratio=decrease",
+        "-map", "0:v:0", "-frames:v", "1", "-vf", `scale=${maxSize}:${maxSize}:force_original_aspect_ratio=decrease`, "-pix_fmt", "rgb24",
         "-f", "image2pipe", "-c:v", "png", "pipe:1"], { encoding: "buffer", timeout: 8000, maxBuffer: 5 * 1024 * 1024 });
       const png = Buffer.from(stdout);
+      if (maxSize <= 480 && png.length > 740000) return null;
       if (png.length < 24 || png.toString("hex", 0, 8) !== "89504e470d0a1a0a") return null;
       return { png, width: png.readUInt32BE(16), height: png.readUInt32BE(20) };
     } catch { return null; }
   })();
   if (images.size >= 12) images.delete(images.keys().next().value!);
-  images.set(source, work);
+  images.set(cacheKey, work);
   return work;
 }
 
@@ -76,7 +78,7 @@ function entryFor(filePath: string): CacheEntry {
 
 /** Drop an entry (the file changed or was deleted). */
 export function forgetArt(filePath: string): void {
-  images.delete(filePath);
+  for (const key of images.keys()) if (key.startsWith(`${filePath}:`)) images.delete(key);
   cache.delete(filePath);
   inflight.delete(filePath);
 }

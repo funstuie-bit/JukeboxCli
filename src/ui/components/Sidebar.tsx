@@ -9,6 +9,7 @@ interface NavItem {
 }
 
 const NAV: NavItem[] = [
+  { key: "home", label: "Home" },
   { key: "library", label: "Library" },
   { key: "playlists", label: "Playlists" },
   { key: "history", label: "History" },
@@ -56,7 +57,7 @@ export function Sidebar() {
               color={selected ? COLOR.accent : COLOR.muted}
               bold={selected && focused}
             >
-              {`${i + 1} ${item.label}`}
+              {`${i === 0 ? "H" : i} ${item.label}`}
             </Text>
             {item.key === "download" && active > 0 ? (
               <Text color={COLOR.muted}>{` (${active})`}</Text>

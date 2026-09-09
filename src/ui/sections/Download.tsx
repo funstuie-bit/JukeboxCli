@@ -105,7 +105,7 @@ function PageIntro({
         {title}
       </Text>
       {hint ? (
-        <Text dimColor wrap="truncate-end">
+        <Text color={COLOR.muted} wrap="truncate-end">
           {hint}
         </Text>
       ) : null}
@@ -117,7 +117,7 @@ function PageIntro({
 function FooterHint({ children }: { children: string }) {
   return (
     <Box marginTop={1}>
-      <Text dimColor wrap="truncate-end">
+      <Text color={COLOR.muted} wrap="truncate-end">
         {children}
       </Text>
     </Box>
@@ -444,7 +444,7 @@ function QueueView() {
         // means the downloader broke, not the tracks; say so once, calmly.
         <Box marginBottom={1}>
           <Text color={COLOR.warn} wrap="truncate-end">
-            {`${ICON.warn} ${s.failingSource} downloads keep failing  ${ICON.dot}  the downloader may be out of date  ${ICON.dot}  restart soundcli to update it`}
+            {`${ICON.warn} ${s.failingSource} downloads keep failing  ${ICON.dot}  the downloader may be out of date  ${ICON.dot}  restart JukeboxCli to update it`}
           </Text>
         </Box>
       ) : null}

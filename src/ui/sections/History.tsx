@@ -211,7 +211,7 @@ export function History() {
     return (
       <Box flexDirection="column">
         <Header title="Recently played" focused={focused} />
-        <Text dimColor>Nothing played yet.</Text>
+        <Text color={COLOR.muted}>Nothing played yet.</Text>
         <Box marginTop={1}>
           <Select
             isDisabled={!focused}

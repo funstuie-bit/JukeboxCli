@@ -17,7 +17,7 @@ import { HelpOverlay } from "../src/ui/components/HelpOverlay";
 import { NowPlayingBar } from "../src/ui/components/NowPlayingBar";
 import { Footer } from "../src/ui/components/Footer";
 import { Sidebar } from "../src/ui/components/Sidebar";
-import { Welcome } from "../src/ui/views/Welcome";
+import { Home } from "../src/ui/sections/Home";
 import { Library as LibrarySection } from "../src/ui/sections/Library";
 import { footerHints } from "../src/ui/keymap";
 import { ansiToSvg } from "./ansi-to-svg";
@@ -38,13 +38,14 @@ function save(name: string, store: Store, node: React.ReactNode): void {
   if (!/\x1b\[/.test(frame)) {
     throw new Error(`${name}: frame has no ANSI colors (FORCE_COLOR didn't take)`);
   }
-  const svg = ansiToSvg(frame, { cols: COLS, title: "soundcli" });
+  const svg = ansiToSvg(frame, { cols: COLS, title: "JukeboxCli" });
   writeFileSync(join(OUT_DIR, `${name}.svg`), svg);
   console.log(`preview/${name}.svg`);
 }
 
 // The first-run intro: logo, the pitch, and the source picker.
 const welcomeStore = makeStore({
+  rows: 36, contentWidth: 78,
   binaries: { ffmpeg: "", ffprobe: "", ytDlp: "", mpv: "mpv" },
   // No playlist on the staged track: the bar line fits 80 cols untruncated.
   // Fully played, so the progress bar shows the whole gradient ramp.
@@ -63,12 +64,7 @@ save(
     </Box>
     <Rule width={COLS - 2} />
     <Box marginTop={1}>
-      <Welcome />
-    </Box>
-    {/* The player bar mid-song, so the hero shows the app making music. */}
-    <Box flexDirection="column" marginTop={1}>
-      <Rule width={COLS - 2} />
-      <NowPlayingBar />
+      <Home firstRun />
     </Box>
   </Box>,
 );

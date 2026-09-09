@@ -16,7 +16,7 @@ export const RETRY_STATUS = new Set([408, 425, 429, 500, 502, 503, 504]);
  * so every GitHub fetch must send one. Mirrors the convention the Spotify calls
  * already follow.
  */
-export const USER_AGENT = "soundcli (+https://www.npmjs.com/package/sndcli)";
+export const USER_AGENT = "JukeboxCli (+https://github.com/funstuie-bit/JukeboxCli)";
 
 /** Minimal fetch signature we depend on, so tests can inject a fake. */
 export type FetchImpl = (

@@ -164,7 +164,7 @@ export function makeFakePlayback(
 /** A complete Store over the fakes; geometry matches an 80x24 terminal. */
 export function makeStore(overrides: Partial<Store> = {}): Store {
   return {
-    config: { ...defaultConfig, firstRunComplete: true, libraryDir: "~/Music/soundcli" },
+    config: { ...defaultConfig, firstRunComplete: true, libraryDir: "~/Music/JukeboxCli" },
     setConfig: () => {},
     library: makeFakeLibrary(),
     binaries: { ffmpeg: "", ffprobe: "", ytDlp: "", mpv: null },

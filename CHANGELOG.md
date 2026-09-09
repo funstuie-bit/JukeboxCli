@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.1.0-dev.13 — First impressions and iTerm2 (2026-09-09)
+
+- Listening-first welcome and H Home: online search, radio/URL, local music and
+  optional downloads. Roomy Home adds recent local tracks, saved stations and
+  current playback text; no automatic playback/download or sign-in.
+- Original static ASCII-outline/Braille-grille jukebox, plain ASCII opt-in,
+  responsive small-screen layout and regenerated branded SVG previews.
+- Fresh profiles use JukeboxCli folders; existing legacy profiles/custom paths
+  stay put, portable override wins, no automatic copying/merging/moving.
+- iTerm2 inline PNG renderer, live capability/cell-size checks, 480px bounded
+  payload, full-frame lifecycle, explicit text fallback/renderer label and doctor
+  environment diagnostics. Actual iTerm2 visual acceptance outstanding.
+- Idle player says Stopped; clearer empty Library actions, explicit muted colours
+  in entry screens, no-sign-in-needed discovery label, branded request identifier.
+- Development only; main remains dev.11, visualiser parked.
+
 ## 0.1.0-dev.12 — Mac controls and installation (2026-09-09)
 
 - mpv-native media keys routed through JukeboxCli's full queue; descriptive system

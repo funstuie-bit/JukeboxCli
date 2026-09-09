@@ -11,11 +11,12 @@ import { readStations, saveStation, stationsFile } from "../src/player/stations"
 
 // Exercise the REAL App, Playback, navigation and persistence. Only external
 // processes, bootstrap I/O and library contents are fixtures.
+const startup = vi.hoisted(() => ({ fresh: false }));
 vi.mock("../src/ui/hooks/useMouseWheel", () => ({ useMouseWheel: () => {} }));
 vi.mock("../src/bin/binaries", () => ({ ensureBinaries: async () => ({ mpv: "fixture", ffmpeg: "", ffprobe: "", ytDlp: "" }) }));
 vi.mock("../src/config/config", async importOriginal => {
   const actual = await importOriginal<typeof import("../src/config/config")>();
-  return { ...actual, loadConfig: async () => ({ ...actual.defaultConfig, firstRunComplete: true, ytdlpAutoUpdate: false }), saveConfig: async () => {} };
+  return { ...actual, loadConfig: async () => ({ ...actual.defaultConfig, firstRunComplete: !startup.fresh, ytdlpAutoUpdate: false }), saveConfig: async () => {} };
 });
 vi.mock("../src/library/migrate", () => ({ migrateOwnerLayout: async () => {} }));
 vi.mock("../src/library/reconcile", () => ({ reconcileLibrary: async () => ({ prunedMissing: 0 }) }));
@@ -86,9 +87,30 @@ vi.mock("../src/player/feeds", async importOriginal => {
 });
 const app = () => render(<ThemeProvider theme={uiTheme}><App /></ThemeProvider>);
 async function press(view: ReturnType<typeof app>, key: string) { view.stdin.write(key); await tick(); }
-afterEach(() => { cleanup(); rmSync(sessionFile, { force: true }); rmSync(stationsFile, { force: true }); rmSync(path.join(paths.cache, "lyrics-v1.json"), { force: true }); });
+afterEach(() => { startup.fresh = false; cleanup(); rmSync(sessionFile, { force: true }); rmSync(stationsFile, { force: true }); rmSync(path.join(paths.cache, "lyrics-v1.json"), { force: true }); });
 
 describe("App player workflow", () => {
+  it("first launch opens listening choices and hands focus directly to online search", async () => {
+    startup.fresh = true;
+    const view = app(); await tick(); await tick();
+    expect(view.lastFrame()).toContain("Welcome to JukeboxCli");
+    expect(view.lastFrame()).not.toContain("Where's your music?");
+    await press(view, "\r"); expect(view.lastFrame()).toContain("Search music");
+    await press(view, "fixture"); await press(view, "\r");
+    expect(view.lastFrame()).toContain("Online fixture song");
+    await press(view, "\r"); await press(view, "m");
+    expect(view.lastFrame()).toContain("Streaming · not in Library");
+  });
+  it("starts at Home and routes search while preserving typing and player navigation", async () => {
+    const view = app(); await tick(); await tick();
+    expect(view.lastFrame()).toContain("Your jukebox");
+    expect(view.lastFrame()).toContain("H Home");
+    await press(view, "/"); expect(view.lastFrame()).toContain("Search music");
+    await press(view, "H"); expect(view.lastFrame()).toContain("Discover"); // typed H, not global Home
+    await press(view, "\x1b"); await press(view, "H"); expect(view.lastFrame()).toContain("Your jukebox");
+    await press(view, "m"); expect(view.lastFrame()).toContain("Stopped · shuffle");
+    await press(view, "H"); expect(view.lastFrame()).toContain("Your jukebox");
+  });
   it("searches inside player, isolates typing, queues online results and restores lyrics", async () => {
     const view = app(); await tick(); await tick();
     await press(view, "1"); await press(view, "\u001b[B"); await press(view, "A");

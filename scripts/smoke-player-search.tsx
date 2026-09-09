@@ -10,6 +10,7 @@ const profile = mkdtempSync(path.join(tmpdir(), "jukeboxcli-player-search-"));
 process.env.JUKEBOXCLI_HOME = profile;
 const { Playback } = await import("../src/player/playback");
 const { PlayerSearch } = await import("../src/ui/components/PlayerSearch");
+const { Home } = await import("../src/ui/sections/Home");
 const { StoreContext } = await import("../src/ui/store");
 const { makeStore, makeFakeLibrary } = await import("./fake-data");
 const track = { id: "fixture", source: "local" as const, sourceTrackId: "fixture", title: "Search fixture",
@@ -38,6 +39,13 @@ try {
   view.stdin.write("\r"); await pause(); await until(() => playback.getState().index === 1 && !playback.getState().loading);
   view.stdin.write("\u001b"); await pause(); assert.equal(closed, true);
   assert.equal(playback.getState().volume, 0);
-  console.log("PASS: real muted mpv advances during local player search; append/next/play/Esc; no downloads");
+  view.unmount();
+  const homeQueue = playback.getState().list.map(t => t.id);
+  const home = render(<StoreContext.Provider value={{ ...store, rows: 32, contentWidth: 75 }}><Home /></StoreContext.Provider>);
+  const homeBefore = playback.getState().position; await pause(1200);
+  assert.match(home.lastFrame()!, /Your jukebox/); assert.match(home.lastFrame()!, /Search fixture/);
+  assert.ok(playback.getState().position > homeBefore + 0.5);
+  assert.deepEqual(playback.getState().list.map(t => t.id), homeQueue);
+  console.log("PASS: real muted mpv advances during local player search and Home; append/next/play/Esc; no downloads");
   console.log(`Isolated fixtures retained: ${profile}`);
 } finally { cleanup(); playback.quit(); }

@@ -13,6 +13,9 @@ export async function installationReport() {
   }));
   return { ok: tools.every(tool => tool.ok) && Number(process.versions.node.split(".")[0]) >= 22,
     platform: process.platform, architecture: process.arch, node: process.versions.node,
+    terminal: { name: process.env.TERM_PROGRAM || "unknown", artworkOverride: process.env.JUKEBOXCLI_ART || "auto",
+      multiplexer: Boolean(process.env.TMUX || process.env.STY),
+      note: "Artwork capability is probed only in the interactive app; Kitty / iTerm2 inline / text fallback." },
     toolsMode: process.env.JUKEBOXCLI_SYSTEM_TOOLS === "1" ? "managed (no tool downloads/updates)" : "automatic (doctor only checks PATH)",
     mediaKeys: process.platform === "darwin" && process.env.JUKEBOXCLI_MEDIA_KEYS !== "0" ? "mpv bridge enabled; physical/system acceptance required" : "off",
     tools };

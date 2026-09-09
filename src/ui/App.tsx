@@ -52,7 +52,7 @@ import { Download } from "./sections/Download";
 import { Settings } from "./sections/Settings";
 import { NowPlaying as NowPlayingView } from "./views/NowPlaying";
 import { ListeningQueue } from "./views/ListeningQueue";
-import { Welcome } from "./views/Welcome";
+import { Home } from "./sections/Home";
 import { useMouseWheel } from "./hooks/useMouseWheel";
 
 interface Boot {
@@ -66,6 +66,7 @@ interface Boot {
 
 function Content({ section }: { section: Section }) {
   switch (section) {
+    case "home": return <Home />;
     case "listen":
       return <Listen />;
     case "discover":
@@ -170,10 +171,9 @@ export function App({ initialAdd }: { initialAdd?: string } = {}) {
   // + its padding (2), with 2 columns of slack.
   const contentWidth = Math.max(20, cols - 28);
 
-  const [section, setSection] = useState<Section>("library");
-  // Launch with the sidebar menu focused so the first thing you meet is the
-  // app's map; the song list is one tab/enter away.
-  const [region, setRegion] = useState<Region>("sidebar");
+  const [section, setSection] = useState<Section>("home");
+  // Home's listening choices own the arrows/Enter on launch; Tab opens the map.
+  const [region, setRegion] = useState<Region>("content");
   const [captureMode, setCaptureMode] = useState<CaptureMode>("none");
   const [showHelp, setShowHelp] = useState(false);
   // Full-screen Now Playing view, toggled with `m` from any section. The
@@ -436,6 +436,9 @@ export function App({ initialAdd }: { initialAdd?: string } = {}) {
         setShowHelp(true);
         return;
       }
+      if (input === "H" && captureMode === "none") {
+        setNowPlayingView(false); setSection("home"); setRegion("content"); return;
+      }
       if (input === "o") {
         setNowPlayingView(false); setSection("listen"); setRegion("content");
         setOpenUrlRequest(n => n + 1);
@@ -541,7 +544,7 @@ export function App({ initialAdd }: { initialAdd?: string } = {}) {
             section === "history" || section === "discover"
           )
             return;
-          setSection("library");
+          setSection(section === "home" ? "discover" : "library");
           setRegion("content");
           setPendingSearch(true);
           return;
@@ -679,14 +682,14 @@ export function App({ initialAdd }: { initialAdd?: string } = {}) {
       <Box flexDirection="column" paddingX={1}>
         <Box justifyContent="space-between">
           {showLogo ? <Logo /> : null}
-          {!welcome ? <Text color={playerPalette(config?.playerTheme).muted}>m Player · 7 Queue · ? Keys</Text> : null}
+          {!welcome ? <Text color={playerPalette(config?.playerTheme).muted}>H Home · m Player · ? Keys</Text> : null}
           {mpvStatus ? <Text dimColor>{mpvStatus}</Text> : null}
         </Box>
         {showTopRule ? <Rule width={ruleWidth} /> : null}
 
         {welcome ? (
           <Box marginTop={1}>
-            <Welcome />
+            <Home firstRun />
           </Box>
         ) : (
           <>

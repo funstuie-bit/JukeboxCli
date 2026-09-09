@@ -4,10 +4,13 @@ Mac-first terminal music player combining an offline library with YouTube Music
 discovery and streaming. **Current public build: 0.1.0-dev.11** on `main`.
 the maintainer tested and approved the lyrics and Now Playing search build for promotion on
 2026-09-09. Further development continues on `development`.
-**Development: dev.12** adds queue-aware Mac media keys, read-only `--doctor`,
-independent package installs and Homebrew packaging. [Setup and limits](docs/mac-controls-and-install.md).
-Automated installation and Homebrew checks pass on Intel and Apple Silicon;
-physical media keys and normal GUI first-run acceptance still need hands-on testing.
+**Development: dev.13** adds a listening-first welcome/Home screen with an original
+ASCII/Braille jukebox, branded fresh-profile folders and iTerm2 inline artwork.
+[First-run and terminal notes](docs/first-run-and-home.md).
+Dev.12 introduced media keys, independent installs, `--doctor` and Homebrew
+packaging, with Intel/Apple Silicon installation checks passing.
+[Setup and limits](docs/mac-controls-and-install.md). Physical media keys and
+iTerm2 visual acceptance still need hands-on testing.
 Built on [soundcli by baairon](https://github.com/baairon/soundcli), with player
 design and feature inspiration from [ytkew by dtDhruv](https://github.com/dtDhruv/ytkew).
 See [upstream credit](#upstream-credit) for how each project contributes.
@@ -87,8 +90,10 @@ refresh their metadata.
 Press `b` in the player to hide/show artwork (view-local toggle). Images disappear
 behind help and on screen changes, and reposition after resize. Unsupported
 terminals, missing size replies and tmux/screen use proportional half-blocks.
-Force fallback with `JUKEBOXCLI_ART=blocks jukeboxcli`. Native iTerm2/sixel image
-renderers are not implemented yet. After changing terminal fonts, restart if
+Force fallback with `JUKEBOXCLI_ART=blocks jukeboxcli`. Dev.13 adds iTerm2 inline
+images (480px RGB, capability/cell-size checks); use `JUKEBOXCLI_ART=iterm` for
+explicit selection. The player labels its renderer. iTerm2 screenshot/resize
+acceptance remains pending; sixel is not implemented. After changing terminal fonts, restart if
 their character proportions differ; ordinary window resizing works live.
 
 The default palette is now lavender/blue with explicit readable player text.
@@ -263,15 +268,17 @@ Own your music. Download your YouTube, SoundCloud, and Spotify libraries to your
 
 ## What this fork adds
 
-### First-run wizard
-The first time you run it, a guided setup walks you through everything — every step has **esc to go back**, no dead ends:
+### Listening-first welcome and Home (development dev.13)
+Choose online search, radio/URL, local music or optional downloads. Enter opens
+the choice; Escape skips to Home. No sign-in or download is required to begin.
+`H` returns Home, `/` opens online search there, and the existing1–9 keys stay put.
+Roomy windows show an original ASCII/Braille jukebox, recent local tracks and
+saved stations. `JUKEBOXCLI_LOGO=ascii jukeboxcli` selects the ASCII-only mark.
+Small windows keep the choices and omit the large artwork.
 
-1. **Intro** — pick YouTube, SoundCloud, or Spotify
-2. **Handle** — type your handle or paste a link
-3. **Format** — choose audio format (Best / MP3 / FLAC / WAV / M4A / Opus / Vorbis)
-4. **Cookies** — import from browser (auto-detects Chrome / Firefox / Edge / Brave profiles), choose a cookies.txt file, or skip
-5. **Output** — where downloads land (defaults to `~/Music/soundcli`; type a new path or press enter)
-6. **Loading → Downloading** — grabs your playlists and starts
+Main dev.11 still uses the older source/handle/format/cookies/output wizard.
+Dev.13 moves those optional download/settings tasks out of the first-run path;
+browser cookies, formats and custom output remain available under Settings.
 
 ### Settings (press `5` in the sidebar)
 - **Audio format** — change format anytime
@@ -345,7 +352,8 @@ JUKEBOXCLI_HOME="$HOME/JukeboxCli-next-profile" npm start
 
 Keep the same `JUKEBOXCLI_HOME` for subsequent launches of that test profile.
 
-On first run the app sets up yt-dlp and ffmpeg (under the default profile,
+On first run the app sets up yt-dlp and ffmpeg (dev.13 fresh profiles use
+`~/Library/Caches/JukeboxCli/bin`; existing profiles and main dev.11 retain
 `~/Library/Caches/soundcli/bin`). Install mpv 0.38+ with `brew install mpv` for
 streaming and in-terminal playback. Without mpv, saved files can open in your
 default player, but streaming is unavailable.
@@ -405,7 +413,11 @@ npm test             # isolated unit + App interaction tests
 npm run typecheck
 ```
 
-On macOS, config lives at `~/Library/Preferences/soundcli/config.json` (use `soundcli` itself or the Settings screen to change it). The library index, download queue and listening history live in `~/Library/Application Support/soundcli/`.
+Dev.13 fresh macOS installs use `~/Music/JukeboxCli`,
+`~/Library/Preferences/JukeboxCli/config.json` and
+`~/Library/Application Support/JukeboxCli/`. Existing soundcli profiles keep their
+original paths and custom music folders; nothing is moved or merged automatically.
+`JUKEBOXCLI_HOME` still takes precedence. Main dev.11 retains the old defaults.
 
 ## Upstream credit
 

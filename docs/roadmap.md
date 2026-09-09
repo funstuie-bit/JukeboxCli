@@ -25,6 +25,12 @@ the maintainer's approval; visualiser still comes last.
 
 ## Current work: media controls and installation — authorised 2026-09-09
 
+Dev.13 now addresses the maintainer's fresh Mac screenshots: listening-first welcome/Home,
+static ASCII/Braille jukebox, branded new profiles with legacy preservation and
+iTerm2 inline artwork. See [first-run notes](first-run-and-home.md). These changes
+need the maintainer's first-launch/iTerm2 visual acceptance alongside dev.12 media keys before
+promotion. Visualiser remains parked.
+
 the maintainer authorised both. Dev.12 uses mpv's existing macOS integration, routing media
 keys through JukeboxCli's full queue with safe fallback and descriptive titles;
 no native helper needed. Physical keys/system presentation still need acceptance.

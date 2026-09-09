@@ -1,10 +1,45 @@
 import { EventEmitter } from "node:events";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { inlineImage, inlineQuery, supportsInline, graphicsProtocol } from "../src/player/graphics";
+afterEach(() => vi.unstubAllEnvs());
 import { GraphicsPainter, imagePackets, imagePlacement, deleteImage, graphicsQuery, probeGraphics } from "../src/player/graphics";
 
 describe("terminal image lifecycle", () => {
   const image = { png: new Uint8Array(7000), width: 1024, height: 576 };
   const rect = { x: 3, y: 5, cols: 42, rows: 12 };
+  it("renders inline PNGs with explicit inline mode, bounded cell placement and preserved cursor", () => {
+    const packet = inlineImage(image, rect);
+    expect(packet).toContain("File=inline=1;size=7000;width=42;height=12;preserveAspectRatio=1:");
+    expect(packet).toContain("\x1b[6;4H"); expect(packet.endsWith("\x07\x1b8")).toBe(true);
+    const writes: string[] = []; const painter = new GraphicsPainter(s => writes.push(s), "iterm");
+    const remove = painter.set(image, () => rect); painter.paint(); painter.paint(); remove();
+    expect(writes).toEqual([packet, packet]); // Ink clears text-cell art; never erase new text after a frame.
+    expect(painter.status.visible).toBe(false);
+    expect(supportsInline("AbCdF")).toBe(true); expect(supportsInline("File")).toBe(false);
+    expect(inlineImage({ ...image, png: new Uint8Array(740001) }, rect)).toBe("");
+  });
+  it("respects an explicit missing inline capability even after an older cell-size reply", async () => {
+    vi.stubEnv("TERM_PROGRAM", "iTerm.app");
+    const stdin = Object.assign(new EventEmitter(), { isTTY: true, isRaw: false,
+      setRawMode() {}, resume() {}, pause() {}, unshift() {} });
+    const stdout = { isTTY: true, write() {
+      stdin.emit("data", "\x1b]1337;ReportCellSize=20;10\x07");
+      stdin.emit("data", "\x1b]1337;Capabilities=AbCd\x07");
+    } };
+    expect(await probeGraphics(stdin as unknown as typeof process.stdin, stdout as typeof process.stdout)).toBe(false);
+  });
+  it("accepts older iTerm2's live cell-size response and consumes all replies", async () => {
+    vi.stubEnv("TERM_PROGRAM", "iTerm.app");
+    const stdin = Object.assign(new EventEmitter(), { isTTY: true, isRaw: false,
+      setRawMode(value: boolean) { this.isRaw = value; }, resume() {}, pause() {}, keys: "", unshift(buffer: Buffer) { this.keys += buffer.toString(); } });
+    const stdout = { isTTY: true, write(query: string) {
+      expect(query).toContain(inlineQuery);
+      stdin.emit("data", "z\x1b]1337;ReportCellSize=17.50;8.00;2.0\x07");
+      stdin.emit("data", "\x1b_Gi=197704;ENOTSUP\x1b\\");
+    } };
+    expect(await probeGraphics(stdin as unknown as typeof process.stdin, stdout as typeof process.stdout)).toBe(true);
+    expect(graphicsProtocol).toBe("iterm"); expect(stdin.keys).toBe("z"); expect(stdin.isRaw).toBe(false);
+  });
   it("chunks payloads and preserves the text renderer's cursor", () => {
     const packets = imagePackets(image.png).split("\x1b\\").filter(Boolean);
     expect(packets.length).toBeGreaterThan(1);

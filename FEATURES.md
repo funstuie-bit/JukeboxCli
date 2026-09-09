@@ -4,6 +4,8 @@ This development branch is separate from the installed soundcli command.
 
 | Capability | Status | Acceptance still needed |
 |---|---|---|
+| Listening-first welcome and Home (H), ASCII/Braille jukebox | Dev.13; real App first-run/search/focus and compact layout tests | the maintainer's fresh Mac screenshots; recent list is local tracks only |
+| Branded fresh config/data/music paths, legacy-profile preservation | Dev.13; isolated fresh/legacy/both/portable tests | No automatic migration of existing soundcli folders |
 | Downloads, cookies, formats, pacing, conversion | Inherited | Fresh Mac regression |
 | JukeboxCli command and isolated profiles | Implemented | Clean installation |
 | Visible player navigation and editable queue | Implemented; App tests and the maintainer's quick test pass | Broader terminal matrix |
@@ -24,7 +26,8 @@ This development branch is separate from the installed soundcli command.
 | Top-aligned compact player, radio/disc fallback, queue source column, slim waveform | Implemented dev.7; responsive/App tests pass | the maintainer's visual acceptance |
 | Sharp artwork and half-block fallback | Implemented; Ghostty protocol/lifecycle tested | Visual screenshot/other terminal matrix |
 | Lavender/Calm player and navigation palettes, reduced-motion setting | Implemented dev.7; persisted, default motion off | the maintainer's terminal colour check |
-| App-wide/cover-derived colours, iTerm2/sixel | Planned | Capability/resize testing |
+| iTerm2 inline artwork and mode diagnostics | Dev.13; protocol/capability tests, bounded 480px RGB PNG | Actual iTerm2 redraw/hide/resize screenshots; not locally available |
+| App-wide/cover-derived colours, sixel | Planned | Capability/resize testing |
 | Mouse actions and Vim preset | Planned | Input/focus regression |
 | Mac audio-reactive band visualiser | Parked until other work is finished; isolated [prototype](docs/visualiser-prototype.md) | Single-line look/demo length not accepted; not in Now Playing; revisit last |
 | Mac native media controls | Dev.12 mpv-native bridge routes keys through full queue; no helper | Physical keys/Control Centre/other-app ownership; system identity remains mpv |

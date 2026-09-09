@@ -24,6 +24,9 @@ Versioned sessions resolve saved IDs through the library to recover moved paths.
 Save atomically, coalesce progress writes, flush on shutdown and restore paused.
 Existing soundcli paths stay compatible; JUKEBOXCLI_HOME selects an independent
 profile. Do not run both apps against a shared profile concurrently.
+Dev.13 selects branded JukeboxCli paths for truly fresh installations, preserving
+legacy profiles when detected (branded config/data wins if both exist). Selection
+does no writes or migration; a saved custom libraryDir still wins over defaults.
 
 `PlayableTrack` is a local Library Track or `StreamTrack` (kind=stream, stable
 page URL, no filePath). Session v2 saves stream metadata through an allowlist;
@@ -78,6 +81,13 @@ Before Ink takes stdin, `probeGraphics` requests Kitty direct-image support and
 CSI 16t cell dimensions (700ms timeout). Both must respond. Redirected I/O,
 tmux/screen, missing replies or JUKEBOXCLI_ART=blocks select half-blocks. Early
 keystrokes survive the probe; TERM_PROGRAM never enables graphics by itself.
+Dev.13 additionally queries iTerm2 Capabilities/ReportCellSize when indicated.
+Feature F advertises inline images; older iTerm2 needs its identity plus a live
+cell-size response. Reply collection uses the same bounded probe window. Inline
+mode emits OSC1337 File=inline=1 PNGs, at480px RGB to bound base64 below1MiB.
+Ink's full-frame text redraw erases inline images; repaint occurs afterward.
+There is no post-frame rectangle erasure, which could destroy new text. Keep
+incremental rendering disabled. Actual iTerm2 visual/resize acceptance is pending.
 
 `Cover` reserves an Ink box and registers its geometry. `GraphicsPainter` chooses
 the latest visible registration; an expanded player can hide an embedded player

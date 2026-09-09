@@ -458,7 +458,7 @@ export function Playlists() {
     return (
       <Box flexDirection="column">
         <Header title="Playlists" focused={focused} />
-        <Text dimColor>No playlists yet.</Text>
+        <Text color={COLOR.muted}>No playlists yet.</Text>
         <Box marginTop={1}>
           <Select
             isDisabled={!focused}

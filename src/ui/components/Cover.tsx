@@ -1,7 +1,7 @@
 import { memo, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { Box, Text, type DOMElement } from "ink";
 import { loadCoverArt, loadCoverImage, type CoverArt } from "../../player/art";
-import { graphicsPainter, cellAspect, type CoverImage, type ImageRect } from "../../player/graphics";
+import { graphicsPainter, graphicsProtocol, cellAspect, type CoverImage, type ImageRect } from "../../player/graphics";
 import { COLOR, RULE } from "../theme";
 
 /** Hidden ancestors must remove pixel art too (Ink's display:none only hides text). */
@@ -29,7 +29,9 @@ export function Cover({ source, cols, rows, visible, fallback }: { source?: stri
     if (!source || !visible) return;
     let cancelled = false;
     void (async () => {
-      const image = graphicsPainter ? await loadCoverImage(source) : null;
+      // 480px RGB stays below the inline protocol's 1MiB escape-sequence cap,
+      // even for uncompressible images after base64 encoding.
+      const image = graphicsPainter ? await loadCoverImage(source, graphicsProtocol === "iterm" ? 480 : 1024) : null;
       const art = image ? null : await loadCoverArt(source, cols, rows);
       if (!cancelled) setLoaded({ key, image, art });
     })();

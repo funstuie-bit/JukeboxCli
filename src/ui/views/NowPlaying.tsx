@@ -7,6 +7,7 @@ import { RULE, playerPalette, type PlayerPalette } from "../theme";
 import { ListeningQueue } from "./ListeningQueue";
 import { isLive, isStream } from "../../player/media";
 import { Cover } from "../components/Cover";
+import { graphicsPainter, graphicsProtocol } from "../../player/graphics";
 import { RadioFallback } from "../components/RadioFallback";
 import { LyricsPanel } from "../components/LyricsPanel";
 import { PlayerSearch } from "../components/PlayerSearch";
@@ -86,7 +87,7 @@ export function NowPlaying({ embedded = false, onDownload = () => {} }: { embedd
       <Text color={COLOR.text} wrap="truncate-end">{live ? st.loading ? "Connecting…" : st.paused ? "Disconnected · space reconnects" : "On air · space disconnects" : st.engine === "mpv" ? `${formatDuration(st.position)} / ${st.duration > 0 ? formatDuration(st.duration) : "—"}` : "Progress needs mpv"}</Text>
       <Text color={COLOR.alt}>{st.engine === "mpv" ? `${st.volume}%` : ""}</Text>
     </Box>
-    <Text color={COLOR.muted} wrap="truncate-end">{`${st.paused ? "Paused" : "Playing"} · shuffle ${st.shuffle ? "on" : "off"} · repeat ${st.repeat}`}</Text>
+    <Text color={COLOR.muted} wrap="truncate-end">{`${!t ? "Stopped" : st.loading ? "Loading" : st.paused ? "Paused" : "Playing"} · shuffle ${st.shuffle ? "on" : "off"} · repeat ${st.repeat}`}</Text>
     <Text color={st.error ? COLOR.warn : COLOR.muted} wrap="truncate-end">{st.error || (st.loading ? "Loading…" : st.engine === "external" && t ? "Playing in your default app" : t ? `${isStream(t) ? "Streaming · not in Library" : "Saved locally"}${st.preloading ? " · preparing next…" : st.nextReady ? " · next prepared" : ""}` : "m closes this screen")}</Text>
   </Box>;
   return <Box width={width} height={height} flexDirection={layout.split ? "row" : "column"}>
@@ -100,7 +101,7 @@ export function NowPlaying({ embedded = false, onDownload = () => {} }: { embedd
       </Box> : null}
       {layout.split && height >= 23 ? <Box height={1} /> : null}
       {details}
-      {layout.split && height >= 23 ? <Text color={COLOR.muted} wrap="truncate-end">T {store.config.playerTheme === "calm" ? "Calm" : "Lavender"} · V Motion {store.config.reducedMotion === false ? "on" : "off"}</Text> : null}
+      {layout.split && height >= 23 ? <Text color={COLOR.muted} wrap="truncate-end">T {store.config.playerTheme === "calm" ? "Calm" : "Lavender"} · Art {graphicsPainter ? graphicsProtocol === "iterm" ? "iTerm2" : "Kitty" : "text fallback"}</Text> : null}
     </Box>
     <Box flexDirection="column" marginLeft={layout.split ? 1 : 0} width={layout.split ? layout.right : width} height={layout.split ? height : Math.max(3, height - 6)}>
       <Box display={lyricsVisible || searchVisible ? "none" : "flex"}>

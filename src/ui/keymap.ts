@@ -43,6 +43,7 @@ export const HELP_GROUPS: HelpGroup[] = [
       { keys: "PgUp PgDn", label: "Jump a page" },
       { keys: "↵", label: "Open / play" },
       { keys: "1-9", label: "Jump section" },
+      { keys: "H", label: "Home" },
       { keys: "o", label: "Play URL (no download)" },
       { keys: "/", label: "Search" },
       { keys: "d", label: "Delete" },
@@ -159,6 +160,8 @@ export function footerHints(
   // In content, esc only mirrors tab (back to the sidebar), so the hint slot
   // goes to tab; esc appears only where it means something else (songs depth).
   switch (section) {
+    case "home":
+      return [{ keys: "↑↓", label: "Choose" }, { keys: "↵", label: "Open" }, PANE, PLAYER, ALWAYS];
     case "listen":
       return [{ keys: "o", label: "Play URL" }, { keys: "R", label: "Radio URL" },
         { keys: "x/d", label: "Remove" }, { keys: "g", label: "Artwork" }, { keys: "f/t", label: "Save/rename" }, ALWAYS];
