@@ -87,7 +87,7 @@ export function SongList({
   onRename,
   onQueue,
 }: SongListProps) {
-  const { listRows } = useStore();
+  const { listRows, playback } = useStore();
   const [cursor, setCursor] = useState(0);
   const [notice, setNotice] = useState("");
 
@@ -149,8 +149,9 @@ export function SongList({
       } else if ((input === "A" || input === "P") && onQueue) {
         const row = rows[rowOfIdx[clamped] ?? -1];
         if (row?.kind === "item") {
+          const already = playback.getState().list.some(t => t.id === row.item.value);
           onQueue(row.item.value, input === "P");
-          setNotice(`${input === "P" ? "Playing next" : "Added to queue"}: ${cleanText(row.item.title)} · 7 Queue`);
+          setNotice(already ? "Already queued · added another occurrence · 7 Playback queue" : `${input === "P" ? "Playing next" : "Added to queue"}: ${cleanText(row.item.title)} · 7 Queue`);
         }
       } else if (input === "d" && onDelete) {
         // deleteTargetsPlaying: 'd' acts on the playing song (like scrub keys)

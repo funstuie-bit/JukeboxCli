@@ -110,7 +110,7 @@ describe("single-page sections render", () => {
   });
 
   it("settings shows the music folder", () => {
-    const store = makeStore();
+    const store = makeStore({ listRows: 20 });
     const { lastFrame } = render(wrap(<Settings />, store));
     const frame = lastFrame() ?? "";
     expect(frame).toContain("Music folder");
@@ -465,7 +465,7 @@ describe("settings move music folder", () => {
   }
 
   it("shows the entry on the menu", () => {
-    const { lastFrame } = render(wrap(<Settings />, makeStore()));
+    const { lastFrame } = render(wrap(<Settings />, makeStore({ listRows: 20 })));
     expect(lastFrame() ?? "").toContain("Move music folder");
   });
 
@@ -961,7 +961,7 @@ describe("now playing full-screen view", () => {
     // PLACEHOLDER_TRACKS[0] = "Song Title" / "Artist Name".
     expect(frame).toContain("Song Title");
     expect(frame).toContain("Artist Name");
-    expect(frame).toContain("Queue");
+    expect(frame).toContain("Playback queue");
     // list slice after index 0: tracks 2..4.
     expect(frame).toContain("Another Song");
   });

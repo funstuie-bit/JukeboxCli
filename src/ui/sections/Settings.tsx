@@ -44,6 +44,7 @@ import {
 } from "../../library/convert";
 
 type Mode =
+  | "appearance"
   | "menu"
   | "youtube"
   | "soundcloud"
@@ -71,7 +72,7 @@ function HintLine({ children }: { children: string }) {
 }
 
 export function Settings() {
-  const { config, setConfig, library, queue, playback, region, setCaptureMode } =
+  const { config, setConfig, library, queue, playback, region, setCaptureMode, listRows } =
     useStore();
   const focused = region === "content";
   const [mode, setMode] = useState<Mode>("menu");
@@ -196,6 +197,7 @@ export function Settings() {
       detail: "Delete every download",
       danger: true,
     },
+    { value: "appearance", name: "Player appearance", detail: `${config.playerTheme === "calm" ? "Calm" : "Lavender"} · motion ${config.reducedMotion === false ? "on" : "off"}` },
   ];
 
   function openSetting(v: Mode | "open-folder"): void {
@@ -246,6 +248,8 @@ export function Settings() {
   useInput(
     (_input, key) => {
       if (key.upArrow) setCursor((c) => wrapStep(c, -1, entries.length));
+      else if (key.end) setCursor(entries.length - 1);
+      else if (key.home) setCursor(0);
       else if (key.downArrow)
         setCursor((c) => wrapStep(c, 1, entries.length));
       else if (key.return) openSetting(entries[cursor]!.value);
@@ -413,6 +417,17 @@ export function Settings() {
       setMoveProgress(null);
       setMode("menu");
     })();
+  }
+
+  if (mode === "appearance") {
+    return frame("Player appearance", <SelectField title="Player and queue colours; motion is decorative, not audio-reactive."
+      focused={focused} options={[
+        { label: `Theme: ${config.playerTheme === "calm" ? "Calm" : "Lavender"} (toggle)`, value: "theme" },
+        { label: `Reduced motion: ${config.reducedMotion === false ? "off" : "on"} (toggle)`, value: "motion" },
+      ]} onSelect={value => {
+        setConfig(value === "theme" ? { ...config, playerTheme: config.playerTheme === "calm" ? "lavender" : "calm" }
+          : { ...config, reducedMotion: !(config.reducedMotion ?? true) });
+      }} onCancel={() => setMode("menu")} />);
   }
 
   if (mode === "youtube") {
@@ -1080,18 +1095,20 @@ export function Settings() {
   // edge-pinned with flex — that leaves an ugly dead zone in wide terminals.
   const nameWidth = Math.max(...entries.map((e) => e.name.length));
   const DETAIL_MAX = 48;
+  const menuRows = Math.max(1, listRows - 4);
+  const menuStart = Math.max(0, Math.min(cursor - Math.floor(menuRows / 2), entries.length - menuRows));
 
   return (
     <Box flexDirection="column">
       <Header title="Settings" focused={focused} />
       <Box flexDirection="column">
-        {entries.map((it, i) => {
-          const here = i === cursor && focused;
+        {entries.slice(menuStart, menuStart + menuRows).map((it, i) => {
+          const here = i + menuStart === cursor && focused;
           const active = here && focused;
           const detailColor =
             it.danger ? COLOR.bad : it.set ? COLOR.alt : undefined;
           return (
-            <Box key={it.value} marginTop={it.gap || it.danger ? 1 : 0}>
+            <Box key={it.value}>
               <Text color={COLOR.accent}>
                 {active ? `${ICON.pointer} ` : "  "}
               </Text>
@@ -1119,7 +1136,7 @@ export function Settings() {
           <Text dimColor>{moveNote}</Text>
         </Box>
       )}
-      <HintLine>{`↑↓ Move  ${ICON.dot}  ↵ Choose`}</HintLine>
+      <HintLine>{`↑↓ Move  ${ICON.dot}  ↵ Choose  ${ICON.dot}  ${cursor + 1}/${entries.length}`}</HintLine>
     </Box>
   );
 }

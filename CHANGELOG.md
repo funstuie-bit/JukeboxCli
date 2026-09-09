@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.1.0-dev.6 — Clearer player and radio presentation (2026-09-08)
+
+- Capped, vertically centred player card beside full-height Playback queue;
+  title/artist/broadcast text above bounded artwork, stacked small-window layout.
+- Original radio/disc text fallback when artwork is missing; optional decorative
+  animation, disabled by default and stopped for paused/hidden/loading views.
+- LOCAL/ONLINE/LIVE queue labels, separate selected/playing/paused markers,
+  saved-station guidance and duplicate-occurrence feedback without queue deduplication.
+- Persisted Lavender/Calm player palette (T), reduced motion (V), and a scrollable
+  Settings appearance page. Other app sections/terminal background are unchanged.
+- No new dependencies or copied Mousiki assets/code; no lyrics/live spectrum in
+  this milestone. Existing music, favourites and queue order are preserved.
+
+Verification: 556 tests pass / 4 inherited skipped; typecheck/build/import guard,
+real mpv radio/local/mixed-stream checks and terminal radio fixture. Native screenshot
+appearance and fresh Intel/Mac acceptance still need user testing. Development
+branch only; main remains dev.3.
+
 ## 0.1.0-dev.5 — Website feed detection (2026-09-08)
 
 - Paste station websites or PLS/M3U lists in o/R, then select a discovered feed.

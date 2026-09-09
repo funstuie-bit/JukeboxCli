@@ -6,6 +6,10 @@ import { configFile, defaultLibraryDir } from "./paths";
 import { resolveDefaultLibraryDir } from "./music-dir";
 
 export interface Config {
+  /** Player/queue palette; navigation retains the shared app palette. */
+  playerTheme?: "lavender" | "calm";
+  /** Disable decorative fallback animation (default true). */
+  reducedMotion?: boolean;
   /** Where downloaded audio files live. */
   libraryDir: string;
   /** The user's YouTube handle (public playlists). */
@@ -53,6 +57,8 @@ export function stripDeprecatedConfig(config: Config): Config {
 }
 
 export const defaultConfig: Config = {
+  playerTheme: "lavender",
+  reducedMotion: true,
   libraryDir: defaultLibraryDir,
   youtubeHandle: undefined,
   soundcloudHandle: undefined,
@@ -87,6 +93,8 @@ export async function loadConfig(): Promise<Config> {
   try {
     const parsed = JSON.parse(raw) as Partial<Config>;
     const cfg = { ...defaultConfig, ...parsed };
+    cfg.playerTheme = parsed.playerTheme === "calm" ? "calm" : "lavender";
+    cfg.reducedMotion = typeof parsed.reducedMotion === "boolean" ? parsed.reducedMotion : true;
     if (!cfg.spotifyHandle && parsed.spotifyProfile) {
       const ref = parseSpotifyInput(parsed.spotifyProfile);
       if (ref.type === "user") {

@@ -1,4 +1,4 @@
-import { memo, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { memo, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { Box, Text, type DOMElement } from "ink";
 import { loadCoverArt, loadCoverImage, type CoverArt } from "../../player/art";
 import { graphicsPainter, cellAspect, type CoverImage, type ImageRect } from "../../player/graphics";
@@ -21,7 +21,7 @@ const Blocks = memo(function Blocks({ art }: { art: CoverArt }) {
     <Text key={y}>{art.cells.slice(y * art.cols, (y + 1) * art.cols).map((c, x) =>
       <Text key={x} color={hex(c.top)} backgroundColor={hex(c.bottom)}>▀</Text>)}</Text>)}</Box>;
 });
-export function Cover({ source, cols, rows, visible }: { source?: string; cols: number; rows: number; visible: boolean }) {
+export function Cover({ source, cols, rows, visible, fallback }: { source?: string; cols: number; rows: number; visible: boolean; fallback?: ReactNode }) {
   const ref = useRef<DOMElement>(null);
   const [loaded, setLoaded] = useState<{ key: string; image: CoverImage | null; art: CoverArt | null }>();
   const key = `${source}:${cols}:${rows}`;
@@ -49,7 +49,7 @@ export function Cover({ source, cols, rows, visible }: { source?: string; cols: 
   if (image) { w = Math.min(cols, Math.max(1, Math.floor(rows * image.width / image.height / cellAspect)));
     h = Math.min(rows, Math.max(1, Math.ceil(w * image.height / image.width * cellAspect))); }
   return <Box width={cols} height={rows} alignItems="center" justifyContent="center">
-    {image ? <Box ref={ref} width={w} height={h} /> : mine?.art ? <Blocks art={mine.art} /> :
+    {image ? <Box ref={ref} width={w} height={h} /> : mine?.art ? <Blocks art={mine.art} /> : visible && (!source || mine) && fallback ? fallback :
       <Box width={cols} height={rows} borderStyle="round" borderColor={RULE} alignItems="center" justifyContent="center">
         <Text color={COLOR.muted}>{!visible ? "Artwork hidden · b" : !source || mine ? "No cover art" : "Loading artwork…"}</Text>
       </Box>}

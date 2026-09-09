@@ -75,7 +75,8 @@ export function Listen() {
           setNotice(playback.getState().error || "Listening online · nothing added to Library · m Player");
         }).catch(() => setNotice("Could not start playback. Select the entry in Queue to retry."));
       } else if (input === "A" || input === "P") {
-        playback.enqueue(track, input === "P"); setNotice(input === "P" ? "Queued next · 7 Queue" : "Added to queue · 7 Queue");
+        const already = playback.getState().list.some(t => t.id === track.id);
+        playback.enqueue(track, input === "P"); setNotice(already ? "Already queued · added another occurrence · 7 Playback queue" : input === "P" ? "Queued next · 7 Queue" : "Added to queue · 7 Queue");
       } else if ((input === "f" || input === "t") && track.streamType === "radio") {
         setTarget(track); setMode("name"); setNotice("");
       } else if (input === "x") {
@@ -85,7 +86,7 @@ export function Listen() {
     }
   }, { isActive: focused });
   return <Box flexDirection="column" width={contentWidth}>
-    <Text bold color={COLOR.alt}>Listen online · Radio / URL</Text>
+    <Text bold color={COLOR.alt}>Radio / URL · Saved stations & found feeds</Text>
     <Text color={COLOR.muted} wrap="truncate-end">o YouTube / website · R radio website/feed · 8 search music</Text>
     <Text color={COLOR.muted} wrap="truncate-end">Streams play without importing or downloading music.</Text>
     {mode === "url" || mode === "radio" ? <>

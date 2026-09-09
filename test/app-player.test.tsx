@@ -73,6 +73,25 @@ async function press(view: ReturnType<typeof app>, key: string) { view.stdin.wri
 afterEach(() => { cleanup(); rmSync(sessionFile, { force: true }); rmSync(stationsFile, { force: true }); });
 
 describe("App player workflow", () => {
+  it("changes player appearance, keeps queue repeats explicit and separates favourites", async () => {
+    const view = app(); await tick(); await tick();
+    await press(view, "R"); // not a global radio shortcut
+    await press(view, "9"); await press(view, "R");
+    await press(view, "https://decayfm.com/"); await press(view, "\r");
+    await press(view, "A"); await press(view, "A");
+    expect(view.lastFrame()).toContain("Already queued"); expect(readStations()).toEqual([]);
+    await press(view, "7"); expect(view.lastFrame()).toContain("Playback queue · 2 tracks");
+    await press(view, "\r"); await press(view, "m");
+    expect(view.lastFrame()).toContain("[LIVE]");
+    expect(view.lastFrame()).not.toContain("No cover art");
+    await press(view, "T"); await press(view, "V");
+    await press(view, "\u001b"); await press(view, "5"); await press(view, "\u001b[F"); await press(view, "\r");
+    expect(view.lastFrame()).toContain("Theme: Calm");
+    expect(view.lastFrame()).toContain("Reduced motion: off");
+    await press(view, "\r"); expect(view.lastFrame()).toContain("Theme: Lavender");
+    await press(view, "\u001b[B"); await press(view, "\r");
+    expect(view.lastFrame()).toContain("Reduced motion: on");
+  });
   it("cancels website detection and accepts a new link without saving anything", async () => {
     const view = app(); await tick(); await tick();
     await press(view, "o"); await press(view, "https://slow.example/"); await press(view, "\r");
@@ -100,7 +119,7 @@ describe("App player workflow", () => {
     await press(view, "\r"); await press(view, "m");
     expect(view.lastFrame()).toContain("LIVE · no seeking");
     expect(view.lastFrame()).not.toContain("← → Seek");
-    expect(view.lastFrame()).toContain("Queue · 2 tracks"); // idle queue was kept
+    expect(view.lastFrame()).toContain("Playback queue · 2 tracks"); // idle queue was kept
     await press(view, " "); expect(view.lastFrame()).toContain("Disconnected");
     await press(view, " "); expect(view.lastFrame()).toContain("Playing");
     await press(view, "9"); await press(view, "x"); expect(view.lastFrame()).toContain("Remove favourite?");
@@ -116,7 +135,7 @@ describe("App player workflow", () => {
     await press(again, "["); expect(again.lastFrame()).toContain("Discover (YouTube Music)");
     await press(again, "?");
     await press(again, "x"); await press(again, "y"); expect(readStations()).toEqual([]);
-    await press(again, "7"); expect(again.lastFrame()).toContain("Queue · 2 tracks");
+    await press(again, "7"); expect(again.lastFrame()).toContain("Playback queue · 2 tracks");
   });
   it("keeps invalid URLs in the form and fits URL entry on a small terminal", async () => {
     const view = app(); await tick(); await tick();
@@ -142,7 +161,7 @@ describe("App player workflow", () => {
     await press(view, "]"); await press(view, "]"); expect(view.lastFrame()).toContain("Fixture album");
     await press(view, "\r"); expect(view.lastFrame()).toContain("Inside album");
     await press(view, "A"); expect(view.lastFrame()).toContain("Added to queue");
-    await press(view, "7"); expect(view.lastFrame()).toContain("[stream]");
+    await press(view, "7"); expect(view.lastFrame()).toContain("[ONLINE]");
     await press(view, "\r"); await press(view, "m"); expect(view.lastFrame()).toContain("Streaming");
     view.unmount(); await tick();
     const saved = readSession()!; expect(saved.streams?.[saved.ids[0]!]!.streamUrl).toContain("music.youtube.com");
@@ -161,7 +180,7 @@ describe("App player workflow", () => {
     await press(view, "A");
     expect(view.lastFrame()).toContain("Added to queue");
     await press(view, "\u001b[B"); await press(view, "A");
-    await press(view, "7"); expect(view.lastFrame()).toContain("Queue · 2 tracks");
+    await press(view, "7"); expect(view.lastFrame()).toContain("Playback queue · 2 tracks");
     await press(view, "\r"); await press(view, "m");
     expect(view.lastFrame()).toContain("Playing · shuffle off · repeat off");
     await press(view, "b"); expect(view.lastFrame()).toContain("Artwork hidden");
@@ -172,7 +191,7 @@ describe("App player workflow", () => {
     await press(view, " "); expect(view.lastFrame()).toContain("Paused · shuffle off");
     await press(view, "r"); await press(view, "-"); await press(view, "\u001b[C");
     await press(view, "\u001b[B"); await press(view, "u");
-    expect(view.lastFrame()).toContain("Queue · 2 tracks");
+    expect(view.lastFrame()).toContain("Playback queue · 2 tracks");
     await press(view, "\u001b"); // close modal
     expect(view.lastFrame()).toContain("7 Queue");
     view.unmount(); await tick();
@@ -181,8 +200,8 @@ describe("App player workflow", () => {
     expect(saved.repeat).toBe("all"); expect(saved.position).toBe(15);
     const again = app(); await tick(); await tick(); await press(again, "m");
     expect(again.lastFrame()).toContain("Paused · shuffle off · repeat all");
-    expect(again.lastFrame()).toContain("Queue · 2 tracks");
-    await press(again, "x"); expect(again.lastFrame()).toContain("Queue · 1 tracks");
+    expect(again.lastFrame()).toContain("Playback queue · 2 tracks");
+    await press(again, "x"); expect(again.lastFrame()).toContain("Playback queue · 1 tracks");
     await press(again, "X"); expect(again.lastFrame()).toContain("Clear queue and stop?");
     await press(again, "y"); expect(again.lastFrame()).toContain("Nothing playing");
     await press(again, "7"); await press(again, "1");

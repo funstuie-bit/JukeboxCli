@@ -1,7 +1,7 @@
 # JukeboxCli
 
 Mac-first terminal music player combining an offline library with YouTube Music
-discovery and streaming. **This branch: 0.1.0-dev.5** (`development`).
+discovery and streaming. **This branch: 0.1.0-dev.6** (`development`).
 `main` remains at **0.1.0-dev.3** while the maintainer tests the current clean-Mac install.
 Built on [soundcli by baairon](https://github.com/baairon/soundcli), with player
 design and feature inspiration from [ytkew by dtDhruv](https://github.com/dtDhruv/ytkew).
@@ -45,7 +45,25 @@ and duration have separate columns where space permits, with a solid selection
 highlight and distinct playing marker. Smaller windows use a compact stacked
 layout; `7` always opens the full queue.
 
-### Sharper artwork and player layout (0.1.0-dev.3)
+### Artwork and player layout (0.1.0-dev.6)
+
+The player now puts station/song information above a compact artwork area,
+alongside a clearly named **Playback queue**. Tall windows cap the player card
+at 30 rows and artwork at 32 columns × 12 rows; smaller windows stack details
+over the queue. Radio can show up to three lines of broadcast information when
+space allows. Missing covers use an original terminal-drawn radio/disc fallback,
+not an empty cover box or a claim of real station artwork.
+
+In the player, **T** switches Lavender/Calm colours; **V** toggles decorative
+fallback motion. These choices persist, also available in **5 Settings → Player
+appearance** (scroll down). Reduced motion is **on by default**. Animation stops
+when paused, hidden, loading or the graphic is too small; it is not audio-reactive.
+Themes apply to the player/queue, not the terminal background or all app sections.
+
+Queue entries carry **LOCAL / ONLINE / LIVE** labels. **›** marks your selection,
+**▶** the playing entry and **Ⅱ** the paused entry. Repeated queue entries remain
+allowed: adding an existing item says “Already queued · added another occurrence”.
+These are not duplicate favourites; saved stations stay in **9 Radio / URL**.
 
 Ghostty and compatible terminals display a real PNG, up to 1024 pixels on its
 longest side, not a tiny text mosaic. The app probes Kitty image support and
@@ -237,7 +255,7 @@ Full list via `jukeboxcli --help` (`soundcli` remains a compatibility alias):
    jukeboxcli
    ```
 
-The instructions above install `main` (dev.3). To test **dev.5 separately**,
+The instructions above install `main` (dev.3). To test **dev.6 separately**,
 clone the development branch into a different folder and use `npm start`;
 this does not replace the installed command:
 
@@ -319,4 +337,9 @@ JukeboxCli owes its foundation and direction to these projects and their contrib
   implemented for JukeboxCli's TypeScript/Ink/mpv stack; no ytkew source code is
   included, and this is not a claim of complete feature parity.
 
-Thank you to both authors and their contributors for sharing their work.
+- **[Mousiki — itzender5820](https://github.com/itzender5820/mousiki):** visual
+  inspiration for the compact player, configurable presentation and decorative
+  missing-art fallback. Our terminal drawings and implementation are original;
+  no Mousiki code/assets or audio engine are included.
+
+Thank you to the authors and their contributors for sharing their work.

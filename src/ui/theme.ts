@@ -51,6 +51,13 @@ export const ICON = {
 /** Slate separators sit behind the brighter text and selection. */
 export const RULE = "#52617c";
 
+export type PlayerPalette = { [K in keyof typeof COLOR]: string };
+/** Player-local theme: no global mutable colours or cross-profile leakage. */
+export function playerPalette(theme?: string): PlayerPalette {
+  return theme === "calm" ? { ...COLOR, accent: "#bdcbd5", alt: "#acbdca", muted: "#aab4c6",
+    selection: "#bdcbd5", good: "#b3d2c5" } : { ...COLOR, muted: "#aab4ce" };
+}
+
 /** Parse "#rrggbb" into [r, g, b]. */
 function rgb(hex: string): [number, number, number] {
   const n = parseInt(hex.slice(1), 16);

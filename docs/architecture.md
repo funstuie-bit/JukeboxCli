@@ -78,9 +78,33 @@ preserves source aspect; probed cell dimensions budget height. Restart after
 changing font proportions if needed; window size changes are handled live.
 
 `scripts/visual-player.tsx <audio>` is a real-terminal, read-only fixture with
-actual embedded art and fake playback; b/?/q test visibility. `--auto` cycles help
+actual embedded art and fake playback; b/?/q test visibility. Pass `--radio` instead
+of an audio path for a network-free radio/mixed-queue fixture, T/V to change its
+in-memory appearance. `--auto` cycles help
 and returns then exits. JUKEBOXCLI_VISUAL_REPORT optionally records placement
 diagnostics. Run from the repo (or set TSX_TSCONFIG_PATH). Tests cover chunking,
 probe/cleanup/stacked registrations, responsive layouts, Unicode queue columns
 and App input/persistence. Ghostty native protocol/lifecycle was exercised;
 OS screenshot capture was denied, so final visual acceptance remains open.
+
+### Dev.6 player presentation
+
+`playerLayout` bounds the artwork area; the split player card is capped at 30 rows,
+vertically centred next to the full-height queue. Metadata precedes artwork; radio
+uses up to three metadata lines in taller windows. No waveform/pretend spectrum for
+radio. Cover keeps real native/half-block images ahead of its optional fallback;
+missing sources/extraction failures render original terminal text artwork.
+`RadioFallback` owns a 700ms decorative timer only when enabled, visible, playing,
+not loading and at least seven rows tall; cleanup stops it on hide/pause/unmount.
+
+Config adds optional playerTheme (lavender/calm) and reducedMotion (default true),
+normalised on load. Palettes are pure values, not mutable process-global theme state.
+T/V in player and the Settings appearance picker persist via existing config saves.
+Player/queue only: other sections retain their shared palette. Settings menu is
+windowed so appearance and existing actions remain reachable on short terminals.
+
+Queue display uses two independent marker cells (selection, playing/paused), source
+labels and a saved-station reminder. A/P feedback detects matching IDs before append;
+intentional repeats remain supported and existing queue/favourite data is untouched.
+Tests cover layout bounds, artwork-to-fallback changes, timer cleanup, marker
+independence, config round-trip/defaults, full-App appearance controls and repeats.

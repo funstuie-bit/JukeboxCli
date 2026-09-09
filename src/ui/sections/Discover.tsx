@@ -68,7 +68,8 @@ export function Discover() {
           void playback.selectTrack(item.track, tracks).catch(() => setNotice("Could not start playback. Try again in Queue."));
         } else void load(() => browseMusic(item), "browse");
       } else if (item.track && (input === "A" || input === "P")) {
-        playback.enqueue(item.track, input === "P"); setNotice(input === "P" ? "Queued next · 7 opens queue" : "Added to queue · 7 opens queue");
+        const already = playback.getState().list.some(t => t.id === item.track!.id);
+        playback.enqueue(item.track, input === "P"); setNotice(already ? "Already queued · added another occurrence · 7 Playback queue" : input === "P" ? "Queued next · 7 opens queue" : "Added to queue · 7 opens queue");
       } else if (item.track && input === "d") {
         setPendingAdd(item.track.streamUrl); setSection("download");
       }

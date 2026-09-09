@@ -3,13 +3,14 @@ import { Box, Text, useInput } from "ink";
 import { useStore, usePlayback } from "../store";
 import { cleanText, formatDuration, trackDisplayTitle } from "../../util/format";
 import stringWidth from "string-width";
-import { COLOR, RULE } from "../theme";
+import { playerPalette, RULE } from "../theme";
 import { isLive, isStream } from "../../player/media";
 
 export function ListeningQueue({ height, width, active, framed = false }: {
   height?: number; width?: number; active?: boolean; framed?: boolean;
 }) {
   const store = useStore();
+  const COLOR = playerPalette(store.config.playerTheme);
   const state = usePlayback(store.playback);
   const entries = store.playback.queueEntries();
   const [cursor, setCursor] = useState(() => Math.max(0, entries.findIndex(e => e.index === state.index)));
@@ -48,20 +49,20 @@ export function ListeningQueue({ height, width, active, framed = false }: {
   }, { isActive: focused && entries.length > 0 });
   const start = Math.max(0, Math.min(selected - Math.floor(rows / 2), entries.length - rows));
   return <Box flexDirection="column" width={width ?? store.contentWidth} height={height} borderStyle={framed ? "round" : undefined} borderColor={RULE} paddingX={framed ? 1 : 0}>
-    <Text bold color={COLOR.alt}>Queue · {entries.length} tracks · {state.shuffle ? "shuffled" : "in order"}</Text>
+    <Text bold color={COLOR.alt} wrap="truncate-end">Playback queue · {entries.length} tracks · {state.shuffle ? "shuffled" : "in order"}</Text>
     {!dense || confirmClear || error || !entries.length ? <Text color={COLOR.muted} wrap="truncate-end">{confirmClear ? "Clear queue and stop? y clear · esc cancel (files stay)" : error || (entries.length ? "↑↓ select  enter play  u/D move  x remove  X clear" : "Empty · select a song in Library, then A append or P play next")}</Text> : null}
     {columns ? <Text color={COLOR.muted}>{queueRow("ARTIST", "TITLE", "TIME", cols)}</Text> : null}
     {entries.slice(start, start + rows).map((row, offset) => {
       const here = start + offset === selected;
       const artist = row.track.artist ? cleanText(row.track.artist) : "—";
-      const title = `${isLive(row.track) ? "[LIVE] " : isStream(row.track) ? "[stream] " : ""}${cleanText(trackDisplayTitle(row.track))}`;
-      const marker = row.index === state.index ? "▶ " : here && focused ? "› " : "  ";
+      const title = `[${isLive(row.track) ? "LIVE" : isStream(row.track) ? "ONLINE" : "LOCAL"}] ${cleanText(trackDisplayTitle(row.track)).replace(/^Radio · /, "")}`;
+      const marker = `${here && focused ? "›" : " "}${row.index === state.index ? state.paused ? "Ⅱ" : "▶" : " "}`;
       return <Text key={row.index} color={here && focused ? COLOR.selectedText : row.index === state.index ? COLOR.accent : COLOR.text} backgroundColor={here && focused ? COLOR.selection : undefined} wrap="truncate-end">
         {columns ? queueRow(artist, title, isLive(row.track) ? "LIVE" : formatDuration(row.track.durationSec), cols, marker) : fitRow(marker + title + " · " + artist, cols)}
       </Text>;
     })}
     {!dense ? <><Box flexGrow={1} />
-    <Text color={COLOR.muted} wrap="truncate-end">{entries.length ? `${selected + 1}/${entries.length} · ${state.shuffle ? "Shuffle on" : "In order"} · repeat ${state.repeat}` : "7 Queue · 8 Discover"}</Text></> : null}
+    <Text color={COLOR.muted} wrap="truncate-end">{entries.length ? `› selected · ▶ playing / Ⅱ paused · 9 saved stations` : "7 Queue · 8 Discover"}</Text></> : null}
   </Box>;
 }
 
