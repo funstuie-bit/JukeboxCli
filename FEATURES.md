@@ -28,6 +28,6 @@ No ytkew source code has been imported. Waveform is precomputed, not a live spec
 Stream history, automatic collection pagination during playback and signed-in
 Music API access are not implemented. YouTube streaming uses existing yt-dlp cookie settings;
 direct audio/radio does not. No station directory, DRM, general Radio Garden support,
-script execution or nested playlist crawling. Dev.8 remains on development; main stays dev.3
-while the maintainer tests the current install. Rebuilding this development checkout updates
+script execution or nested playlist crawling. Main now includes the tested dev.8 build;
+new work continues on development. Rebuilding this development checkout updates
 its locally linked jukeboxcli command, not a separate machine's main checkout.
