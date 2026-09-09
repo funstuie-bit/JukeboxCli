@@ -28,8 +28,9 @@ the maintainer's approval; visualiser still comes last.
 Dev.13 now addresses the maintainer's fresh Mac screenshots: listening-first welcome/Home,
 static ASCII/Braille jukebox, branded new profiles with legacy preservation and
 iTerm2 inline artwork. See [first-run notes](first-run-and-home.md). These changes
-need the maintainer's first-launch/iTerm2 visual acceptance alongside dev.12 media keys before
-promotion. Visualiser remains parked.
+are now on main following the maintainer's explicit promotion request for other-Mac testing.
+Home design approved; first-launch/iTerm2 and physical media-key acceptance remain.
+Visualiser remains parked.
 
 the maintainer authorised both. Dev.12 uses mpv's existing macOS integration, routing media
 keys through JukeboxCli's full queue with safe fallback and descriptive titles;
@@ -38,9 +39,9 @@ Independent npm-archive installer, fast-forward update script, read-only doctor,
 managed Homebrew tools and source-formula packaging accompany isolated install/
 reinstall checks and Intel/Apple Silicon CI. See [details and limits](mac-controls-and-install.md).
 Both architecture jobs passed run34365507402, including actual Homebrew install/test.
-Next is the maintainer's physical media-key/background-window and clean first-launch acceptance,
-then promotion of the accepted dev.12 build; no further visualiser work implied.
-Visualiser remains parked; public main is not automatically promoted.
+Next is the maintainer's physical media-key/background-window and clean first-launch acceptance
+using main dev.13. Latest runtime CI at 83b6fb2 passed both architectures.
+Visualiser remains parked; promotion does not claim physical/GUI acceptance.
 
 ## Parked until all other work is finished: macOS visualiser
 

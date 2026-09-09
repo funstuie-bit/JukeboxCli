@@ -1,10 +1,10 @@
 # JukeboxCli
 
 Mac-first terminal music player combining an offline library with YouTube Music
-discovery and streaming. **Current public build: 0.1.0-dev.11** on `main`.
-the maintainer tested and approved the lyrics and Now Playing search build for promotion on
-2026-09-09. Further development continues on `development`.
-**Development: dev.13** adds a listening-first welcome/Home screen with an original
+discovery and streaming. **Current build: 0.1.0-dev.13** on `main`.
+the maintainer authorised promotion on 2026-09-09 for testing on his other MacBook.
+Further development continues on `development`.
+**Dev.13** adds a listening-first welcome/Home screen with an original
 ASCII/Braille jukebox, branded fresh-profile folders and iTerm2 inline artwork.
 [First-run and terminal notes](docs/first-run-and-home.md).
 Dev.12 introduced media keys, independent installs, `--doctor` and Homebrew
@@ -280,8 +280,7 @@ right edge lines up with the base.
 The arch, `C L I` selection buttons and speaker grille share the cabinet's centre
 line in both variants.
 
-Main dev.11 still uses the older source/handle/format/cookies/output wizard.
-Dev.13 moves those optional download/settings tasks out of the first-run path;
+Main now includes dev.13, moving optional download/settings tasks out of the first-run path;
 browser cookies, formats and custom output remain available under Settings.
 
 ### Settings (press `5` in the sidebar)
@@ -343,7 +342,7 @@ Full list via `jukeboxcli --help` (`soundcli` remains a compatibility alias):
    jukeboxcli
    ```
 
-The instructions above install `main` (dev.11). To test **development builds separately**,
+The instructions above install `main` (dev.13). To test **development builds separately**,
 clone the development branch into a different folder and use `npm start`;
 this does not replace the installed command:
 

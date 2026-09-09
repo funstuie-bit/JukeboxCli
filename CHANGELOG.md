@@ -1,5 +1,14 @@
 # Changelog
 
+## Main promotion — dev.13 (2026-09-09)
+
+- the maintainer authorised the latest build on main for installation on his other MacBook.
+- Includes Home/welcome, branded fresh profiles, iTerm2 artwork support, Mac controls,
+  and the centred CLI jukebox mark. Physical media-key/iTerm2 acceptance remains pending.
+- Homebrew source pin updated to 83b6fb2, formula revision 1 for existing installations.
+- Runtime tests: 626 pass / 4 skips; Intel and Apple Silicon CI passed at 83b6fb2.
+  Visualiser remains parked; no stable release or repository visibility change.
+
 ## 0.1.0-dev.13 — First impressions and iTerm2 (2026-09-09)
 
 - Listening-first welcome and H Home: online search, radio/URL, local music and

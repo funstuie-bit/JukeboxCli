@@ -93,5 +93,7 @@ the maintainer: restart local jukeboxcli (dev.13), test H and a fresh profile, t
 artwork across b hide/show, m fullscreen/back, track changes and window resizing.
 The observed lyrics-provider-unavailable screenshot is a separate network/provider
 failure, not fixed or reclassified as instrumental by this iteration; R retries
-or O explicitly requests the alternate provider. Main remains dev.11 pending
-acceptance; do not expect these screens from a new default main clone yet.
+or O explicitly requests the alternate provider. Main now includes dev.13 following
+the maintainer's promotion request, so default clones include these screens. Home design approved;
+actual iTerm2 and physical media-key testing remain pending. Latest runtime 83b6fb2
+passes 626 tests / four skips and both Mac architecture CI jobs.
