@@ -13,6 +13,9 @@ const env = { ...process.env, JUKEBOXCLI_HOME: profile, JUKEBOXCLI_SYSTEM_TOOLS:
 await execa("sh", ["./install.sh", "--prefix", prefix], { cwd: source, env, timeout: 180000, stdout: "inherit", stderr: "inherit" });
 const command = path.join(prefix, "bin", "jukeboxcli");
 assert.ok((await realpath(command)).startsWith(await realpath(prefix) + path.sep));
+const locked = JSON.parse(await readFile(path.join(root, "package-lock.json"), "utf8"));
+const installedInk = JSON.parse(await readFile(path.join(prefix, "lib/node_modules/jukeboxcli/node_modules/ink/package.json"), "utf8"));
+assert.equal(installedInk.version, locked.packages["node_modules/ink"].version);
 const pkg = JSON.parse(await readFile(path.join(root, "package.json"), "utf8"));
 assert.equal((await execa(command, ["--version"], { env })).stdout.trim(), pkg.version);
 await rename(source, path.join(temp, "moved source"));

@@ -33,6 +33,9 @@ background terminal use, other media apps, pause/quit and radio reconnect.
 `sh install.sh` builds locked dependencies and installs an npm archive, not a
 symlink back into the checkout. Moving the source folder no longer breaks a fresh
 installation. Existing already-linked installations are not silently migrated.
+The archive bundles the production dependency tree installed with npm ci from
+the lockfile; staging does not modify the checkout's lockfile. This also avoids
+npm12's exclusion of npm-shrinkwrap.json from package archives.
 The compatibility soundcli alias is included; npm will not be forced to overwrite
 unrelated commands. Use `sh install.sh --prefix /absolute/private/prefix` to keep
 another installation intact, then add that prefix's bin directory to PATH.
@@ -59,13 +62,18 @@ ffmpeg/yt-dlp dependencies, private libexec installation and a single jukeboxcli
 wrapper (no conflicting soundcli alias). It is a third-party, source-built tap,
 not homebrew/core, a bottled release or an npm registry publication. The GitHub
 repo is private: anonymous archive downloads return404. Visibility is unchanged;
-Git must already have access via your credential helper. No tokens are embedded.
+Git must have access. Homebrew ignores global Git config while fetching, so pass
+the GitHub CLI credential helper explicitly to the installation command. No tokens
+are embedded. Install gh and sign in with `gh auth login` first if needed.
 
 For this development preview (formula is not on main yet):
 
 ```sh
 brew tap funstuie-bit/jukeboxcli https://github.com/funstuie-bit/JukeboxCli.git
 git -C "$(brew --repository funstuie-bit/jukeboxcli)" switch development
+GIT_CONFIG_COUNT=1 \
+GIT_CONFIG_KEY_0=credential.https://github.com.helper \
+GIT_CONFIG_VALUE_0='!gh auth git-credential' \
 brew install funstuie-bit/jukeboxcli/jukeboxcli
 brew test funstuie-bit/jukeboxcli/jukeboxcli
 ```
@@ -73,7 +81,8 @@ brew test funstuie-bit/jukeboxcli/jukeboxcli
 Do not use force/overwrite if Homebrew reports an existing jukeboxcli command;
 keep the current installation until you decide to switch. Future formula revisions
 pin a newly verified source commit; `brew update` and `brew upgrade jukeboxcli`
-then install that version. Merely advancing the app branch does not update the pin.
+then install that version (supply the same Git helper environment for upgrade).
+Merely advancing the app branch does not update the pin.
 
 The wrapper sets JUKEBOXCLI_SYSTEM_TOOLS=1 and uses the declared dependencies on
 PATH. In this mode, JukeboxCli neither downloads replacement tools nor stages

@@ -376,8 +376,7 @@ and the compatibility data paths are preserved. New clones use `main` by default
 ```sh
 cd ~/projects/JukeboxCli
 git pull --ff-only
-npm ci
-npm run build
+sh install.sh
 jukeboxcli --version
 ```
 
@@ -388,9 +387,11 @@ changes first; do not force-reset. An old remote URL can be updated with
 `git remote set-url origin https://github.com/funstuie-bit/JukeboxCli.git`
 (use your actual GitHub remote name if it is not `origin`).
 
-The global command normally links to this checkout: rebuilding updates its next
-launch. If you moved the checkout, rerun `./install.sh`. Keep a copy of the config
-and data directories below before changing versions; music is not removed by updates.
+Older global installs may link to the checkout, so rebuilding updates those.
+Dev.12's installer creates an independent package: rerun `sh install.sh` (or use
+`sh update.sh` from a clean checkout) to update that command. Moving the source
+does not break new installs. Keep a copy of the config and data directories below
+before changing versions; music is not removed by updates.
 
 ## Dev
 

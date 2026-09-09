@@ -52,7 +52,8 @@ describe("lyrics panel boundaries", () => {
     const view = render(node(first)); await wait();
     const oldSignal = vi.mocked(loadLyrics).mock.calls[0]![1].signal;
     view.rerender(node(second)); await wait(); expect(oldSignal.aborted).toBe(true);
-    oldResolve({ message: "STALE RESPONSE" }); await wait(30);
+    oldResolve({ message: "STALE RESPONSE" });
+    await vi.waitFor(() => expect(view.lastFrame()).toContain("Fixture line"), { timeout: 2000 });
     expect(view.lastFrame()).toContain("Fixture line"); expect(view.lastFrame()).not.toContain("STALE RESPONSE");
     const currentSignal = vi.mocked(loadLyrics).mock.calls[1]![1].signal;
     view.rerender(node(second, false)); await wait();

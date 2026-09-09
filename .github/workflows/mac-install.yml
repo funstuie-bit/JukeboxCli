@@ -31,7 +31,9 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           HOMEBREW_NO_AUTO_UPDATE: "1"
         run: |
-          gh auth setup-git
+          export GIT_CONFIG_COUNT=1
+          export GIT_CONFIG_KEY_0=credential.https://github.com.helper
+          export GIT_CONFIG_VALUE_0='!gh auth git-credential'
           brew tap funstuie-bit/jukeboxcli "$GITHUB_WORKSPACE"
           brew install --build-from-source funstuie-bit/jukeboxcli/jukeboxcli
           brew test funstuie-bit/jukeboxcli/jukeboxcli

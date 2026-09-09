@@ -44,7 +44,7 @@ fi
 
 echo "Installing global command..."
 install_stage=$(mktemp -d "${TMPDIR:-/tmp}/jukeboxcli-install.XXXXXX")
-install_archive=$(npm pack --ignore-scripts --pack-destination "$install_stage" --silent)
+install_archive=$(node --import tsx scripts/pack-install.ts "$install_stage")
 if [ -n "$install_prefix" ]; then
   npm install --global --ignore-scripts --prefix "$install_prefix" "$install_stage/$install_archive"
   "$install_prefix/bin/jukeboxcli" --version

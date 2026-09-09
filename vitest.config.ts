@@ -5,6 +5,9 @@ import { defineConfig } from "vitest/config";
 // the shell running the suite. Pin rendering to plain text everywhere.
 export default defineConfig({
   test: {
+    // Shared Mac runners can exceed 5s in multi-step debounced UI scenarios.
+    testTimeout: process.env.CI ? 20000 : 5000,
+    maxWorkers: process.env.CI ? 1 : undefined,
     setupFiles: ["./test/isolate.ts"],
     env: {
       FORCE_COLOR: "0",

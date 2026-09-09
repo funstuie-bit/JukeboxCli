@@ -9,6 +9,17 @@ DownloadQueue owns acquisition jobs; removing a listening-queue entry never
 deletes music. Library IDs remain stable; duplicate queue entries are separate
 positions. UI calls explicit playback actions rather than editing lists.
 
+On macOS, mpv multimedia bindings send namespaced client-message events into
+Playback, so native next/previous honours this queue rather than mpv's preload
+list. Optional binding failure preserves ordinary playback; env opt-out is
+JUKEBOXCLI_MEDIA_KEYS=0. mpv owns OS integration and identity, not a new helper.
+See [Mac controls/install notes](mac-controls-and-install.md) for acceptance limits.
+
+Source installs stage and bundle the locked production npm tree into an independent
+archive. Homebrew instead builds a pinned Git revision into libexec and declares
+system tool dependencies; JUKEBOXCLI_SYSTEM_TOOLS=1 disables private binary fetches
+and auto-updates. Doctor is read-only and bypasses app/bootstrap work.
+
 Versioned sessions resolve saved IDs through the library to recover moved paths.
 Save atomically, coalesce progress writes, flush on shutdown and restore paused.
 Existing soundcli paths stay compatible; JUKEBOXCLI_HOME selects an independent
@@ -26,7 +37,9 @@ Explicitly supplied direct URLs (including any query tokens) are persisted; see
 Signed-out search supports five types; albums/playlists/artists drill down and
 continuations normalise their different shelf shape. The UI uses request tokens
 to ignore stale results; each provider fetch has a 20-second timeout. Leaving a
-view cancels its result publication, not the already-issued remote request.
+view cancels its result publication. Player search additionally scopes AbortSignal
+through AsyncLocalStorage to abort its HTTP requests and continuations independently;
+shared client bootstrap retains its timeout and does not inherit a caller's abort.
 Music API authentication is distinct from yt-dlp cookies. Separate Music sign-in
 was removed from scope at the maintainer's request; retain browser-cookie playback/downloads.
 Account playlists/likes remain unimplemented/deferred, not implicitly provided by
