@@ -90,7 +90,7 @@ The default palette is now lavender/blue with explicit readable player text.
 The slim one/two-row **TRACK WAVEFORM** shows precomputed loudness, not a live spectrum.
 Streaming shows progress without downloading the whole song for visualisation.
 Cover-derived themes remain future work. A [Mac audio-reactive visualiser prototype](docs/visualiser-prototype.md)
-is being tested separately with a lighter, muted Braille-dot contour; it is not yet
+is parked until other project work is finished, with a muted Braille-dot contour; it is not yet
 part of Now Playing. Preview with `npx tsx scripts/prototype-visualiser.ts --demo`. A trailing
 `;1994`-style year is tidied for display only; stored metadata/files stay intact.
 

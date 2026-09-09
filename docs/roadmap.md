@@ -1,8 +1,13 @@
 # JukeboxCli roadmap
 
-## Current priority: macOS audio-reactive visualiser prototype
+## Parked until all other work is finished: macOS visualiser
 
-Authorised 2026-09-08. Prove an mpv-native analysis tap, stereo preservation,
+Parked explicitly by the maintainer on 2026-09-08 after testing the dotted preview: better
+than blocks, but the single line still looks odd and the demo is too short.
+Do not extend the demo, redesign the renderer or integrate it into Now Playing
+until the other project work is finished and the maintainer agrees to revisit it.
+
+Initial feasibility work authorised 2026-09-08: prove an mpv-native analysis tap, stereo preservation,
 playback-clock alignment, pause/seek/silence behaviour, bounded memory and CPU
 cost before integrating it into Now Playing. No system-audio capture permission
 or extra stream download should be required. The prototype stays outside the
@@ -50,4 +55,5 @@ into the player, inspired by the search bar in the supplied Mousiki screenshot.
    playback continues while searching; obtain the maintainer's visual/workflow acceptance.
 
 Other outstanding work remains tracked in [feature status](../FEATURES.md),
-including the clean Mac installation matrix, Mac spectrum feasibility and releases.
+including the clean Mac installation matrix and releases. Visualiser work comes last;
+parking it does not automatically authorise another feature or main promotion.

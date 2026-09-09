@@ -26,7 +26,7 @@ This development branch is separate from the installed soundcli command.
 | Lavender/Calm player and navigation palettes, reduced-motion setting | Implemented dev.7; persisted, default motion off | the maintainer's terminal colour check |
 | App-wide/cover-derived colours, iTerm2/sixel | Planned | Capability/resize testing |
 | Mouse actions and Vim preset | Planned | Input/focus regression |
-| Mac audio-reactive band visualiser | Isolated dotted-contour prototype; [scope/results](docs/visualiser-prototype.md) | Non-blocking polish; not in Now Playing yet; integration and wider Mac/stream acceptance |
+| Mac audio-reactive band visualiser | Parked until other work is finished; isolated [prototype](docs/visualiser-prototype.md) | Single-line look/demo length not accepted; not in Now Playing; revisit last |
 | Mac native media controls | Feasibility pending | Separate from visualiser |
 | Homebrew releases, Intel and Apple Silicon | Planned | Clean Mac matrix |
 

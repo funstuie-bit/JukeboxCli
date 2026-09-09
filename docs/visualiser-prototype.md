@@ -1,6 +1,9 @@
 # Mac audio-reactive visualiser — feasibility prototype
 
-Status: isolated prototype, **not integrated into Now Playing**. Production
+Status: **parked until other project work is finished**, not integrated into Now Playing.
+the maintainer's latest feedback (2026-09-08): dots are better, but the single-line contour
+still looks odd and the demo is too short. Retain the prototype; no further
+presentation, demo-length or integration work until explicitly revisited. Production
 JukeboxCli remains dev.10 with its precomputed track waveform. the maintainer authorised
 this feasibility work on 2026-09-08; the search-bar idea stays parked and separate
 YouTube Music sign-in has been removed from the roadmap.
