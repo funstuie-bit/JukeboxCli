@@ -1,8 +1,9 @@
 # JukeboxCli
 
 Mac-first terminal music player combining an offline library with YouTube Music
-discovery and streaming. **Current public build: 0.1.0-dev.8** on `main`.
-**Development build: 0.1.0-dev.11 (Now Playing search)** on `development`.
+discovery and streaming. **Current public build: 0.1.0-dev.11** on `main`.
+the maintainer tested and approved the lyrics and Now Playing search build for promotion on
+2026-09-09. Further development continues on `development`.
 Built on [soundcli by baairon](https://github.com/baairon/soundcli), with player
 design and feature inspiration from [ytkew by dtDhruv](https://github.com/dtDhruv/ytkew).
 See [upstream credit](#upstream-credit) for how each project contributes.
@@ -327,7 +328,7 @@ Full list via `jukeboxcli --help` (`soundcli` remains a compatibility alias):
    jukeboxcli
    ```
 
-The instructions above install `main` (dev.8). To test **development builds separately**,
+The instructions above install `main` (dev.11). To test **development builds separately**,
 clone the development branch into a different folder and use `npm start`;
 this does not replace the installed command:
 

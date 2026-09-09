@@ -1,5 +1,12 @@
 # Changelog
 
+## Public main promotion — 2026-09-09
+
+- the maintainer tested dev.11 and approved promotion to main on GitHub and private mirror.
+- Public installation now includes lyrics improvements and Now Playing search.
+  Runtime unchanged from tested 7facdcb; visualiser remains an isolated, parked prototype.
+- Installation/status docs updated; clean Intel/Apple Silicon matrix still pending.
+
 ## 0.1.0-dev.11 — Search inside Now Playing (2026-09-08)
 
 - S opens local/online search in both player layouts; l: local, s: songs,

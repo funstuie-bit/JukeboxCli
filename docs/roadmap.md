@@ -3,8 +3,8 @@
 ## Current milestone: Now Playing search — dev.11
 
 the maintainer authorised moving to the next feature after parking the visualiser. The
-previously planned search panel is implemented on development; user acceptance
-is next. S opens it from queue or lyrics, / opens it from queue only, preserving
+previously planned search panel is implemented; the maintainer tested it successfully and
+approved promotion to main on 2026-09-09. S opens it from queue or lyrics, / opens it from queue only, preserving
 lyrics' existing / search. l: local (also the default), s: songs, v: videos.
 Enter submits then plays the selected result; A/P append/next; d explicitly
 starts the existing download workflow. Esc restores queue/lyrics and selection.
@@ -20,8 +20,16 @@ real muted mpv advancing during local search plus append/next/play/Esc. A live
 Oasis Acquiesce query returned 20 playable songs and 20 playable videos through
 the updated service; both offered further pages. 604 tests pass / 4 inherited
 skips; typecheck/build/import guard pass. Other-Mac/terminal and end-to-end online
-workflow acceptance remain with the maintainer. Public main
-is not promoted by this milestone; visualiser still comes last.
+workflow coverage remain ongoing. Public main now includes dev.11 following
+the maintainer's approval; visualiser still comes last.
+
+## Suggested next work (not yet authorised)
+
+Mac native media-controls feasibility: keyboard play/pause and next/previous,
+then assess macOS Now Playing integration. Prove a portable approach and failure
+fallback before committing to a native helper. Follow with clean-install/update
+verification and Homebrew packaging across Intel and Apple Silicon. Keep the
+visualiser parked until all other work is finished.
 
 ## Parked until all other work is finished: macOS visualiser
 
