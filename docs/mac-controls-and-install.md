@@ -62,18 +62,20 @@ ffmpeg/yt-dlp dependencies, private libexec installation and a single jukeboxcli
 wrapper (no conflicting soundcli alias). It is a third-party, source-built tap,
 not homebrew/core, a bottled release or an npm registry publication. The GitHub
 repo is private: anonymous archive downloads return404. Visibility is unchanged;
-Git must have access. Homebrew ignores global Git config while fetching, so pass
-the GitHub CLI credential helper explicitly to the installation command. No tokens
-are embedded. Install gh and sign in with `gh auth login` first if needed.
+Git must have access. Install gh, sign in with `gh auth login` and run
+`gh auth setup-git` first if needed. No tokens are embedded in the formula.
+Homebrew strips transient GH_TOKEN/GIT_CONFIG environment variables at startup;
+it does read global Git credential helpers during downloads. CI uses its supported
+HOMEBREW_GITHUB_API_TOKEN with a helper referring to that variable, not the token
+value. Local read-only staging operations suppress global Git config separately.
 
 For this development preview (formula is not on main yet):
 
 ```sh
 brew tap funstuie-bit/jukeboxcli https://github.com/funstuie-bit/JukeboxCli.git
+git -C "$(brew --repository funstuie-bit/jukeboxcli)" \
+  fetch origin development:development
 git -C "$(brew --repository funstuie-bit/jukeboxcli)" switch development
-GIT_CONFIG_COUNT=1 \
-GIT_CONFIG_KEY_0=credential.https://github.com.helper \
-GIT_CONFIG_VALUE_0='!gh auth git-credential' \
 brew install funstuie-bit/jukeboxcli/jukeboxcli
 brew test funstuie-bit/jukeboxcli/jukeboxcli
 ```
@@ -81,7 +83,7 @@ brew test funstuie-bit/jukeboxcli/jukeboxcli
 Do not use force/overwrite if Homebrew reports an existing jukeboxcli command;
 keep the current installation until you decide to switch. Future formula revisions
 pin a newly verified source commit; `brew update` and `brew upgrade jukeboxcli`
-then install that version (supply the same Git helper environment for upgrade).
+then install that version using your configured Git credentials.
 Merely advancing the app branch does not update the pin.
 
 The wrapper sets JUKEBOXCLI_SYSTEM_TOOLS=1 and uses the declared dependencies on
