@@ -275,6 +275,8 @@ the choice; Escape skips to Home. No sign-in or download is required to begin.
 Roomy windows show an original ASCII/Braille jukebox, recent local tracks and
 saved stations. `JUKEBOXCLI_LOGO=ascii jukeboxcli` selects the ASCII-only mark.
 Small windows keep the choices and omit the large artwork.
+The ASCII and Braille cabinet walls share fixed-width padding so the lower
+right edge lines up with the base.
 
 Main dev.11 still uses the older source/handle/format/cookies/output wizard.
 Dev.13 moves those optional download/settings tasks out of the first-run path;

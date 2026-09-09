@@ -40,4 +40,14 @@ describe("listening-first Home", () => {
     expect(ASCII_JUKEBOX).toMatch(/^[\x20-\x7e\n]+$/);
     expect(JUKEBOX_MARK).not.toContain("\x1b");
   });
+  it("aligns both cabinet walls with the bottom corners in both marks", () => {
+    for (const mark of [JUKEBOX_MARK, ASCII_JUKEBOX]) {
+      const lines = mark.split("\n");
+      const bottom = lines.at(-1)!;
+      for (const row of lines.slice(3, -1)) {
+        expect(row.indexOf("|")).toBe(bottom.indexOf("'"));
+        expect(row.lastIndexOf("|")).toBe(bottom.lastIndexOf("'"));
+      }
+    }
+  });
 });
