@@ -287,7 +287,9 @@ export class Playback extends EventEmitter {
   private applyMetadata(index: number, media: ResolvedMedia): Track {
     const track = this.state.list[index]!;
     if (!isStream(track) || !media.metadata) return track;
-    const enriched = { ...track, ...media.metadata };
+    const enriched = { ...track, ...media.metadata,
+      durationSec: Number.isFinite(media.metadata.durationSec) && media.metadata.durationSec! > 0
+        ? media.metadata.durationSec : track.durationSec };
     const list = this.state.list.map((t, i) => i === index ? enriched : t);
     // Metadata is not a queue edit: don't invalidate the preload in progress.
     this.state = { ...this.state, list, ...(index === this.state.index ? { track: enriched, duration: isLive(enriched) ? 0 : enriched.durationSec ?? 0 } : {}) };
@@ -334,7 +336,7 @@ export class Playback extends EventEmitter {
       if (name === "time-pos" && typeof data === "number") {
         const pos = Math.floor(data);
         if (pos !== this.state.position) this.update({ position: pos });
-      } else if (name === "duration" && typeof data === "number" && !isLive(this.state.track)) {
+      } else if (name === "duration" && typeof data === "number" && Number.isFinite(data) && data > 0 && !isLive(this.state.track)) {
         this.update({ duration: Math.floor(data) });
       } else if (name === "seekable" && typeof data === "boolean") {
         this.update({ seekable: data });

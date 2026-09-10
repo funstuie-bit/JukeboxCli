@@ -35,7 +35,8 @@ This development branch is separate from the installed soundcli command.
 | Homebrew releases, Intel and Apple Silicon | Dev.12 source-formula install/test and standalone install/reinstall pass on both architectures | Private authenticated tap; no bottles/core publication; GUI/media-key acceptance remains separate |
 
 No ytkew source code has been imported. Waveform is precomputed, not a live spectrum.
-Stream history, automatic collection pagination during playback and signed-in
+Stream history is implemented in development dev.14 (including Home recents, replay
+and history-only stream removal). Automatic collection pagination during playback and signed-in
 Music API access are not implemented. YouTube streaming uses existing yt-dlp cookie settings;
 direct audio/radio does not. No station directory, DRM, general Radio Garden support,
 script execution or nested playlist crawling. Main now includes dev.13, promoted for other-Mac testing;

@@ -25,7 +25,7 @@ export function Home({ firstRun = false }: { firstRun?: boolean }) {
     { label: "Local music library", run: () => open("library") },
     { label: "Download music (optional)", run: () => open("download") },
   ];
-  const recent = s.history.ids().map(id => s.library.get(id)).filter(t => !!t).slice(0, 3);
+  const recent = s.history.ids().map(id => s.library.get(id) ?? s.history.getStream(id)).filter(t => !!t).slice(0, 3);
   if (!firstRun && s.rows >= 30) {
     for (const t of recent) actions.push({ label: `Recent · ${cleanText(t.title)}`, run: () => s.playTrack(t) });
     for (const station of stations) actions.push({ label: `Radio · ${cleanText(station.name)}`, run: () => { const track = stationTrack(station); void s.playback.selectTrack(track, [track]).catch(() => {}); } });

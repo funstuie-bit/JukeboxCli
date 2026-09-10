@@ -39,6 +39,17 @@ const settle = () => new Promise(r => setTimeout(r, 5));
 beforeEach(() => { (MpvPlayer as any).current = undefined; });
 
 describe("stream playback", () => {
+  it("preserves known duration through empty resolver and mpv reports, but accepts a real duration", async () => {
+    const p = new Playback("fixture", undefined, async () => ({ ...media("a"), metadata: { title: "A", durationSec: undefined } }));
+    await p.play({ ...a, durationSec: 259 });
+    expect(p.getState().duration).toBe(259);
+    for (const value of [0, -1, NaN, Infinity, null]) engine().emit("property", "duration", value);
+    expect(p.getState().duration).toBe(259);
+    engine().emit("property", "duration", 260.5);
+    expect(p.getState().duration).toBe(260);
+    await p.play(b); expect(p.getState().duration).toBe(0);
+    p.quit();
+  });
   it("keeps live stations out of prefetch, blocks seeking, reconnects and retains a disconnected queue", async () => {
     const radio = trackFromUrl("https://example.com/live", true);
     const resolver = vi.fn(async t => media(t.sourceTrackId));

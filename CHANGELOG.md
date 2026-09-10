@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.1.0-dev.14 — Stream duration and history (2026-09-09)
+
+- Keep known duration when resolver/mpv reports no usable duration; real positive
+  engine duration still wins, live radio remains untimed.
+- Record successfully started streams and radio alongside local plays; History and
+  Home can replay them without downloading. Stable metadata is saved privately;
+  transient media URLs and headers are excluded. Legacy history remains readable.
+- Removing a stream from History does not stop playback or remove stations/queue entries.
+- Footer action icon unchanged. Main remains dev.13; visualiser parked.
+
 ## Main promotion — dev.13 (2026-09-09)
 
 - the maintainer authorised the latest build on main for installation on his other MacBook.

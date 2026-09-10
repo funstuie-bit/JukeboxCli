@@ -15,6 +15,7 @@ import { migrateOwnerLayout } from "../library/migrate";
 import { reconcileLibrary } from "../library/reconcile";
 import { legacyArchiveFile } from "../config/paths";
 import type { Track } from "../library/types";
+import { isStream, type PlayableTrack } from "../player/media";
 import { Playback, type PlaybackState } from "../player/playback";
 import { createStreamResolver } from "../player/resolve";
 import { Discover } from "./sections/Discover";
@@ -244,9 +245,10 @@ export function App({ initialAdd }: { initialAdd?: string } = {}) {
 
       playback.on("state", (s: PlaybackState) => {
         const id = s.track?.id;
-        if (id && library.has(id) && id !== lastPlayedId) {
+        if (id && s.track && !s.loading && !s.error && !s.paused &&
+            (!isStream(s.track) || (s.engine === "mpv" && s.canControl)) && id !== lastPlayedId) {
           lastPlayedId = id;
-          history.record(id);
+          history.record(s.track);
         }
       });
 
@@ -580,7 +582,7 @@ export function App({ initialAdd }: { initialAdd?: string } = {}) {
   );
 
   const playTrack = useCallback(
-    (t: Track, list?: Track[]) => {
+    (t: PlayableTrack, list?: PlayableTrack[]) => {
       void boot?.playback.selectTrack(t, list ?? [t]);
     },
     [boot],

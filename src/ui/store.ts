@@ -3,7 +3,7 @@ import type { Binaries } from "../bin/binaries";
 import type { Config } from "../config/config";
 import type { DownloadQueue, QueueItem } from "../download/queue";
 import type { Library } from "../library/library";
-import type { Track } from "../library/types";
+import type { PlayableTrack as Track } from "../player/media";
 import type { Playback, PlaybackState } from "../player/playback";
 import type { PlayHistory } from "../player/history";
 

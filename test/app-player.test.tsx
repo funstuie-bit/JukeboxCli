@@ -307,6 +307,12 @@ describe("App player workflow", () => {
     await press(view, "A"); expect(view.lastFrame()).toContain("Added to queue");
     await press(view, "7"); expect(view.lastFrame()).toContain("NET"); expect(view.lastFrame()).not.toContain("[ONLINE]");
     await press(view, "\r"); await press(view, "m"); expect(view.lastFrame()).toContain("Streaming");
+    await press(view, "m"); await press(view, "3");
+    expect(view.lastFrame()).toContain("Recently played");
+    expect(view.lastFrame()).toContain("Online fixture song");
+    expect(view.lastFrame()).not.toContain("Nothing played yet");
+    await press(view, "\r"); await press(view, "m");
+    expect(view.lastFrame()).toContain("Streaming");
     view.unmount(); await tick();
     const saved = readSession()!; expect(saved.streams?.[saved.ids[0]!]!.streamUrl).toContain("music.youtube.com");
     const again = app(); await tick(); await tick(); await press(again, "m");

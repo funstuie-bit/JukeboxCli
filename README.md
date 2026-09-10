@@ -126,7 +126,11 @@ player shows **Streaming** or **Saved locally**, plus next-track preparation.
 Stream artwork comes from its thumbnail; waveform extraction remains local-only.
 Remote queue entries restore paused without a network lookup until you press play.
 For YouTube, only stable page URLs/metadata are saved; extracted expiring audio URLs stay in memory.
-History currently lists saved-library plays only, not streamed plays.
+Development dev.14 includes streamed songs and radio in History and Home recents.
+Entries retain stable URLs and display metadata, not resolved playback URLs or headers;
+playing does not download audio. `d` on a stream in History offers removal from history
+only (not the queue or saved stations). Saved-file deletion retains its existing confirmation.
+Earlier streamed plays cannot be reconstructed if they were never recorded.
 
 Streaming requires **mpv 0.38 or newer** and yt-dlp. Your current browser-cookie
 settings are used for audio resolution, separately from signed-out Music search.
@@ -256,7 +260,8 @@ the music index. Both are written owner-only and honour `JUKEBOXCLI_HOME`.
 including query tokens if present: use trusted links and don't share these
 files publicly. Embedded username/password URLs are rejected. Extracted
 YouTube media URLs/headers remain memory-only. Streams never enter download
-jobs or saved-library history merely by playing/queueing them.
+jobs merely by playing/queueing them. Successfully started streams enter listening
+history in dev.14; queueing alone does not record a play.
 
 Help (**?**) is now paged: **[ / ]** changes group, **up/down** scrolls and
 **? / esc** closes. Radio/Discover open on their own help group. See the

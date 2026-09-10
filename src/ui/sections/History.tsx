@@ -16,7 +16,8 @@ import { cleanText, formatDuration } from "../../util/format";
 import { fuzzyFilter } from "../../util/fuzzy";
 import { deleteTracks } from "../../library/delete";
 import { displaySource } from "../../library/drift";
-import { SOURCE_LABELS, type SourceId, type Track } from "../../library/types";
+import { type SourceId } from "../../library/types";
+import { isStream, isLive, type PlayableTrack as Track } from "../../player/media";
 
 const SOURCE_ORDER: SourceId[] = [
   "youtube",
@@ -28,8 +29,8 @@ const SOURCE_ORDER: SourceId[] = [
 
 /**
  * Recently played, newest first. Replays float a track back to the top
- * rather than stacking duplicates; entries whose track left the library are
- * silently dropped. Playing from here scopes next/prev to the history list.
+ * rather than stacking duplicates; missing local files are skipped, while
+ * streams retain replayable metadata. Playing here uses the history list.
  * Source tabs + text search mirror the Library, but the list stays flat so
  * play-recency order is never reshuffled by grouping.
  */
@@ -64,7 +65,7 @@ export function History() {
     () => {
       const out: Track[] = [];
       for (const id of history.ids()) {
-        const t = library.get(id);
+        const t = library.get(id) ?? history.getStream(id);
         if (t) out.push(t);
       }
       return out;
@@ -76,7 +77,7 @@ export function History() {
   // Tabs group by where each file sits on disk, matching the Library.
   const srcOf = useMemo(() => {
     const m = new Map<string, SourceId>();
-    for (const t of tracks) m.set(t.id, displaySource(t, config.libraryDir));
+    for (const t of tracks) m.set(t.id, isStream(t) ? t.source : displaySource(t, config.libraryDir));
     return (t: Track): SourceId => m.get(t.id) ?? t.source;
   }, [tracks, config.libraryDir]);
 
@@ -131,7 +132,7 @@ export function History() {
           value: t.id,
           title: t.title,
           artist: t.artist,
-          meta: formatDuration(t.durationSec),
+          meta: isLive(t) ? "LIVE" : `${isStream(t) ? "NET · " : ""}${formatDuration(t.durationSec)}`,
         })),
       },
     ],
@@ -178,9 +179,10 @@ export function History() {
     (input, key) => {
       if (key.escape) setConfirm(null);
       else if (input === "y" && confirm) {
-        const t = library.get(confirm.id);
+        const t = library.get(confirm.id) ?? history.getStream(confirm.id);
         setConfirm(null);
         if (!t) return;
+        if (isStream(t)) { history.remove(t.id); return; }
         void (async () => {
           if (playingId === t.id) await playback.stop();
           await deleteTracks(library, [t], config.libraryDir);
@@ -194,17 +196,17 @@ export function History() {
   // that only touch this section's local state.
   const handleDelete = useCallback(
     (value: string) => {
-      const t = library.get(value);
+      const t = library.get(value) ?? history.getStream(value);
       if (t) setConfirm({ id: t.id, title: t.title });
     },
-    [library],
+    [library, history],
   );
   const handleSelect = useCallback(
     (value: string) => {
-      const t = library.get(value);
+      const t = library.get(value) ?? history.getStream(value);
       if (t) playTrack(t, visible);
     },
-    [library, playTrack, visible],
+    [library, history, playTrack, visible],
   );
 
   if (tracks.length === 0) {
@@ -241,7 +243,7 @@ export function History() {
         <Box marginBottom={compact ? 0 : 1}>
           {confirm ? (
             <Text color={COLOR.warn} wrap="truncate-end">
-              {`Delete '${cleanText(confirm.title)}'?  y Delete  ${ICON.dot}  esc Keep`}
+              {`${library.has(confirm.id) ? "Delete" : "Remove from history"} '${cleanText(confirm.title)}'?  y Confirm  ${ICON.dot}  esc Keep`}
             </Text>
           ) : (
             <>
@@ -271,7 +273,7 @@ export function History() {
           deleteTargetsPlaying
           onDelete={handleDelete}
           onSelect={handleSelect}
-          onQueue={(id, next) => { const t = library.get(id); if (t) playback.enqueue(t, next); }}
+          onQueue={(id, next) => { const t = library.get(id) ?? history.getStream(id); if (t) playback.enqueue(t, next); }}
         />
       )}
     </Box>
