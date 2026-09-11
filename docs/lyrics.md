@@ -1,4 +1,4 @@
-# Lyrics — dev.10 development build
+# Lyrics
 
 Open the player with `m` (or focus section `6`), then `l` toggles lyrics/queue.
 The queue remains intact and keeps its selection. While lyrics are open, arrows
@@ -25,8 +25,9 @@ returns no verifiable recording timing/identity, and is labelled plain/unverifie
    An existing unreadable/invalid file reports an error rather than silently
    searching online. Local lyrics do not require artist metadata.
 2. Successful provider results cached in the profile's `cache/lyrics-v1.json`
-   work offline, including when online lookup is off. Normal installations use
-   the legacy soundcli cache directory; `JUKEBOXCLI_HOME` isolates all paths.
+   work offline, including when online lookup is off. The cache follows the
+   selected branded or legacy profile; `JUKEBOXCLI_HOME` isolates all paths.
+   See [profiles](first-run-and-home.md#profiles).
 3. Press uppercase `L` **in the lyrics panel** to opt into LRCLIB. This persists
    `lyricsOnline: true` in config. Default is false. Lowercase l only opens the
    panel and does not grant network access. Online queries only run while the
@@ -108,7 +109,7 @@ Requests use LRCLIB `/api/get` and `/api/search`. Album is supplied to exact loo
 as a query constraint, not independently validated. Bodies are bounded to 256 KiB
 for a single result and 2 MiB for search; combined stored lyric text is at most
 64 KiB per entry. Cache JSON is at most 5 MiB/64 entries and remains compatible
-with dev.9 entries. Invalid/missing/duplicate candidate IDs are rejected.
+with earlier cache entries. Invalid/missing/duplicate candidate IDs are rejected.
 
 Following [LRCLIB API documentation](https://lrclib.net/docs), requests identify
 JukeboxCli/version/homepage, are sequential with 300 ms spacing, time out after
@@ -118,10 +119,8 @@ Final misses are held in memory for 10 minutes; manual search and R bypass misse
 not cooldown. No direct scraping, publishing or reporting API is implemented.
 
 The alternate endpoint follows the [lyrics.ovh API](https://github.com/NTag/lyrics.ovh#api).
-No provider package, Python, account or API key is required. Unlike Mousiki's
-syncedlyrics chain, this build does not use Musixmatch desktop tokens, copied
-NetEase cookies or install scraping dependencies. Mousiki's fetch/search/wrapped
-presentation informed the design; no source/assets were copied. The additional
+No provider package, Python, account or API key is required. Mousiki's
+fetch/search/wrapped presentation informed the design; no source/assets were copied. The additional
 provider is plain only; enhanced word timing comes from LRC data when present.
 
 Tests use invented lyrics and isolated profiles: parser/provider/cache,
@@ -129,11 +128,7 @@ configuration opt-in, stale responses/radio/no-sync and responsive panel bounds,
 plus matching/version/ambiguity/manual cache/alternate-provider isolation and
 full App search/edit/select/cancel/retry, transport and queue isolation. Run
 `npx tsx scripts/smoke-lyrics.ts` for muted real mpv timing against generated
-silence/enhanced LRC. Live probes confirmed the screenshot's Acquiesce tags match
-Oasis at 265 seconds through normalisation (57 timed lines), then offline cache
-reuse. lyrics.ovh returned plain text for the same song. Probes print metadata
-and counts only, never real lyric text. the maintainer's real-track/terminal acceptance
-and independent Intel/Apple Silicon installation checks remain outstanding.
+silence/enhanced LRC. Fixtures use invented text rather than publishing real lyrics.
 
 `FORCE_COLOR=3 npx tsx scripts/visual-lyrics.tsx --auto` runs a six-second,
 network-free terminal fixture with invented enhanced lyrics in an isolated temp

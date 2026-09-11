@@ -109,7 +109,7 @@ async function readText(response: Response): Promise<string> {
   } finally { await reader.cancel().catch(() => {}); reader.releaseLock(); }
 }
 
-// Explicit compatibility entries for the sites requested by the maintainer, verified
+// Explicit compatibility entries for supported broadcaster sites, verified
 // 2026-09-08. These are public broadcaster feeds, not a CAPTCHA bypass or a
 // claim that arbitrary Radio Garden pages are supported.
 function knownStation(url: URL): StreamTrack | undefined {

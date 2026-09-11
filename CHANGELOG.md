@@ -1,19 +1,5 @@
 # Changelog
 
-## Installer dependency check (2026-09-10)
-
-- Source installer checks runnable mpv before installing JukeboxCli, installs missing
-  mpv through Homebrew on Mac, and stops with visible errors if setup fails.
-- Build-only `--check` does not install system dependencies. Node remains a prerequisite.
-- No background Mac Homebrew installation on app launch; detect standard Homebrew
-  mpv locations even when absent from the terminal PATH.
-
-## Main promotion — dev.14 (2026-09-10)
-
-- the maintainer tested the stream duration/history cleanup and approved main promotion.
-- Main and Homebrew now install dev.14; runtime unchanged from a9e37ad.
-- Footer action icon unchanged; visualiser remains parked.
-
 ## 0.1.0-dev.14 — Stream duration and history (2026-09-09)
 
 - Keep known duration when resolver/mpv reports no usable duration; real positive
@@ -22,16 +8,11 @@
   Home can replay them without downloading. Stable metadata is saved privately;
   transient media URLs and headers are excluded. Legacy history remains readable.
 - Removing a stream from History does not stop playback or remove stations/queue entries.
-- Footer action icon unchanged. Main remains dev.13; visualiser parked.
-
-## Main promotion — dev.13 (2026-09-09)
-
-- the maintainer authorised the latest build on main for installation on his other MacBook.
-- Includes Home/welcome, branded fresh profiles, iTerm2 artwork support, Mac controls,
-  and the centred CLI jukebox mark. Physical media-key/iTerm2 acceptance remains pending.
-- Homebrew source pin updated to 83b6fb2, formula revision 1 for existing installations.
-- Runtime tests: 626 pass / 4 skips; Intel and Apple Silicon CI passed at 83b6fb2.
-  Visualiser remains parked; no stable release or repository visibility change.
+- Source installer checks runnable mpv before installing JukeboxCli, installs missing
+  mpv through Homebrew on Mac, and stops with visible errors if setup fails.
+- Build-only `--check` does not install system dependencies. Node remains a prerequisite.
+- No background Mac Homebrew installation on app launch; detect standard Homebrew
+  mpv locations even when absent from the terminal PATH.
 
 ## 0.1.0-dev.13 — First impressions and iTerm2 (2026-09-09)
 
@@ -44,28 +25,19 @@
   stay put, portable override wins, no automatic copying/merging/moving.
 - iTerm2 inline PNG renderer, live capability/cell-size checks, 480px bounded
   payload, full-frame lifecycle, explicit text fallback/renderer label and doctor
-  environment diagnostics. Actual iTerm2 visual acceptance outstanding.
+  environment diagnostics.
 - Idle player says Stopped; clearer empty Library actions, explicit muted colours
   in entry screens, no-sign-in-needed discovery label, branded request identifier.
-- Development only; main remains dev.11, visualiser parked.
 
 ## 0.1.0-dev.12 — Mac controls and installation (2026-09-09)
 
 - mpv-native media keys routed through JukeboxCli's full queue; descriptive system
   title, stop-as-pause, optional bridge fallback and JUKEBOXCLI_MEDIA_KEYS=0 opt-out.
-  Physical keys/Control Centre acceptance outstanding; no new native helper.
+  System identity remains mpv; no new native helper.
 - Read-only --doctor; independent package installer with --prefix/--check,
   dirty-checkout-safe fast-forward update script, source-relocation/reinstall smoke.
 - Managed system tools mode for Homebrew: no automatic binary fetch/update,
   with pinned source-formula packaging and Mac architecture CI.
-- Development only; main remains dev.11, visualiser parked.
-
-## Public main promotion — 2026-09-09
-
-- the maintainer tested dev.11 and approved promotion to main on GitHub and private mirror.
-- Public installation now includes lyrics improvements and Now Playing search.
-  Runtime unchanged from tested 7facdcb; visualiser remains an isolated, parked prototype.
-- Installation/status docs updated; clean Intel/Apple Silicon matrix still pending.
 
 ## 0.1.0-dev.11 — Search inside Now Playing (2026-09-08)
 
@@ -77,24 +49,6 @@
   / still searches lyrics there, and searches music in the queue panel.
 - Captured keyboard prevents typing from changing transport/navigation/queue;
   abort on edit/close/hide, stale-response guards, bounded/deduplicated results.
-- App/component/provider tests and generated-fixture real muted mpv search smoke.
-  604 tests pass / 4 inherited skips; typecheck/build/import guard pass. Live
-  song/video queries returned 20 playable results each through the updated service.
-  Development only; public main stays dev.8. Visualiser remains parked until last.
-
-## Unreleased prototype — Mac visualiser (2026-09-08)
-
-- Preview now uses a sparse Braille-dot contour with muted foreground colour
-  instead of solid blocks; NO_COLOR supported. Audio analyser unchanged.
-- Isolated mpv-native eight-band audio-energy prototype and terminal demo;
-  same decoded stream, no system capture or second media download. Timestamped,
-  bounded metadata, unchanged stereo playback branch, pause/seek/silence tests.
-- Real PCM graph comparison and mpv acceptance, repeated baseline/filtered CPU
-  harness; 596 tests pass / 4 inherited skips. See docs/visualiser-prototype.md.
-- Separate YouTube Music sign-in removed from scope at the maintainer's request; existing
-  browser-cookie playback/downloads retained. Account APIs are not implied.
-- Not integrated into Now Playing; production version remains dev.10 and public
-  main stays dev.8. Search-bar idea remains parked/non-urgent.
 
 ## 0.1.0-dev.10 — Smarter matching and focused lyrics (2026-09-08)
 
@@ -111,13 +65,6 @@
   timestamps underline the current word; no inferred word/letter animations.
 - Search captures keyboard input without seeking, pausing or changing queue;
   stale/hidden requests are cancelled. Normalised selections survive offline.
-- Development only; public main remains tested dev.8. No changes to real music,
-  favourites, queue or stored configuration during development/testing.
-
-Verification: 589 tests pass / 4 inherited skipped; full App manual search,
-selection, typing/cancellation/provider/queue isolation; matching and Unicode
-layout tests; real muted mpv enhanced-LRC timing; live normalised Oasis lookup,
-offline cache reuse and explicit lyrics.ovh result. Clean Mac/the maintainer acceptance pending.
 
 ## 0.1.0-dev.9 — Optional lyrics (2026-09-08)
 
@@ -128,13 +75,6 @@ offline cache reuse and explicit lyrics.ovh result. Clean Mac/the maintainer acc
   Radio uses conservative Artist - Song metadata and never claims synchronisation.
 - Scroll/follow controls, cancellation on hide/track change, small-panel bounds,
   identified sequential provider requests, timeout and Retry-After handling.
-- Public main was promoted to tested dev.8 before this work; dev.9 remains on
-  development for user acceptance. No word sync, lyrics editor or Mac spectrum.
-
-Verification: 575 tests pass / 4 inherited skipped, typecheck/build/import guard;
-full App lyrics/transport/queue isolation and responsive/stale-response tests;
-real muted mpv local-LRC seek/pause/advancing timing; live LRCLIB lookup plus
-offline cache reuse. Real-track/terminal and clean Mac matrix acceptance pending.
 
 ## 0.1.0-dev.8 — Station artwork refresh and removal (2026-09-08)
 
@@ -146,12 +86,7 @@ offline cache reuse. Real-track/terminal and clean Mac matrix acceptance pending
 - x/d removal is visible in the footer; named confirmation, y accepts/esc cancels.
   Removal never deletes music or changes current playback/queue.
 
-Verification: 558 tests pass / 4 skipped; full App legacy-favourite rediscovery,
-queued/session artwork and removal, atomic metadata boundaries, real mpv no-reload
-refresh and paused restore. General URL alias matching/current-song album art remain
-unsupported. Development branch only; main remains dev.3.
-
-## 0.1.0-dev.7 — Screenshot-driven layout polish (2026-09-08)
+## 0.1.0-dev.7 — Player layout polish (2026-09-08)
 
 - Top-align the content-height player with the queue; remove centring and the
   expanding blank gap. Waveform is one/two rows rather than a five-row slab.
@@ -161,10 +96,6 @@ unsupported. Development branch only; main remains dev.3.
   also styles navigation chrome, without changing terminal preferences/background.
 - No saved-station or playback metadata migration. Old station entries without
   artwork metadata still use the fallback; this is not an artwork repair release.
-
-Verification: 556 tests pass / 4 inherited skipped; typecheck/build/import guard,
-terminal radio fixture and isolated real mpv radio/local/mixed-stream checks.
-Development branch only; main stays dev.3 pending coordinated promotion.
 
 ## 0.1.0-dev.6 — Clearer player and radio presentation (2026-09-08)
 
@@ -176,13 +107,8 @@ Development branch only; main stays dev.3 pending coordinated promotion.
   saved-station guidance and duplicate-occurrence feedback without queue deduplication.
 - Persisted Lavender/Calm player palette (T), reduced motion (V), and a scrollable
   Settings appearance page. Other app sections/terminal background are unchanged.
-- No new dependencies or copied Mousiki assets/code; no lyrics/live spectrum in
-  this milestone. Existing music, favourites and queue order are preserved.
-
-Verification: 556 tests pass / 4 inherited skipped; typecheck/build/import guard,
-real mpv radio/local/mixed-stream checks and terminal radio fixture. Native screenshot
-appearance and fresh Intel/Mac acceptance still need user testing. Development
-branch only; main remains dev.3.
+- Original terminal drawings and implementation; existing music, favourites and
+  queue order are preserved.
 
 ## 0.1.0-dev.5 — Website feed detection (2026-09-08)
 
@@ -195,10 +121,6 @@ branch only; main remains dev.3.
 - f/t naming starts empty: type replacement or enter to retain current name.
   Rename updates playing/queued radio without reconnecting; same-URL favourites
   retain names on rediscovery. Existing favourites/music are not migrated/deleted.
-
-Verification: 549 tests pass / 4 inherited skipped; full App discovery, cancellation,
-naming/restore and isolated real mpv website-to-radio/ICY/reconnect smoke pass.
-Development branch only; main remains dev.3.
 
 ## 0.1.0-dev.4 — Play URL and internet radio (2026-09-08)
 
@@ -215,20 +137,6 @@ Development branch only; main remains dev.3.
 - Fixed immediate-paste field initialisation and one-off playback replacing an
   idle queue. URL validation, credential-free labels and documented persistence.
 
-Verification: 539 tests pass / 4 inherited skipped; full App and real mpv radio,
-HTTP mixed-stream and local session checks. Muted real YouTube URL resolution,
-metadata and advancing audio also pass. See docs/listening-online.md for details.
-No new visualiser/lyrics/account functionality or claimed fresh Intel/Mac acceptance.
-Development branch only; main stays at dev.3 for the maintainer's separate-machine test.
-
-## Repository update — 2026-09-08
-
-- GitHub repository renamed to funstuie-bit/JukeboxCli; tested dev.3 history
-  promoted to main so default clones and the repository front page are current.
-- Package links, overview, clean-Mac setup, screenshot-profile and update
-  instructions refreshed. Development branch retained; no music/data migration.
-- private mirror remains admin/soundcli-fork with the same history mirrored to main.
-
 ## 0.1.0-dev.3 — player presentation (2026-09-07)
 
 - Two-panel player: artwork/details/waveform left, full-height editable queue
@@ -243,17 +151,6 @@ Development branch only; main stays at dev.3 for the maintainer's separate-machi
 - Multi-row whole-track waveform with separate progress. Trailing semicolon/year
   tidied for display only; no library/file mutation.
 
-Verification: 515 tests pass, 4 inherited skipped; typecheck/build/import guard
-clean. Both real mpv local/session and HTTP mixed-stream smoke tests pass.
-Coverage includes layout/columns/protocol/lifecycle and full App workflows.
-Real Ghostty confirms Kitty support and sends a 1024×576 cover; a fixture cycles
-visible→hidden→visible correctly. macOS denied automated window screenshots,
-so final visual appearance needs the maintainer's acceptance, not a claimed screenshot check.
-The fixture is read-only and does not play or download music.
-
-Pending: cover-derived theme selection, native iTerm2/sixel artwork, live Mac
-spectrum. This is a visual pass, not the account/radio/lyrics milestone.
-
 ## 0.1.0-dev.2 — streaming and public discovery (2026-09-07)
 
 - Visible Discover (8): signed-out YouTube Music search, five result types,
@@ -264,19 +161,6 @@ spectrum. This is a visual pass, not the account/radio/lyrics milestone.
   without network access until play. v1 sessions remain readable; music is unchanged.
 - Corrected numbered navigation inside drill-downs and stale next-ready status.
 
-Verification: 504 tests passed, 4 inherited skipped; typecheck/build/distribution
-import guard clean, runtime npm audit zero findings. Real mpv 0.41 on this Mac passed silent HTTP prefetch with per-file
-headers, stream→stream→local automatic transitions exactly once, next-entry edits
-and prepared skip. Existing real local restore/transport smoke also passes.
-A real public YouTube Music song loaded paused/muted through yt-dlp in ~16 seconds.
-Automated App tests cover search/browse/pagination/queue/stream/paused reopening;
-provider-boundary tests include the service's distinct continuation shelf shape.
-
-Limits: mpv 0.38+ required for streaming. Preparation is not a buffered/gapless
-guarantee. Search is signed out; account/likes/radio/lyrics and streamed history
-remain future work. Collections queue currently loaded songs only. No clean-Mac
-or Intel acceptance claimed; existing cookies/import controls remain unchanged.
-
 ## 0.1.0-dev.1 — first JukeboxCli development build (2026-09-07)
 
 - Visible Now Playing (6/m) and Queue (7), persistent shortcut hints and JukeboxCli branding.
@@ -284,14 +168,5 @@ or Intel acceptance claimed; existing cookies/import controls remain unchanged.
 - Queue, order, position, volume, shuffle and repeat restored paused; missing files dropped and moved files resolved through the library.
 - Cover loads independently of waveform; editable queue replaces the passive up-next list. Dedicated Queue remains available in smaller windows.
 - mpv loads wait for file-loaded; pause is applied before load. Pending loads are cancelled on stop/quit.
-- Independent JUKEBOXCLI_HOME profiles and isolated test storage. Existing soundcli paths remain the compatibility default.
+- Independent JUKEBOXCLI_HOME profiles and isolated test storage. Existing soundcli paths remain compatible.
 - Dependency audit findings resolved in the lockfile. Distribution import check uses syntax parsing instead of matching UI strings.
-
-Verified: 492 tests pass, 4 inherited skipped; typecheck/build/import guard clean;
-real mpv smoke with silent generated fixtures covers paused restore, position,
-volume, shuffle/repeat, next/pause and queue restart after clearing. Full App tests
-exercise keyboard controls, queue editing, session reopening and 60×18 resize.
-
-Not a full ytkew port or public Mac release. Streaming/search/account/radio/lyrics,
-themes, advanced artwork, mouse/Vim options, native Mac integrations and clean
-Intel/Apple Silicon installation remain on the feature checklist. No gapless claim.

@@ -1,12 +1,8 @@
 # Mac audio-reactive visualiser — feasibility prototype
 
 Status: **parked until other project work is finished**, not integrated into Now Playing.
-the maintainer's latest feedback (2026-09-08): dots are better, but the single-line contour
-still looks odd and the demo is too short. Retain the prototype; no further
-presentation, demo-length or integration work until explicitly revisited. Production
-JukeboxCli now uses dev.11 (search update) with its precomputed track waveform. the maintainer authorised
-this feasibility work on 2026-09-08; the search-bar idea stays parked and separate
-YouTube Music sign-in has been removed from the roadmap.
+The production player retains its precomputed local track waveform. The prototype
+is separate from the already implemented player search and lyrics features.
 
 ## What works
 
@@ -20,8 +16,7 @@ The preview uses a thin Braille-dot contour, interpolated between those same
 eight readings, with a muted slate/lavender foreground and no background fill.
 This is a lighter presentation, not extra frequency resolution or a time-domain
 waveform. It leaves the terminal background visible; it does not change terminal
-opacity. Set `NO_COLOR=1` for uncoloured dots. This is a single, non-blocking polish
-pass requested by the maintainer, not a commitment to further visual parity work.
+opacity. Set `NO_COLOR=1` for uncoloured dots.
 
 No microphone/system-audio capture, capture permissions, loopback driver, Python,
 native helper or second media download. The prototype uses the existing mpv
@@ -64,25 +59,15 @@ claim of bit-perfect hardware output. Pause checks use the settled mpv clock:
 the audio device can drain briefly after pause, and property events can lag.
 The demo responds to current terminal size; unit tests cover small dimensions.
 
-## Evidence and limits
+## Verification and limits
 
-- Actual mpv 0.41.0 / FFmpeg libraries 9.0.1 on the development Mac passed.
-- 125 Hz peaks in the 125 Hz band; 4 kHz peaks in the 4 kHz band after a seek.
-  Silence settles below -80 dB in all bands, represented by a -120 dB floor.
-- Stereo output graph hashes match; pause clock freezes after settling;
-  backwards seek discards prior high-frequency/silent readings.
-- A 70×18 real PTY demo exercised low/high response, pause blanking and silence.
-- Short repeated baseline/filtered CPU comparisons use generated stereo pink
-  noise and muted real mpv output. They measure **mpv CPU only**, excluding Node,
-  terminal rendering and startup. Numbers are diagnostic, not a battery/runtime
-  or release-performance guarantee. On Apple M1 Max / macOS 26.4.1, a repeated
-  run measured 4.0%/4.0% baseline versus 6.6%/6.6% filtered (about 2.6 percentage
-  points additional mpv CPU). RSS varied 147–179 MiB baseline / 148–150 MiB
-  filtered, so no memory-overhead conclusion is drawn from this short run.
-- 596 tests pass / 4 inherited skips, including Braille mapping/interpolation,
-  missing/non-finite readings, bounded metadata parsing,
-  timestamp selection, stale history clearing and honest silent rendering.
-  Typecheck, build and distribution-import guard pass. App runtime is unchanged.
+The fixture harness checks band peaks, silence, unchanged stereo PCM graph hashes,
+settled pause position and stale readings after seeking. Unit tests cover Braille
+mapping, non-finite input, bounded parsing and timestamp selection.
+
+The benchmark compares repeated baseline/filtered runs with generated pink noise.
+It measures mpv CPU and RSS only, excluding Node, terminal rendering and startup;
+short runs are not battery-life or release-performance guarantees.
 
 Not yet verified: long-running radio, YouTube resolution/stream transitions,
 preloaded queue transitions, speed changes, every sample format, Bluetooth/audio
@@ -101,14 +86,14 @@ claim of system-wide visualisation or native media-key support.
    reduced-motion and hidden/small-window policies. Stop analysis work when
    disabled if filter reconfiguration proves safe; never block audio on a UI.
 4. Full-App tests, muted real local/HTTP/radio/YouTube acceptance, sustained CPU/
-   RSS and measured audible-clock alignment; then the maintainer's visual acceptance before
-   enabling or promoting it. No rewrite of the audio engine is justified yet.
+   RSS and measured audible-clock alignment, followed by real-terminal visual
+   review before enabling it. No audio-engine rewrite is required by this prototype.
 
 ## Sources and implementation
 
-documentation lookup's web route checked the primary [FFmpeg filter documentation](https://ffmpeg.org/ffmpeg-filters.html):
+The graph uses the primary [FFmpeg filter documentation](https://ffmpeg.org/ffmpeg-filters.html):
 `asplit`, `aresample`, `asetnsamples`, `bandpass`, `astats`, `ametadata`, `anullsink`.
-Installed filter help and actual mpv execution verified the available options.
+Use installed filter help and the fixture harness to check local capabilities.
 `scripts/spectrum-core.ts` builds the graph/parses metadata/renders dotted contours;
 `scripts/prototype-visualiser.ts` is the real-player acceptance/demo harness;
 `scripts/benchmark-spectrum.ts` compares baseline and filtered mpv. None is

@@ -196,10 +196,10 @@ describe("validateMoveRoots", () => {
   // APFS is case-insensitive by default; the fold must catch this on a mac.
   it.runIf(process.platform === "darwin")("folds case on macOS", () => {
     expect(
-      validateMoveRoots("/Users/example/Music/soundcli", "/Users/example/music/SOUNDCLI/sub"),
+      validateMoveRoots("/Users/example/Music/soundcli", "/users/example/music/SOUNDCLI/sub"),
     ).toMatch(/inside/);
     expect(
-      validateMoveRoots("/Users/example/Music/soundcli", "/Users/example/music/SOUNDCLI"),
+      validateMoveRoots("/Users/example/Music/soundcli", "/users/example/music/SOUNDCLI"),
     ).toMatch(/already/);
   });
 });

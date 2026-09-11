@@ -1,7 +1,6 @@
-// Renders the welcome screen with placeholder data into preview/welcome.svg
-// (the README hero). Mirrors App.tsx's chrome (logo + rule) above the real
-// Welcome view at a fixed 80 cols. Data comes from fake-data.ts: layout only,
-// no real song or artist names anywhere.
+// Generates documentation SVGs from current components at 80 columns.
+// Uses fake-data.ts placeholders, not a real library or profile.
+// See CONTRIBUTING.md for preview links and regeneration instructions.
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -43,7 +42,7 @@ function save(name: string, store: Store, node: React.ReactNode): void {
   console.log(`preview/${name}.svg`);
 }
 
-// The first-run intro: logo, the pitch, and the source picker.
+// The first-run intro: logo and listening-first Home choices.
 const welcomeStore = makeStore({
   rows: 36, contentWidth: 78,
   binaries: { ffmpeg: "", ffprobe: "", ytDlp: "", mpv: "mpv" },
@@ -70,7 +69,7 @@ save(
 );
 
 // The everyday view: sidebar, the library with group headers, and the player
-// mid-song. Mirrors App.tsx's main chrome so the README shows the real app.
+// mid-song. Mirrors App.tsx's main chrome with fixture data.
 const libraryStore = makeStore({
   playback: makeFakePlayback({
     track: { ...PLACEHOLDER_TRACKS[2]!, playlist: undefined },
@@ -109,7 +108,7 @@ save(
   </Box>,
 );
 
-// The `?` cheatsheet card on its own, for the README's keys section.
+// The `?` cheatsheet card on its own, for the generated documentation previews.
 save(
   "keys",
   makeStore({}),

@@ -9,8 +9,7 @@
     "soundcli": "./dist/index.js"
   },
   "files": [
-    "dist",
-    "preview"
+    "dist"
   ],
   "engines": {
     "node": ">=22"
@@ -46,9 +45,6 @@
   "homepage": "https://github.com/funstuie-bit/JukeboxCli#readme",
   "bugs": {
     "url": "https://github.com/funstuie-bit/JukeboxCli/issues"
-  },
-  "publishConfig": {
-    "access": "public"
   },
   "dependencies": {
     "env-paths": "^4.0.0",

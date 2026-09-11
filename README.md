@@ -1,456 +1,172 @@
 # JukeboxCli
 
-Mac-first terminal music player combining an offline library with YouTube Music
-discovery and streaming. **Current build: 0.1.0-dev.14** on `main`.
-the maintainer tested and approved the stream duration/history fixes on 2026-09-10.
-Further development continues on `development`.
-**Dev.13** adds a listening-first welcome/Home screen with an original
-ASCII/Braille jukebox, branded fresh-profile folders and iTerm2 inline artwork.
-[First-run and terminal notes](docs/first-run-and-home.md).
-Dev.12 introduced media keys, independent installs, `--doctor` and Homebrew
-packaging, with Intel/Apple Silicon installation checks passing.
-[Setup and limits](docs/mac-controls-and-install.md). Physical media keys and
-iTerm2 visual acceptance still need hands-on testing.
-Built on [soundcli by baairon](https://github.com/baairon/soundcli), with player
-design and feature inspiration from [ytkew by dtDhruv](https://github.com/dtDhruv/ytkew).
-See [upstream credit](#upstream-credit) for how each project contributes.
+A Mac-first music player that lives in the terminal.
 
-- Search songs, videos, albums, artists and playlists without signing in.
-- Mix streams and saved tracks in an editable, persistent listening queue.
-- Play a YouTube/audio URL or live radio without downloading; save favourite stations.
-- Sharp artwork, two-panel player, waveform, shuffle/repeat and next-track preparation.
-- Download/import controls for YouTube, SoundCloud and Spotify links, including
-  cookies, formats, pacing and conversion. Spotify imports are not Spotify streaming.
+I started this as a boredom project and it got slightly out of hand. JukeboxCli now plays local music, searches YouTube Music without an account, handles live radio and keeps the lot in one editable queue. Streams stay streams unless you choose to save them.
 
-[Install on a Mac](#install-the-development-version-on-a-mac) ·
-[Feature status](FEATURES.md) · [Roadmap](docs/roadmap.md) · [Changelog](CHANGELOG.md) · [Architecture](docs/architecture.md)
+[![Mac install checks](https://github.com/funstuie-bit/JukeboxCli/actions/workflows/mac-install.yml/badge.svg?branch=main)](https://github.com/funstuie-bit/JukeboxCli/actions/workflows/mac-install.yml)
 
-New screenshots are being prepared from a clean installation. Account playlists/likes
-and personalised YouTube radio remain unimplemented/deferred; separate Music
-sign-in is no longer planned. Existing browser cookies remain the playback/download
-authentication route. A verified Intel/Apple Silicon release is still outstanding.
-Optional lyrics are available on the development branch; see [lyrics](docs/lyrics.md).
+![JukeboxCli demo](docs/assets/jukeboxcli-demo.gif)
 
-Build with `npm ci && npm run build`, then `npm start` (or `npm run dev`).
-Installation provides `jukeboxcli` and a compatibility `soundcli` alias.
-The previous installed soundcli is unchanged until this checkout is installed.
+## What it does
 
-Existing soundcli config/music paths are retained. For an independent profile:
-`JUKEBOXCLI_HOME=/absolute/path/to/profile npm start`. This directory holds
-config, data, cache, logs and music. Do not run both apps against one profile.
-This development build is not yet a verified Intel/Apple Silicon release.
+- Plays local files, YouTube results, direct audio links and live radio.
+- Keeps local, online and live tracks in one persistent queue.
+- Searches songs, videos, albums, artists and playlists without a YouTube login.
+- Shows inline artwork in Ghostty, Kitty-compatible terminals and iTerm2, with a text fallback elsewhere.
+- Supports local LRC files and optional online lyrics.
+- Downloads from YouTube and SoundCloud, and imports music from supported Spotify links.
+- Handles shuffle, repeat, queue editing, listening history and macOS media keys through mpv.
 
-Open **Now Playing** with `6` or `m`, and **Queue** with `7`. These destinations
-are visible in navigation. In Library, History or playlist songs, select a song
-and press `A` to append or `P` to play next without interrupting the current song.
-In Queue: arrows select, enter plays, `u`/`D` moves up/down, and `x` removes only
-that queue occurrence (never its file). Space starts an idle queue.
-`X` asks to clear the queue and stop; confirm with `y`. Music files stay intact.
+Playing or browsing online music does not add it to your library. Downloads only start when you ask for one.
 
-The listening queue, position, volume, shuffle and repeat are saved in
-`listening-session.json` alongside the library index and restored paused.
-Missing library entries/files are dropped. An empty saved queue stays empty.
-Artwork loads independently of the waveform. Wider screens have two full-height
-bordered panels: cover/track/transport left, editable queue right. Artist, title
-and duration have separate columns where space permits, with a solid selection
-highlight and distinct playing marker. Smaller windows use a compact stacked
-layout; `7` always opens the full queue.
+## Install
 
-### Artwork and player layout (0.1.0-dev.7)
+JukeboxCli currently supports macOS and needs Node.js 22 or newer.
 
-The player now puts station/song information above a compact artwork area,
-alongside a clearly named **Playback queue**. The player card is top-aligned with
-the queue and fits its content, with artwork capped at 32 columns × 12 rows;
-smaller windows stack details
-over the queue. Radio can show up to three lines of broadcast information when
-space allows. Missing covers use an original terminal-drawn radio/disc fallback,
-not an empty cover box or a claim of real station artwork.
+The easiest install is the project’s Homebrew formula:
 
-In the player, **T** switches Lavender/Calm colours; **V** toggles decorative
-fallback motion. These choices persist, also available in **5 Settings → Player
-appearance** (scroll down). Reduced motion is **on by default**. Animation stops
-when paused, hidden, loading or the graphic is too small; it is not audio-reactive.
-Themes apply to the player/queue, sidebar and navigation hints, not the terminal
-background or every app section. Navigation uses explicit readable colours rather
-than inheriting the terminal's default text colour.
+```sh
+brew tap funstuie-bit/jukeboxcli https://github.com/funstuie-bit/JukeboxCli.git
+brew install funstuie-bit/jukeboxcli/jukeboxcli
+jukeboxcli
+```
 
-Queue entries have a compact **TYPE** column: **FILE** (local), **NET** (online)
-or **LIVE**. Titles no longer repeat bracketed source labels. **›** marks your selection,
-**▶** the playing entry and **Ⅱ** the paused entry. Repeated queue entries remain
-allowed: adding an existing item says “Already queued · added another occurrence”.
-These are not duplicate favourites; saved stations stay in **9 Radio / URL**.
+This is a third-party, source-built formula. It installs Node, mpv, ffmpeg and yt-dlp through Homebrew. It uses a pinned development snapshot, not the latest checkout; see the [install guide](docs/mac-controls-and-install.md).
 
-Ghostty and compatible terminals display a real PNG, up to 1024 pixels on its
-longest side, not a tiny text mosaic. The app probes Kitty image support and
-character-cell dimensions first. Original proportions are preserved: a wide
-YouTube thumbnail stays wide. Online results use the largest supplied thumbnail.
-Old queued streams can retain their earlier thumbnail; search/select again to
-refresh their metadata.
+To install from a clone instead:
 
-Press `b` in the player to hide/show artwork (view-local toggle). Images disappear
-behind help and on screen changes, and reposition after resize. Unsupported
-terminals, missing size replies and tmux/screen use proportional half-blocks.
-Force fallback with `JUKEBOXCLI_ART=blocks jukeboxcli`. Dev.13 adds iTerm2 inline
-images (480px RGB, capability/cell-size checks); use `JUKEBOXCLI_ART=iterm` for
-explicit selection. The player labels its renderer. iTerm2 screenshot/resize
-acceptance remains pending; sixel is not implemented. After changing terminal fonts, restart if
-their character proportions differ; ordinary window resizing works live.
+```sh
+brew install node
+git clone https://github.com/funstuie-bit/JukeboxCli.git
+cd JukeboxCli
+./install.sh
+jukeboxcli
+```
 
-The default palette is now lavender/blue with explicit readable player text.
-The slim one/two-row **TRACK WAVEFORM** shows precomputed loudness, not a live spectrum.
-Streaming shows progress without downloading the whole song for visualisation.
-Cover-derived themes remain future work. A [Mac audio-reactive visualiser prototype](docs/visualiser-prototype.md)
-is parked until other project work is finished, with a muted Braille-dot contour; it is not yet
-part of Now Playing. Preview with `npx tsx scripts/prototype-visualiser.ts --demo`. A trailing
-`;1994`-style year is tidied for display only; stored metadata/files stay intact.
+The source installer installs missing mpv through Homebrew, then builds an independent global command rather than linking back to the checkout. Node 22+ and Homebrew must already be available. On first launch, the normal source install can manage its own yt-dlp and ffmpeg copies.
 
-Verification includes full App keyboard/session tests with a fixture audio engine;
-real mpv acceptance passes on the development Mac; clean Mac installation is pending.
-`npx tsx scripts/smoke-listening.ts` checks real mpv with generated silent audio
-in an isolated temporary profile (requires ffmpeg and mpv on PATH).
-See [changelog and verification](CHANGELOG.md) for this build's scope and limitations.
+Check an installation without opening the player:
 
-### Discover and stream (development build 0.1.0-dev.2)
+```sh
+jukeboxcli --doctor
+```
 
-Press `8` for **Discover**, then `/` to search YouTube Music without signing in.
-`[` / `]` switches songs, videos, albums, artists and playlists. Enter streams a
-song or opens a collection; `esc` goes back. `L` loads more results when offered.
-`A` appends the selected song, `P` queues it next, and `d` opens the existing
-download workflow to save it. Streaming itself never adds a file to your library.
-A search selection is a one-off in your running queue; playing inside a browsed
-collection uses its currently loaded songs as the playback context. Load more
-before playing if you want those additional songs included too.
+### Updating
 
-Local files and streams share one queue. FILE/NET/LIVE identify their source; the
-player shows **Streaming** or **Saved locally**, plus next-track preparation.
-Stream artwork comes from its thumbnail; waveform extraction remains local-only.
-Remote queue entries restore paused without a network lookup until you press play.
-For YouTube, only stable page URLs/metadata are saved; extracted expiring audio URLs stay in memory.
-Dev.14 includes streamed songs and radio in History and Home recents.
-Entries retain stable URLs and display metadata, not resolved playback URLs or headers;
-playing does not download audio. `d` on a stream in History offers removal from history
-only (not the queue or saved stations). Saved-file deletion retains its existing confirmation.
-Earlier streamed plays cannot be reconstructed if they were never recorded.
+Homebrew install:
 
-Streaming requires **mpv 0.38 or newer** and yt-dlp. Your current browser-cookie
-settings are used for audio resolution, separately from signed-out Music search.
-First stream resolution can take several seconds (about 16 seconds in one real
-test here); restricted/unavailable results may fail. A rejected media URL is
-refreshed once; errors keep the queue so you can retry with space or skip with `n`.
-No signed-in library, likes or personalised YouTube radio yet. Direct
-internet radio is available in dev.4 as described below.
+```sh
+brew update
+brew upgrade jukeboxcli
+```
 
-The next entry is resolved ahead and appended to mpv for prefetch. “Next prepared”
-means queued in mpv, not a guarantee it has buffered all audio. mpv decides when
-to read ahead; changing the queue while paused may defer new buffering until play.
-Cache limits are 32 MiB forward/4 MiB backward per demuxer; resolved-URL cache is
-100 entries with at most five minutes' reuse. This is **not a universal gapless
-guarantee** across codecs, long pauses and network conditions.
-`npx tsx scripts/smoke-streaming.ts` verifies real HTTP prefetch and mixed-queue
-transitions using silent audio and a loopback server, with no library changes.
+Source install:
 
-### Search without leaving Now Playing (development build dev.11)
+```sh
+cd JukeboxCli
+./update.sh
+```
 
-Press **S** (Shift+s) in the player, then type **l: artist/song** for local files,
-**s: artist/song** for online songs or **v: query** for videos. Bare queries are
-local; pasted `/l:` and `/s:` prefixes also work. Enter submits the search.
-Music keeps playing while the results replace the queue/lyrics panel.
+`update.sh` refuses to overwrite a checkout with local changes.
 
-In results: **Enter** plays the selection, **A** appends, **P** queues next,
-**d** explicitly starts the existing download workflow for an online result.
-Browsing, playing and queueing do not download a library copy. **↑↓/PgUp/PgDn**
-select, **L** loads another online page (200 unique results maximum), **/** edits,
-and **Esc** cancels and restores the previous panel. Local results are capped at
-200; narrow the query for more specific matches. Transport/navigation shortcuts
-are suppressed while search owns the keyboard; Esc returns those controls.
+## First run
 
-**/** also opens music search from the queue panel. In lyrics it still searches
-lyrics; **S** opens music search from either panel. Both full-screen and embedded
-players support this. Signed-out discovery and existing browser-cookie playback
-are reused; no separate sign-in or new search service.
+JukeboxCli opens on Home. You can start with public online search or radio; a local library is optional.
 
-### Lyrics (development build 0.1.0-dev.10)
+| Key | Action |
+| --- | --- |
+| `8`, then `/` | Search online |
+| `o` | Play a YouTube or direct audio URL |
+| `9` | Open radio and saved stations |
+| `1` | Open the local library |
+| `m` or `6` | Open Now Playing |
+| `7` | Open the queue |
+| `space` | Play or pause; reconnect live radio |
+| `?` | Show the full key guide |
 
-In the player (`m` or section `6`), press **l** to swap the queue for lyrics;
-press it again to return. **Shift+L** in that panel enables/disables online LRCLIB
-lookup (off by default; sends artist/title, optional album and duration).
-Local `Song.lrc` beside `Song.mp3` takes priority unless you explicitly selected
-another match; previously cached lyrics work
-offline. No songs or library metadata are modified. Scroll with ↑/↓ or Page
-Up/Down, **f** resumes following; ←/→ still seek. The old `l` seek alias only
-works outside the focused player now.
+Use `A` to append a selected track and `P` to play it next. In the queue, `u` and `D` move an entry, `x` removes it, and `X` clears the queue after confirmation.
 
-Lyrics now wrap and centre, with just the active line and nearby lines in follow
-mode; surrounding text is dimmed. Enhanced LRC word timestamps underline the
-current word when supplied—ordinary line timing is never faked into karaoke.
+![JukeboxCli Home](docs/assets/home.png)
 
-Lookup first uses exact tags, then tries remaster/primary-artist normalisation
-with a duration check, without stripping live/remix/edit distinctions. Ambiguous
-results show artist, title, album and duration for **↑/↓ + Enter** selection.
-**/** opens manual LRCLIB search, **R** retries, and **Esc** cancels search/selection.
-**O** opens a separate **lyrics.ovh** prompt: Enter sends `Artist - Song` to that
-provider for plain, unverified lyrics. No additional Python/package setup needed;
-lyrics.ovh is never queried automatically. Manual choices are cached for the
-original track, without retagging music. Different/unknown recording timings
-stay plain rather than displaying misleading synchronisation.
+![Now Playing and the editable queue](docs/assets/player.png)
 
-Timed lyrics follow mpv position; untimed lyrics stay plain. Radio can look up
-an unambiguous `Artist - Song` broadcast title, but never claims synced timing;
-DJ mixes and unclear metadata are skipped. Coverage is not guaranteed; no lyric
-editor, translation or guaranteed online word-timing source is included.
-[Setup, privacy and implementation details](docs/lyrics.md).
+## Artwork and terminals
 
-### Play URL and internet radio (0.1.0-dev.8)
+Ghostty and Kitty-compatible terminals can display real PNG artwork. iTerm2 inline images are supported too. Other terminals fall back to proportional half-block art, so the player still works without a graphics protocol.
 
-**No library import required.** Press **o** from any normal screen to paste a
-YouTube video or direct HTTP(S) audio URL. Enter accepts the link; **enter again
-plays**, **A** appends or **P** queues it next without interrupting playback.
-YouTube watch, shortened, Shorts and live links resolve title/artist/artwork
-when played. Playlist/channel URLs belong in **8 Discover**, not Play URL.
-Opening a one-off link keeps an existing queue, even if it hasn't started yet.
+Press `b` in Now Playing to hide the artwork. You can force the fallback renderer with:
 
-Press **9** for **Radio / URL**, then **R** to paste a station website, direct
-feed or PLS/M3U playlist. **o** also accepts websites. Detection lists available
-feeds: select one and press enter to play, A/P to queue or **f** to save.
-Press esc to cancel detection. New stations are saved only when you choose to save.
-Rediscovery refreshes artwork/website metadata on existing exact-URL favourites
-while keeping their names and feed URLs. Matching queued/playing radio entries
-refresh too, without reconnecting, changing queue order or adding another entry.
-Favourites reappear in 9 after restart. **t** (or **f**) renames a saved station:
-type a replacement directly, or enter keeps its current name. **x** or **d** asks
-to remove the highlighted favourite: **y** confirms, **esc** cancels. The prompt
-names the station; both removal keys are shown in the bottom footer.
-On an unsaved candidate, x/d dismisses only that candidate. Removing a favourite
-doesn't stop playback, remove queue entries or touch music files.
+```sh
+JUKEBOXCLI_ART=blocks jukeboxcli
+```
 
-**Refresh station artwork:** select the station in **9**, press **g**, and enter
-its **website**, not its audio feed. A known website is prefilled; otherwise paste
-one. For Ibiza Stardust use `https://www.ibizastardustradio.com/`. There is no need
-to delete/recreate the favourite. Direct audio URLs generally do not supply artwork;
-no automatic cross-site search or alias matching is performed. Missing artwork in
-a later response does not erase a previously saved image URL.
+## Profiles and existing soundcli data
 
-Radio entries show **LIVE**, with no track duration/progress bar or seek/restart.
-**Space disconnects; space again reconnects to the live broadcast**, rather
-than resuming an old buffer. Station-supplied current-song metadata appears in
-the player when available. A detected live YouTube broadcast uses the same live
-transport rules. Radio sessions restore disconnected and paused, with no
-network lookup until play. A dropped/ended broadcast keeps the queue and offers
-space to reconnect or n to skip. Live entries aren't opened speculatively for
-prefetch; repeat/shuffle still apply to queue navigation, not radio seeking.
+Fresh installs keep music in `~/Music/JukeboxCli` and app data in the normal macOS Library folders. If JukeboxCli finds an existing soundcli profile, it keeps using it; nothing is moved or merged automatically.
 
-Direct audio/radio uses mpv without yt-dlp or browser cookies. HTTP(S) audio and
-HLS endpoints are supported when mpv can decode them. Website detection reads
-static audio/player links and optional website artwork, without running scripts.
-Ibiza Stardust's site is supported; DKFM and the requested Deeper Shades Radio
-Garden link have explicit known-feed mappings. This is **not general Radio Garden
-support**. Other protected/JavaScript-only pages may need a direct feed.
-Station artwork is retained when advertised; DKFM's known feed currently has no
-artwork, and station artwork is not current-song album art. There is no station
-directory search, nested playlist crawling or authenticated/DRM playback.
-Detection is bounded to 15 seconds, 1 MiB and 12 results; audio responses are
-closed after inspecting headers. Only the selected feed is played.
-Use **R**, not ordinary audio URL
-mode, for live stations; unknown direct URLs cannot reliably be classified as
-live automatically. Availability/geoblocking depends on the broadcaster.
+Use an isolated profile for testing or screenshots:
 
-Favourites live in `radio-stations.json` beside `listening-session.json`, not
-the music index. Both are written owner-only and honour `JUKEBOXCLI_HOME`.
-**User-supplied direct URLs are saved verbatim apart from URL normalisation**,
-including query tokens if present: use trusted links and don't share these
-files publicly. Embedded username/password URLs are rejected. Extracted
-YouTube media URLs/headers remain memory-only. Streams never enter download
-jobs merely by playing/queueing them. Successfully started streams enter listening
-history in dev.14; queueing alone does not record a play.
+```sh
+JUKEBOXCLI_HOME="$HOME/JukeboxCli-demo" jukeboxcli
+```
 
-Help (**?**) is now paged: **[ / ]** changes group, **up/down** scrolls and
-**? / esc** closes. Radio/Discover open on their own help group. See the
-[online listening implementation and acceptance notes](docs/listening-online.md).
+Source/package installs also provide a `soundcli` compatibility alias; Homebrew links only `jukeboxcli`. New examples and normal use should prefer `jukeboxcli`.
 
-Own your music. Download your YouTube, SoundCloud, and Spotify libraries to your computer and play them offline, all from your terminal.
+## Downloads and cookies
 
-**This is a fork of [baairon/soundcli](https://github.com/baairon/soundcli) v1.4.1** with extra features built in: a full first-run wizard, browser/cookie support, total format control, download pacing, custom output location, CLI flags, and a settings screen to change all of it later.
+The download side supports audio format and quality controls, output folders, pacing, retries, browser cookies and Netscape-format `cookies.txt` files.
 
-## What this fork adds
-
-### Listening-first welcome and Home (development dev.13)
-Choose online search, radio/URL, local music or optional downloads. Enter opens
-the choice; Escape skips to Home. No sign-in or download is required to begin.
-`H` returns Home, `/` opens online search there, and the existing1–9 keys stay put.
-Roomy windows show an original ASCII/Braille jukebox, recent local tracks and
-saved stations. `JUKEBOXCLI_LOGO=ascii jukeboxcli` selects the ASCII-only mark.
-Small windows keep the choices and omit the large artwork.
-The ASCII and Braille cabinet walls share fixed-width padding so the lower
-right edge lines up with the base.
-The arch, `C L I` selection buttons and speaker grille share the cabinet's centre
-line in both variants.
-
-Main includes the new Home, moving optional download/settings tasks out of the first-run path;
-browser cookies, formats and custom output remain available under Settings.
-
-### Settings (press `5` in the sidebar)
-- **Audio format** — change format anytime
-- **Cookies** — set up browser cookies, a cookies.txt file, or clear cookies
-- **Download pacing** — tune sleep interval, max sleep, retries
-- **Import config** — detect and import settings from an existing yt-dlp.conf
-- **Convert library** — re-encode your existing downloads to another format in place
-
-### Download resilience
-- Live phase per row: **starting → % + speed → converting → tagging → saved** — yt-dlp's post-processing steps are instrumented so rows never sit frozen on "starting"
-- Source 403/rate-limit blocks trigger jittered backoff with narrowed concurrency and an honest pause banner, not silent failures
-- Failed rows retry (`f`); the bundled yt-dlp self-heals if it goes missing and auto-updates on launch
-
-### Now Playing screen (press `m`, or choose `6 Now Playing`)
-A player view with visible navigation (`m` or `esc` closes the expanded view, transport keys stay live):
-- **Sharp cover art** through Kitty graphics where probed, with a half-block fallback
-- **Multi-row waveform** from the track's loudness envelope, with separate playback progress
-- **Editable queue** — actual play order, selectable and reorderable; use `7` for the dedicated queue view
-- Degrades honestly: no embedded art → placeholder; no waveform → progress line; external player → a clear note
-
-### CLI flags (override config without opening the TUI)
 ```sh
 jukeboxcli --format mp3 --cookies-from-browser chrome:Default "https://..."
 jukeboxcli --output-dir ~/Music/MyLibrary --quality 5 @somehandle
-jukeboxcli --sleep 2 --max-sleep 10 --retries 10
 ```
 
-Full list via `jukeboxcli --help`:
+Run `jukeboxcli --help` for the full list. Spotify support imports music from supported links; it is not Spotify streaming.
 
-| Flag | What it does |
-| --- | --- |
-| `--format <fmt>` | audio format: best, mp3, flac, wav, m4a, opus, vorbis |
-| `--quality <0-10>` | audio quality (0=best, 10=worst) |
-| `--yt-format <str>` | raw yt-dlp format string (e.g. `bestaudio[ext=m4a]`) |
-| `--output-dir <path>` | where to save downloads |
-| `--output-template <tpl>` | yt-dlp `-o` template (overrides folder structure) |
-| `--cookies <path>` | cookies.txt file (Netscape format) |
-| `--cookies-from-browser <id>` | read cookies from browser (e.g. `chrome:Default`) |
-| `--sleep <sec>` / `--max-sleep <sec>` | pacing between downloads |
-| `--retries <n>` | retries on failure |
-| `--reencode <true\|false>` | force re-encode even if format matches |
-| `jukeboxcli <link>` | download that song/playlist on launch |
+## Current status
 
-## Install the development version on a Mac
+The current build is `0.1.0-dev.14`. I use it, but it is still an early macOS project rather than a finished cross-platform release.
 
-**One-time setup on the new Mac:**
+A few limits are worth knowing:
 
-1. Install Node.js 22 or newer. With Homebrew: `brew install node`.
-   The source installer checks mpv and installs it with Homebrew when missing.
-   Ghostty is recommended for sharp artwork; other terminals use the fallback.
-2. Clone and install:
-   ```sh
-   mkdir -p ~/projects
-   git clone https://github.com/funstuie-bit/JukeboxCli.git ~/projects/JukeboxCli
-   cd ~/projects/JukeboxCli && ./install.sh
-   ```
-3. Run it from anywhere:
-   ```sh
-   jukeboxcli
-   ```
+- YouTube Music discovery uses an unofficial signed-out API and may need maintenance when YouTube changes it.
+- There is no YouTube Music account login, liked-music sync or personalised radio.
+- Radio availability, artwork and metadata depend on the station. DRM and general Radio Garden browsing are not supported.
+- Online lyrics are optional and coverage varies. Local `.lrc` files work offline.
+- macOS system media controls are supplied by mpv, so the system may label the player as mpv.
 
-The instructions above install `main` (dev.14). To test **development builds separately**,
-clone the development branch into a different folder and use `npm start`;
-this does not replace the installed command:
+Saved radio or audio URLs can include private query tokens. Treat your JukeboxCli profile files as private.
+
+## Development
 
 ```sh
-git clone --branch development https://github.com/funstuie-bit/JukeboxCli.git ~/projects/JukeboxCli-next
-cd ~/projects/JukeboxCli-next
-npm ci && npm run build
-JUKEBOXCLI_HOME="$HOME/JukeboxCli-next-profile" npm start
-```
-
-Keep the same `JUKEBOXCLI_HOME` for subsequent launches of that test profile.
-
-On first run the app sets up yt-dlp and ffmpeg (fresh profiles use
-`~/Library/Caches/JukeboxCli/bin`; existing legacy profiles retain
-`~/Library/Caches/soundcli/bin`). The source installer handles mpv on Mac; when
-running directly from source, install mpv 0.38+ with `brew install mpv` for
-streaming and in-terminal playback. Without mpv, saved files can open in your
-default player, but streaming is unavailable.
-
-**What `install.sh` does:** verifies a runnable mpv first, using Homebrew on macOS
-if missing. Homebrew errors remain visible and stop installation before replacing
-the app or printing success. Homebrew itself and Node must already be installed
-unless mpv is already available. `--check` only verifies the build and never installs mpv.
-The Mac app no longer attempts a background Homebrew installation at launch.
-The installer then installs locked Node dependencies, checks the build,
-then installs an independent package archive globally (not a source-checkout link).
-It includes `jukeboxcli` and the `soundcli` alias; unrelated commands are not force-overwritten.
-To retain an existing installation, use `npm start` from this checkout instead.
-Alternatively use `sh install.sh --prefix /absolute/private/prefix`. `sh update.sh`
-updates a clean checkout by fast-forward and reinstalls; existing user data stays.
-`jukeboxcli --doctor` checks tools without setup/downloads. See the
-[Homebrew and Mac acceptance notes](docs/mac-controls-and-install.md).
-The development Homebrew formula uses this **private** repository and requires
-your GitHub access; it is not an anonymous public tap or a bottled release.
-
-On the welcome screen, press **esc** to skip importing a library. Then **8** opens
-Discover, **/** starts search, **A/P** adds songs to the queue and **m** opens the
-player. Use a wide window for the two-panel layout. You do not need old library
-data or personal credentials to browse public search results.
-
-For clean screenshots on a Mac that already has soundcli data, use a separate
-profile: `JUKEBOXCLI_HOME="$HOME/JukeboxCli-demo" jukeboxcli`. Keep that same
-setting for subsequent launches of the demo profile. Existing music is untouched.
-
-## Update an existing JukeboxCli checkout
-
-The GitHub repository was renamed from `soundcli-fork` to `JukeboxCli`; history
-and the compatibility data paths are preserved. New clones use `main` by default.
-
-```sh
-cd ~/projects/JukeboxCli
-git pull --ff-only
-sh install.sh
-jukeboxcli --version
-```
-
-If you cloned the earlier development branch, it is retained and updated too.
-To move a clean checkout onto main, run `git fetch` then `git switch main` before
-the update commands. If Git reports local changes or divergence, preserve those
-changes first; do not force-reset. An old remote URL can be updated with
-`git remote set-url origin https://github.com/funstuie-bit/JukeboxCli.git`
-(use your actual GitHub remote name if it is not `origin`).
-
-Older global installs may link to the checkout, so rebuilding updates those.
-Dev.12's installer creates an independent package: rerun `sh install.sh` (or use
-`sh update.sh` from a clean checkout) to update that command. Moving the source
-does not break new installs. Keep a copy of the config and data directories below
-before changing versions; music is not removed by updates.
-
-## Dev
-
-```sh
-npm ci               # Node 22+, locked dependencies
-npm run dev          # run from source
-npm run build        # build dist/
-npm test             # isolated unit + App interaction tests
+npm ci
+JUKEBOXCLI_HOME="$HOME/JukeboxCli-demo" npm run dev
+npm test
 npm run typecheck
+npm run build
 ```
 
-Dev.13 fresh macOS installs use `~/Music/JukeboxCli`,
-`~/Library/Preferences/JukeboxCli/config.json` and
-`~/Library/Application Support/JukeboxCli/`. Existing soundcli profiles keep their
-original paths and custom music folders; nothing is moved or merged automatically.
-`JUKEBOXCLI_HOME` still takes precedence. Main dev.11 retains the old defaults.
+The codebase is TypeScript, React and Ink. mpv handles playback; yt-dlp and ffmpeg handle online media and conversion.
 
-## Upstream credit
+More detail:
 
-JukeboxCli owes its foundation and direction to these projects and their contributors:
+- [Feature status](FEATURES.md)
+- [Home, profiles and artwork](docs/first-run-and-home.md)
+- [Online listening and radio](docs/listening-online.md)
+- [Lyrics](docs/lyrics.md)
+- [Install and macOS controls](docs/mac-controls-and-install.md)
+- [Architecture](docs/architecture.md)
+- [Roadmap](docs/roadmap.md)
+- [Changelog](CHANGELOG.md)
 
-- **[soundcli — baairon](https://github.com/baairon/soundcli):** the original
-  MIT-licensed codebase this project is forked from. Its terminal interface,
-  library, playback and download queue form JukeboxCli's foundation. The original
-  copyright and licence notice is retained in [LICENSE](LICENSE).
-- **[ytkew — dtDhruv](https://github.com/dtDhruv/ytkew):** inspiration for the
-  artwork-led Now Playing screen and the richer listening experience, including
-  queue interaction and online discovery. These features are independently
-  implemented for JukeboxCli's TypeScript/Ink/mpv stack; no ytkew source code is
-  included, and this is not a claim of complete feature parity.
+Contributions are welcome; read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request.
 
-- **[Mousiki — itzender5820](https://github.com/itzender5820/mousiki):** visual
-  inspiration for the compact player, configurable presentation and decorative
-  missing-art fallback. Our terminal drawings and implementation are original;
-  no Mousiki code/assets or audio engine are included.
+## Credits
 
-Thank you to the authors and their contributors for sharing their work.
+JukeboxCli began as a fork of [baairon/soundcli](https://github.com/baairon/soundcli). Its library, playback and download foundations are still here, and the original MIT notice is retained.
+
+[dtDhruv/ytkew](https://github.com/dtDhruv/ytkew) and [itzender5820/mousiki](https://github.com/itzender5820/mousiki) influenced the artwork-led player and queue presentation. The player features inspired by those two projects and the terminal drawings were implemented here; no source code or assets were copied from either project.
+
+Released under the [MIT License](LICENSE).

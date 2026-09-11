@@ -1,7 +1,6 @@
 class Jukeboxcli < Formula
   desc "Mac-first terminal music player with local and online queues"
   homepage "https://github.com/funstuie-bit/JukeboxCli"
-  # Private repository: Git uses the user's credential helper, never an embedded token.
   url "https://github.com/funstuie-bit/JukeboxCli.git",
       revision: "a9e37ad9f95743a4539be30f55ebd101cbf82100"
   version "0.1.0-dev.14"
@@ -32,11 +31,10 @@ class Jukeboxcli < Formula
 
   def caveats
     <<~EOS
-      Private development formula: GitHub access is required to install/update.
       Run jukeboxcli --doctor to check dependencies. Homebrew manages tool updates.
       Existing soundcli music, cookies and profile paths are retained.
       No soundcli alias is linked, so an older soundcli command can coexist.
-      Physical media-key/Control Centre acceptance remains a separate check.
+      macOS media controls use mpv; system player identity may appear as mpv.
     EOS
   end
 

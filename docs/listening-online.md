@@ -1,6 +1,46 @@
-# Online listening — dev.8
+# Online listening and radio
 
-## Existing station refresh (dev.8)
+## Playing without downloading
+
+Press `8`, then `/`, to search YouTube Music without an account. `[` / `]`
+changes between songs, videos, albums, artists and playlists. Enter plays a song
+or opens a collection; Escape returns, and `L` loads another page when offered.
+Collections use their currently loaded tracks as the playback context.
+`A` appends, `P` queues next and `d` opens the explicit download workflow.
+Browsing, playback and queueing do not create a library copy.
+
+From Now Playing, `S` opens music search without stopping playback:
+
+- `l: query` searches local files (also the default for a bare query).
+- `s: query` searches online songs; `v: query` searches videos.
+- Pasted `/l:` and `/s:` prefixes also work.
+- Enter submits, then plays a selected result; `A`/`P` queue and `d` downloads
+  online results through the existing workflow.
+- Arrows/Page keys select; `L` loads more online results, `/` edits and Escape
+  cancels back to the previous queue/lyrics panel. Results are capped at 200;
+  narrow local queries when necessary.
+
+In the player's queue panel, `/` also opens music search. In lyrics, `/`
+still searches lyrics, while `S` searches music. Search captures normal
+transport/navigation shortcuts until Escape; both player layouts support it.
+
+`o` opens a YouTube/direct audio URL or website prompt. Enter accepts the input;
+select the result and Enter plays, `A` appends or `P` queues next. Use
+`9` → `R` explicitly for a radio feed or station website. Select a detected
+feed and press `f` to save; new favourites are never added automatically.
+In Radio / URL, `t` or `f` renames, `x` or `d` asks to remove a saved
+station (`y` confirms), and `g` refreshes artwork from its website.
+Queue removal is separate: `7` → `x` removes only that listening occurrence.
+
+Live radio shows no seek bar: space disconnects/reconnects at the live edge.
+Sessions restore paused, without connecting until you play. For ordinary streams,
+mpv 0.38+ and yt-dlp are required for YouTube resolution; direct feeds bypass
+yt-dlp and cookies. Browser-cookie settings apply to YouTube playback, not
+signed-out discovery. Next-track preparation is best effort, not guaranteed
+gapless playback. A rejected media URL is refreshed once; errors retain the queue
+so you can retry or skip.
+
+## Existing station refresh
 
 `refreshStations` reads current favourites and atomically merges only supplied
 thumbnail/website fields onto exact-URL matches. It validates before writing,
@@ -29,9 +69,9 @@ sites produce a direct-feed suggestion rather than a claim of universal support.
 Discovery requests use no browser cookies. LAN feeds remain intentionally allowed.
 
 Ibiza Stardust uses its canonical www page and published player data. DKFM root
-and /dkfm-2 plus the exact requested Deeper Shades Radio Garden URL have explicit
-compatibility mappings verified 2026-09-08; other Garden pages are unsupported.
-DKFM and Garden pages were challenge-protected: no bypass is attempted.
+and /dkfm-2 plus the exact Deeper Shades Radio Garden URL have explicit
+compatibility mappings; other Garden pages are unsupported.
+Challenge-protected pages are not bypassed.
 Optional og:image station artwork and source website are allowlisted in private
 favourites/session metadata. DKFM's known mapping has no artwork; this feature
 does not find current-song album art. Legacy favourites still load unchanged.
@@ -42,15 +82,6 @@ URLs keep saved names and now refresh supplied metadata; different aliases may s
 f/t accepts replacement text or blank to keep a name; renaming changes current
 and queued matching radio titles without reloading audio. Favourites live in 9,
 not the downloaded music Library. No automatic duplicate cleanup is performed.
-
-Added parser/network-boundary tests, full-App multi-feed/cancellation/naming tests
-and real mpv website→radio discovery plus no-reconnect rename checks in
-smoke-radio.ts. Earlier dev.4 implementation and acceptance details follow.
-
-Scope: user-requested Play URL, direct internet radio, favourites and clearer
-streaming controls. No library/download mutation, account sign-in, station
-directory, personalised YouTube mixes, lyrics or visualiser work in this batch.
-Keep this iteration on development while the maintainer tests dev.3 on another Mac.
 
 ## Implementation
 
@@ -85,10 +116,10 @@ Keep this iteration on development while the maintainer tests dev.3 on another M
 - Help is one bounded group per page with scroll; navigation is intercepted
   before playback keys, so browsing help cannot seek the song underneath.
 
-mpv reference checked 2026-09-08:
+mpv reference:
 [metadata and seekable properties](https://github.com/mpv-player/mpv/blob/master/DOCS/man/input.rst).
 
-## Acceptance
+## Verification and limits
 
 - Unit tests: URL classification/canonicalisation/rejections, cookie-free direct
   resolution/cancellation, atomic favourites/reload/rename/remove/corruption,
@@ -103,11 +134,11 @@ mpv reference checked 2026-09-08:
 - `npx tsx scripts/smoke-online.ts URL [config.json]`: optional bounded, muted
   real-service test. Requires existing yt-dlp/mpv on PATH; creates only a private
   temporary profile and symlinks its tool path. Optional config is read only for
-  cookie settings, never logged. A real YouTube music video passed title
-  enrichment, paused/muted load, audio position advance and pause on this M1.
-- Existing smoke-listening.ts and smoke-streaming.ts pass unchanged.
+  cookie settings, never logged. Use only disposable test cookie settings and
+  public test URLs; do not point probes at your personal profile.
+- `scripts/smoke-listening.ts` and `scripts/smoke-streaming.ts` cover local
+  playback and mixed-queue transitions with generated audio.
 
-Not verified: Intel/clean-Mac acceptance, real broadcaster matrix, authenticated
-radio, every HLS codec, or new screenshot appearance. ICY data depends on the
-station. No automatic live classification for generic URLs: choose R explicitly.
-No new dependencies, native helper or permissions. Artwork pipeline unchanged.
+Broadcaster availability, HLS codecs, artwork and ICY data vary by source. There
+is no automatic live classification for generic URLs: choose R explicitly.
+Authenticated/DRM radio and general station-directory browsing are unsupported.

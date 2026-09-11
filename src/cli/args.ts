@@ -147,9 +147,9 @@ download options (override config.json)
   --reencode <true|false>   force re-encode even if format matches
 
 examples
-  soundcli "https://youtube.com/watch?v=..."
-  soundcli --format mp3 --cookies ~/cookies.txt "https://..."
-  soundcli --output-dir ~/Music/MyLibrary @somehandle
+  jukeboxcli "https://youtube.com/watch?v=..."
+  jukeboxcli --format mp3 --cookies ~/cookies.txt "https://..."
+  jukeboxcli --output-dir ~/Music/MyLibrary @somehandle
 
 tip: quote links that contain & (e.g. "https://...?list=...")
 `;

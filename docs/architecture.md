@@ -1,8 +1,7 @@
 # JukeboxCli architecture
 
-Mac-first terminal music player, evolving the maintainer's soundcli fork. Keep Ink/React,
-TypeScript, yt-dlp and mpv initially. Prototype graphics/mouse capability before
-choosing any larger UI replacement.
+Mac-first terminal music player built on the soundcli library/download foundations,
+using Ink/React, TypeScript, yt-dlp and mpv.
 
 Playback owns the listening queue, order, shuffle/repeat and current position.
 DownloadQueue owns acquisition jobs; removing a listening-queue entry never
@@ -13,28 +12,32 @@ On macOS, mpv multimedia bindings send namespaced client-message events into
 Playback, so native next/previous honours this queue rather than mpv's preload
 list. Optional binding failure preserves ordinary playback; env opt-out is
 JUKEBOXCLI_MEDIA_KEYS=0. mpv owns OS integration and identity, not a new helper.
-See [Mac controls/install notes](mac-controls-and-install.md) for acceptance limits.
+See [Mac controls/install notes](mac-controls-and-install.md) for platform limits.
 
 Source installs stage and bundle the locked production npm tree into an independent
 archive. Homebrew instead builds a pinned Git revision into libexec and declares
-system tool dependencies; JUKEBOXCLI_SYSTEM_TOOLS=1 disables private binary fetches
+system tool dependencies; JUKEBOXCLI_SYSTEM_TOOLS=1 disables app-managed binary fetches
 and auto-updates. Doctor is read-only and bypasses app/bootstrap work.
 
 Versioned sessions resolve saved IDs through the library to recover moved paths.
 Save atomically, coalesce progress writes, flush on shutdown and restore paused.
 Existing soundcli paths stay compatible; JUKEBOXCLI_HOME selects an independent
 profile. Do not run both apps against a shared profile concurrently.
-Dev.13 selects branded JukeboxCli paths for truly fresh installations, preserving
+Profile selection uses branded JukeboxCli paths for truly fresh installations, preserving
 legacy profiles when detected (branded config/data wins if both exist). Selection
 does no writes or migration; a saved custom libraryDir still wins over defaults.
 
 `PlayableTrack` is a local Library Track or `StreamTrack` (kind=stream, stable
 page URL, no filePath). Session v2 saves stream metadata through an allowlist;
 v1 remains readable. Remote restore is lazy and paused, so offline launch never
-waits for extraction. Local IDs still resolve through Library; streamed history
-is not yet persisted. No extracted signed media URL or extractor headers enter session JSON.
+waits for extraction. Local IDs still resolve through Library. History persists successfully started
+streams/radio as allowlisted stable metadata alongside local references, with a
+500-entry bound. Home and History can replay streams without downloading. Queueing
+alone does not record a play, and earlier unrecorded plays cannot be recovered.
+Removing stream history never deletes music, saved stations or queue entries.
+No extracted signed media URL or extractor headers enter session or history JSON.
 Explicitly supplied direct URLs (including any query tokens) are persisted; see
-[dev.4 online listening](listening-online.md) for that separate trust boundary.
+[online listening](listening-online.md) for that separate trust boundary.
 
 `sources/music.ts` adapts MIT-licensed YouTube.js 18 to plain search/browse pages.
 Signed-out search supports five types; albums/playlists/artists drill down and
@@ -43,8 +46,8 @@ to ignore stale results; each provider fetch has a 20-second timeout. Leaving a
 view cancels its result publication. Player search additionally scopes AbortSignal
 through AsyncLocalStorage to abort its HTTP requests and continuations independently;
 shared client bootstrap retains its timeout and does not inherit a caller's abort.
-Music API authentication is distinct from yt-dlp cookies. Separate Music sign-in
-was removed from scope at the maintainer's request; retain browser-cookie playback/downloads.
+Music API authentication is distinct from yt-dlp cookies. There is no separate Music sign-in;
+browser-cookie playback/downloads remain available.
 Account playlists/likes remain unimplemented/deferred, not implicitly provided by
 cookies. No ytkew source is imported.
 
@@ -62,15 +65,15 @@ remote entries use the same pipeline. Stop/new selection abort old resolution.
 mpv prefetch is best effort, with forward/back demuxer limits of 32/4 MiB; it may
 defer rebuffering a changed next entry while paused. No universal gapless promise.
 
-Acceptance scripts: smoke-listening.ts (local restore/transport) and
+Fixture verification scripts: smoke-listening.ts (local restore/transport) and
 smoke-streaming.ts (loopback HTTP prefetch, headers, natural stream→stream→local
 sequence, queue edits, prepared skip). Both generate silent fixtures in isolated
 profiles. App tests cover Discover navigation, browsing, queueing and remote
 paused restore; service and real-player probes supplement the fixture tests.
 
-See ../FEATURES.md for status; the shared vault holds roadmap and session history.
+See [feature status](../FEATURES.md) and the [roadmap](roadmap.md).
 
-## Player rendering (dev.3)
+## Player rendering
 
 `playerLayout` splits at 86 content columns/16 body rows; smaller views stack.
 Queue formatting measures terminal cells, not JS string length. Explicit player
@@ -81,13 +84,13 @@ Before Ink takes stdin, `probeGraphics` requests Kitty direct-image support and
 CSI 16t cell dimensions (700ms timeout). Both must respond. Redirected I/O,
 tmux/screen, missing replies or JUKEBOXCLI_ART=blocks select half-blocks. Early
 keystrokes survive the probe; TERM_PROGRAM never enables graphics by itself.
-Dev.13 additionally queries iTerm2 Capabilities/ReportCellSize when indicated.
+The probe additionally queries iTerm2 Capabilities/ReportCellSize when indicated.
 Feature F advertises inline images; older iTerm2 needs its identity plus a live
 cell-size response. Reply collection uses the same bounded probe window. Inline
-mode emits OSC1337 File=inline=1 PNGs, at480px RGB to bound base64 below1MiB.
+mode emits OSC1337 File=inline=1 PNGs, at 480px RGB to bound base64 below 1 MiB.
 Ink's full-frame text redraw erases inline images; repaint occurs afterward.
 There is no post-frame rectangle erasure, which could destroy new text. Keep
-incremental rendering disabled. Actual iTerm2 visual/resize acceptance is pending.
+incremental rendering disabled.
 
 `Cover` reserves an Ink box and registers its geometry. `GraphicsPainter` chooses
 the latest visible registration; an expanded player can hide an embedded player
@@ -109,10 +112,10 @@ in-memory appearance. `--auto` cycles help
 and returns then exits. JUKEBOXCLI_VISUAL_REPORT optionally records placement
 diagnostics. Run from the repo (or set TSX_TSCONFIG_PATH). Tests cover chunking,
 probe/cleanup/stacked registrations, responsive layouts, Unicode queue columns
-and App input/persistence. Ghostty native protocol/lifecycle was exercised;
-OS screenshot capture was denied, so final visual acceptance remains open.
+and App input/persistence. Real-terminal checks remain necessary for protocol,
+font and permission differences.
 
-### Dev.7 player presentation
+### Player presentation
 
 `playerLayout` bounds the artwork area; the content-height split player card is
 top-aligned next to the full-height queue with no expanding spacer. Metadata precedes artwork; radio
