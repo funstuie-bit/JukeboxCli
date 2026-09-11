@@ -3,9 +3,8 @@ class Jukeboxcli < Formula
   homepage "https://github.com/funstuie-bit/JukeboxCli"
   # Private repository: Git uses the user's credential helper, never an embedded token.
   url "https://github.com/funstuie-bit/JukeboxCli.git",
-      revision: "83b6fb213d9885870eb1f49cdd1ab5c2c6b735a0"
-  version "0.1.0-dev.13"
-  revision 1
+      revision: "a9e37ad9f95743a4539be30f55ebd101cbf82100"
+  version "0.1.0-dev.14"
   license "MIT"
 
   depends_on :macos

@@ -1,5 +1,11 @@
 # JukeboxCli roadmap
 
+## Latest accepted build — dev.14 (2026-09-10)
+
+the maintainer approved stream duration/history cleanup and main promotion. Main now includes
+dev.14, with History/Home stream replay and known-duration preservation. Homebrew
+pins the same accepted runtime a9e37ad. Footer action icon unchanged; visualiser parked.
+
 ## Current milestone: Now Playing search — dev.11
 
 the maintainer authorised moving to the next feature after parking the visualiser. The

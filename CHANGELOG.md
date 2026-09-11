@@ -1,5 +1,11 @@
 # Changelog
 
+## Main promotion — dev.14 (2026-09-10)
+
+- the maintainer tested the stream duration/history cleanup and approved main promotion.
+- Main and Homebrew now install dev.14; runtime unchanged from a9e37ad.
+- Footer action icon unchanged; visualiser remains parked.
+
 ## 0.1.0-dev.14 — Stream duration and history (2026-09-09)
 
 - Keep known duration when resolver/mpv reports no usable duration; real positive

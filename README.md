@@ -1,8 +1,8 @@
 # JukeboxCli
 
 Mac-first terminal music player combining an offline library with YouTube Music
-discovery and streaming. **Current build: 0.1.0-dev.13** on `main`.
-the maintainer authorised promotion on 2026-09-09 for testing on his other MacBook.
+discovery and streaming. **Current build: 0.1.0-dev.14** on `main`.
+the maintainer tested and approved the stream duration/history fixes on 2026-09-10.
 Further development continues on `development`.
 **Dev.13** adds a listening-first welcome/Home screen with an original
 ASCII/Braille jukebox, branded fresh-profile folders and iTerm2 inline artwork.
@@ -126,7 +126,7 @@ player shows **Streaming** or **Saved locally**, plus next-track preparation.
 Stream artwork comes from its thumbnail; waveform extraction remains local-only.
 Remote queue entries restore paused without a network lookup until you press play.
 For YouTube, only stable page URLs/metadata are saved; extracted expiring audio URLs stay in memory.
-Development dev.14 includes streamed songs and radio in History and Home recents.
+Dev.14 includes streamed songs and radio in History and Home recents.
 Entries retain stable URLs and display metadata, not resolved playback URLs or headers;
 playing does not download audio. `d` on a stream in History offers removal from history
 only (not the queue or saved stations). Saved-file deletion retains its existing confirmation.
@@ -285,7 +285,7 @@ right edge lines up with the base.
 The arch, `C L I` selection buttons and speaker grille share the cabinet's centre
 line in both variants.
 
-Main now includes dev.13, moving optional download/settings tasks out of the first-run path;
+Main includes the new Home, moving optional download/settings tasks out of the first-run path;
 browser cookies, formats and custom output remain available under Settings.
 
 ### Settings (press `5` in the sidebar)
@@ -347,7 +347,7 @@ Full list via `jukeboxcli --help` (`soundcli` remains a compatibility alias):
    jukeboxcli
    ```
 
-The instructions above install `main` (dev.13). To test **development builds separately**,
+The instructions above install `main` (dev.14). To test **development builds separately**,
 clone the development branch into a different folder and use `npm start`;
 this does not replace the installed command:
 
