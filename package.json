@@ -5,8 +5,7 @@
   "description": "Mac-first terminal music player with YouTube Music discovery, streaming, an offline library, editable queues and sharp artwork. Based on soundcli.",
   "type": "module",
   "bin": {
-    "jukeboxcli": "./dist/index.js",
-    "soundcli": "./dist/index.js"
+    "jukeboxcli": "./dist/index.js"
   },
   "files": [
     "dist"
@@ -37,6 +36,7 @@
     "offline"
   ],
   "author": "bairon",
+  "contributors": ["funstuie-bit"],
   "license": "MIT",
   "repository": {
     "type": "git",

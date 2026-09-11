@@ -50,7 +50,7 @@ global command. It does not install Homebrew or Node itself.
 
 The installer builds an independent archive with locked production dependencies;
 moving the checkout afterward does not break the installed command. Source/package
-installs also provide the legacy `soundcli` alias. Existing unrelated commands
+installs provide only `jukeboxcli`. Existing unrelated commands
 are not forcibly overwritten. Normal source installs can fetch managed yt-dlp
 and ffmpeg copies on first launch.
 

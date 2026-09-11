@@ -3,6 +3,13 @@
 Release notes describe what changed in each build. For what works now and the
 remaining limits, see [feature status](FEATURES.md).
 
+## Unreleased
+
+- Credit funstuie-bit as a package contributor while retaining the upstream author
+  and original MIT notice.
+- New source/package installs provide only `jukeboxcli`, without the old
+  `soundcli` command alias.
+
 ## 0.1.1-beta.1: First tagged prerelease (2026-09-11)
 
 - Keep the player border and transport visible in short windows when the waveform loads.

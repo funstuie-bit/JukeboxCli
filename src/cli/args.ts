@@ -123,7 +123,6 @@ usage
   jukeboxcli <link>         download that song on launch
   jukeboxcli --version      print the version
   jukeboxcli --doctor       read-only installation/tool diagnostics
-  soundcli <link>           compatibility alias
 
 player keys
   m / 6                    Now Playing

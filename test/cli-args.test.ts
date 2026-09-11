@@ -96,7 +96,8 @@ describe("parseCliArgs", () => {
   });
 
   it("help text mentions the link pass-through", () => {
-    expect(HELP_TEXT).toContain("soundcli <link>");
+    expect(HELP_TEXT).toContain("jukeboxcli <link>");
+    expect(HELP_TEXT).not.toContain("soundcli <link>");
   });
 
   it("help text mentions new flags", () => {

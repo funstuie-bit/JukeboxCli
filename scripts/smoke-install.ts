@@ -1,5 +1,5 @@
 // Isolated source-copy → packaged install → reinstall; no real profile/global bin.
-import { cp, mkdtemp, readFile, realpath, rename, writeFile, mkdir } from "node:fs/promises";
+import { cp, mkdtemp, readFile, realpath, rename, writeFile, mkdir, lstat } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import assert from "node:assert/strict";
@@ -12,6 +12,7 @@ await mkdir(profile); await writeFile(path.join(profile, "keep.json"), '{"fixtur
 const env = { ...process.env, JUKEBOXCLI_HOME: profile, JUKEBOXCLI_SYSTEM_TOOLS: "1", JUKEBOXCLI_MEDIA_KEYS: "0" };
 await execa("sh", ["./install.sh", "--prefix", prefix], { cwd: source, env, timeout: 180000, stdout: "inherit", stderr: "inherit" });
 const command = path.join(prefix, "bin", "jukeboxcli");
+await assert.rejects(lstat(path.join(prefix, "bin", "soundcli")), { code: "ENOENT" });
 assert.ok((await realpath(command)).startsWith(await realpath(prefix) + path.sep));
 const locked = JSON.parse(await readFile(path.join(root, "package-lock.json"), "utf8"));
 const installedInk = JSON.parse(await readFile(path.join(prefix, "lib/node_modules/jukeboxcli/node_modules/ink/package.json"), "utf8"));
