@@ -1,7 +1,3 @@
 node_modules/
 dist/
 .DS_Store
-
-# Keep machine-specific agent instructions local.
-/AGENTS.md
-/CLAUDE.md
