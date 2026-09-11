@@ -30,7 +30,12 @@ if [ "$install_node_major" -lt 22 ]; then
   exit 1
 fi
 
-echo "Installing dependencies..."
+if [ "$install_check" -eq 0 ]; then
+  . ./scripts/install-mpv.sh
+  ensure_install_mpv
+fi
+
+echo "Installing Node dependencies..."
 npm ci
 
 echo "Building..."

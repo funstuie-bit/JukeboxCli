@@ -334,7 +334,8 @@ Full list via `jukeboxcli --help`:
 
 **One-time setup on the new Mac:**
 
-1. Install Node.js 22 or newer and mpv 0.38+. With Homebrew: `brew install node mpv`.
+1. Install Node.js 22 or newer. With Homebrew: `brew install node`.
+   The source installer checks mpv and installs it with Homebrew when missing.
    Ghostty is recommended for sharp artwork; other terminals use the fallback.
 2. Clone and install:
    ```sh
@@ -360,13 +361,19 @@ JUKEBOXCLI_HOME="$HOME/JukeboxCli-next-profile" npm start
 
 Keep the same `JUKEBOXCLI_HOME` for subsequent launches of that test profile.
 
-On first run the app sets up yt-dlp and ffmpeg (dev.13 fresh profiles use
-`~/Library/Caches/JukeboxCli/bin`; existing profiles and main dev.11 retain
-`~/Library/Caches/soundcli/bin`). Install mpv 0.38+ with `brew install mpv` for
+On first run the app sets up yt-dlp and ffmpeg (fresh profiles use
+`~/Library/Caches/JukeboxCli/bin`; existing legacy profiles retain
+`~/Library/Caches/soundcli/bin`). The source installer handles mpv on Mac; when
+running directly from source, install mpv 0.38+ with `brew install mpv` for
 streaming and in-terminal playback. Without mpv, saved files can open in your
 default player, but streaming is unavailable.
 
-**What `install.sh` does (dev.12):** installs locked dependencies, checks the build,
+**What `install.sh` does:** verifies a runnable mpv first, using Homebrew on macOS
+if missing. Homebrew errors remain visible and stop installation before replacing
+the app or printing success. Homebrew itself and Node must already be installed
+unless mpv is already available. `--check` only verifies the build and never installs mpv.
+The Mac app no longer attempts a background Homebrew installation at launch.
+The installer then installs locked Node dependencies, checks the build,
 then installs an independent package archive globally (not a source-checkout link).
 It includes `jukeboxcli` and the `soundcli` alias; unrelated commands are not force-overwritten.
 To retain an existing installation, use `npm start` from this checkout instead.

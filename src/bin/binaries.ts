@@ -140,6 +140,7 @@ export async function detectMpv(): Promise<string | null> {
   }
 
   const absolute = windowsMpvCandidates();
+  if (process.platform === "darwin") absolute.push("/opt/homebrew/bin/mpv", "/usr/local/bin/mpv");
   const wg = await wingetPackagesMpv();
   if (wg) absolute.push(wg);
   for (const p of absolute) {

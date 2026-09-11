@@ -31,7 +31,7 @@ This development branch is separate from the installed soundcli command.
 | Mouse actions and Vim preset | Planned | Input/focus regression |
 | Mac audio-reactive band visualiser | Parked until other work is finished; isolated [prototype](docs/visualiser-prototype.md) | Single-line look/demo length not accepted; not in Now Playing; revisit last |
 | Mac native media controls | Dev.12 mpv-native bridge routes keys through full queue; no helper | Physical keys/Control Centre/other-app ownership; system identity remains mpv |
-| Independent install/update and read-only doctor | Dev.12; source relocation/reinstall harness and managed-tools mode | Wider clean Mac first-run testing |
+| Independent install/update and read-only doctor | Source installer verifies mpv and installs it through Homebrew if missing, before replacing the app; visible failures; no background Mac brew install | Wider clean Mac first-run testing |
 | Homebrew releases, Intel and Apple Silicon | Dev.12 source-formula install/test and standalone install/reinstall pass on both architectures | Private authenticated tap; no bottles/core publication; GUI/media-key acceptance remains separate |
 
 No ytkew source code has been imported. Waveform is precomputed, not a live spectrum.

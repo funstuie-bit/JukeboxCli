@@ -1,5 +1,13 @@
 # Changelog
 
+## Installer dependency check (2026-09-10)
+
+- Source installer checks runnable mpv before installing JukeboxCli, installs missing
+  mpv through Homebrew on Mac, and stops with visible errors if setup fails.
+- Build-only `--check` does not install system dependencies. Node remains a prerequisite.
+- No background Mac Homebrew installation on app launch; detect standard Homebrew
+  mpv locations even when absent from the terminal PATH.
+
 ## Main promotion — dev.14 (2026-09-10)
 
 - the maintainer tested the stream duration/history cleanup and approved main promotion.

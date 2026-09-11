@@ -268,10 +268,10 @@ export function App({ initialAdd }: { initialAdd?: string } = {}) {
           .catch(() => {});
       });
 
-      // Auto-install mpv in the background so the rich player "just works".
+      // macOS dependencies are installed visibly by install.sh, not behind the TUI.
       // Retried on every launch while it's missing: a one-time flag here once
       // left playback silently broken forever after a single failed attempt.
-      if (!binaries.mpv && process.env.JUKEBOXCLI_SYSTEM_TOOLS !== "1") {
+      if (!binaries.mpv && process.platform !== "darwin" && process.env.JUKEBOXCLI_SYSTEM_TOOLS !== "1") {
         const failed = (): void => {
           // One calm line, then quiet again: the NowPlayingBar hint stays the
           // durable nudge while songs keep opening in the OS default app.
