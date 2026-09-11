@@ -20,6 +20,8 @@ I started this as a boredom project and it got slightly out of hand. JukeboxCli 
 
 Playing or browsing online music does not add it to your library. Downloads only start when you ask for one.
 
+[What's different?](docs/whats-different.md) explains the additions to soundcli, the ideas inspired by ytkew and Mousiki, and the newer radio, search and lyrics features.
+
 ## Install
 
 JukeboxCli currently supports macOS and needs Node.js 22 or newer.
@@ -93,13 +95,15 @@ Use `A` to append a selected track and `P` to play it next. In the queue, `u` an
 
 ## Artwork and terminals
 
-Ghostty and Kitty-compatible terminals can display real PNG artwork. iTerm2 inline images are supported too. Other terminals fall back to proportional half-block art, so the player still works without a graphics protocol.
+Ghostty and Kitty-compatible terminals can display real PNG artwork. iTerm2 inline images are supported too. Apple's built-in Terminal defaults to a simple disc/radio drawing instead of pixelated covers. Other unsupported terminals retain proportional half-block art.
 
 Press `b` in Now Playing to hide the artwork. You can force the fallback renderer with:
 
 ```sh
 JUKEBOXCLI_ART=blocks jukeboxcli
 ```
+
+This also opts into pixel artwork in Apple's Terminal. To choose the simple drawing in any terminal, use `JUKEBOXCLI_ART=simple jukeboxcli`.
 
 ## Downloads and cookies
 
@@ -114,7 +118,7 @@ Run `jukeboxcli --help` for the full list. Spotify support imports music from su
 
 ## Current status
 
-The current build is `0.1.0-dev.14`. I use it, but it is still an early macOS project rather than a finished cross-platform release. Development and automated install checks focus on Apple Silicon; Intel Macs are not currently a CI target.
+The current build is `0.1.0-dev.15`. I use it, but it is still an early macOS project rather than a finished cross-platform release. Development and automated install checks focus on Apple Silicon; Intel Macs are not currently a CI target.
 
 A few limits are worth knowing:
 

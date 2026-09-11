@@ -92,6 +92,23 @@ or bootstrapping tools. It reports tool availability and terminal environment
 hints. A missing PATH tool can differ from the app's managed-cache availability;
 read the reported paths. Source installs also check standard Homebrew mpv paths.
 
+Doctor gives yt-dlp up to 15 seconds to start; other version probes have a
+5-second limit. It reports timeout, exit-code and launch failures separately.
+A successful real-world install does not mean every diagnostic probe succeeds.
+
+If you installed through Homebrew but doctor reports `automatic` rather than
+`managed`, check for another installation taking precedence:
+
+```sh
+type -a jukeboxcli
+brew list --versions jukeboxcli
+"$(brew --prefix jukeboxcli)/bin/jukeboxcli" --version
+"$(brew --prefix jukeboxcli)/bin/jukeboxcli" --doctor
+```
+
+The explicit Homebrew path bypasses a conflicting command. Do not delete commands
+or force-overwrite links until you know which installation owns them.
+
 ## Media controls
 
 mpv supplies macOS media-key integration. JukeboxCli routes next/previous events

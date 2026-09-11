@@ -1,7 +1,7 @@
 import { memo, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { Box, Text, type DOMElement } from "ink";
 import { loadCoverArt, loadCoverImage, type CoverArt } from "../../player/art";
-import { graphicsPainter, graphicsProtocol, cellAspect, type CoverImage, type ImageRect } from "../../player/graphics";
+import { graphicsPainter, graphicsProtocol, cellAspect, simpleArtwork, type CoverImage, type ImageRect } from "../../player/graphics";
 import { COLOR, RULE } from "../theme";
 
 /** Hidden ancestors must remove pixel art too (Ink's display:none only hides text). */
@@ -24,9 +24,10 @@ const Blocks = memo(function Blocks({ art }: { art: CoverArt }) {
 export function Cover({ source, cols, rows, visible, fallback }: { source?: string; cols: number; rows: number; visible: boolean; fallback?: ReactNode }) {
   const ref = useRef<DOMElement>(null);
   const [loaded, setLoaded] = useState<{ key: string; image: CoverImage | null; art: CoverArt | null }>();
-  const key = `${source}:${cols}:${rows}`;
+  const simple = simpleArtwork();
+  const key = `${source}:${cols}:${rows}:${simple}`;
   useEffect(() => {
-    if (!source || !visible) return;
+    if (!source || !visible || simple) return;
     let cancelled = false;
     void (async () => {
       // 480px RGB stays below the inline protocol's 1MiB escape-sequence cap,
@@ -36,8 +37,8 @@ export function Cover({ source, cols, rows, visible, fallback }: { source?: stri
       if (!cancelled) setLoaded({ key, image, art });
     })();
     return () => { cancelled = true; };
-  }, [source, key, cols, rows, visible]);
-  const mine = visible && loaded?.key === key ? loaded : undefined;
+  }, [source, key, cols, rows, visible, simple]);
+  const mine = visible && !simple && loaded?.key === key ? loaded : undefined;
   const image = mine?.image;
   useLayoutEffect(() => {
     if (!image || !graphicsPainter) return;
@@ -51,9 +52,9 @@ export function Cover({ source, cols, rows, visible, fallback }: { source?: stri
   if (image) { w = Math.min(cols, Math.max(1, Math.floor(rows * image.width / image.height / cellAspect)));
     h = Math.min(rows, Math.max(1, Math.ceil(w * image.height / image.width * cellAspect))); }
   return <Box width={cols} height={rows} alignItems="center" justifyContent="center">
-    {image ? <Box ref={ref} width={w} height={h} /> : mine?.art ? <Blocks art={mine.art} /> : visible && (!source || mine) && fallback ? fallback :
+    {image ? <Box ref={ref} width={w} height={h} /> : mine?.art ? <Blocks art={mine.art} /> : visible && (simple || !source || mine) && fallback ? fallback :
       <Box width={cols} height={rows} borderStyle="round" borderColor={RULE} alignItems="center" justifyContent="center">
-        <Text color={COLOR.muted}>{!visible ? "Artwork hidden · b" : !source || mine ? "No cover art" : "Loading artwork…"}</Text>
+        <Text color={COLOR.muted}>{!visible ? "Artwork hidden · b" : simple ? "Simple artwork" : !source || mine ? "No cover art" : "Loading artwork…"}</Text>
       </Box>}
   </Box>;
 }

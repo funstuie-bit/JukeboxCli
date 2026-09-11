@@ -1,10 +1,24 @@
 import { EventEmitter } from "node:events";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { inlineImage, inlineQuery, supportsInline, graphicsProtocol } from "../src/player/graphics";
+import { inlineImage, inlineQuery, supportsInline, graphicsProtocol, simpleArtwork } from "../src/player/graphics";
 afterEach(() => vi.unstubAllEnvs());
 import { GraphicsPainter, imagePackets, imagePlacement, deleteImage, graphicsQuery, probeGraphics } from "../src/player/graphics";
 
 describe("terminal image lifecycle", () => {
+  it("defaults only native Terminal to simple artwork and respects explicit modes", () => {
+    expect(simpleArtwork({ TERM_PROGRAM: "Apple_Terminal" })).toBe(true);
+    expect(simpleArtwork({ TERM_PROGRAM: "Apple_Terminal", JUKEBOXCLI_ART: "blocks" })).toBe(false);
+    for (const terminal of ["ghostty", "iTerm.app", "kitty", "unknown"])
+      expect(simpleArtwork({ TERM_PROGRAM: terminal })).toBe(false);
+    expect(simpleArtwork({ TERM_PROGRAM: "ghostty", JUKEBOXCLI_ART: "simple" })).toBe(true);
+  });
+  it("does not probe graphics when simple artwork is explicitly selected", async () => {
+    vi.stubEnv("JUKEBOXCLI_ART", "simple");
+    const write = vi.fn();
+    expect(await probeGraphics({ isTTY: true } as typeof process.stdin,
+      { isTTY: true, write } as unknown as typeof process.stdout)).toBe(false);
+    expect(write).not.toHaveBeenCalled();
+  });
   const image = { png: new Uint8Array(7000), width: 1024, height: 576 };
   const rect = { x: 3, y: 5, cols: 42, rows: 12 };
   it("renders inline PNGs with explicit inline mode, bounded cell placement and preserved cursor", () => {

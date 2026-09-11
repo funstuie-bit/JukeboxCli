@@ -8,6 +8,11 @@ export const graphicsQuery = `${ESC}[16t${ESC}_Gi=${ID},s=1,v=1,a=q,t=d,f=24;AAA
 export let cellAspect = 0.5;
 export type GraphicsProtocol = "kitty" | "iterm";
 export let graphicsProtocol: GraphicsProtocol = "kitty";
+/** Native Terminal defaults to a drawing; block artwork remains an explicit opt-in. */
+export function simpleArtwork(env: NodeJS.ProcessEnv = process.env): boolean {
+  return env.JUKEBOXCLI_ART === "simple" ||
+    (!graphicsPainter && env.TERM_PROGRAM === "Apple_Terminal" && env.JUKEBOXCLI_ART !== "blocks");
+}
 export const inlineQuery = `${ESC}]1337;Capabilities${ESC}\\${ESC}]1337;ReportCellSize${ESC}\\`;
 export function supportsInline(features: string): boolean {
   const codes: string[] = features.match(/^[A-Za-z0-9]*/)?.[0].match(/[A-Z][a-z]*[0-9]*/g) ?? [];
@@ -33,7 +38,7 @@ export function imagePlacement(rect: ImageRect): string {
 
 /** Probe before Ink owns stdin. Never infer support from the terminal's name. */
 export async function probeGraphics(input = process.stdin, output = process.stdout): Promise<boolean> {
-  if (!input.isTTY || !output.isTTY || process.env.TMUX || process.env.STY || process.env.JUKEBOXCLI_ART === "blocks") return false;
+  if (!input.isTTY || !output.isTTY || process.env.TMUX || process.env.STY || ["blocks", "simple"].includes(process.env.JUKEBOXCLI_ART ?? "")) return false;
   const wasRaw = input.isRaw;
   graphicsProtocol = "kitty";
   const inline = process.env.JUKEBOXCLI_ART === "iterm" || process.env.TERM_PROGRAM === "iTerm.app" || supportsInline(process.env.TERM_FEATURES ?? "");

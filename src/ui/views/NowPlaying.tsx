@@ -7,7 +7,7 @@ import { RULE, playerPalette, type PlayerPalette } from "../theme";
 import { ListeningQueue } from "./ListeningQueue";
 import { isLive, isStream } from "../../player/media";
 import { Cover } from "../components/Cover";
-import { graphicsPainter, graphicsProtocol } from "../../player/graphics";
+import { graphicsPainter, graphicsProtocol, simpleArtwork } from "../../player/graphics";
 import { RadioFallback } from "../components/RadioFallback";
 import { LyricsPanel } from "../components/LyricsPanel";
 import { PlayerSearch } from "../components/PlayerSearch";
@@ -96,12 +96,12 @@ export function NowPlaying({ embedded = false, onDownload = () => {} }: { embedd
       {heading}
       {layout.split ? <Box alignItems="center" justifyContent="center" flexShrink={0}>
         <Cover source={source} cols={Math.min(inner, 32)} rows={artRows} visible={artVisible}
-          fallback={<RadioFallback live={live} rows={artRows} palette={COLOR}
+          fallback={<RadioFallback live={live} rows={artRows} palette={COLOR} simple={simpleArtwork()}
             animate={active && !st.paused && !st.loading && !!t && store.config.reducedMotion === false} />} />
       </Box> : null}
       {layout.split && height >= 23 ? <Box height={1} /> : null}
       {details}
-      {layout.split && height >= 23 ? <Text color={COLOR.muted} wrap="truncate-end">T {store.config.playerTheme === "calm" ? "Calm" : "Lavender"} · Art {graphicsPainter ? graphicsProtocol === "iterm" ? "iTerm2" : "Kitty" : "text fallback"}</Text> : null}
+      {layout.split && height >= 23 ? <Text color={COLOR.muted} wrap="truncate-end">T {store.config.playerTheme === "calm" ? "Calm" : "Lavender"} · Art {simpleArtwork() ? "simple" : graphicsPainter ? graphicsProtocol === "iterm" ? "iTerm2" : "Kitty" : "text fallback"}</Text> : null}
     </Box>
     <Box flexDirection="column" marginLeft={layout.split ? 1 : 0} width={layout.split ? layout.right : width} height={layout.split ? height : Math.max(3, height - 6)}>
       <Box display={lyricsVisible || searchVisible ? "none" : "flex"}>

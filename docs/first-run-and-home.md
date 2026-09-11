@@ -52,7 +52,9 @@ do not publish them.
 Ghostty/Kitty-compatible terminals use PNG graphics after live protocol and
 cell-size checks. iTerm2 uses inline PNG images after capability/size checks.
 Terminal environment names alone are not sufficient. tmux/screen, redirected I/O
-or missing replies fall back to proportional half-block artwork.
+or missing replies fall back to proportional half-block artwork, except Apple's
+built-in Terminal, which defaults to the simple disc/radio drawing. Simple mode
+does not fetch or extract cover images. Supported native-image renderers are unchanged.
 
 iTerm2 may ask whether to allow terminal-initiated image display. Allow it only
 for sessions you trust; its remember option can avoid repeated prompts.
@@ -61,6 +63,10 @@ You can instead keep text rendering:
 ```sh
 JUKEBOXCLI_ART=blocks jukeboxcli
 ```
+
+This explicitly enables pixel artwork even in Apple's Terminal. To force the
+simple drawing in any terminal, use `JUKEBOXCLI_ART=simple jukeboxcli`.
+The `b` hide/show control works in either mode.
 
 `JUKEBOXCLI_ART=iterm` explicitly selects the iTerm probe path; it is not a
 permission bypass. `b` toggles artwork in the player. Missing artwork uses an

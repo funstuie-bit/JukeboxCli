@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.1.0-dev.15 — Native Terminal artwork and diagnostics
+
+- Default Apple's Terminal to a simple disc/radio drawing instead of pixelated
+  cover art, without loading cover images. `JUKEBOXCLI_ART=blocks` opts back into
+  pixel artwork; `JUKEBOXCLI_ART=simple` selects drawings in any terminal.
+- Preserve inline artwork in supported terminals and the artwork hide/show control.
+- Give yt-dlp's version probe up to 15 seconds for cold startup and distinguish
+  timeouts, process exit failures and launch errors in doctor output.
+- Add a guide to the fork's additions and credited inspirations.
+
 ## 0.1.0-dev.14 — Stream duration and history (2026-09-09)
 
 - Keep known duration when resolver/mpv reports no usable duration; real positive

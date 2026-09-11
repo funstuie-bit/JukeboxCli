@@ -80,6 +80,11 @@ Queue formatting measures terminal cells, not JS string length. Explicit player
 colours avoid inheriting low-contrast terminal defaults. Art and waveform load
 independently; visual failures never block playback.
 
+Without a native graphics renderer, Apple's Terminal defaults to a simple
+disc/radio drawing. `JUKEBOXCLI_ART=blocks` overrides that default; `simple`
+disables graphics probing and cover extraction in any terminal. Cover render
+keys include the mode so stale image results cannot replace a simple drawing.
+
 Before Ink takes stdin, `probeGraphics` requests Kitty direct-image support and
 CSI 16t cell dimensions (700ms timeout). Both must respond. Redirected I/O,
 tmux/screen, missing replies or JUKEBOXCLI_ART=blocks select half-blocks. Early

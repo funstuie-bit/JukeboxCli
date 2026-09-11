@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { render } from "ink-testing-library";
 import { promises as fs } from "node:fs";
 import os from "node:os";
@@ -915,9 +915,9 @@ describe("queue copy, banner, overlay, welcome paste", () => {
     // The list is unfocused while the field is open: enter submits the rename
     // (unchanged title = noop) instead of also playing the cursor row.
     stdin.write("\r");
-    await tick();
+    // Await the async submit and Ink redraw, not just one event-loop turn.
+    await vi.waitFor(() => expect(lastFrame() ?? "").toContain("Press / to search…"), { timeout: 2000 });
     expect(played).toEqual([]);
-    expect(lastFrame() ?? "").toContain("Press / to search…");
   });
 
   it("playlists: t opens the set rename prefilled with its name", async () => {
