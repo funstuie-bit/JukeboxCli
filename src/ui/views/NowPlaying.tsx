@@ -12,11 +12,15 @@ import { RadioFallback } from "../components/RadioFallback";
 import { LyricsPanel } from "../components/LyricsPanel";
 import { PlayerSearch } from "../components/PlayerSearch";
 
-export function playerLayout(width: number, height: number) {
+export function playerLayout(width: number, height: number, live = false, waveform = false) {
   const split = width >= 86 && height >= 16;
   const left = split ? Math.min(56, Math.max(40, Math.floor(width * 0.36))) : width;
   const waveRows = height >= 26 ? 2 : 1;
-  const artRows = split ? Math.min(12, Math.max(3, height - 11 - waveRows)) : 0;
+  // Borders (2), heading (4), transport/status (4), then optional rows.
+  // Reserve these before artwork so the bottom border cannot run into the footer.
+  const extraRows = (height >= 23 ? 2 : 0) + (live && height >= 26 ? 2 : 0)
+    + (!live && waveform ? 1 + waveRows : 0);
+  const artRows = split ? Math.min(12, Math.max(0, height - 10 - extraRows)) : 0;
   return { split, left, right: width - left - 1, waveRows, artRows };
 }
 
@@ -71,7 +75,7 @@ export function NowPlaying({ embedded = false, onDownload = () => {} }: { embedd
   const at = Math.min(progressWidth - 1, Math.floor(fraction * progressWidth));
   const t = st.track;
   const live = isLive(t);
-  const artRows = live && layout.split ? Math.min(12, Math.max(3, height - (height >= 26 ? 14 : 11))) : layout.artRows;
+  const artRows = playerLayout(width, height, live, !!samples).artRows;
   const heading = <Box flexDirection="column" width={inner}>
     <Text color={COLOR.accent} bold wrap="truncate-end">{t ? cleanText(trackDisplayTitle(t)) : "Nothing playing"}</Text>
     <Box height={layout.split && live && height >= 26 ? 3 : 1} overflow="hidden"><Text color={COLOR.alt} wrap={layout.split && live && height >= 26 ? "wrap" : "truncate-end"}>{live ? cleanText(st.broadcastTitle || "Waiting for station song information") : t?.artist ? cleanText(t.artist) : t ? "Online audio" : "Library · 8 Discover · o Play URL"}</Text></Box>

@@ -2,9 +2,7 @@
 
 ## Next
 
-- Finish the docs and make prerelease builds repeatable.
-- Test and publish a labelled prerelease, point Homebrew at that exact build
-  and include a short demo.
+- Finish hands-on checks of the first tagged prerelease and collect feedback.
 - Check more fresh Apple Silicon installs, terminal artwork and physical media
   keys. Intel testing isn't a priority at the moment.
 - Fix timing-sensitive UI tests and keep an eye on development-tool security fixes.

@@ -58,8 +58,11 @@ export function ListeningQueue({ height, width, active, framed = false }: {
       const source = isLive(row.track) ? "LIVE" : isStream(row.track) ? "NET" : "FILE";
       const title = cleanText(trackDisplayTitle(row.track)).replace(/^Radio · /, "");
       const marker = `${here && focused ? "›" : " "}${row.index === state.index ? state.paused ? "Ⅱ" : "▶" : " "}`;
+      // The engine knows the current recording's duration better than saved tags.
+      // Keep the other rows' metadata and the library itself unchanged.
+      const duration = row.index === state.index && state.duration > 0 ? state.duration : row.track.durationSec;
       return <Text key={row.index} color={here && focused ? COLOR.selectedText : row.index === state.index ? COLOR.accent : COLOR.text} backgroundColor={here && focused ? COLOR.selection : undefined} wrap="truncate-end">
-        {columns ? queueRow(artist, title, isLive(row.track) ? "LIVE" : formatDuration(row.track.durationSec), cols, marker, source) : fitRow(marker + source.padEnd(4) + " " + title + " · " + artist, cols)}
+        {columns ? queueRow(artist, title, isLive(row.track) ? "LIVE" : formatDuration(duration), cols, marker, source) : fitRow(marker + source.padEnd(4) + " " + title + " · " + artist, cols)}
       </Text>;
     })}
     {!dense ? <><Box flexGrow={1} />

@@ -9,9 +9,37 @@ import { playerPalette } from "../src/ui/theme";
 import { RadioFallback } from "../src/ui/components/RadioFallback";
 import { trackDisplayTitle } from "../src/util/format";
 import stringWidth from "string-width";
-vi.mock("../src/player/art", () => ({ loadCoverArt: async () => null, loadWaveform: async () => null }));
+import { loadWaveform } from "../src/player/art";
+vi.mock("../src/player/art", () => ({ loadCoverArt: async () => null, loadWaveform: vi.fn(async () => null) }));
 afterEach(cleanup);
 describe("responsive listening layout", () => {
+  it("uses the player's measured duration only for the current queue occurrence", () => {
+    const base = makeStore().playback.getState().track!;
+    const track = { ...base, durationSec: 509 };
+    const store = makeStore({ playback: makeFakePlayback({ track, list: [track, track], index: 0, duration: 545 }) });
+    const view = render(<StoreContext.Provider value={store}><ListeningQueue width={90} height={14} active /></StoreContext.Provider>);
+    const rows = view.lastFrame()!.split("\n");
+    expect(rows.find(row => row.includes("›▶"))).toContain("9:05");
+    expect(rows.filter(row => row.includes("FILE"))[1]).toContain("8:29");
+    expect(track.durationSec).toBe(509);
+  });
+  it("keeps both bottom borders visible with a loaded waveform at short split heights", async () => {
+    vi.mocked(loadWaveform).mockResolvedValue({ samples: Array(50).fill(0.5) } as Awaited<ReturnType<typeof loadWaveform>>);
+    try {
+      for (const height of [16, 18, 22, 23, 24, 25, 26, 28, 38]) {
+        const store = makeStore({ cols: 140, listRows: height - 2 });
+        const view = render(<StoreContext.Provider value={store}><NowPlaying /></StoreContext.Provider>);
+        await vi.waitFor(() => expect(view.lastFrame()).toContain("TRACK WAVEFORM"));
+        const rows = view.lastFrame()!.split("\n");
+        expect(rows.length).toBeLessThanOrEqual(height);
+        const layout = playerLayout(138, height);
+        expect(rows.some(row => row[0] === "╰" && row[layout.left - 1] === "╯")).toBe(true);
+        expect(rows.some(row => row[layout.left + 1] === "╰" && row[137] === "╯")).toBe(true);
+        expect(view.lastFrame()).toContain("Saved locally");
+        view.unmount();
+      }
+    } finally { vi.mocked(loadWaveform).mockResolvedValue(null); }
+  });
   it("keeps playing and selected markers distinct when browsing the queue", async () => {
     const store = makeStore();
     const view = render(<StoreContext.Provider value={store}><ListeningQueue width={90} height={14} active /></StoreContext.Provider>);

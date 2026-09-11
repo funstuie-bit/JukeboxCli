@@ -3,6 +3,14 @@
 Release notes describe what changed in each build. For what works now and the
 remaining limits, see [feature status](FEATURES.md).
 
+## 0.1.1-beta.1: First tagged prerelease (2026-09-11)
+
+- Keep the player border and transport visible in short windows when the waveform loads.
+- Show the player's measured duration in the current queue row. Other queue entries
+  keep their stored durations; music files and library tags are unchanged.
+- Publish a tagged Mac prerelease with installation instructions and a demo.
+- Fresh-install and real-terminal checks for this build remain pending user testing.
+
 ## 0.1.0-dev.15: Native Terminal artwork and diagnostics
 
 - Default Apple's Terminal to a simple disc/radio drawing instead of pixelated

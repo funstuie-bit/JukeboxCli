@@ -124,7 +124,7 @@ Run `jukeboxcli --help` for the full list. Spotify support imports music from su
 
 ## Current status
 
-The current build is `0.1.0-dev.15`. I use it, but it's still an early Mac project. Automated install checks run on Apple Silicon. Intel Macs aren't part of those checks, and I'm not claiming this works everywhere.
+The current prerelease is [0.1.1-beta.1](https://github.com/funstuie-bit/JukeboxCli/releases/tag/v0.1.1-beta.1). I use it, but it's still an early Mac project. Automated install checks run on Apple Silicon. Intel Macs aren't part of those checks, and I'm not claiming this works everywhere.
 
 A few limits are worth knowing:
 
