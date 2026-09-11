@@ -314,7 +314,7 @@ jukeboxcli --output-dir ~/Music/MyLibrary --quality 5 @somehandle
 jukeboxcli --sleep 2 --max-sleep 10 --retries 10
 ```
 
-Full list via `jukeboxcli --help` (`soundcli` remains a compatibility alias):
+Full list via `jukeboxcli --help`:
 
 | Flag | What it does |
 | --- | --- |

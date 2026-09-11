@@ -55,7 +55,7 @@ fi
 echo "Package retained for rollback/reinstall: $install_stage/$install_archive"
 
 echo ""
-echo "Done. Run it from anywhere with:  jukeboxcli (soundcli is a compatibility alias)"
+echo "Done. Run it from anywhere with:  jukeboxcli"
 if [ -n "$install_prefix" ]; then
   echo "Installed at: $install_prefix/bin/jukeboxcli"
 else
