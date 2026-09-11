@@ -5,8 +5,8 @@
 - Finish public documentation and a reproducible prerelease workflow.
 - Publish a clearly labelled prerelease after verification; pin Homebrew to that
   exact source snapshot and attach a small video demo.
-- Broaden clean-install, terminal artwork and physical media-key checks on Intel
-  and Apple Silicon Macs.
+- Broaden clean-install, terminal artwork and physical media-key checks on
+  Apple Silicon Macs. Intel testing is not a current priority.
 - Investigate timing-sensitive UI tests and track development-tool advisories.
 
 ## Later

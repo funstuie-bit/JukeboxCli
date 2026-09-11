@@ -101,18 +101,6 @@ Press `b` in Now Playing to hide the artwork. You can force the fallback rendere
 JUKEBOXCLI_ART=blocks jukeboxcli
 ```
 
-## Profiles and existing soundcli data
-
-Fresh installs keep music in `~/Music/JukeboxCli` and app data in the normal macOS Library folders. If JukeboxCli finds an existing soundcli profile, it keeps using it; nothing is moved or merged automatically.
-
-Use an isolated profile for testing or screenshots:
-
-```sh
-JUKEBOXCLI_HOME="$HOME/JukeboxCli-demo" jukeboxcli
-```
-
-Source/package installs also provide a `soundcli` compatibility alias; Homebrew links only `jukeboxcli`. New examples and normal use should prefer `jukeboxcli`.
-
 ## Downloads and cookies
 
 The download side supports audio format and quality controls, output folders, pacing, retries, browser cookies and Netscape-format `cookies.txt` files.
@@ -126,7 +114,7 @@ Run `jukeboxcli --help` for the full list. Spotify support imports music from su
 
 ## Current status
 
-The current build is `0.1.0-dev.14`. I use it, but it is still an early macOS project rather than a finished cross-platform release.
+The current build is `0.1.0-dev.14`. I use it, but it is still an early macOS project rather than a finished cross-platform release. Development and automated install checks focus on Apple Silicon; Intel Macs are not currently a CI target.
 
 A few limits are worth knowing:
 
