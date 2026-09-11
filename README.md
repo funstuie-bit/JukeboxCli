@@ -20,7 +20,7 @@ I started this as a boredom project and it got slightly out of hand. JukeboxCli 
 
 Playing or browsing online music does not add it to your library. Downloads only start when you ask for one.
 
-[What's different?](docs/whats-different.md) explains the additions to soundcli, the ideas inspired by ytkew and Mousiki, and the newer radio, search and lyrics features.
+[What's different?](docs/whats-different.md) covers what I added to soundcli, the ideas borrowed from ytkew and Mousiki, and where the radio, search and lyrics features ended up.
 
 ## Install
 
@@ -34,7 +34,7 @@ brew install funstuie-bit/jukeboxcli/jukeboxcli
 jukeboxcli
 ```
 
-This is a third-party, source-built formula. It installs Node, mpv, ffmpeg and yt-dlp through Homebrew. It uses a pinned development snapshot, not the latest checkout; see the [install guide](docs/mac-controls-and-install.md).
+This is the project's own formula, not part of Homebrew's main collection. It builds from source and installs Node, mpv, ffmpeg and yt-dlp. It uses a specific development build, so it won't pick up every commit on GitHub. The [install guide](docs/mac-controls-and-install.md) lists the version it installs.
 
 To install from a clone instead:
 
@@ -46,7 +46,7 @@ cd JukeboxCli
 jukeboxcli
 ```
 
-The source installer installs missing mpv through Homebrew, then builds an independent global command rather than linking back to the checkout. Node 22+ and Homebrew must already be available. On first launch, the normal source install can manage its own yt-dlp and ffmpeg copies.
+You need Node 22+ and Homebrew before running the source installer. It installs mpv if needed and builds a command you can run from anywhere (moving the cloned folder won't break it). The app can download its own yt-dlp and ffmpeg copies on first launch.
 
 Check an installation without opening the player:
 
@@ -74,7 +74,7 @@ cd JukeboxCli
 
 ## First run
 
-JukeboxCli opens on Home. You can start with public online search or radio; a local library is optional.
+JukeboxCli opens on Home. Search online, paste a radio link or open your local music. You don't need a library or a sign-in to get started.
 
 | Key | Action |
 | --- | --- |
@@ -95,7 +95,13 @@ Use `A` to append a selected track and `P` to play it next. In the queue, `u` an
 
 ## Artwork and terminals
 
-Ghostty and Kitty-compatible terminals can display real PNG artwork. iTerm2 inline images are supported too. Apple's built-in Terminal defaults to a simple disc/radio drawing instead of pixelated covers. Other unsupported terminals retain proportional half-block art.
+Ghostty, Kitty-compatible terminals and iTerm2 can display the actual cover artwork. This is JukeboxCli running in Ghostty:
+
+![JukeboxCli in Ghostty with cover artwork](docs/assets/ghostty-artwork.png)
+
+Apple's built-in Terminal gets a text drawing instead. It's basic, but the pixelated covers weren't doing much for it. Other terminals without image support still use block artwork.
+
+![JukeboxCli in Apple Terminal with the text fallback](docs/assets/terminal-no-artwork.png)
 
 Press `b` in Now Playing to hide the artwork. You can force the fallback renderer with:
 
@@ -103,11 +109,11 @@ Press `b` in Now Playing to hide the artwork. You can force the fallback rendere
 JUKEBOXCLI_ART=blocks jukeboxcli
 ```
 
-This also opts into pixel artwork in Apple's Terminal. To choose the simple drawing in any terminal, use `JUKEBOXCLI_ART=simple jukeboxcli`.
+That also brings back pixel artwork in Apple's Terminal if you prefer it. To use the text drawing in any terminal, run `JUKEBOXCLI_ART=simple jukeboxcli`.
 
 ## Downloads and cookies
 
-The download side supports audio format and quality controls, output folders, pacing, retries, browser cookies and Netscape-format `cookies.txt` files.
+Choose the audio format, quality, output folder, delays and retry count. You can use cookies from your browser or a Netscape-format `cookies.txt` file.
 
 ```sh
 jukeboxcli --format mp3 --cookies-from-browser chrome:Default "https://..."
@@ -118,7 +124,7 @@ Run `jukeboxcli --help` for the full list. Spotify support imports music from su
 
 ## Current status
 
-The current build is `0.1.0-dev.15`. I use it, but it is still an early macOS project rather than a finished cross-platform release. Development and automated install checks focus on Apple Silicon; Intel Macs are not currently a CI target.
+The current build is `0.1.0-dev.15`. I use it, but it's still an early Mac project. Automated install checks run on Apple Silicon. Intel Macs aren't part of those checks, and I'm not claiming this works everywhere.
 
 A few limits are worth knowing:
 
@@ -153,7 +159,7 @@ More detail:
 - [Roadmap](docs/roadmap.md)
 - [Changelog](CHANGELOG.md)
 
-Contributions are welcome; read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request.
+Want to change something? Read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request.
 
 ## Credits
 

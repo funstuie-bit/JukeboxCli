@@ -11,8 +11,8 @@ brew install funstuie-bit/jukeboxcli/jukeboxcli
 jukeboxcli
 ```
 
-This third-party source-built formula declares Node, mpv, ffmpeg and yt-dlp.
-It builds a pinned Git revision into Homebrew's libexec and links only
+This is the project's own Homebrew formula. It installs Node, mpv, ffmpeg and
+yt-dlp, builds a specific Git revision into Homebrew's libexec and links only
 `jukeboxcli`. Homebrew manages tool updates; `JUKEBOXCLI_SYSTEM_TOOLS=1` prevents
 the app from downloading or updating its own tool binaries.
 
@@ -65,8 +65,9 @@ cd JukeboxCli
 ./update.sh
 ```
 
-The update script refuses a dirty checkout, pulls fast-forward only and runs the
-installer. Keep using the same prefix when one was supplied.
+The update script stops if you've changed files in the checkout. Otherwise it
+pulls without merging divergent history and runs the installer. Keep using the
+same prefix if you supplied one during installation.
 
 Uninstall the source-installed package:
 
@@ -87,14 +88,16 @@ jukeboxcli --help
 jukeboxcli --doctor
 ```
 
-Doctor prints JSON without opening the UI, creating a profile, reading cookies
-or bootstrapping tools. It reports tool availability and terminal environment
-hints. A missing PATH tool can differ from the app's managed-cache availability;
-read the reported paths. Source installs also check standard Homebrew mpv paths.
+Doctor prints JSON without opening the player, creating a profile, reading
+cookies or installing tools. It reports which tools it can run and which
+terminal you're using. Check the reported paths: a tool missing from PATH may
+still be available in the app's own cache. Source installs also check the
+standard Homebrew locations for mpv.
 
 Doctor gives yt-dlp up to 15 seconds to start; other version probes have a
 5-second limit. It reports timeout, exit-code and launch failures separately.
-A successful real-world install does not mean every diagnostic probe succeeds.
+If playback works but doctor reports a failure, check the named tool and error.
+That result is about the tool check, not a verdict on the whole installation.
 
 If you installed through Homebrew but doctor reports `automatic` rather than
 `managed`, check for another installation taking precedence:
@@ -126,6 +129,7 @@ To disable JukeboxCli's optional media-key bridge:
 JUKEBOXCLI_MEDIA_KEYS=0 jukeboxcli
 ```
 
-Bridge setup failure leaves ordinary terminal playback available. Automated
-event tests cannot establish physical-key or Control Centre behaviour on every
-Mac; report the OS, terminal and keyboard context when filing an issue.
+If the bridge fails, you can still use the controls inside the terminal.
+Automated tests don't tell us whether every Mac's physical keys and Control
+Centre work. Include your macOS version, terminal and keyboard when reporting
+a problem with them.

@@ -1,8 +1,8 @@
-# Mac audio-reactive visualiser — feasibility prototype
+# Mac audio-reactive visualiser prototype
 
-Status: **parked until other project work is finished**, not integrated into Now Playing.
-The production player retains its precomputed local track waveform. The prototype
-is separate from the already implemented player search and lyrics features.
+This is parked. It reacts to audio, but the visuals still need work and the demo
+is too short to judge properly. It isn't in Now Playing. The player still uses
+the precomputed local-track waveform; search and lyrics are separate, working features.
 
 ## What works
 
@@ -75,7 +75,7 @@ device latency, independent Intel/Apple Silicon and terminal matrix. Eight broad
 bands are an initial design, not a high-resolution FFT spectrum. There is no
 claim of system-wide visualisation or native media-key support.
 
-## Integration gate / next implementation
+## Before this goes in the player
 
 1. Add an opt-in capability-probed mpv tap behind the existing player interface.
    Filter failure must restore ordinary playback, not make music unusable.

@@ -1,6 +1,10 @@
 # Lyrics
 
-Open the player with `m` (or focus section `6`), then `l` toggles lyrics/queue.
+Press `m` to open the player (or focus section `6`), then `l` for lyrics.
+Online lookup starts off. Press uppercase `L` inside the lyrics panel to enable
+it; opening the panel alone won't search the internet.
+
+Press `l` again to return to the queue.
 The queue remains intact and keeps its selection. While lyrics are open, arrows
 up/down and Page Up/Down scroll lyrics, `f` follows timed lines again. Left/right
 still seek 15 seconds; space pauses. `l` no longer seeks in the focused player.
@@ -12,10 +16,11 @@ a recording (artist/title/album/duration shown), Enter selects, Esc cancels.
 cooldown. While typing or choosing, global playback/navigation keys are captured;
 Esc returns to lyrics, not out of the player. Ctrl+C still quits.
 
-`O` opens the **separate lyrics.ovh plain-text provider**. Edit `Artist - Song`
-(one spaced separator); Enter explicitly sends this to lyrics.ovh. Esc cancels.
-Online lookup must be enabled first. This source is never contacted automatically,
-returns no verifiable recording timing/identity, and is labelled plain/unverified.
+If LRCLIB can't find a match, `O` opens a separate lyrics.ovh search. Edit
+`Artist - Song` (one spaced separator); Enter sends it, Esc cancels. Online
+lookup must be enabled first. This provider is only contacted when you ask.
+It supplies text without recording details or timestamps, so results are
+labelled plain/unverified.
 
 ## Sources and privacy
 
@@ -76,12 +81,13 @@ conservative heuristic, not song recognition. Even if the provider returns
 timings, radio displays plain text: the broadcast gives no reliable song position.
 Station name/logo and DJ show text are not suitable lyric-search metadata.
 
-Missing metadata/results, instrumental recordings and failures have explicit
-states. There is no lyric-text editor, embedded-tag lyrics, translation, YAML
-lyricsfile parsing or YouTube transcript scraping. No guarantee of coverage or
-correct timing or online word-level availability. Large DJ sets should normally
-stay in the queue/radio view. Automatic radio lookup remains exact-only; manually
-chosen radio lyrics never highlight as synced.
+The panel tells you if metadata or lyrics are missing, the recording is marked
+instrumental, or lookup failed. Some songs won't have lyrics; others will have
+the wrong text or timing. Word-level timing depends on the supplied data.
+There is no lyrics editor, translation, embedded-tag reader, YAML lyricsfile
+parser or YouTube transcript scraping. For long DJ sets, the queue/radio view
+is usually more useful. Automatic radio lookup requires an exact match, and
+manually chosen radio lyrics still won't be shown as synced.
 
 ## Matching
 

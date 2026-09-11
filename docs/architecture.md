@@ -3,10 +3,11 @@
 Mac-first terminal music player built on the soundcli library/download foundations,
 using Ink/React, TypeScript, yt-dlp and mpv.
 
-Playback owns the listening queue, order, shuffle/repeat and current position.
-DownloadQueue owns acquisition jobs; removing a listening-queue entry never
-deletes music. Library IDs remain stable; duplicate queue entries are separate
-positions. UI calls explicit playback actions rather than editing lists.
+`Playback` owns the listening queue, order, shuffle/repeat and current position.
+`DownloadQueue` handles downloads. They are separate: removing a track from the
+listening queue never deletes music. Library IDs stay stable; adding the same
+track twice creates two queue positions. The UI calls playback methods rather
+than editing the lists itself.
 
 On macOS, mpv multimedia bindings send namespaced client-message events into
 Playback, so native next/previous honours this queue rather than mpv's preload
@@ -36,8 +37,8 @@ streams/radio as allowlisted stable metadata alongside local references, with a
 alone does not record a play, and earlier unrecorded plays cannot be recovered.
 Removing stream history never deletes music, saved stations or queue entries.
 No extracted signed media URL or extractor headers enter session or history JSON.
-Explicitly supplied direct URLs (including any query tokens) are persisted; see
-[online listening](listening-online.md) for that separate trust boundary.
+Direct URLs you supply are saved, including query tokens. That makes these
+profile files private; see [online listening](listening-online.md).
 
 `sources/music.ts` adapts MIT-licensed YouTube.js 18 to plain search/browse pages.
 Signed-out search supports five types; albums/playlists/artists drill down and
@@ -48,8 +49,8 @@ through AsyncLocalStorage to abort its HTTP requests and continuations independe
 shared client bootstrap retains its timeout and does not inherit a caller's abort.
 Music API authentication is distinct from yt-dlp cookies. There is no separate Music sign-in;
 browser-cookie playback/downloads remain available.
-Account playlists/likes remain unimplemented/deferred, not implicitly provided by
-cookies. No ytkew source is imported.
+Cookies don't add account playlists or likes. Those aren't implemented.
+No ytkew source is imported.
 
 `player/resolve.ts` runs yt-dlp metadata-only extraction with the configured cookie
 source, abort signals and a 45-second timeout. Direct media URLs and whitelisted
@@ -63,7 +64,7 @@ headers and direct URLs; playlist entry IDs associate natural advance with a
 queue occurrence, preventing the EOF handler from loading it twice. Local and
 remote entries use the same pipeline. Stop/new selection abort old resolution.
 mpv prefetch is best effort, with forward/back demuxer limits of 32/4 MiB; it may
-defer rebuffering a changed next entry while paused. No universal gapless promise.
+defer rebuffering a changed next entry while paused. Gaps can still happen.
 
 Fixture verification scripts: smoke-listening.ts (local restore/transport) and
 smoke-streaming.ts (loopback HTTP prefetch, headers, natural stream→stream→local

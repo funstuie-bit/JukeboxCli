@@ -6,8 +6,8 @@ Press `8`, then `/`, to search YouTube Music without an account. `[` / `]`
 changes between songs, videos, albums, artists and playlists. Enter plays a song
 or opens a collection; Escape returns, and `L` loads another page when offered.
 Collections use their currently loaded tracks as the playback context.
-`A` appends, `P` queues next and `d` opens the explicit download workflow.
-Browsing, playback and queueing do not create a library copy.
+`A` adds to the end of the queue, `P` plays next and `d` opens the download screen.
+Searching, playing and queueing don't save a copy in your library.
 
 From Now Playing, `S` opens music search without stopping playback:
 
@@ -15,7 +15,7 @@ From Now Playing, `S` opens music search without stopping playback:
 - `s: query` searches online songs; `v: query` searches videos.
 - Pasted `/l:` and `/s:` prefixes also work.
 - Enter submits, then plays a selected result; `A`/`P` queue and `d` downloads
-  online results through the existing workflow.
+  online results through the download screen.
 - Arrows/Page keys select; `L` loads more online results, `/` edits and Escape
   cancels back to the previous queue/lyrics panel. Results are capped at 200;
   narrow local queries when necessary.
@@ -40,7 +40,16 @@ signed-out discovery. Next-track preparation is best effort, not guaranteed
 gapless playback. A rejected media URL is refreshed once; errors retain the queue
 so you can retry or skip.
 
-## Existing station refresh
+## Refresh a saved station's artwork
+
+Select the station in `9` and press `g`. Paste its website (it's filled in if
+already known), then choose a feed. You don't need to delete and re-add the
+station. Its saved name stays put and playback doesn't reconnect.
+
+To remove a saved station, use `x` or `d` and confirm with `y`. That's separate
+from removing one play of the station from the queue.
+
+### How refresh works
 
 `refreshStations` reads current favourites and atomically merges only supplied
 thumbnail/website fields onto exact-URL matches. It validates before writing,
@@ -57,7 +66,7 @@ Full-App regression seeds an artwork-less favourite, starts it, rediscovers its
 website, checks preserved name/enriched session, then cancels/confirms removal.
 Real mpv smoke checks metadata refresh does not open another audio connection.
 
-## Website discovery addition
+## Finding feeds on a website
 
 `player/feeds.ts` validates and inspects HTTP(S) responses with a 15-second abort,
 five-request redirect bound, 1-MiB text limit and 12 deduplicated results. Audio
@@ -65,7 +74,7 @@ response bodies are cancelled after headers; candidate audio/artwork is not
 prefetched. Static audio/source tags, explicit audio links and common player
 data attributes/quoted stream fields are recognised. PLS/M3U are expanded once;
 HLS stays one feed. No JavaScript execution or nested crawling. Blocked/unsupported
-sites produce a direct-feed suggestion rather than a claim of universal support.
+sites show a suggestion to try a direct feed URL instead.
 Discovery requests use no browser cookies. LAN feeds remain intentionally allowed.
 
 Ibiza Stardust uses its canonical www page and published player data. DKFM root
@@ -76,12 +85,14 @@ Optional og:image station artwork and source website are allowlisted in private
 favourites/session metadata. DKFM's known mapping has no artwork; this feature
 does not find current-song album art. Legacy favourites still load unchanged.
 
-Listen shows candidate choices, esc cancels, and abandoning the section aborts
-pending detection. A new probe replaces unsaved candidates only. Existing exact
-URLs keep saved names and now refresh supplied metadata; different aliases may still produce separate favourites.
-f/t accepts replacement text or blank to keep a name; renaming changes current
-and queued matching radio titles without reloading audio. Favourites live in 9,
-not the downloaded music Library. No automatic duplicate cleanup is performed.
+Listen shows the feeds it finds. Escape cancels, and leaving the section stops
+the lookup. A new search replaces unsaved results only. An exact URL match keeps
+the saved name and refreshes any supplied metadata; different URLs for the same
+station can still create duplicates.
+Use `f`/`t` to type a new name, or leave it blank to keep the current one.
+Renaming updates matching playing and queued stations without reloading audio.
+Saved stations live in `9`, not the downloaded music Library. The app doesn't
+remove duplicates for you.
 
 ## Implementation
 

@@ -1,7 +1,7 @@
 # Contributing
 
-Use macOS, Node.js 22+ and npm. Real playback smoke tests also need mpv and
-ffmpeg on PATH; online extraction needs yt-dlp.
+You'll need macOS, Node.js 22+ and npm. Tests that play audio also need mpv and
+ffmpeg on PATH; tests that resolve online audio need yt-dlp.
 
 ## Setup and verification
 
@@ -14,8 +14,9 @@ npx --no-install tsx scripts/check-dist-imports.ts
 ```
 
 Vitest uses one worker and a 20-second test timeout locally and in CI.
-Do not disable assertions or skip tests to hide failures. Runtime changes need
-focused regression tests, including full-App keyboard behaviour where relevant.
+If a test fails, fix the cause. Don't remove the assertion or skip the test to
+get a green check. Add a regression test for behaviour you change, including
+keyboard input through the full app where it matters.
 
 ## Keep tests isolated
 
@@ -31,14 +32,21 @@ requirements. Do not commit cookies, credentials, direct URLs with private query
 tokens, music, profiles, logs or generated personal data. Inspect screenshots,
 recordings and error output before sharing them.
 
-Playing/queueing and downloading are separate actions. Preserve that distinction
-and do not make migrations or deletion implicit.
+Playing a track is not permission to download it. Removing it from the queue is
+not permission to delete the file. Keep those actions separate, and ask before
+moving or deleting user data.
 
 ## Documentation
 
-Describe current behaviour, limitations and privacy boundaries rather than
-development history. Keep CLI examples, key hints and install instructions in
-sync. Preserve upstream attribution and the MIT licence.
+Say what works, what doesn't and what data leaves the machine. Keep commands,
+key hints and install instructions accurate. Preserve upstream credits and the
+MIT licence.
+
+Keep the wording direct and practical. Use specific examples, contractions and
+short paragraphs. Lists and tables are fine when they make instructions easier
+to follow. Skip sales pitches, corporate language, em dashes and swearing.
+Don't turn a limitation into a feature or claim testing that hasn't happened.
+Technical names and commands still need to be exact.
 
 ## Generated previews
 

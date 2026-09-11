@@ -1,16 +1,15 @@
 # Home, first run and artwork
 
-The welcome screen offers online search, radio/URL, local music and optional
-downloads. Enter opens the selected choice; Escape skips to Home. No sign-in,
-download or existing library is required to begin.
+Start with online search, radio, local music or a download. Enter opens your
+choice; Escape skips to Home. You don't need an account or an existing library.
 
 ## Navigation
 
 `H` returns Home. Use arrows and Enter for its choices, recents and saved stations.
 `/` opens online search from Home; `8` opens Discover and `9` opens Radio / URL.
 `1` opens Library, `6` opens Now Playing, `m` expands the player and `7` opens
-the queue. `?` shows contextual, paged help. Text fields capture shortcuts until
-you finish or cancel.
+the queue. `?` shows the keys for the current screen. While you're typing in a
+text field, shortcuts won't change playback or move you to another screen.
 
 Home shows current playback, recent local and streamed plays, and saved stations.
 Opening Home does not start playback. The large jukebox drawing appears only
@@ -33,10 +32,10 @@ Fresh macOS installations use:
 
 If an existing soundcli config, data directory or default music folder is found,
 JukeboxCli retains the legacy profile unless branded config/data already exists.
-An existing custom music directory remains authoritative. Selection never copies,
-moves or merges data. Do not run both apps against one profile concurrently.
+An existing custom music directory still takes priority. Choosing a profile
+doesn't copy, move or merge data. Don't run both apps against one profile at once.
 
-An explicit profile overrides automatic selection:
+To use a separate profile:
 
 ```sh
 JUKEBOXCLI_HOME="$HOME/JukeboxCli-demo" jukeboxcli
@@ -49,12 +48,11 @@ do not publish them.
 
 ## Artwork
 
-Ghostty/Kitty-compatible terminals use PNG graphics after live protocol and
-cell-size checks. iTerm2 uses inline PNG images after capability/size checks.
-Terminal environment names alone are not sufficient. tmux/screen, redirected I/O
-or missing replies fall back to proportional half-block artwork, except Apple's
-built-in Terminal, which defaults to the simple disc/radio drawing. Simple mode
-does not fetch or extract cover images. Supported native-image renderers are unchanged.
+Ghostty, Kitty-compatible terminals and iTerm2 can show PNG artwork. The app
+checks image support and cell size before using it; a terminal name alone isn't
+enough. With tmux/screen, redirected output or no reply to those checks, it uses
+block artwork. Apple's Terminal uses a text drawing by default and doesn't load
+cover images in that mode.
 
 iTerm2 may ask whether to allow terminal-initiated image display. Allow it only
 for sessions you trust; its remember option can avoid repeated prompts.
@@ -77,6 +75,6 @@ Window resizing is handled live. Restart after changing font proportions if
 placement is wrong. `jukeboxcli --doctor` reports terminal environment hints,
 but does not perform an interactive graphics-permission test.
 
-See the [README screenshots](../README.md#first-run) for actual terminal views.
+See the [README screenshots](../README.md#artwork-and-terminals) to compare Ghostty with Apple's Terminal.
 [Generated fixture previews](../CONTRIBUTING.md#generated-previews) illustrate
 components with placeholder data, not a live music collection.

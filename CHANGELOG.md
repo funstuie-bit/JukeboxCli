@@ -1,6 +1,9 @@
 # Changelog
 
-## 0.1.0-dev.15 — Native Terminal artwork and diagnostics
+Release notes describe what changed in each build. For what works now and the
+remaining limits, see [feature status](FEATURES.md).
+
+## 0.1.0-dev.15: Native Terminal artwork and diagnostics
 
 - Default Apple's Terminal to a simple disc/radio drawing instead of pixelated
   cover art, without loading cover images. `JUKEBOXCLI_ART=blocks` opts back into
@@ -10,7 +13,7 @@
   timeouts, process exit failures and launch errors in doctor output.
 - Add a guide to the fork's additions and credited inspirations.
 
-## 0.1.0-dev.14 — Stream duration and history (2026-09-09)
+## 0.1.0-dev.14: Stream duration and history (2026-09-09)
 
 - Keep known duration when resolver/mpv reports no usable duration; real positive
   engine duration still wins, live radio remains untimed.
@@ -24,7 +27,7 @@
 - No background Mac Homebrew installation on app launch; detect standard Homebrew
   mpv locations even when absent from the terminal PATH.
 
-## 0.1.0-dev.13 — First impressions and iTerm2 (2026-09-09)
+## 0.1.0-dev.13: First impressions and iTerm2 (2026-09-09)
 
 - Listening-first welcome and H Home: online search, radio/URL, local music and
   optional downloads. Roomy Home adds recent local tracks, saved stations and
@@ -39,7 +42,7 @@
 - Idle player says Stopped; clearer empty Library actions, explicit muted colours
   in entry screens, no-sign-in-needed discovery label, branded request identifier.
 
-## 0.1.0-dev.12 — Mac controls and installation (2026-09-09)
+## 0.1.0-dev.12: Mac controls and installation (2026-09-09)
 
 - mpv-native media keys routed through JukeboxCli's full queue; descriptive system
   title, stop-as-pause, optional bridge fallback and JUKEBOXCLI_MEDIA_KEYS=0 opt-out.
@@ -49,7 +52,7 @@
 - Managed system tools mode for Homebrew: no automatic binary fetch/update,
   with pinned source-formula packaging and Mac architecture CI.
 
-## 0.1.0-dev.11 — Search inside Now Playing (2026-09-08)
+## 0.1.0-dev.11: Search inside Now Playing (2026-09-08)
 
 - S opens local/online search in both player layouts; l: local, s: songs,
   v: videos, default local. Existing signed-out discovery service reused.
@@ -60,7 +63,7 @@
 - Captured keyboard prevents typing from changing transport/navigation/queue;
   abort on edit/close/hide, stale-response guards, bounded/deduplicated results.
 
-## 0.1.0-dev.10 — Smarter matching and focused lyrics (2026-09-08)
+## 0.1.0-dev.10: Smarter matching and focused lyrics (2026-09-08)
 
 - Explicit online-disabled prompt; no misleading plain-lyrics status before load.
 - Exact lookup, then mastering-label/primary-artist fallback constrained by
@@ -76,7 +79,7 @@
 - Search captures keyboard input without seeking, pausing or changing queue;
   stale/hidden requests are cancelled. Normalised selections survive offline.
 
-## 0.1.0-dev.9 — Optional lyrics (2026-09-08)
+## 0.1.0-dev.9: Optional lyrics (2026-09-08)
 
 - Player l toggles queue/lyrics without seeking; ←/→ retain transport controls.
 - Adjacent local LRC first, private bounded offline cache, then optional LRCLIB
@@ -86,7 +89,7 @@
 - Scroll/follow controls, cancellation on hide/track change, small-panel bounds,
   identified sequential provider requests, timeout and Retry-After handling.
 
-## 0.1.0-dev.8 — Station artwork refresh and removal (2026-09-08)
+## 0.1.0-dev.8: Station artwork refresh and removal (2026-09-08)
 
 - Website rediscovery atomically refreshes metadata on existing exact-URL
   favourites, keeping names/URLs and previously saved artwork if none is supplied.
@@ -96,7 +99,7 @@
 - x/d removal is visible in the footer; named confirmation, y accepts/esc cancels.
   Removal never deletes music or changes current playback/queue.
 
-## 0.1.0-dev.7 — Player layout polish (2026-09-08)
+## 0.1.0-dev.7: Player layout polish (2026-09-08)
 
 - Top-align the content-height player with the queue; remove centring and the
   expanding blank gap. Waveform is one/two rows rather than a five-row slab.
@@ -107,7 +110,7 @@
 - No saved-station or playback metadata migration. Old station entries without
   artwork metadata still use the fallback; this is not an artwork repair release.
 
-## 0.1.0-dev.6 — Clearer player and radio presentation (2026-09-08)
+## 0.1.0-dev.6: Clearer player and radio presentation (2026-09-08)
 
 - Capped, vertically centred player card beside full-height Playback queue;
   title/artist/broadcast text above bounded artwork, stacked small-window layout.
@@ -120,7 +123,7 @@
 - Original terminal drawings and implementation; existing music, favourites and
   queue order are preserved.
 
-## 0.1.0-dev.5 — Website feed detection (2026-09-08)
+## 0.1.0-dev.5: Website feed detection (2026-09-08)
 
 - Paste station websites or PLS/M3U lists in o/R, then select a discovered feed.
   Static audio/player links only; cancellable 15-second/1-MiB/12-result limits.
@@ -132,7 +135,7 @@
   Rename updates playing/queued radio without reconnecting; same-URL favourites
   retain names on rediscovery. Existing favourites/music are not migrated/deleted.
 
-## 0.1.0-dev.4 — Play URL and internet radio (2026-09-08)
+## 0.1.0-dev.4: Play URL and internet radio (2026-09-08)
 
 - Global o Play URL and visible 9 Radio / URL. Single YouTube video/Shorts/live
   links, direct HTTP(S) audio and explicit live radio; enter play, A/P queue.
@@ -147,7 +150,7 @@
 - Fixed immediate-paste field initialisation and one-off playback replacing an
   idle queue. URL validation, credential-free labels and documented persistence.
 
-## 0.1.0-dev.3 — player presentation (2026-09-07)
+## 0.1.0-dev.3: Player presentation (2026-09-07)
 
 - Two-panel player: artwork/details/waveform left, full-height editable queue
   right. Artist/title/duration columns, solid selection, slate borders and
@@ -161,7 +164,7 @@
 - Multi-row whole-track waveform with separate progress. Trailing semicolon/year
   tidied for display only; no library/file mutation.
 
-## 0.1.0-dev.2 — streaming and public discovery (2026-09-07)
+## 0.1.0-dev.2: Streaming and public discovery (2026-09-07)
 
 - Visible Discover (8): signed-out YouTube Music search, five result types,
   album/artist/playlist browsing, pagination, stream/queue/download actions.
@@ -171,7 +174,7 @@
   without network access until play. v1 sessions remain readable; music is unchanged.
 - Corrected numbered navigation inside drill-downs and stale next-ready status.
 
-## 0.1.0-dev.1 — first JukeboxCli development build (2026-09-07)
+## 0.1.0-dev.1: First JukeboxCli development build (2026-09-07)
 
 - Visible Now Playing (6/m) and Queue (7), persistent shortcut hints and JukeboxCli branding.
 - Append/play-next from track lists; select, reorder, remove and confirmed clear in the listening queue. No music deletion from queue actions.
