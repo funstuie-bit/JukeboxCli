@@ -16,8 +16,8 @@ It builds a pinned Git revision into Homebrew's libexec and links only
 `jukeboxcli`. Homebrew manages tool updates; `JUKEBOXCLI_SYSTEM_TOOLS=1` prevents
 the app from downloading or updating its own tool binaries.
 
-The formula currently pins `2b0269fece1a78ef365ff12be9d5bb8eab32418b`,
-version `0.1.0-dev.14` (formula revision 1). It does not follow every source commit, even when that
+The formula currently pins `d47831703d88d72fbd487993ff9a079fb3eaf386`,
+version `0.1.0-dev.15`. It does not follow every source commit, even when that
 commit has the same package version. A future release needs an explicit pin
 update; use a source install if you need the latest checkout.
 
