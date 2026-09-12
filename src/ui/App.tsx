@@ -6,7 +6,8 @@ import { ensureFfmpeg } from "../bin/ffmpeg-fetch";
 import { ensureMpvInstalled } from "../bin/mpv-install";
 import { finalizeStagedYtDlp } from "../bin/ytdlp-fetch";
 import { maybeUpdateYtDlp } from "../bin/ytdlp-update";
-import { loadConfig, saveConfig, type Config } from "../config/config";
+import { loadConfig, type Config } from "../config/config";
+import { ConfigSession } from "../config/session";
 import { promises as fs } from "node:fs";
 import { DownloadQueue } from "../download/queue";
 import { loadQueue } from "../download/persist";
@@ -89,7 +90,7 @@ function Content({ section }: { section: Section }) {
   }
 }
 
-export function App({ initialAdd }: { initialAdd?: string } = {}) {
+export function App({ initialAdd, initialOverrides }: { initialAdd?: string; initialOverrides?: Partial<Config> } = {}) {
   useMouseWheel();
   const { exit } = useApp();
   const { isRawModeSupported } = useStdin();
@@ -127,6 +128,7 @@ export function App({ initialAdd }: { initialAdd?: string } = {}) {
   const [mpvStatus, setMpvStatus] = useState<string | null>(null);
   const [boot, setBoot] = useState<Boot | null>(null);
   const [config, setConfigState] = useState<Config | null>(null);
+  const configSession = useRef<ConfigSession | null>(null);
   // Bumped by `r` on the setup-failed screen to re-run the whole bootstrap.
   const [bootAttempt, setBootAttempt] = useState(0);
   // Guards the bootstrap effect against overlapping runs across retries.
@@ -190,10 +192,12 @@ export function App({ initialAdd }: { initialAdd?: string } = {}) {
     if (booting.current) return;
     booting.current = true;
     void (async () => {
-      const cfg = await loadConfig();
+      const sessionConfig = new ConfigSession(await loadConfig(), initialOverrides);
+      configSession.current = sessionConfig;
+      const cfg = sessionConfig.get();
       // A link passed on the command line means the user has self-onboarded:
       // skip the welcome tour and drop straight into downloading it (the
-      // saveConfig below persists the flag).
+      // sessionConfig below persists only the flag, not CLI overrides).
       if (initialAdd) cfg.firstRunComplete = true;
       const library = await LibraryStore.load();
       // One-time layout migration (pre-owner files move into their handle
@@ -205,7 +209,7 @@ export function App({ initialAdd }: { initialAdd?: string } = {}) {
       // Library is now the source of truth, so drop the legacy yt-dlp archive.
       void fs.rm(legacyArchiveFile, { force: true }).catch(() => {});
       const binaries = await ensureBinaries(setStatus);
-      const playback = new Playback(binaries.mpv, undefined, createStreamResolver(loadConfig));
+      const playback = new Playback(binaries.mpv, undefined, createStreamResolver(async () => sessionConfig.get()));
 
       // Recently played: record every track the player actually starts,
       // including auto-advance and next/prev, not just explicit picks.
@@ -320,6 +324,7 @@ export function App({ initialAdd }: { initialAdd?: string } = {}) {
           })
           .catch(() => {});
       }
+      await sessionConfig.save(cfg);
       setConfigState(cfg);
       setBoot({ library, binaries, queue, playback, history, session: persistListeningSession(playback) });
       // Silent drift hygiene (drop dead entries + dupes) runs behind the
@@ -348,7 +353,6 @@ export function App({ initialAdd }: { initialAdd?: string } = {}) {
         setRegion("content");
         setPendingAdd(initialAdd);
       }
-      void saveConfig(cfg);
     })()
       .catch((e: unknown) =>
         setError(e instanceof Error ? e.message : String(e)),
@@ -576,7 +580,7 @@ export function App({ initialAdd }: { initialAdd?: string } = {}) {
     (c: Config) => {
       setConfigState(c);
       boot?.queue.updateConfig(c);
-      void saveConfig(c);
+      void configSession.current?.save(c).catch(() => setMpvStatus("Could not save settings; changes apply to this launch only."));
     },
     [boot],
   );

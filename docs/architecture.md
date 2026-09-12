@@ -74,6 +74,21 @@ paused restore; service and real-player probes supplement the fixture tests.
 
 See [feature status](../FEATURES.md) and the [roadmap](roadmap.md).
 
+## Launch options and saved preferences
+
+The entry point passes parsed flags to App without writing config. `ConfigSession`
+keeps saved preferences separate from the effective config for this launch.
+Downloads and the stream resolver use that effective config, including temporary
+cookies and output location. The resolver reads it in memory, not from disk.
+
+UI updates compare the next config with the current effective values and save
+only changed fields onto the saved preferences. Onboarding, theme changes and
+lyrics opt-in therefore cannot persist unrelated CLI overrides. Editing an
+overridden field to a different value in Settings makes that edit permanent.
+Writes are serialized. A fresh launch without flags loads only saved preferences.
+Previously persisted CLI values cannot be distinguished from deliberate preferences;
+the fix does not guess at or reset existing settings.
+
 ## Player rendering
 
 `playerLayout` splits at 86 content columns/16 body rows; smaller views stack.

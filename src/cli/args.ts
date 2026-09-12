@@ -132,7 +132,7 @@ player keys
   X                        clear queue and stop (confirm)
   ?                        all keys
 
-download options (override config.json)
+download options (this launch only; do not change saved settings)
   --format <fmt>            audio format: best, mp3, flac, wav, m4a, opus, vorbis
   --quality <0-10>          audio quality (0=best, 10=worst)
   --yt-format <str>         yt-dlp format string (e.g. "bestaudio[ext=m4a]")
@@ -150,5 +150,6 @@ examples
   jukeboxcli --format mp3 --cookies ~/cookies.txt "https://..."
   jukeboxcli --output-dir ~/Music/MyLibrary @somehandle
 
+Change preferences in Settings to save them for future launches.
 tip: quote links that contain & (e.g. "https://...?list=...")
 `;

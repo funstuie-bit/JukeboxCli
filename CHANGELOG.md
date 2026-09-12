@@ -3,7 +3,13 @@
 Release notes describe what changed in each build. For what works now and the
 remaining limits, see [feature status](FEATURES.md).
 
-## Unreleased
+## 0.1.1-beta.2: Temporary command-line options
+
+- Keep command-line download options temporary for the current launch, including
+  output directory, cookies and format. Startup and unrelated Settings changes
+  no longer save them. Streaming reads the effective launch settings too.
+- Clarify the help text. Older saved values aren't reset automatically because
+  they cannot be distinguished from deliberately saved preferences.
 
 - Credit funstuie-bit as a package contributor while retaining the upstream author
   and original MIT notice.

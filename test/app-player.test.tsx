@@ -8,15 +8,17 @@ import { rmSync } from "node:fs";
 import path from "node:path";
 import { paths } from "../src/config/paths";
 import { readStations, saveStation, stationsFile } from "../src/player/stations";
+import type { Config } from "../src/config/config";
+import { DownloadQueue } from "../src/download/queue";
 
 // Exercise the REAL App, Playback, navigation and persistence. Only external
 // processes, bootstrap I/O and library contents are fixtures.
-const startup = vi.hoisted(() => ({ fresh: false }));
+const startup = vi.hoisted(() => ({ fresh: false, writes: [] as Config[], readEffective: undefined as undefined | (() => Promise<Config>) }));
 vi.mock("../src/ui/hooks/useMouseWheel", () => ({ useMouseWheel: () => {} }));
 vi.mock("../src/bin/binaries", () => ({ ensureBinaries: async () => ({ mpv: "fixture", ffmpeg: "", ffprobe: "", ytDlp: "" }) }));
 vi.mock("../src/config/config", async importOriginal => {
   const actual = await importOriginal<typeof import("../src/config/config")>();
-  return { ...actual, loadConfig: async () => ({ ...actual.defaultConfig, firstRunComplete: !startup.fresh, ytdlpAutoUpdate: false }), saveConfig: async () => {} };
+  return { ...actual, loadConfig: async () => ({ ...actual.defaultConfig, firstRunComplete: !startup.fresh, ytdlpAutoUpdate: false }), saveConfig: async (cfg: Config) => { startup.writes.push({ ...cfg }); } };
 });
 vi.mock("../src/library/migrate", () => ({ migrateOwnerLayout: async () => {} }));
 vi.mock("../src/library/reconcile", () => ({ reconcileLibrary: async () => ({ prunedMissing: 0 }) }));
@@ -78,18 +80,42 @@ vi.mock("../src/sources/music", () => {
     browseMusic: async () => ({ title: "Inside album", items: [song] }),
   };
 });
-vi.mock("../src/player/resolve", () => ({ createStreamResolver: () => async () => ({ url: "https://example.com/audio", expiresAt: Infinity }) }));
+vi.mock("../src/player/resolve", () => ({ createStreamResolver: (read: () => Promise<Config>) => {
+  startup.readEffective = read;
+  return async () => ({ url: "https://example.com/audio", expiresAt: Infinity });
+} }));
 vi.mock("../src/player/feeds", async importOriginal => {
   const actual = await importOriginal<typeof import("../src/player/feeds")>();
   return { ...actual, discoverFeeds: (url: string, radio: boolean, signal: AbortSignal) => actual.discoverFeeds(url, radio, signal,
     async () => url.includes("slow.example") ? new Promise<Response>((_resolve, reject) => signal.addEventListener("abort", () => reject(Error("Cancelled")), { once: true })) : new Response('<title>Fixture FM</title><meta property="og:image" content="/logo.png"><audio src="/live.mp3"></audio><audio src="/other.mp3"></audio>',
       { headers: { "content-type": "text/html" } })) };
 });
-const app = () => render(<ThemeProvider theme={uiTheme}><App /></ThemeProvider>);
+const app = (props: Parameters<typeof App>[0] = {}) => render(<ThemeProvider theme={uiTheme}><App {...props} /></ThemeProvider>);
 async function press(view: ReturnType<typeof app>, key: string) { view.stdin.write(key); await tick(); }
-afterEach(() => { startup.fresh = false; cleanup(); rmSync(sessionFile, { force: true }); rmSync(stationsFile, { force: true }); rmSync(path.join(paths.cache, "lyrics-v1.json"), { force: true }); });
+afterEach(() => { startup.fresh = false; startup.writes = []; startup.readEffective = undefined; cleanup(); rmSync(sessionFile, { force: true }); rmSync(stationsFile, { force: true }); rmSync(path.join(paths.cache, "lyrics-v1.json"), { force: true }); });
 
 describe("App player workflow", () => {
+  it("keeps launch flags temporary through onboarding and player preference saves", async () => {
+    const queueUpdate = vi.spyOn(DownloadQueue.prototype, "updateConfig");
+    startup.fresh = true;
+    const overrides = { libraryDir: "/fixture/run-only-output", audioFormat: "mp3", cookiesFromBrowser: "firefox" };
+    const view = app({ initialOverrides: overrides });
+    await vi.waitFor(() => expect(view.lastFrame()).toContain("Welcome to JukeboxCli"));
+    expect(startup.writes).toHaveLength(0);
+    expect(await startup.readEffective!()).toMatchObject(overrides);
+    await press(view, "\r");
+    await vi.waitFor(() => expect(startup.writes.some(c => c.firstRunComplete)).toBe(true));
+    await press(view, "\u001b"); await press(view, "m"); await press(view, "T");
+    await vi.waitFor(() => expect(startup.writes.some(c => c.playerTheme === "calm")).toBe(true));
+    for (const cfg of startup.writes) {
+      expect(cfg.libraryDir).not.toBe(overrides.libraryDir);
+      expect(cfg.audioFormat).toBe("best");
+      expect(cfg.cookiesFromBrowser).toBeUndefined();
+    }
+    expect(await startup.readEffective!()).toMatchObject({ ...overrides, playerTheme: "calm" });
+    expect(queueUpdate).toHaveBeenLastCalledWith(expect.objectContaining(overrides));
+    queueUpdate.mockRestore();
+  });
   it("first launch opens listening choices and hands focus directly to online search", async () => {
     startup.fresh = true;
     const view = app(); await tick(); await tick();

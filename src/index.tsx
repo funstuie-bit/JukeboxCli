@@ -84,20 +84,12 @@ async function main(): Promise<void> {
   }
 
   try {
-    // Apply CLI overrides to the loaded config before launching the app.
-    if (command.overrides) {
-      const { loadConfig, saveConfig } = await import("./config/config");
-      const config = await loadConfig();
-      const merged = { ...config, ...command.overrides };
-      await saveConfig(merged);
-    }
-
     const { probeGraphics, enableGraphics } = await import("./player/graphics");
     if (await probeGraphics()) enableGraphics();
     const graphics = await import("./player/graphics");
     const { waitUntilExit } = render(
       <ThemeProvider theme={uiTheme}>
-        <App initialAdd={command.initialAdd} />
+        <App initialAdd={command.initialAdd} initialOverrides={command.overrides} />
       </ThemeProvider>,
       { onRender: () => { setImmediate(() => graphics.graphicsPainter?.paint()); } },
     );

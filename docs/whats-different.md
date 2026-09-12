@@ -35,7 +35,7 @@ These were the first reasons for making the fork:
 | Quality and conversion | Set re-encoding quality, choose a yt-dlp format expression, or explicitly convert an existing library. |
 | Download pacing | Adjust minimum/maximum delays and retry counts. |
 | Config import | Import supported settings from an existing yt-dlp configuration. |
-| Settings and CLI options | Change preferences in the interface or override them when launching a download. |
+| Settings and CLI options | Save preferences in the interface or override them for one launch with command-line flags. Temporary flags aren't saved by unrelated Settings changes. |
 
 For example:
 
