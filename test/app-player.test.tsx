@@ -103,9 +103,12 @@ describe("App player workflow", () => {
     await vi.waitFor(() => expect(view.lastFrame()).toContain("Welcome to JukeboxCli"));
     expect(startup.writes).toHaveLength(0);
     expect(await startup.readEffective!()).toMatchObject(overrides);
-    await press(view, "\r");
+    await press(view, "\u001b");
     await vi.waitFor(() => expect(startup.writes.some(c => c.firstRunComplete)).toBe(true));
-    await press(view, "\u001b"); await press(view, "m"); await press(view, "T");
+    await vi.waitFor(() => expect(view.lastFrame()).toContain("Your jukebox"));
+    await press(view, "m");
+    await vi.waitFor(() => expect(view.lastFrame()).toContain("NOW PLAYING"));
+    await press(view, "T");
     await vi.waitFor(() => expect(startup.writes.some(c => c.playerTheme === "calm")).toBe(true));
     for (const cfg of startup.writes) {
       expect(cfg.libraryDir).not.toBe(overrides.libraryDir);
