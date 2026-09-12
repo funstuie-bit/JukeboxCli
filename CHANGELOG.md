@@ -3,6 +3,13 @@
 Release notes describe what changed in each build. For what works now and the
 remaining limits, see [feature status](FEATURES.md).
 
+## 0.1.1-beta.3: Settings crash fix
+
+- Fix the React hook-order crash when opening Download pacing or running a
+  library conversion. Keyboard hooks now run consistently across settings pages.
+- Add regression tests for pacing edits, reopening settings and an empty-library
+  conversion. Download speeds and pacing defaults are unchanged.
+
 ## 0.1.1-beta.2: Temporary command-line options
 
 - Keep command-line download options temporary for the current launch, including

@@ -450,6 +450,46 @@ describe("single-page sections render", () => {
   });
 });
 
+describe("settings sub-page hook safety", () => {
+  async function openEntry(view: ReturnType<typeof render>, index: number) {
+    await tick();
+    for (let i = 0; i < index; i++) { view.stdin.write(DOWN); await tick(); }
+    view.stdin.write("\r");
+    await tick();
+  }
+
+  it("opens pacing, switches fields, saves and reopens without changing hook order", async () => {
+    const setConfig = vi.fn();
+    const view = render(wrap(<Settings />, makeStore({ setConfig })));
+    try {
+      await openEntry(view, 5);
+      await vi.waitFor(() => expect(view.lastFrame()).toContain("Sleep interval (seconds)"));
+      for (let i = 0; i < 2; i++) { view.stdin.write(DOWN); await tick(); }
+      view.stdin.write("\u0015"); await tick();
+      view.stdin.write("7"); await tick();
+      view.stdin.write("\r"); await tick();
+      await vi.waitFor(() => expect(setConfig).toHaveBeenCalledWith(expect.objectContaining({ retries: 7 })));
+      expect(view.lastFrame()).not.toContain("Retries on failure");
+      view.stdin.write("\r"); await tick();
+      await vi.waitFor(() => expect(view.lastFrame()).toContain("Retries on failure"));
+      view.stdin.write(ESC); await escTick();
+      await vi.waitFor(() => expect(view.lastFrame()).not.toContain("Retries on failure"));
+    } finally { view.unmount(); }
+  });
+
+  it("enters conversion and returns to the menu with an empty fixture library", async () => {
+    const view = render(wrap(<Settings />, makeStore()));
+    try {
+      await openEntry(view, 7);
+      await vi.waitFor(() => expect(view.lastFrame()).toContain("Re-encode every download"));
+      view.stdin.write("\r"); await tick();
+      await vi.waitFor(() => expect(view.lastFrame()).toContain("Converted 0 songs"));
+      view.stdin.write(ESC); await escTick();
+      await vi.waitFor(() => expect(view.lastFrame()).not.toContain("Converting library"));
+    } finally { view.unmount(); }
+  });
+});
+
 describe("settings move music folder", () => {
   const CTRL_U = "\u0015";
 

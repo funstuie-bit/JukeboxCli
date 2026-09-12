@@ -285,6 +285,21 @@ export function Settings() {
     { isActive: inSubPage && mode !== "moving" && !(mode === "convert-run" && convertRunning) },
   );
 
+  // Hooks must run on every render, including the menu and other sub-pages.
+  useInput(
+    (_input, key) => {
+      if (key.upArrow) setPacingCursor((c) => wrapStep(c, -1, 3));
+      else if (key.downArrow) setPacingCursor((c) => wrapStep(c, 1, 3));
+    },
+    { isActive: focused && mode === "pacing" },
+  );
+  useInput(
+    (_input, key) => {
+      if (key.escape && convertRunning) convertStopRef.current = true;
+    },
+    { isActive: focused && mode === "convert-run" },
+  );
+
   // Every settings sub-page is rendered through frame(), so the hint line
   // lives here once and matches Download's in-section footer language. esc
   // always goes back one level.
@@ -785,16 +800,6 @@ export function Settings() {
       },
     ];
 
-    useInput(
-      (_input, key) => {
-        if (key.upArrow)
-          setPacingCursor((c) => wrapStep(c, -1, pacingFields.length));
-        else if (key.downArrow)
-          setPacingCursor((c) => wrapStep(c, 1, pacingFields.length));
-      },
-      { isActive: focused },
-    );
-
     return frame(
       "Download pacing",
       <Box flexDirection="column">
@@ -910,17 +915,6 @@ export function Settings() {
   if (mode === "convert-run") {
     const fmt = convertFormat ?? "mp3";
     const progress = convertProgress;
-    useInput(
-      (_input, key) => {
-        if (key.escape && convertRunning) {
-          // First esc stops the run (finishing the current song); the page
-          // stays so the summary can render. A second esc, once stopped,
-          // falls through to the general sub-page handler below.
-          convertStopRef.current = true;
-        }
-      },
-      { isActive: focused },
-    );
     return frame(
       "Converting library",
       <Box flexDirection="column">
