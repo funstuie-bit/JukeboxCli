@@ -22,6 +22,12 @@ I started this as a boredom project and it got slightly out of hand. JukeboxCli 
 
 Playing or browsing online music does not add it to your library. Downloads only start when you ask for one.
 
+The player puts station/song information above its artwork, alongside a clearly
+named **Playback queue**. Very wide terminals use a balanced 45/55 split, artwork
+up to 56 columns × 24 rows and a taller visualiser. Queue rows stay bounded so
+their time column does not drift across the screen. Standard two-panel windows
+keep the smaller layout, and compact windows stack details over the queue.
+
 [What's different?](docs/whats-different.md) covers what I added to soundcli, the ideas borrowed from ytkew and Mousiki, and where the radio, search and lyrics features ended up.
 
 ## Install

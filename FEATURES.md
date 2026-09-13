@@ -20,6 +20,8 @@ or online service will cooperate. The limits are listed below.
 - Ghostty/Kitty-compatible, iTerm2 and Sixel artwork, including sharp stable
   covers in Foot; a text drawing in Apple's Terminal and blocks elsewhere.
   Lavender/Calm themes and optional decorative motion.
+- Responsive player layouts, including a balanced 45/55 player/queue split,
+  larger artwork and a taller spectrum in very wide terminals.
 - Live eight-band visualiser for music and radio by default on Linux, with six persistent styles;
   macOS remains opt-in. The static local waveform is available with an override.
 - Local whole-track waveform; optional local/cached/online lyrics with supplied

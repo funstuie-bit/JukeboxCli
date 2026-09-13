@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup, render } from "ink-testing-library";
 import { StoreContext } from "../src/ui/store";
 import { NowPlaying, playerLayout } from "../src/ui/views/NowPlaying";
-import { fitRow, queueRow, ListeningQueue } from "../src/ui/views/ListeningQueue";
+import { fitRow, queueContentWidth, queueRow, ListeningQueue } from "../src/ui/views/ListeningQueue";
 import { makeStore, makeFakePlayback } from "../scripts/fake-data";
 import { trackFromUrl } from "../src/player/url";
 import { playerPalette } from "../src/ui/theme";
@@ -52,7 +52,7 @@ describe("responsive listening layout", () => {
     expect(store.playback.getState().index).toBe(0);
   });
   it("caps artwork and fits radio with long broadcast text at every size", async () => {
-    expect(playerLayout(180, 50).artRows).toBe(18);
+    expect(playerLayout(180, 50)).toMatchObject({ balanced: true, left: 81, right: 98, artRows: 24, waveRows: 7 });
     const t = { ...trackFromUrl("https://example.com/live", true), title: "Fixture Radio" };
     for (const [cols, height] of [[180, 44], [140, 38], [100, 18], [90, 16], [80, 16], [60, 12]]) {
       const store = makeStore({ cols, listRows: height! - 2, playback: makeFakePlayback({ track: t, list: [t, t], broadcastTitle: "Long artist — Song title ".repeat(20) }) });
@@ -85,6 +85,7 @@ describe("responsive listening layout", () => {
   });
   it("top-aligns the compact player with the queue and stacks on small screens", () => {
     expect(playerLayout(138, 38)).toMatchObject({ split: true });
+    expect(playerLayout(149, 50)).toMatchObject({ split: true, balanced: false, left: 53, artRows: 18, waveRows: 5 });
     expect(playerLayout(58, 12)).toMatchObject({ split: false, showcase: false });
     expect(playerLayout(60, 26, false, true)).toMatchObject({ split: false, showcase: true });
     for (const [cols, height] of [[140, 38], [100, 18], [80, 16], [60, 12]]) {
@@ -118,7 +119,9 @@ describe("responsive listening layout", () => {
     for (const width of [48, 60, 90, 130]) {
       expect(stringWidth(queueRow("東京 🎵".repeat(8), "Long title".repeat(20), "1:23:45", width, "›▶", "LIVE"))).toBe(width);
     }
-    expect(playerLayout(180, 50).waveRows).toBe(5);
+    expect(playerLayout(180, 50).waveRows).toBe(7);
+    expect(queueContentWidth(90)).toBe(90);
+    expect(queueContentWidth(140)).toBe(104);
   });
   it("cycles the live visualizer presentation with lowercase v", async () => {
     vi.stubEnv("JUKEBOXCLI_VISUALIZER", "1");

@@ -15,17 +15,21 @@ import { BANDS, SpectrumDynamics, nextSpectrumMode, spectrumModeLabel, spectrumR
 
 export function playerLayout(width: number, height: number, live = false, waveform = false) {
   const split = width >= 86 && height >= 16;
+  const balanced = split && width >= 150 && height >= 32;
   const showcase = !split && width >= 40 && height >= 22;
-  const left = split ? Math.min(56, Math.max(40, Math.floor(width * 0.36))) : width;
-  const waveRows = height >= 34 ? 5 : height >= 28 ? 4 : height >= 23 ? 3 : height >= 18 ? 2 : 1;
+  const left = split ? balanced ? Math.floor(width * 0.45)
+    : Math.min(56, Math.max(40, Math.floor(width * 0.36))) : width;
+  const waveRows = balanced ? height >= 46 ? 7 : height >= 38 ? 6 : 5
+    : height >= 34 ? 5 : height >= 28 ? 4 : height >= 23 ? 3 : height >= 18 ? 2 : 1;
   // Borders (2), heading (4), transport/status (4), then optional rows.
   // Reserve these before artwork so the bottom border cannot run into the footer.
   const extraRows = (height >= 23 ? 2 : 0) + (live && height >= 26 ? 2 : 0)
     + (waveform ? 1 + waveRows : 0);
-  const artCap = height >= 38 ? 18 : height >= 30 ? 15 : 12;
+  const artCap = balanced ? height >= 46 ? 24 : height >= 38 ? 20 : 16
+    : height >= 38 ? 18 : height >= 30 ? 15 : 12;
   const artRows = split ? Math.min(artCap, Math.max(0, height - 10 - extraRows))
     : showcase ? Math.min(12, Math.max(6, height - 11 - (waveform ? 1 + waveRows : 0))) : 0;
-  return { split, showcase, left, right: width - left - 1, waveRows, artRows };
+  return { split, balanced, showcase, left, right: width - left - 1, waveRows, artRows };
 }
 
 /** A whole-track loudness envelope, not a pretend live spectrum. */
@@ -124,7 +128,7 @@ export function NowPlaying({ embedded = false, onDownload = () => {} }: { embedd
       {layout.split ? <Box justifyContent="space-between"><Text bold color={COLOR.alt}>NOW PLAYING</Text><Text color={COLOR.muted}>{st.index >= 0 ? `${store.playback.queueEntries().findIndex(e => e.index === st.index) + 1}/${st.list.length}` : ""}</Text></Box> : null}
       {heading}
       {layout.split || layout.showcase ? <Box alignItems="center" justifyContent="center" flexShrink={0}>
-        <Cover source={source} cols={Math.min(inner, layout.split ? 40 : 28)} rows={artRows} visible={artVisible}
+        <Cover source={source} cols={Math.min(inner, layout.balanced ? 56 : layout.split ? 40 : 28)} rows={artRows} visible={artVisible}
           repaintKey={live ? `${Boolean(st.loading)}:${st.paused}:${st.broadcastTitle ?? ""}` : undefined}
           fallback={<RadioFallback live={live} rows={artRows} palette={COLOR} simple={simpleArtwork()}
             animate={active && !st.paused && !st.loading && !!t && store.config.reducedMotion === false} />} />

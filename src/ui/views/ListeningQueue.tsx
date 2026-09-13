@@ -17,6 +17,9 @@ export function ListeningQueue({ height, width, active, framed = false }: {
   const [error, setError] = useState("");
   const [confirmClear, setConfirmClear] = useState(false);
   const cols = (width ?? store.contentWidth) - (framed ? 4 : 0);
+  // Very wide tables push duration to the far edge without adding useful
+  // information. Keep the panel roomy, but make its rows quick to scan.
+  const contentCols = queueContentWidth(cols);
   const dense = (height ?? store.listRows) < 10;
   const columns = cols >= 48 && !dense;
   const rows = Math.max(1, (height ?? store.listRows) - (framed ? dense ? 3 : 5 : dense ? 1 : 3) - (columns ? 1 : 0));
@@ -51,7 +54,7 @@ export function ListeningQueue({ height, width, active, framed = false }: {
   return <Box flexDirection="column" width={width ?? store.contentWidth} height={height} borderStyle={framed ? "round" : undefined} borderColor={RULE} paddingX={framed ? 1 : 0}>
     <Text bold color={COLOR.alt} wrap="truncate-end">Playback queue · {entries.length} tracks · {state.shuffle ? "shuffled" : "in order"}</Text>
     {!dense || confirmClear || error || !entries.length ? <Text color={COLOR.muted} wrap="truncate-end">{confirmClear ? "Clear queue and stop? y clear · esc cancel (files stay)" : error || (entries.length ? "↑↓ select  enter play  u/D move  x remove  X clear" : "Empty · select a song in Library, then A append or P play next")}</Text> : null}
-    {columns ? <Text color={COLOR.muted}>{queueRow("ARTIST", "TITLE", "TIME", cols, "  ", "TYPE")}</Text> : null}
+    {columns ? <Text color={COLOR.muted}>{queueRow("ARTIST", "TITLE", "TIME", contentCols, "  ", "TYPE")}</Text> : null}
     {entries.slice(start, start + rows).map((row, offset) => {
       const here = start + offset === selected;
       const artist = row.track.artist ? cleanText(row.track.artist) : "—";
@@ -62,7 +65,7 @@ export function ListeningQueue({ height, width, active, framed = false }: {
       // Keep the other rows' metadata and the library itself unchanged.
       const duration = row.index === state.index && state.duration > 0 ? state.duration : row.track.durationSec;
       return <Text key={row.index} color={here && focused ? COLOR.selectedText : row.index === state.index ? COLOR.accent : COLOR.text} backgroundColor={here && focused ? COLOR.selection : undefined} wrap="truncate-end">
-        {columns ? queueRow(artist, title, isLive(row.track) ? "LIVE" : formatDuration(duration), cols, marker, source) : fitRow(marker + source.padEnd(4) + " " + title + " · " + artist, cols)}
+        {columns ? queueRow(artist, title, isLive(row.track) ? "LIVE" : formatDuration(duration), contentCols, marker, source) : fitRow(marker + source.padEnd(4) + " " + title + " · " + artist, cols)}
       </Text>;
     })}
     {!dense ? <><Box flexGrow={1} />
@@ -71,6 +74,7 @@ export function ListeningQueue({ height, width, active, framed = false }: {
 }
 
 /** Pad/truncate by terminal cells, so emoji and CJK cannot displace duration. */
+export function queueContentWidth(width: number): number { return Math.min(width, 104); }
 export function fitRow(text: string, width: number): string {
   const limit = Math.max(0, width);
   let out = "";
