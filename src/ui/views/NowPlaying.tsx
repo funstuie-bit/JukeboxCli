@@ -11,7 +11,7 @@ import { graphicsPainter, graphicsProtocol, simpleArtwork } from "../../player/g
 import { RadioFallback } from "../components/RadioFallback";
 import { LyricsPanel } from "../components/LyricsPanel";
 import { PlayerSearch } from "../components/PlayerSearch";
-import { BANDS, SpectrumDynamics, nextSpectrumMode, spectrumRows, type SpectrumMode } from "../../player/spectrum";
+import { BANDS, SpectrumDynamics, nextSpectrumMode, spectrumRows, visualizerEnabled, type SpectrumMode } from "../../player/spectrum";
 
 export function playerLayout(width: number, height: number, live = false, waveform = false) {
   const split = width >= 86 && height >= 16;
@@ -67,7 +67,7 @@ export function NowPlaying({ embedded = false, onDownload = () => {} }: { embedd
   const [searchVisible, setSearchVisible] = useState(false);
   const [wave, setWave] = useState<{ file: string; data: Waveform | null }>();
   const [spectrum, setSpectrum] = useState<number[]>();
-  const visualizer = process.env.JUKEBOXCLI_VISUALIZER === "1";
+  const visualizer = visualizerEnabled();
   const visualizerMode = store.config.visualizerMode ?? "classic";
   // App unmounts expanded player for help; hidden embedded views get region=help.
   const active = !embedded || store.region === "content";

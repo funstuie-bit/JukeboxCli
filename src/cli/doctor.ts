@@ -1,5 +1,6 @@
 import { execa } from "execa";
 import { findOnPath } from "../util/exec";
+import { visualizerEnabled } from "../player/spectrum";
 
 /** No setup, writes, downloads, profile/config reads or network requests. */
 export async function installationReport() {
@@ -25,6 +26,8 @@ export async function installationReport() {
       note: "Apple Terminal defaults to a simple drawing; JUKEBOXCLI_ART=blocks opts into pixel art. Kitty, Sixel and iTerm2 capability is probed in the interactive app." },
     toolsMode: process.env.JUKEBOXCLI_SYSTEM_TOOLS === "1" ? "managed (no tool downloads/updates)" : "automatic (doctor only checks PATH)",
     mediaKeys: process.platform === "darwin" && process.env.JUKEBOXCLI_MEDIA_KEYS !== "0" ? "mpv bridge enabled; physical/system acceptance required" : "off",
-    visualizer: process.env.JUKEBOXCLI_VISUALIZER === "1" ? "experimental opt-in enabled" : "off (set JUKEBOXCLI_VISUALIZER=1 to enable)",
+    visualizer: visualizerEnabled() ? "enabled" : process.platform === "linux"
+      ? "disabled by JUKEBOXCLI_VISUALIZER=0"
+      : "off (set JUKEBOXCLI_VISUALIZER=1 to enable)",
     tools };
 }

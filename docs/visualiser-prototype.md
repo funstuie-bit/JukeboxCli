@@ -1,9 +1,10 @@
 # Audio-reactive visualiser
 
-The eight-band visualiser is an experimental opt-in in Now Playing. Normal
-launches retain the precomputed local-track waveform and do no live analysis.
-Start an installed build with `JUKEBOXCLI_VISUALIZER=1 jukeboxcli`, or use
-`npm run visualizer` from the source checkout.
+The eight-band visualiser is enabled by default in Now Playing on Linux after
+hands-on Intel Linux acceptance. Set `JUKEBOXCLI_VISUALIZER=0 jukeboxcli` to use
+the precomputed local-track waveform and disable live analysis. macOS remains
+opt-in with `JUKEBOXCLI_VISUALIZER=1 jukeboxcli`; `npm run visualizer` does the
+same from a source checkout.
 
 ## What works
 
@@ -102,8 +103,8 @@ claim of system-wide visualisation or native media-key support.
 
 ## Remaining integration gates
 
-1. Make filter failure restore ordinary playback rather than requiring a launch
-   without `JUKEBOXCLI_VISUALIZER=1`.
+1. Make filter failure restore ordinary playback rather than requiring a Linux
+   relaunch with `JUKEBOXCLI_VISUALIZER=0`.
 2. Keep checking process restart, track/preload changes, radio reconnect, seeking and
    decoder PTS resets. Keep pipe draining separate from rendering; close every
    descriptor on exit. Analyse a single stream, with bounded memory.

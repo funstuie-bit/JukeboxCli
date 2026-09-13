@@ -92,7 +92,9 @@ Foot and other Sixel terminals automatically use high-resolution Sixel artwork.
 The player uses incremental terminal updates so changing visualizer rows do not
 erase and flash unchanged artwork rows. Set `JUKEBOXCLI_ART=blocks` to request blocks
 explicitly. Ghostty and Kitty-compatible terminals use their persistent image
-protocol. macOS media-key bridging is not available on Linux; playback controls
+protocol. The live visualizer is also enabled by default on Linux; use
+`JUKEBOXCLI_VISUALIZER=0 jukeboxcli` for the static waveform and no live analysis.
+macOS media-key bridging is not available on Linux; playback controls
 inside JukeboxCli work normally.
 
 ## Updating

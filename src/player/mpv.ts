@@ -6,7 +6,7 @@ import path from "node:path";
 import fs from "node:fs";
 import type { ResolvedMedia } from "./media";
 import { mediaAction, mediaBindings, MEDIA_SECTION } from "./media-keys";
-import { BANDS, BandMeter, spectrumGraph } from "./spectrum";
+import { BANDS, BandMeter, spectrumGraph, visualizerEnabled } from "./spectrum";
 
 interface Pending {
   timer: ReturnType<typeof setTimeout>;
@@ -53,7 +53,7 @@ export class MpvPlayer extends EventEmitter {
   private currentEntryId: number | null = null;
   private nextEntry: { id: number; token: number } | null = null;
   private lastAdvancedToken: number | null = null;
-  private readonly spectrumEnabled = process.env.JUKEBOXCLI_VISUALIZER === "1";
+  private readonly spectrumEnabled = visualizerEnabled();
   private readonly meters = BANDS.map(() => new BandMeter());
   private spectrumTimer: ReturnType<typeof setTimeout> | null = null;
   private lastPosition = 0;

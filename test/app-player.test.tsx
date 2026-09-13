@@ -92,7 +92,7 @@ vi.mock("../src/player/feeds", async importOriginal => {
 });
 const app = (props: Parameters<typeof App>[0] = {}) => render(<ThemeProvider theme={uiTheme}><App {...props} /></ThemeProvider>);
 async function press(view: ReturnType<typeof app>, key: string) { view.stdin.write(key); await tick(); }
-afterEach(() => { startup.fresh = false; startup.writes = []; startup.readEffective = undefined; cleanup(); rmSync(sessionFile, { force: true }); rmSync(stationsFile, { force: true }); rmSync(path.join(paths.cache, "lyrics-v1.json"), { force: true }); });
+afterEach(() => { startup.fresh = false; startup.writes = []; startup.readEffective = undefined; vi.unstubAllEnvs(); cleanup(); rmSync(sessionFile, { force: true }); rmSync(stationsFile, { force: true }); rmSync(path.join(paths.cache, "lyrics-v1.json"), { force: true }); });
 
 describe("App player workflow", () => {
   it("keeps launch flags temporary through onboarding and player preference saves", async () => {
@@ -350,6 +350,7 @@ describe("App player workflow", () => {
     await press(again, " "); expect(again.lastFrame()).toContain("Playing · shuffle off");
   });
   it("advertises player, queues from Library, edits in player, and restores through a new App", async () => {
+    vi.stubEnv("JUKEBOXCLI_VISUALIZER", "0"); // Exercise the documented static-waveform fallback.
     const view = app(); await tick(); await tick();
     expect(view.lastFrame()).toContain("m Player");
     expect(view.lastFrame()).toContain("6 Now Playing");

@@ -1,7 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { BANDS, BandMeter, SpectrumDynamics, nextSpectrumMode, spectrumGraph, spectrumRows } from "../scripts/spectrum-core";
+import { BANDS, BandMeter, SpectrumDynamics, nextSpectrumMode, spectrumGraph, spectrumRows, visualizerEnabled } from "../scripts/spectrum-core";
 const record = (time: number, db: string) => `frame:0 pts:0 pts_time:${time}\nlavfi.astats.Overall.RMS_level=${db}\n`;
 describe("isolated spectrum prototype", () => {
+  it("enables Linux by default with an explicit off switch", () => {
+    expect(visualizerEnabled({}, "linux")).toBe(true);
+    expect(visualizerEnabled({ JUKEBOXCLI_VISUALIZER: "0" }, "linux")).toBe(false);
+    expect(visualizerEnabled({}, "darwin")).toBe(false);
+    expect(visualizerEnabled({ JUKEBOXCLI_VISUALIZER: "1" }, "darwin")).toBe(true);
+  });
   it("splits analysis from unchanged output and uses fixed inherited pipes", () => {
     const graph = spectrumGraph();
     expect(graph).toContain("[in]asplit[out][analysis]");

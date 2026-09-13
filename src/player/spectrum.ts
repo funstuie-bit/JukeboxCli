@@ -2,6 +2,15 @@ export const BANDS = [60, 125, 250, 500, 1000, 2000, 4000, 8000] as const;
 export const SPECTRUM_MODES = ["classic", "smooth", "mirror"] as const;
 export type SpectrumMode = typeof SPECTRUM_MODES[number];
 
+/** Linux has completed live visualizer acceptance; other platforms remain opt-in. */
+export function visualizerEnabled(
+  env: NodeJS.ProcessEnv = process.env,
+  platform: NodeJS.Platform = process.platform,
+): boolean {
+  if (env.JUKEBOXCLI_VISUALIZER === "0") return false;
+  return platform === "linux" || env.JUKEBOXCLI_VISUALIZER === "1";
+}
+
 export function nextSpectrumMode(mode: SpectrumMode = "classic"): SpectrumMode {
   return SPECTRUM_MODES[(SPECTRUM_MODES.indexOf(mode) + 1) % SPECTRUM_MODES.length]!;
 }
