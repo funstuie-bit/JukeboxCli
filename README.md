@@ -14,7 +14,8 @@ I started this as a boredom project and it got slightly out of hand. JukeboxCli 
 - Plays local files, YouTube results, direct audio links and live radio.
 - Keeps local, online and live tracks in one persistent queue.
 - Searches songs, videos, albums, artists and playlists without a YouTube login.
-- Shows inline artwork in Ghostty, Kitty-compatible and iTerm2 terminals, with stable true-colour block artwork elsewhere.
+- Shows sharp cover artwork in Ghostty, Kitty-compatible, iTerm2 and Sixel terminals, with text and block fallbacks elsewhere.
+- Runs a live visualiser by default on Linux, with six styles you can cycle using `v`.
 - Supports local LRC files and optional online lyrics.
 - Downloads from YouTube and SoundCloud, and imports music from supported Spotify links.
 - Handles shuffle, repeat, queue editing and listening history. mpv supplies playback and macOS media-key support.
@@ -44,6 +45,11 @@ jukeboxcli
 For other distributions, install Node.js 22+, npm, mpv and ffmpeg, then use the same
 source installation commands. See the [Linux install guide](docs/linux-install.md)
 for package-manager examples, profile paths and troubleshooting.
+
+Foot uses sharp Sixel artwork automatically. The live visualiser is on by
+default on Linux; press `v` in Now Playing to cycle Classic Peak, Smooth, Bass
+Mirror, Outline, Bricks and Mosaic. Use `JUKEBOXCLI_VISUALIZER=0 jukeboxcli` if
+you prefer the static waveform.
 
 ### macOS
 
@@ -116,7 +122,10 @@ Use `A` to append a selected track and `P` to play it next. In the queue, `u` an
 
 ## Artwork and terminals
 
-Ghostty, Kitty-compatible terminals and iTerm2 can display high-resolution cover artwork. Foot and other Sixel-only terminals use stable true-colour blocks because Sixel cells flash when Ink redraws the animated player. `JUKEBOXCLI_ART=sixel` explicitly enables the high-resolution but potentially flickering Sixel path. This is JukeboxCli running in Ghostty:
+Ghostty, Kitty-compatible terminals, iTerm2 and Sixel terminals can display
+high-resolution cover artwork. Foot selects Sixel automatically, and incremental
+screen updates keep the image in place while the player and visualiser move.
+This is JukeboxCli running in Ghostty:
 
 ![JukeboxCli in Ghostty with cover artwork](docs/assets/ghostty-artwork.png)
 
@@ -177,9 +186,9 @@ npm run build
 
 The codebase is TypeScript, React and Ink. mpv handles playback; yt-dlp and ffmpeg handle online media and conversion.
 
-An experimental live visualiser is available with
-`JUKEBOXCLI_VISUALIZER=1 jukeboxcli`; see the
-[visualiser notes](docs/visualiser-prototype.md) for its current limits.
+The live visualiser is enabled by default on Linux and remains opt-in on macOS
+with `JUKEBOXCLI_VISUALIZER=1 jukeboxcli`; see the
+[visualiser notes](docs/visualiser-prototype.md) for how it works and its limits.
 
 More detail:
 
@@ -199,6 +208,6 @@ Want to change something? Read [CONTRIBUTING.md](CONTRIBUTING.md) before opening
 
 JukeboxCli began as a fork of [baairon/soundcli](https://github.com/baairon/soundcli). Its library, playback and download foundations are still here, and the original MIT notice is retained.
 
-[dtDhruv/ytkew](https://github.com/dtDhruv/ytkew) and [itzender5820/mousiki](https://github.com/itzender5820/mousiki) influenced the artwork-led player and queue presentation. The player features inspired by those two projects and the terminal drawings were implemented here; no source code or assets were copied from either project.
+[dtDhruv/ytkew](https://github.com/dtDhruv/ytkew) and [itzender5820/mousiki](https://github.com/itzender5820/mousiki) influenced the artwork-led player and queue presentation. [bjarneo/cliamp](https://github.com/bjarneo/cliamp) inspired the classic peak meter and the wider family of visualiser styles. Those features and the terminal drawings were implemented for JukeboxCli's own TypeScript/Ink/mpv stack; no source code or assets were copied from those projects.
 
 Released under the [MIT License](LICENSE).

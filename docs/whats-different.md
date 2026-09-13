@@ -64,9 +64,10 @@ JukeboxCli's implementation adds:
   connecting until you press play.
 - Inline artwork for supported Kitty, Sixel and iTerm2 terminals, plus
   terminal-friendly fallbacks.
-- A precomputed local-track waveform and best-effort next-track preparation.
+- A precomputed local-track waveform, a live eight-band visualiser on Linux and
+  best-effort next-track preparation.
 
-The local waveform remains the normal display, and preparation is not a
+The local waveform remains available as a fallback, and preparation is not a
 guarantee of gapless playback. This is not a complete ytkew port.
 
 ## Ideas inspired by Mousiki
@@ -84,9 +85,15 @@ In JukeboxCli, press **S** in Now Playing:
 - Escape returns to the previous queue or lyrics panel; music keeps playing.
 
 The lyrics panel uses centred, wrapped text and highlights supplied line or word
-timestamps. It does not invent karaoke timing. The original audio-reactive
-visualiser is available as an [experimental opt-in](visualiser-prototype.md),
-not a claim of matching Mousiki's visuals.
+timestamps. It does not invent karaoke timing.
+
+## Ideas inspired by cliamp
+
+[bjarneo/cliamp](https://github.com/bjarneo/cliamp) showed how much variety a
+terminal visualiser can have. JukeboxCli uses its own eight mpv band readings
+for six original styles: Classic Peak, Smooth, Bass Mirror, Outline, Bricks and
+Mosaic. Modes needing raw or stereo sample taps are not imitated with invented
+data, and no cliamp code or assets are included.
 
 ## Features developed further in JukeboxCli
 
@@ -137,9 +144,9 @@ still won't have a match (and plenty of mine are instrumental anyway).
 
 ## Credits
 
-soundcli is the codebase this project was forked from. ytkew and Mousiki are
-credited inspirations; their source code and assets were not copied into this
-fork. The player features inspired by them and the terminal drawings were
+soundcli is the codebase this project was forked from. ytkew, Mousiki and cliamp
+are credited inspirations; their source code and assets were not copied into
+this fork. The player features inspired by them and the terminal drawings were
 implemented here. Libraries and external services retain their own authorship.
 
 See [feature status](../FEATURES.md) for current limits and the

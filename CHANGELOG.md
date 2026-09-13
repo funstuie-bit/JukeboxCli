@@ -5,20 +5,21 @@ remaining limits, see [feature status](FEATURES.md).
 
 ## Unreleased
 
-- Use stable true-colour block artwork by default in Sixel-only terminals such
-  as Foot; native Sixel remains an explicit opt-in because Ink's animated frame
-  clearing otherwise makes it flash or disappear. Replace the sparse contour
-  with a taller, smoothed eight-band equalizer.
+- Use sharp Sixel artwork automatically in Foot. Incremental screen updates keep
+  unchanged image rows stable while the player and visualiser animate; block
+  artwork remains available as a compatibility override.
+- Enable the hands-on accepted live visualiser by default on Linux. Lowercase
+  `v` cycles Classic Peak, Smooth, Bass Mirror, Outline, Bricks and Mosaic;
+  `JUKEBOXCLI_VISUALIZER=0` restores the static waveform. macOS remains opt-in.
 - Detect Chrome, Chromium, Edge, Brave and Firefox cookie profiles in their
   standard Linux locations.
 - Prefer the distribution ffmpeg/ffprobe pair on Linux, avoiding crashes seen
   when the generic static build opens HTTPS artwork on some systems.
 - Prefer a site's touch icon when its advertised social image is only a generic
   favicon, recovering stations with a broken root favicon URL.
-- Render cover artwork with the Sixel protocol in Foot and other terminals that
-  advertise Sixel support.
-- Promote the tested eight-band mpv visualiser to an experimental opt-in in Now
-  Playing, while leaving analysis disabled during normal launches.
+- Prioritise artwork and the live visualiser in a compact Player instead of
+  repeating the full queue, which remains available in section `7`.
+- Centre-crop letterboxed embedded covers before text/Sixel rendering.
 - Document source installation, updates, profile paths and terminal behaviour on
   Linux, including an Arch Linux quick start.
 - Add x64 Linux install checks and platform-appropriate Node.js installer errors.

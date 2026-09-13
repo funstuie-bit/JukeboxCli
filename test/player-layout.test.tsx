@@ -24,6 +24,7 @@ describe("responsive listening layout", () => {
     expect(track.durationSec).toBe(509);
   });
   it("keeps both bottom borders visible with a loaded waveform at short split heights", async () => {
+    vi.stubEnv("JUKEBOXCLI_VISUALIZER", "0");
     vi.mocked(loadWaveform).mockResolvedValue({ samples: Array(50).fill(0.5) } as Awaited<ReturnType<typeof loadWaveform>>);
     try {
       for (const height of [16, 18, 22, 23, 24, 25, 26, 28, 38]) {
