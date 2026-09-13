@@ -547,7 +547,7 @@ export function App({ initialAdd, initialOverrides }: { initialAdd?: string; ini
           if (
             section === "playlists" ||
             section === "download" ||
-            section === "history" || section === "discover"
+            section === "history" || section === "discover" || section === "listen"
           )
             return;
           setSection(section === "home" ? "discover" : "library");

@@ -26,8 +26,10 @@ transport/navigation shortcuts until Escape; both player layouts support it.
 
 `o` opens a YouTube/direct audio URL or website prompt. Enter accepts the input;
 select the result and Enter plays, `A` appends or `P` queues next. Use
-`9` → `R` explicitly for a radio feed or station website. Select a detected
-feed and press `f` to save; new favourites are never added automatically.
+`9` → `/` searches the Radio Browser directory; leave the search blank for
+popular stations, type a station name, or use `tag:jazz` or `country:US`.
+`9` → `R` explicitly opens a radio feed or station website. Select a directory
+or detected feed and press `f` to save; new favourites are never added automatically.
 In Radio / URL, `t` or `f` renames, `x` or `d` asks to remove a saved
 station (`y` confirms), and `g` refreshes artwork from its website.
 Queue removal is separate: `7` → `x` removes only that listening occurrence.
@@ -65,6 +67,19 @@ search other sites. x/d removes with a named confirmation and is in the footer.
 Full-App regression seeds an artwork-less favourite, starts it, rediscovers its
 website, checks preserved name/enriched session, then cancels/confirms removal.
 Real mpv smoke checks metadata refresh does not open another audio connection.
+
+## Searching the station directory
+
+Directory search uses the free, community-maintained [Radio Browser](https://www.radio-browser.info/)
+catalogue, which is also the source of cliamp's large station selection. JukeboxCli
+requests at most 75 working entries over HTTPS, sends no cookies and never probes
+every returned station. Results can be played, queued or saved like a manually
+found feed. Station availability, names, genres and artwork belong to the
+broadcasters and directory contributors, so they can be missing or stale.
+
+This is separate from website detection below. The directory is convenient when
+you do not already know a feed; website detection remains useful for a particular
+broadcaster that is absent from the catalogue.
 
 ## Finding feeds on a website
 
@@ -120,8 +135,9 @@ remove duplicates for you.
 - `player/stations.ts` uses atomic owner-only JSON writes with a 500-station
   limit, names limited to 120 characters, same-URL rename/deduplication and
   explicit corrupt-file errors. It never silently overwrites invalid data.
-- `Listen.tsx`: 9 opens favourites, o opens URL input, R radio input, enter
-  accepts then plays, A/P queues, f saves/renames, x removes with confirmation.
+- `Listen.tsx`: 9 opens favourites, / searches the station directory, o opens URL
+  input, R opens radio input, enter accepts then plays, A/P queues, f saves/renames,
+  x removes with confirmation.
   Text/confirmation capture blocks global actions; input is width-bounded.
   Global o intent is consumed so a later 9 doesn't reopen an old form.
 - Help is one bounded group per page with scroll; navigation is intercepted
@@ -150,6 +166,6 @@ mpv reference:
 - `scripts/smoke-listening.ts` and `scripts/smoke-streaming.ts` cover local
   playback and mixed-queue transitions with generated audio.
 
-Broadcaster availability, HLS codecs, artwork and ICY data vary by source. There
-is no automatic live classification for generic URLs: choose R explicitly.
-Authenticated/DRM radio and general station-directory browsing are unsupported.
+Broadcaster availability, HLS codecs, directory metadata, artwork and ICY data
+vary by source. There is no automatic live classification for generic URLs:
+choose R explicitly. Authenticated/DRM radio remains unsupported.

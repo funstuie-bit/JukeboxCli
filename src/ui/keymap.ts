@@ -106,6 +106,7 @@ export const HELP_GROUPS: HelpGroup[] = [
   {
     title: "Radio / URL (9)",
     hints: [
+      { keys: "/", label: "Search Radio Browser directory" },
       { keys: "o", label: "YouTube / website / audio URL" },
       { keys: "R", label: "Detect radio website / feed / playlist" },
       { keys: "↵", label: "Accept link, then play selected" },

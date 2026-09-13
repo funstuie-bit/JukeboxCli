@@ -101,13 +101,14 @@ cd JukeboxCli
 
 ## First run
 
-JukeboxCli opens on Home. Search online, paste a radio link or open your local music. You don't need a library or a sign-in to get started.
+JukeboxCli opens on Home. Search online, browse internet radio or open your local music. You don't need a library or a sign-in to get started.
 
 | Key | Action |
 | --- | --- |
 | `8`, then `/` | Search online |
 | `o` | Play a YouTube or direct audio URL |
 | `9` | Open radio and saved stations |
+| `9`, then `/` | Search internet radio |
 | `1` | Open the local library |
 | `m` or `6` | Open Now Playing |
 | `7` | Open the queue |
@@ -208,6 +209,6 @@ Want to change something? Read [CONTRIBUTING.md](CONTRIBUTING.md) before opening
 
 JukeboxCli began as a fork of [baairon/soundcli](https://github.com/baairon/soundcli). Its library, playback and download foundations are still here, and the original MIT notice is retained.
 
-[dtDhruv/ytkew](https://github.com/dtDhruv/ytkew) and [itzender5820/mousiki](https://github.com/itzender5820/mousiki) influenced the artwork-led player and queue presentation. [bjarneo/cliamp](https://github.com/bjarneo/cliamp) inspired the classic peak meter and the wider family of visualiser styles. Those features and the terminal drawings were implemented for JukeboxCli's own TypeScript/Ink/mpv stack; no source code or assets were copied from those projects.
+[dtDhruv/ytkew](https://github.com/dtDhruv/ytkew) and [itzender5820/mousiki](https://github.com/itzender5820/mousiki) influenced the artwork-led player and queue presentation. [bjarneo/cliamp](https://github.com/bjarneo/cliamp) inspired the classic peak meter, the wider family of visualiser styles and the idea of searching the community Radio Browser directory. Those features and the terminal drawings were implemented for JukeboxCli's own TypeScript/Ink/mpv stack; no source code or assets were copied from those projects.
 
 Released under the [MIT License](LICENSE).

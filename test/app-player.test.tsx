@@ -90,6 +90,15 @@ vi.mock("../src/player/feeds", async importOriginal => {
     async () => url.includes("slow.example") ? new Promise<Response>((_resolve, reject) => signal.addEventListener("abort", () => reject(Error("Cancelled")), { once: true })) : new Response('<title>Fixture FM</title><meta property="og:image" content="/logo.png"><audio src="/live.mp3"></audio><audio src="/other.mp3"></audio>',
       { headers: { "content-type": "text/html" } })) };
 });
+vi.mock("../src/player/radio-browser", async () => {
+  const { trackFromUrl } = await import("../src/player/url");
+  return { searchRadioDirectory: async (query: string) => {
+    const track = trackFromUrl("https://directory.example/live.mp3", true);
+    return { tracks: [{ ...track, title: query || "Popular Fixture", artist: "United Kingdom · MP3 · 128 kbps",
+      thumbnailUrl: "https://directory.example/logo.png", stationWebsite: "https://directory.example/" }],
+      note: "Found 1 station in Radio Browser · play, queue or save" };
+  } };
+});
 const app = (props: Parameters<typeof App>[0] = {}) => render(<ThemeProvider theme={uiTheme}><App {...props} /></ThemeProvider>);
 async function press(view: ReturnType<typeof app>, key: string) { view.stdin.write(key); await tick(); }
 afterEach(() => { startup.fresh = false; startup.writes = []; startup.readEffective = undefined; vi.unstubAllEnvs(); cleanup(); rmSync(sessionFile, { force: true }); rmSync(stationsFile, { force: true }); rmSync(path.join(paths.cache, "lyrics-v1.json"), { force: true }); });
@@ -273,6 +282,18 @@ describe("App player workflow", () => {
     await press(view, "R"); await press(view, "https://example.com/radio"); await press(view, "\r");
     expect(view.lastFrame()).toContain("Found 2 feeds");
     expect(readStations()).toEqual([]);
+  });
+  it("searches the radio directory and keeps results temporary until saved", async () => {
+    const view = app(); await tick(); await tick(); await press(view, "9");
+    await vi.waitFor(() => expect(view.lastFrame()).toContain("Radio / URL · Saved stations"));
+    await press(view, "/"); expect(view.lastFrame()).toContain("tag:jazz");
+    await press(view, "Fixture Radio"); await press(view, "\r");
+    expect(view.lastFrame()).toContain("[directory] [LIVE] Fixture Radio");
+    expect(view.lastFrame()).toContain("United Kingdom · MP3 · 128 kbps");
+    expect(readStations()).toEqual([]);
+    await press(view, "f"); await press(view, "\r");
+    expect(readStations()).toEqual([{ name: "Fixture Radio", url: "https://directory.example/live.mp3",
+      thumbnailUrl: "https://directory.example/logo.png", websiteUrl: "https://directory.example/" }]);
   });
   it("opens URLs without downloading, saves radio, reconnects and restores favourites", async () => {
     const view = app(); await tick(); await tick();

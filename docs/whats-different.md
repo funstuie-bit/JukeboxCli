@@ -92,23 +92,26 @@ timestamps. It does not invent karaoke timing.
 [bjarneo/cliamp](https://github.com/bjarneo/cliamp) showed how much variety a
 terminal visualiser can have. JukeboxCli uses its own eight mpv band readings
 for six original styles: Classic Peak, Smooth, Bass Mirror, Outline, Bricks and
-Mosaic. Modes needing raw or stereo sample taps are not imitated with invented
-data, and no cliamp code or assets are included.
+Mosaic. cliamp also pointed me towards the community Radio Browser directory.
+Modes needing raw or stereo sample taps are not imitated with invented data,
+and no cliamp code or assets are included.
 
 ## Features developed further in JukeboxCli
 
-### Find radio feeds from a website
+### Find radio stations and feeds
 
-Paste a station website or PLS/M3U playlist, select an available feed, then play,
-queue or save it. Rename or remove saved stations, or refresh their website
-artwork without deleting and adding them again.
+Search the community Radio Browser catalogue by station, exact tag or country,
+or browse its popular stations. You can also paste a station website or PLS/M3U
+playlist. Select an available feed, then play, queue or save it. Rename or remove
+saved stations, or refresh their website artwork without deleting and adding it again.
 
 Live stations show broadcast metadata when supplied. Pause disconnects; play
 reconnects to the live edge. Station logos are not current-song album artwork.
 
-It checks a limited number of links in the page, without running website scripts.
-A few stations have specific compatibility fixes. It won't browse the whole
-Radio Garden directory, and some websites won't work.
+Website detection checks a limited number of links in the page, without running
+scripts. A few stations have specific compatibility fixes. It won't browse the whole
+Radio Garden directory, community directory entries can go stale, and some
+websites won't work.
 [Radio usage and limits](listening-online.md).
 
 ### Search online without an account

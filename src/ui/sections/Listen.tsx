@@ -5,8 +5,11 @@ import { TextField } from "../components/TextField";
 import { COLOR } from "../theme";
 import { cleanText } from "../../util/format";
 import { discoverFeeds } from "../../player/feeds";
+import { searchRadioDirectory } from "../../player/radio-browser";
 import { readStations, removeStation, saveStation, refreshStations, stationTrack, type Station } from "../../player/stations";
 import type { StreamTrack } from "../../player/media";
+
+type DraftTrack = StreamTrack & { directoryResult?: boolean };
 
 /** Listening is deliberately separate from Download and the saved library. */
 export function Listen() {
@@ -18,8 +21,9 @@ export function Listen() {
   });
   const [stations, setStations] = useState(loaded.stations);
   const [notice, setNotice] = useState(loaded.error);
-  const [drafts, setDrafts] = useState<StreamTrack[]>([]);
-  const [mode, setMode] = useState<"list" | "url" | "radio" | "name" | "remove" | "finding">(openUrlRequest ? "url" : "list");
+  const [drafts, setDrafts] = useState<DraftTrack[]>([]);
+  const [mode, setMode] = useState<"list" | "url" | "radio" | "directory" | "name" | "remove" | "finding">(openUrlRequest ? "url" : "list");
+  const [finding, setFinding] = useState<"feed" | "directory">("feed");
   const [cursor, setCursor] = useState(0);
   const [target, setTarget] = useState<StreamTrack | null>(null);
   const [urlText, setUrlText] = useState("");
@@ -40,7 +44,7 @@ export function Listen() {
     request.current?.abort();
     const controller = new AbortController(); request.current = controller;
     const radio = mode === "radio";
-    setMode("finding"); setNotice("Identifying feeds… esc cancels");
+    setFinding("feed"); setMode("finding"); setNotice("Identifying feeds… esc cancels");
     try {
       const result = await discoverFeeds(value, radio, controller.signal);
       if (controller.signal.aborted) return;
@@ -58,6 +62,20 @@ export function Listen() {
       if (!controller.signal.aborted) { setMode(radio ? "radio" : "url"); fail(e); }
     }
   };
+  const submitDirectory = async (value: string) => {
+    request.current?.abort();
+    const controller = new AbortController(); request.current = controller;
+    setFinding("directory"); setMode("finding"); setNotice("Searching Radio Browser… esc cancels");
+    try {
+      const result = await searchRadioDirectory(value, controller.signal);
+      if (controller.signal.aborted) return;
+      const existing = new Set(stations.map(s => s.url));
+      setDrafts(result.tracks.filter(t => !existing.has(t.streamUrl)).map(t => ({ ...t, directoryResult: true })));
+      setCursor(0); setMode("list"); setNotice(result.note);
+    } catch (e) {
+      if (!controller.signal.aborted) { setMode("directory"); fail(e); }
+    }
+  };
   useInput((input, key) => {
     if (mode !== "list") {
       if (key.escape) { request.current?.abort(); setMode("list"); setNotice(""); }
@@ -67,6 +85,7 @@ export function Listen() {
       }
       return;
     }
+    if (input === "/") { request.current?.abort(); setMode("directory"); setUrlText(""); setNotice(""); return; }
     if (input === "R") { request.current?.abort(); setMode("radio"); setUrlText(""); setNotice(""); return; }
     if (input === "o" || (key.return && !track)) { request.current?.abort(); setMode("url"); setUrlText(""); setNotice(""); return; }
     if (key.upArrow) setCursor(Math.max(0, selected - 1));
@@ -95,11 +114,14 @@ export function Listen() {
   }, { isActive: focused });
   return <Box flexDirection="column" width={contentWidth}>
     <Text bold color={COLOR.alt}>Radio / URL · Saved stations & found feeds</Text>
-    <Text color={COLOR.muted} wrap="truncate-end">o YouTube / website · R radio website/feed · 8 search music</Text>
+    <Text color={COLOR.muted} wrap="truncate-end">/ station directory · o YouTube / website · R radio website/feed</Text>
     <Text color={COLOR.muted} wrap="truncate-end">Streams play without importing or downloading music.</Text>
     {mode === "url" || mode === "radio" ? <>
       <Text color={COLOR.accent} wrap="truncate-end">{mode === "radio" ? "Paste radio website, playlist or audio URL:" : "Paste YouTube / website / audio URL:"}</Text>
       {focused ? <TextField key={mode} defaultValue={urlText} onChange={setUrlText} width={contentWidth - 1} placeholder="https://…" onSubmit={submitUrl} /> : null}
+    </> : mode === "directory" ? <>
+      <Text color={COLOR.accent} wrap="truncate-end">Search stations · tag:jazz · country:US · blank = popular</Text>
+      {focused ? <TextField key="directory" defaultValue={urlText} onChange={setUrlText} width={contentWidth - 1} placeholder="Station, tag:jazz or country:US…" onSubmit={submitDirectory} /> : null}
     </> : mode === "name" ? <>
       <Text color={COLOR.accent} wrap="truncate-end">Name: {target?.title} · type replacement or enter to keep</Text>
       {focused ? <TextField key={target?.id} width={contentWidth - 1} placeholder="New name (or enter to keep current)…" onSubmit={name => {
@@ -116,14 +138,14 @@ export function Listen() {
           setNotice("Station saved · in 9 favourites, not the music Library");
         } catch (e) { fail(e); }
       }} /> : null}
-    </> : mode === "finding" ? <Text color={COLOR.accent}>Looking for audio feeds… esc cancels</Text>
+    </> : mode === "finding" ? <Text color={COLOR.accent}>{finding === "directory" ? "Searching Radio Browser" : "Looking for audio feeds"}… esc cancels</Text>
       : mode === "remove" ? <><Text color={COLOR.warn} wrap="truncate-end">Remove favourite? {target ? cleanText(target.title) : ""}</Text><Text color={COLOR.warn}>y confirms · esc cancels (music and queue stay)</Text></> : <>
       <Text color={COLOR.muted} wrap="truncate-end">enter play · A/P queue · f save · t rename · x/d remove · g artwork</Text>
-      {!entries.length ? <Text color={COLOR.muted}>No saved stations yet. Press R to add a radio stream.</Text> : null}
+      {!entries.length ? <Text color={COLOR.muted}>No saved stations yet. Press / to browse or R to add a radio stream.</Text> : null}
       {entries.slice(start, start + rows).map((entry, i) => <Text key={`${i}:${entry.id}`} wrap="truncate-end"
         color={focused && selected === start + i ? COLOR.selectedText : COLOR.text}
         backgroundColor={focused && selected === start + i ? COLOR.selection : undefined}>
-        {selected === start + i ? "› " : "  "}{start + i < drafts.length ? "[found] " : "★ "}{entry.streamType === "radio" ? "[LIVE] " : ""}{cleanText(entry.title)}
+        {selected === start + i ? "› " : "  "}{start + i < drafts.length ? drafts[start + i]?.directoryResult ? "[directory] " : "[found] " : "★ "}{entry.streamType === "radio" ? "[LIVE] " : ""}{cleanText(entry.title)}{entry.artist ? ` · ${cleanText(entry.artist)}` : ""}
       </Text>)}
     </>}
     <Text color={notice ? COLOR.alt : COLOR.muted} wrap="truncate-end">{notice || "Direct URLs are saved in your private listening session; use trusted links."}</Text>
