@@ -130,7 +130,7 @@ export function NowPlaying({ embedded = false, onDownload = () => {} }: { embedd
       </Box> : null}
       {layout.split && height >= 23 ? <Box height={1} /> : null}
       {details}
-      {layout.split && height >= 23 ? <Text color={COLOR.muted} wrap="truncate-end">T {store.config.playerTheme === "calm" ? "Calm" : "Lavender"} · Art {simpleArtwork() ? "simple" : graphicsPainter ? graphicsProtocol === "iterm" ? "iTerm2" : graphicsProtocol === "sixel" ? "Sixel" : "Kitty" : "text fallback"}</Text> : null}
+      {layout.split && height >= 23 ? <Text color={COLOR.muted} wrap="truncate-end">T {store.config.playerTheme === "calm" ? "Calm" : "Lavender"} · Art {simpleArtwork() ? "simple" : graphicsPainter ? graphicsProtocol === "iterm" ? "iTerm2" : graphicsProtocol === "sixel" ? "Sixel" : "Kitty" : "blocks"}</Text> : null}
     </Box>
     <Box flexDirection="column" marginLeft={layout.split ? 1 : 0} width={layout.split ? layout.right : width} height={layout.split ? height : Math.max(3, height - 6)}>
       <Box display={lyricsVisible || searchVisible ? "none" : "flex"}>

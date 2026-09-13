@@ -14,7 +14,7 @@ I started this as a boredom project and it got slightly out of hand. JukeboxCli 
 - Plays local files, YouTube results, direct audio links and live radio.
 - Keeps local, online and live tracks in one persistent queue.
 - Searches songs, videos, albums, artists and playlists without a YouTube login.
-- Shows inline artwork in Ghostty, Kitty-compatible, Sixel and iTerm2 terminals, with a text fallback elsewhere.
+- Shows inline artwork in Ghostty, Kitty-compatible and iTerm2 terminals, with stable true-colour block artwork elsewhere.
 - Supports local LRC files and optional online lyrics.
 - Downloads from YouTube and SoundCloud, and imports music from supported Spotify links.
 - Handles shuffle, repeat, queue editing and listening history. mpv supplies playback and macOS media-key support.
@@ -116,7 +116,7 @@ Use `A` to append a selected track and `P` to play it next. In the queue, `u` an
 
 ## Artwork and terminals
 
-Ghostty, Kitty-compatible terminals, Foot/Sixel terminals and iTerm2 can display the actual cover artwork. This is JukeboxCli running in Ghostty:
+Ghostty, Kitty-compatible terminals and iTerm2 can display high-resolution cover artwork. Foot and other Sixel-only terminals use stable true-colour blocks because Sixel cells flash when Ink redraws the animated player. `JUKEBOXCLI_ART=sixel` explicitly enables the high-resolution but potentially flickering Sixel path. This is JukeboxCli running in Ghostty:
 
 ![JukeboxCli in Ghostty with cover artwork](docs/assets/ghostty-artwork.png)
 

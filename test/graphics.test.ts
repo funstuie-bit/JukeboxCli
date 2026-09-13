@@ -33,12 +33,10 @@ describe("terminal image lifecycle", () => {
     expect(supportsInline("AbCdF")).toBe(true); expect(supportsInline("File")).toBe(false);
     expect(inlineImage({ ...image, png: new Uint8Array(740001) }, rect)).toBe("");
   });
-  it("does not retransmit an unchanged Sixel raster on playback redraws", () => {
+  it("repaints explicitly selected Sixel after Ink clears a frame", () => {
     const sixel = { ...image, sixel: "\x1bPqfixture\x1b\\" };
     const writes: string[] = []; const painter = new GraphicsPainter(s => writes.push(s), "sixel");
-    painter.set(sixel, () => rect); painter.paint(); painter.paint(); painter.paint();
-    expect(writes).toHaveLength(1);
-    painter.set(sixel, () => ({ ...rect, y: rect.y + 1 })); painter.paint();
+    painter.set(sixel, () => rect); painter.paint(); painter.paint();
     expect(writes).toHaveLength(2);
   });
   it("respects an explicit missing inline capability even after an older cell-size reply", async () => {
@@ -63,7 +61,8 @@ describe("terminal image lifecycle", () => {
     expect(await probeGraphics(stdin as unknown as typeof process.stdin, stdout as typeof process.stdout)).toBe(true);
     expect(graphicsProtocol).toBe("iterm"); expect(stdin.keys).toBe("z"); expect(stdin.isRaw).toBe(false);
   });
-  it("detects Sixel support from terminal attributes and cell size", async () => {
+  it("allows explicitly requested Sixel support", async () => {
+    vi.stubEnv("JUKEBOXCLI_ART", "sixel");
     const stdin = Object.assign(new EventEmitter(), { isTTY: true, isRaw: false,
       setRawMode(value: boolean) { this.isRaw = value; }, resume() {}, pause() {}, keys: "", unshift(buffer: Buffer) { this.keys += buffer.toString(); } });
     const stdout = { isTTY: true, write(query: string) {
@@ -72,6 +71,13 @@ describe("terminal image lifecycle", () => {
     } };
     expect(await probeGraphics(stdin as unknown as typeof process.stdin, stdout as typeof process.stdout)).toBe(true);
     expect(graphicsProtocol).toBe("sixel"); expect(stdin.keys).toBe("x"); expect(stdin.isRaw).toBe(false);
+  });
+  it("uses stable block artwork instead of cell-bound Sixel by default", async () => {
+    const stdin = Object.assign(new EventEmitter(), { isTTY: true, isRaw: false,
+      setRawMode(value: boolean) { this.isRaw = value; }, resume() {}, pause() {}, unshift() {} });
+    const stdout = { isTTY: true, write() { stdin.emit("data", "\x1b[6;20;10t\x1b[?62;4;22c"); } };
+    expect(await probeGraphics(stdin as unknown as typeof process.stdin, stdout as typeof process.stdout)).toBe(false);
+    expect(graphicsProtocol).toBe("sixel");
   });
   it("encodes opaque and transparent RGBA pixels as bounded Sixel data", () => {
     const encoded = encodeSixel(new Uint8Array([

@@ -15,7 +15,7 @@ or online service will cooperate. The limits are listed below.
 - Save, rename and remove radio favourites. Find feeds from websites or PLS/M3U
   playlists, and refresh station artwork. Live pause disconnects; play reconnects.
 - Stream/radio listening history and replay from Home.
-- Ghostty/Kitty-compatible, Sixel and iTerm2 artwork, a text drawing in Apple's Terminal
+- Ghostty/Kitty-compatible and iTerm2 artwork, stable true-colour blocks in Sixel-only terminals, and a text drawing in Apple's Terminal
   and block artwork elsewhere. Lavender/Calm themes and optional decorative motion.
 - Local whole-track waveform; optional local/cached/online lyrics with supplied
   line/word timing, manual matching and a plain-text alternate provider.

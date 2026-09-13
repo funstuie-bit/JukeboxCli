@@ -41,10 +41,6 @@ export function sixelPlacement(image: CoverImage, rect: ImageRect): string {
   return image.sixel ? `${ESC}7${ESC}[${rect.y + 1};${rect.x + 1}H${image.sixel}${ESC}8` : "";
 }
 
-function sameRect(a: ImageRect | null, b: ImageRect): boolean {
-  return Boolean(a && a.x === b.x && a.y === b.y && a.cols === b.cols && a.rows === b.rows);
-}
-
 /** Probe before Ink owns stdin. Never infer support from the terminal's name. */
 export async function probeGraphics(input = process.stdin, output = process.stdout): Promise<boolean> {
   if (!input.isTTY || !output.isTTY || process.env.TMUX || process.env.STY || ["blocks", "simple"].includes(process.env.JUKEBOXCLI_ART ?? "")) return false;
@@ -61,7 +57,10 @@ export async function probeGraphics(input = process.stdin, output = process.stdo
       // Preserve early user keystrokes, excluding complete protocol replies.
       const rest = buffer.replace(/\x1b_G[^\x1b]*(?:\x1b\\|$)/g, "").replace(/\x1b\[6;\d+;\d+t/g, "").replace(/\x1b\[\?[\d;]*c/g, "").replace(/\x1b\]1337;(?:Capabilities|ReportCellSize)[^\x07\x1b]*(?:\x07|\x1b\\|$)/g, "");
       if (rest) input.unshift(Buffer.from(rest));
-      resolve(supported);
+      // Sixel pixels belong to text cells. Ink clears those cells on every
+      // dynamic frame, so repainting flashes and not repainting loses the
+      // image. Prefer stable true-colour blocks unless explicitly requested.
+      resolve(supported && (graphicsProtocol !== "sixel" || process.env.JUKEBOXCLI_ART === "sixel"));
     };
     const onData = (data: Buffer | string) => {
       buffer += data.toString();
@@ -119,10 +118,6 @@ export class GraphicsPainter {
       this.write(inlineImage(image, rect)); this.uploaded = image; this.rect = rect; return;
     }
     if (this.protocol === "sixel") {
-      // Unlike iTerm's inline images, Foot keeps Sixel pixels in place when an
-      // unrelated text row changes. Re-sending the full raster on every 100 ms
-      // playback render visibly flashes and can expose a half-painted frame.
-      if (this.uploaded === image && sameRect(this.rect, rect)) return;
       this.write(sixelPlacement(image, rect)); this.uploaded = image; this.rect = rect; return;
     }
     if (this.uploaded !== image) {
