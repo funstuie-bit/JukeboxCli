@@ -14,7 +14,7 @@ I started this as a boredom project and it got slightly out of hand. JukeboxCli 
 - Plays local files, YouTube results, direct audio links and live radio.
 - Keeps local, online and live tracks in one persistent queue.
 - Searches songs, videos, albums, artists and playlists without a YouTube login.
-- Shows inline artwork in Ghostty, Kitty-compatible terminals and iTerm2, with a text fallback elsewhere.
+- Shows inline artwork in Ghostty, Kitty-compatible, Sixel and iTerm2 terminals, with a text fallback elsewhere.
 - Supports local LRC files and optional online lyrics.
 - Downloads from YouTube and SoundCloud, and imports music from supported Spotify links.
 - Handles shuffle, repeat, queue editing and listening history. mpv supplies playback and macOS media-key support.
@@ -115,7 +115,7 @@ Use `A` to append a selected track and `P` to play it next. In the queue, `u` an
 
 ## Artwork and terminals
 
-Ghostty, Kitty-compatible terminals and iTerm2 can display the actual cover artwork. This is JukeboxCli running in Ghostty:
+Ghostty, Kitty-compatible terminals, Foot/Sixel terminals and iTerm2 can display the actual cover artwork. This is JukeboxCli running in Ghostty:
 
 ![JukeboxCli in Ghostty with cover artwork](docs/assets/ghostty-artwork.png)
 
@@ -175,6 +175,10 @@ npm run build
 ```
 
 The codebase is TypeScript, React and Ink. mpv handles playback; yt-dlp and ffmpeg handle online media and conversion.
+
+An experimental live visualiser is available with
+`JUKEBOXCLI_VISUALIZER=1 jukeboxcli`; see the
+[visualiser notes](docs/visualiser-prototype.md) for its current limits.
 
 More detail:
 

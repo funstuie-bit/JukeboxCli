@@ -15,7 +15,7 @@ or online service will cooperate. The limits are listed below.
 - Save, rename and remove radio favourites. Find feeds from websites or PLS/M3U
   playlists, and refresh station artwork. Live pause disconnects; play reconnects.
 - Stream/radio listening history and replay from Home.
-- Ghostty/Kitty-compatible and iTerm2 artwork, a text drawing in Apple's Terminal
+- Ghostty/Kitty-compatible, Sixel and iTerm2 artwork, a text drawing in Apple's Terminal
   and block artwork elsewhere. Lavender/Calm themes and optional decorative motion.
 - Local whole-track waveform; optional local/cached/online lyrics with supplied
   line/word timing, manual matching and a plain-text alternate provider.
@@ -25,8 +25,8 @@ or online service will cooperate. The limits are listed below.
 
 ## Experimental and limited
 
-- [Audio-reactive visualiser](docs/visualiser-prototype.md): isolated prototype,
-  parked and not part of Now Playing. The local waveform is not a live spectrum.
+- [Audio-reactive visualiser](docs/visualiser-prototype.md): experimental opt-in
+  in Now Playing; normal launches keep the precomputed local waveform.
 - YouTube discovery uses an unofficial API. Cookies do not supply account APIs.
 - Next-track preparation is best effort, not guaranteed gapless playback.
 - Radio discovery reads static links; general Radio Garden browsing, DRM,

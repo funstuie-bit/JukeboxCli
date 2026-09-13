@@ -48,11 +48,11 @@ do not publish them.
 
 ## Artwork
 
-Ghostty, Kitty-compatible terminals and iTerm2 can show PNG artwork. The app
-checks image support and cell size before using it; a terminal name alone isn't
-enough. With tmux/screen, redirected output or no reply to those checks, it uses
-block artwork. Apple's Terminal uses a text drawing by default and doesn't load
-cover images in that mode.
+Ghostty, Kitty-compatible terminals, Sixel terminals such as Foot and iTerm2 can
+show artwork. The app checks image support and cell size before using it; a
+terminal name alone isn't enough. With tmux/screen, redirected output or no reply
+to those checks, it uses block artwork. Apple's Terminal uses a text drawing by
+default and doesn't load cover images in that mode.
 
 iTerm2 may ask whether to allow terminal-initiated image display. Allow it only
 for sessions you trust; its remember option can avoid repeated prompts.

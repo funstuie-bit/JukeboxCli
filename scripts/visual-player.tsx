@@ -7,7 +7,7 @@ import { makeStore, makeFakePlayback, PLACEHOLDER_TRACKS } from "./fake-data";
 import { StoreContext } from "../src/ui/store";
 import { NowPlaying } from "../src/ui/views/NowPlaying";
 import { uiTheme, COLOR } from "../src/ui/theme";
-import { probeGraphics, enableGraphics, graphicsPainter } from "../src/player/graphics";
+import { probeGraphics, enableGraphics, graphicsPainter, graphicsProtocol } from "../src/player/graphics";
 import { appendFileSync } from "node:fs";
 import { trackFromUrl } from "../src/player/url";
 import type { PlayableTrack } from "../src/player/media";
@@ -41,7 +41,7 @@ function Demo() {
       broadcastTitle: "After Hours — a late-night mix from the studio" }) });
   return <ThemeProvider theme={uiTheme}><StoreContext.Provider value={store}>
     <Box flexDirection="column" paddingX={1}>
-      <Text color={COLOR.accent}>JukeboxCli · visual fixture · {native ? "Kitty image protocol confirmed" : "block fallback"}</Text>
+      <Text color={COLOR.accent}>JukeboxCli · visual fixture · {native ? "terminal image protocol confirmed" : "block fallback"}</Text>
       <Box display={help ? "none" : "flex"}><NowPlaying embedded /></Box>
       {help ? <Box height={size[1]! - 4}><Text color={COLOR.text}>HELP — artwork must be absent here. Press ? to return.</Text></Box> : null}
       <Text color={COLOR.muted}>b artwork · T theme · V motion · ? hide/show · q close fixture · resize</Text>
@@ -52,7 +52,7 @@ try {
   const app = render(<Demo />, { onRender: () => { setImmediate(() => {
     graphicsPainter?.paint();
     if (process.env.JUKEBOXCLI_VISUAL_REPORT) appendFileSync(process.env.JUKEBOXCLI_VISUAL_REPORT,
-      JSON.stringify({ native, ...graphicsPainter?.status }) + "\n");
+      JSON.stringify({ native, protocol: native ? graphicsProtocol : "blocks", ...graphicsPainter?.status }) + "\n");
   }); } });
   await app.waitUntilExit();
 } finally { graphicsPainter?.clear(); process.stdout.write("\x1b[?1049l"); }

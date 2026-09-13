@@ -84,10 +84,10 @@ isolated profile when testing:
 JUKEBOXCLI_HOME="$HOME/JukeboxCli-demo" jukeboxcli
 ```
 
-Artwork works in Ghostty and Kitty-compatible terminals. Set
-`JUKEBOXCLI_ART=blocks` for a terminal-independent fallback. macOS media-key
-bridging is not available on Linux; playback controls inside JukeboxCli work
-normally.
+Artwork works in Foot and other Sixel terminals, as well as Ghostty and
+Kitty-compatible terminals. Set `JUKEBOXCLI_ART=blocks` for a
+terminal-independent fallback. macOS media-key bridging is not available on
+Linux; playback controls inside JukeboxCli work normally.
 
 ## Updating
 

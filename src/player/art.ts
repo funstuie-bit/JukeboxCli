@@ -23,6 +23,83 @@ export function loadCoverImage(source: string, maxSize = 1024): Promise<CoverIma
   return work;
 }
 
+/** Encode an RGBA frame using a compact 4x4x4 RGB Sixel palette. */
+export function encodeSixel(rgba: Uint8Array, width: number, height: number): string {
+  if (rgba.length < width * height * 4 || width < 1 || height < 1) return "";
+  const ESC = "\x1b";
+  const palette = Array.from({ length: 64 }, (_, i) => {
+    const r = Math.round(((i >> 4) & 3) * 100 / 3);
+    const g = Math.round(((i >> 2) & 3) * 100 / 3);
+    const b = Math.round((i & 3) * 100 / 3);
+    return `#${i};2;${r};${g};${b}`;
+  }).join("");
+  const colourAt = (at: number) =>
+    ((rgba[at]! * 3 / 255 + 0.5) << 4) |
+    ((rgba[at + 1]! * 3 / 255 + 0.5) << 2) |
+    (rgba[at + 2]! * 3 / 255 + 0.5);
+  const runs = (values: number[]) => {
+    let out = "";
+    for (let at = 0; at < values.length;) {
+      let end = at + 1;
+      while (end < values.length && values[end] === values[at]) end++;
+      const count = end - at, char = String.fromCharCode(63 + values[at]!);
+      out += count >= 4 ? `!${count}${char}` : char.repeat(count);
+      at = end;
+    }
+    return out;
+  };
+  let body = "";
+  for (let top = 0; top < height; top += 6) {
+    const present = new Set<number>();
+    for (let y = top; y < Math.min(height, top + 6); y++) {
+      for (let x = 0; x < width; x++) {
+        const at = (y * width + x) * 4;
+        if (rgba[at + 3]! >= 128) present.add(colourAt(at));
+      }
+    }
+    const colours = [...present];
+    colours.forEach((colour, colourIndex) => {
+      const values = Array<number>(width).fill(0);
+      for (let x = 0; x < width; x++) {
+        let bits = 0;
+        for (let bit = 0; bit < 6 && top + bit < height; bit++) {
+          const at = ((top + bit) * width + x) * 4;
+          if (rgba[at + 3]! >= 128 && colourAt(at) === colour) bits |= 1 << bit;
+        }
+        values[x] = bits;
+      }
+      while (values.at(-1) === 0) values.pop();
+      body += `#${colour}${runs(values)}${colourIndex + 1 < colours.length ? "$" : ""}`;
+    });
+    if (top + 6 < height) body += "-";
+  }
+  return `${ESC}P0;1;0q\"1;1;${width};${height}${palette}${body}${ESC}\\`;
+}
+
+export function loadSixelImage(
+  source: string,
+  width: number,
+  height: number,
+): Promise<CoverImage | null> {
+  const cacheKey = `sixel:${source}:${width}x${height}`;
+  const cached = images.get(cacheKey); if (cached) return cached;
+  const work = (async () => {
+    try {
+      const { stdout } = await execa(ffmpegPath(), ["-nostdin", "-v", "error", "-i", source,
+        "-map", "0:v:0", "-frames:v", "1", "-vf",
+        `scale=${width}:${height}:force_original_aspect_ratio=decrease,pad=${width}:${height}:(ow-iw)/2:(oh-ih)/2:color=black@0`,
+        "-pix_fmt", "rgba", "-f", "rawvideo", "pipe:1"],
+      { encoding: "buffer", timeout: 8000, maxBuffer: 8 * 1024 * 1024 });
+      const rgba = Buffer.from(stdout);
+      const sixel = encodeSixel(rgba, width, height);
+      return sixel ? { png: new Uint8Array(), width, height, sixel } : null;
+    } catch { return null; }
+  })();
+  if (images.size >= 12) images.delete(images.keys().next().value!);
+  images.set(cacheKey, work);
+  return work;
+}
+
 /**
  * Cover art and waveform extraction for the Now Playing screen.
  *

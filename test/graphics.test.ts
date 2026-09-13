@@ -1,6 +1,7 @@
 import { EventEmitter } from "node:events";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { inlineImage, inlineQuery, supportsInline, graphicsProtocol, simpleArtwork } from "../src/player/graphics";
+import { encodeSixel } from "../src/player/art";
 afterEach(() => vi.unstubAllEnvs());
 import { GraphicsPainter, imagePackets, imagePlacement, deleteImage, graphicsQuery, probeGraphics } from "../src/player/graphics";
 
@@ -53,6 +54,27 @@ describe("terminal image lifecycle", () => {
     } };
     expect(await probeGraphics(stdin as unknown as typeof process.stdin, stdout as typeof process.stdout)).toBe(true);
     expect(graphicsProtocol).toBe("iterm"); expect(stdin.keys).toBe("z"); expect(stdin.isRaw).toBe(false);
+  });
+  it("detects Sixel support from terminal attributes and cell size", async () => {
+    const stdin = Object.assign(new EventEmitter(), { isTTY: true, isRaw: false,
+      setRawMode(value: boolean) { this.isRaw = value; }, resume() {}, pause() {}, keys: "", unshift(buffer: Buffer) { this.keys += buffer.toString(); } });
+    const stdout = { isTTY: true, write(query: string) {
+      expect(query).toContain("\x1b[c");
+      stdin.emit("data", "x\x1b[6;20;10t\x1b[?62;4;22c");
+    } };
+    expect(await probeGraphics(stdin as unknown as typeof process.stdin, stdout as typeof process.stdout)).toBe(true);
+    expect(graphicsProtocol).toBe("sixel"); expect(stdin.keys).toBe("x"); expect(stdin.isRaw).toBe(false);
+  });
+  it("encodes opaque and transparent RGBA pixels as bounded Sixel data", () => {
+    const encoded = encodeSixel(new Uint8Array([
+      255, 0, 0, 255, 0, 0, 0, 0,
+      255, 0, 0, 255, 0, 255, 0, 255,
+    ]), 2, 2);
+    expect(encoded.startsWith("\x1bP0;1;0q\"1;1;2;2")).toBe(true);
+    expect(encoded).toContain("#48");
+    expect(encoded).toContain("#12");
+    expect(encoded.endsWith("\x1b\\")).toBe(true);
+    expect(encodeSixel(new Uint8Array(3), 1, 1)).toBe("");
   });
   it("chunks payloads and preserves the text renderer's cursor", () => {
     const packets = imagePackets(image.png).split("\x1b\\").filter(Boolean);

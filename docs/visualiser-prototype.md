@@ -1,8 +1,18 @@
-# Mac audio-reactive visualiser prototype
+# Audio-reactive visualiser
 
-This is parked. It reacts to audio, but the visuals still need work and the demo
-is too short to judge properly. It isn't in Now Playing. The player still uses
-the precomputed local-track waveform; search and lyrics are separate, working features.
+The eight-band visualiser is available as an experimental opt-in in Now Playing.
+Normal launches retain the precomputed local-track waveform and do no live audio
+analysis. Start the source checkout with:
+
+```sh
+npm run visualizer
+```
+
+Or enable it for an installed command:
+
+```sh
+JUKEBOXCLI_VISUALIZER=1 jukeboxcli
+```
 
 ## What works
 
@@ -19,7 +29,7 @@ waveform. It leaves the terminal background visible; it does not change terminal
 opacity. Set `NO_COLOR=1` for uncoloured dots.
 
 No microphone/system-audio capture, capture permissions, loopback driver, Python,
-native helper or second media download. The prototype uses the existing mpv
+native helper or second media download. The visualiser uses the existing mpv
 process's libavfilter and inherits eight metadata pipes from its parent. FFmpeg
 CLI is used to generate/check test fixtures, not to decode a second stream during
 playback. Audio on the playback branch is never downmixed for analysis.
@@ -41,6 +51,7 @@ From this checkout, with mpv and ffmpeg on PATH:
 ```sh
 npx tsx scripts/prototype-visualiser.ts
 npx tsx scripts/prototype-visualiser.ts --demo
+npx tsx scripts/smoke-player-visualizer.ts
 npx tsx scripts/benchmark-spectrum.ts
 ```
 
@@ -75,26 +86,24 @@ device latency, independent Intel/Apple Silicon and terminal matrix. Eight broad
 bands are an initial design, not a high-resolution FFT spectrum. There is no
 claim of system-wide visualisation or native media-key support.
 
-## Before this goes in the player
+## Before enabling this by default
 
-1. Add an opt-in capability-probed mpv tap behind the existing player interface.
-   Filter failure must restore ordinary playback, not make music unusable.
-2. Handle process restart, track/preload changes, radio reconnect, seeking and
-   decoder PTS resets. Keep pipe draining separate from rendering; close every
-   descriptor on exit. Analyse a single stream, with bounded memory.
-3. Add a clear Now Playing visualiser toggle and waveform fallback, with pause,
-   reduced-motion and hidden/small-window policies. Stop analysis work when
-   disabled if filter reconfiguration proves safe; never block audio on a UI.
-4. Full-App tests, muted real local/HTTP/radio/YouTube acceptance, sustained CPU/
+1. Make filter failure restart ordinary playback rather than requiring a launch
+   without `JUKEBOXCLI_VISUALIZER=1`.
+2. Keep checking process restart, track/preload changes, radio reconnect,
+   seeking and decoder PTS resets. Keep pipe draining separate from rendering;
+   close every descriptor on exit. Analyse a single stream, with bounded memory.
+3. Add a saved Now Playing toggle and automatic waveform fallback, with hidden
+   and small-window policies. Analysis already stays off in normal launches.
+4. Add Full-App tests, muted real local/HTTP/radio/YouTube acceptance, sustained CPU/
    RSS and measured audible-clock alignment, followed by real-terminal visual
-   review before enabling it. No audio-engine rewrite is required by this prototype.
+   review before enabling it. No audio-engine rewrite is required.
 
 ## Sources and implementation
 
 The graph uses the primary [FFmpeg filter documentation](https://ffmpeg.org/ffmpeg-filters.html):
 `asplit`, `aresample`, `asetnsamples`, `bandpass`, `astats`, `ametadata`, `anullsink`.
 Use installed filter help and the fixture harness to check local capabilities.
-`scripts/spectrum-core.ts` builds the graph/parses metadata/renders dotted contours;
+`src/player/spectrum.ts` builds the graph, parses metadata and renders dotted contours;
 `scripts/prototype-visualiser.ts` is the real-player acceptance/demo harness;
-`scripts/benchmark-spectrum.ts` compares baseline and filtered mpv. None is
-imported into production playback.
+`scripts/benchmark-spectrum.ts` compares baseline and filtered mpv.

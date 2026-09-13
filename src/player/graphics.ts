@@ -1,12 +1,14 @@
 /** Kitty images live outside Ink's text buffer. Paint only after Ink has drawn,
  * preserve its cursor, and delete only the image owned by this application. */
 export interface ImageRect { x: number; y: number; cols: number; rows: number }
-export interface CoverImage { png: Uint8Array; width: number; height: number }
+export interface CoverImage { png: Uint8Array; width: number; height: number; sixel?: string }
 const ESC = "\x1b";
 const ID = 197704;
-export const graphicsQuery = `${ESC}[16t${ESC}_Gi=${ID},s=1,v=1,a=q,t=d,f=24;AAAA${ESC}\\`;
+export const graphicsQuery = `${ESC}[16t${ESC}[c${ESC}_Gi=${ID},s=1,v=1,a=q,t=d,f=24;AAAA${ESC}\\`;
 export let cellAspect = 0.5;
-export type GraphicsProtocol = "kitty" | "iterm";
+export let cellWidth = 8;
+export let cellHeight = 16;
+export type GraphicsProtocol = "kitty" | "iterm" | "sixel";
 export let graphicsProtocol: GraphicsProtocol = "kitty";
 /** Native Terminal defaults to a drawing; block artwork remains an explicit opt-in. */
 export function simpleArtwork(env: NodeJS.ProcessEnv = process.env): boolean {
@@ -35,6 +37,9 @@ export function imagePlacement(rect: ImageRect): string {
   // Give only the width: Kitty computes height from the source aspect ratio.
   return `${ESC}7${ESC}[${rect.y + 1};${rect.x + 1}H${ESC}_Ga=p,i=${ID},p=1,c=${rect.cols},C=1,q=2${ESC}\\${ESC}8`;
 }
+export function sixelPlacement(image: CoverImage, rect: ImageRect): string {
+  return image.sixel ? `${ESC}7${ESC}[${rect.y + 1};${rect.x + 1}H${image.sixel}${ESC}8` : "";
+}
 
 /** Probe before Ink owns stdin. Never infer support from the terminal's name. */
 export async function probeGraphics(input = process.stdin, output = process.stdout): Promise<boolean> {
@@ -50,7 +55,7 @@ export async function probeGraphics(input = process.stdin, output = process.stdo
     const finish = (supported: boolean) => {
       clearTimeout(timer); input.off("data", onData); input.pause(); input.setRawMode(wasRaw);
       // Preserve early user keystrokes, excluding complete protocol replies.
-      const rest = buffer.replace(/\x1b_G[^\x1b]*(?:\x1b\\|$)/g, "").replace(/\x1b\[6;\d+;\d+t/g, "").replace(/\x1b\]1337;(?:Capabilities|ReportCellSize)[^\x07\x1b]*(?:\x07|\x1b\\|$)/g, "");
+      const rest = buffer.replace(/\x1b_G[^\x1b]*(?:\x1b\\|$)/g, "").replace(/\x1b\[6;\d+;\d+t/g, "").replace(/\x1b\[\?[\d;]*c/g, "").replace(/\x1b\]1337;(?:Capabilities|ReportCellSize)[^\x07\x1b]*(?:\x07|\x1b\\|$)/g, "");
       if (rest) input.unshift(Buffer.from(rest));
       resolve(supported);
     };
@@ -59,6 +64,7 @@ export async function probeGraphics(input = process.stdin, output = process.stdo
       const cell = buffer.match(/\x1b\[6;(\d+);(\d+)t/);
       const inlineCell = buffer.match(/\x1b\]1337;ReportCellSize=([\d.]+);([\d.]+)(?:;[\d.]+)?(?:\x07|\x1b\\)/);
       const ratio = cell ? Number(cell[2]) / Number(cell[1]) : inlineCell ? Number(inlineCell[2]) / Number(inlineCell[1]) : 0;
+      if (cell) { cellHeight = Number(cell[1]); cellWidth = Number(cell[2]); }
       const features = buffer.match(/\x1b\]1337;Capabilities=([^\x07\x1b]*)(?:\x07|\x1b\\)/);
       if (features) inlineSupported = supportsInline(features[1]!);
       // Older iTerm2 predates feature reporting. Require its live cell-size
@@ -70,7 +76,11 @@ export async function probeGraphics(input = process.stdin, output = process.stdo
       }
       if (buffer.includes(`${ESC}_Gi=${ID};OK${ESC}\\`) && ratio >= 0.1 && ratio <= 2) {
         cellAspect = ratio; graphicsProtocol = "kitty"; negotiated = true; if (!inline) finish(true);
-      } else if (!inline && new RegExp(`\\x1b_Gi=${ID};(?!OK)[^\\x1b]+\\x1b\\\\`).test(buffer)) finish(false);
+      }
+      const attributes = buffer.match(/\x1b\[\?([\d;]+)c/)?.[1]?.split(";") ?? [];
+      if (!negotiated && attributes.includes("4") && ratio >= 0.1 && ratio <= 2) {
+        cellAspect = ratio; graphicsProtocol = "sixel"; negotiated = true;
+      }
     };
     const timer = setTimeout(() => finish(negotiated), 700);
     input.on("data", onData); input.resume(); output.write(graphicsQuery + (inline ? inlineQuery : ""));
@@ -103,6 +113,9 @@ export class GraphicsPainter {
     const image = target!.image;
     if (this.protocol === "iterm") {
       this.write(inlineImage(image, rect)); this.uploaded = image; this.rect = rect; return;
+    }
+    if (this.protocol === "sixel") {
+      this.write(sixelPlacement(image, rect)); this.uploaded = image; this.rect = rect; return;
     }
     if (this.uploaded !== image) {
       this.clear(); this.write(imagePackets(image.png)); this.uploaded = image;

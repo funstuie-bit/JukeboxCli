@@ -101,10 +101,11 @@ disc/radio drawing. `JUKEBOXCLI_ART=blocks` overrides that default; `simple`
 disables graphics probing and cover extraction in any terminal. Cover render
 keys include the mode so stale image results cannot replace a simple drawing.
 
-Before Ink takes stdin, `probeGraphics` requests Kitty direct-image support and
-CSI 16t cell dimensions (700ms timeout). Both must respond. Redirected I/O,
-tmux/screen, missing replies or JUKEBOXCLI_ART=blocks select half-blocks. Early
-keystrokes survive the probe; TERM_PROGRAM never enables graphics by itself.
+Before Ink takes stdin, `probeGraphics` requests Kitty direct-image support,
+terminal attributes and CSI 16t cell dimensions (700ms timeout). Kitty needs its
+direct-image response; Sixel needs attribute 4 and cell dimensions. Redirected
+I/O, tmux/screen, missing replies or JUKEBOXCLI_ART=blocks select half-blocks.
+Early keystrokes survive the probe; TERM_PROGRAM never enables graphics by itself.
 The probe additionally queries iTerm2 Capabilities/ReportCellSize when indicated.
 Feature F advertises inline images; older iTerm2 needs its identity plus a live
 cell-size response. Reply collection uses the same bounded probe window. Inline
@@ -121,7 +122,9 @@ stdout output, so painting is deferred with setImmediate. Cursor save/restore an
 Kitty C=1 preserve Ink's cursor. Only this app's image ID is deleted.
 
 PNG extraction is limited to 1024px/5MiB/8 seconds, cached for 12 source entries
-per process. Transmission uses 4096-character base64 chunks and quiet replies.
+per process. Sixel uses a built-in 64-colour encoder over an ffmpeg-decoded RGBA
+frame, so it does not require a separate image utility. PNG transmission uses
+4096-character base64 chunks and quiet replies.
 A placement ID is reused for moves/resizes. Only width is sent, so the terminal
 preserves source aspect; probed cell dimensions budget height. Restart after
 changing font proportions if needed; window size changes are handled live.
@@ -135,6 +138,9 @@ diagnostics. Run from the repo (or set TSX_TSCONFIG_PATH). Tests cover chunking,
 probe/cleanup/stacked registrations, responsive layouts, Unicode queue columns
 and App input/persistence. Real-terminal checks remain necessary for protocol,
 font and permission differences.
+
+`npx tsx scripts/smoke-sixel.ts` exercises image extraction and encoding without
+drawing to the terminal.
 
 ### Player presentation
 

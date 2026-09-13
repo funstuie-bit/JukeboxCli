@@ -62,11 +62,12 @@ JukeboxCli's implementation adds:
   play-next, reorder, remove, shuffle and repeat controls.
 - Saved listening sessions that restore paused, including online entries without
   connecting until you press play.
-- Inline artwork for supported Mac terminals, plus terminal-friendly fallbacks.
+- Inline artwork for supported Kitty, Sixel and iTerm2 terminals, plus
+  terminal-friendly fallbacks.
 - A precomputed local-track waveform and best-effort next-track preparation.
 
-The local waveform is not a live spectrum, and preparation is not a guarantee
-of gapless playback. This is not a complete ytkew port.
+The local waveform remains the normal display, and preparation is not a
+guarantee of gapless playback. This is not a complete ytkew port.
 
 ## Ideas inspired by Mousiki
 
@@ -83,9 +84,9 @@ In JukeboxCli, press **S** in Now Playing:
 - Escape returns to the previous queue or lyrics panel; music keeps playing.
 
 The lyrics panel uses centred, wrapped text and highlights supplied line or word
-timestamps. It does not invent karaoke timing. The audio-reactive visualiser
-remains a [separate, parked prototype](visualiser-prototype.md), not a production
-feature or a claim of matching Mousiki's visuals.
+timestamps. It does not invent karaoke timing. The original audio-reactive
+visualiser is available as an [experimental opt-in](visualiser-prototype.md),
+not a claim of matching Mousiki's visuals.
 
 ## Features developed further in JukeboxCli
 
@@ -129,7 +130,7 @@ still won't have a match (and plenty of mine are instrumental anyway).
 - A Home screen with the jukebox drawing, recents and stations.
 - Replayable history for successfully started online tracks and radio, not just files.
 - Lavender/Calm colours and optional decorative motion, disabled by default.
-- Ghostty/Kitty-compatible and iTerm2 image rendering. JukeboxCli also
+- Ghostty/Kitty-compatible, Sixel and iTerm2 image rendering. JukeboxCli also
   defaults Apple's Terminal to a simple disc/radio drawing, with pixel art optional.
 - mpv-backed macOS media controls, installer dependency checks and read-only doctor
   diagnostics. Automated installation checks focus on Apple Silicon.

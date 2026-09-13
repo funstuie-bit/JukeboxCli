@@ -17,6 +17,7 @@
     "dev": "tsx src/index.tsx",
     "build": "tsup",
     "start": "node dist/index.js",
+    "visualizer": "JUKEBOXCLI_VISUALIZER=1 npm run dev",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "previews": "tsx scripts/render-previews.ts",

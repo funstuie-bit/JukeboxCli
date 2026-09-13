@@ -351,6 +351,7 @@ export class Playback extends EventEmitter {
         if (vol !== this.state.volume) this.update({ volume: vol });
       }
     });
+    m.on("spectrum", (levels: number[]) => this.emit("spectrum", levels));
     m.on("ended", () => void this.onEnded().catch(() => this.update({ error: "Could not advance playback. Select a queue entry to retry." })));
     m.on("advanced", (token: number) => {
       const next = this.prepared;

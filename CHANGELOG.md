@@ -5,6 +5,10 @@ remaining limits, see [feature status](FEATURES.md).
 
 ## Unreleased
 
+- Render cover artwork with the Sixel protocol in Foot and other terminals that
+  advertise Sixel support.
+- Promote the tested eight-band mpv visualiser to an experimental opt-in in Now
+  Playing, while leaving analysis disabled during normal launches.
 - Document source installation, updates, profile paths and terminal behaviour on
   Linux, including an Arch Linux quick start.
 - Add x64 Linux install checks and platform-appropriate Node.js installer errors.

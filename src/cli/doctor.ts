@@ -22,8 +22,9 @@ export async function installationReport() {
     platform: process.platform, architecture: process.arch, node: process.versions.node,
     terminal: { name: process.env.TERM_PROGRAM || "unknown", artworkOverride: process.env.JUKEBOXCLI_ART || "auto",
       multiplexer: Boolean(process.env.TMUX || process.env.STY),
-      note: "Apple Terminal defaults to a simple drawing; JUKEBOXCLI_ART=blocks opts into pixel art. Kitty / iTerm2 capability is probed in the interactive app." },
+      note: "Apple Terminal defaults to a simple drawing; JUKEBOXCLI_ART=blocks opts into pixel art. Kitty, Sixel and iTerm2 capability is probed in the interactive app." },
     toolsMode: process.env.JUKEBOXCLI_SYSTEM_TOOLS === "1" ? "managed (no tool downloads/updates)" : "automatic (doctor only checks PATH)",
     mediaKeys: process.platform === "darwin" && process.env.JUKEBOXCLI_MEDIA_KEYS !== "0" ? "mpv bridge enabled; physical/system acceptance required" : "off",
+    visualizer: process.env.JUKEBOXCLI_VISUALIZER === "1" ? "experimental opt-in enabled" : "off (set JUKEBOXCLI_VISUALIZER=1 to enable)",
     tools };
 }

@@ -11,6 +11,7 @@ import { graphicsPainter, graphicsProtocol, simpleArtwork } from "../../player/g
 import { RadioFallback } from "../components/RadioFallback";
 import { LyricsPanel } from "../components/LyricsPanel";
 import { PlayerSearch } from "../components/PlayerSearch";
+import { spectrumRows } from "../../player/spectrum";
 
 export function playerLayout(width: number, height: number, live = false, waveform = false) {
   const split = width >= 86 && height >= 16;
@@ -38,6 +39,13 @@ const WaveformPanel = memo(function WaveformPanel({ samples, width, height, frac
   </Text>)}</Box>;
 });
 
+const SpectrumPanel = memo(function SpectrumPanel({ levels, width, height, paused, palette }: {
+  levels?: number[]; width: number; height: number; paused: boolean; palette: PlayerPalette;
+}) {
+  const rows = spectrumRows(paused ? Array(8).fill(-120) : levels ?? Array(8).fill(-120), width, height);
+  return <Box flexDirection="column">{rows.map((row, i) => <Text key={i} color={palette.alt}>{row}</Text>)}</Box>;
+});
+
 export function NowPlaying({ embedded = false, onDownload = () => {} }: { embedded?: boolean; onDownload?: () => void }) {
   const store = useStore();
   const COLOR = playerPalette(store.config.playerTheme);
@@ -52,6 +60,8 @@ export function NowPlaying({ embedded = false, onDownload = () => {} }: { embedd
   const [lyricsVisible, setLyricsVisible] = useState(false);
   const [searchVisible, setSearchVisible] = useState(false);
   const [wave, setWave] = useState<{ file: string; data: Waveform | null }>();
+  const [spectrum, setSpectrum] = useState<number[]>();
+  const visualizer = process.env.JUKEBOXCLI_VISUALIZER === "1";
   // App unmounts expanded player for help; hidden embedded views get region=help.
   const active = !embedded || store.region === "content";
   useInput(input => {
@@ -68,6 +78,12 @@ export function NowPlaying({ embedded = false, onDownload = () => {} }: { embedd
     void loadWaveform(file, inner).then(data => { if (!cancelled) setWave({ file, data }); });
     return () => { cancelled = true; };
   }, [file, inner]);
+  useEffect(() => {
+    if (!visualizer) return;
+    const onSpectrum = (levels: number[]) => setSpectrum(levels);
+    store.playback.on("spectrum", onSpectrum);
+    return () => { store.playback.off("spectrum", onSpectrum); };
+  }, [store.playback, visualizer]);
   const samples = wave?.file === file ? wave?.data?.samples : undefined;
   const canTrack = st.engine === "mpv" && !st.loading;
   const fraction = canTrack && st.duration > 0 ? Math.max(0, Math.min(1, st.position / st.duration)) : 0;
@@ -82,9 +98,10 @@ export function NowPlaying({ embedded = false, onDownload = () => {} }: { embedd
     {layout.split ? <Text color={COLOR.muted} wrap="truncate-end">{t?.album ? cleanText(t.album) : t?.playlist ? cleanText(t.playlist) : " "}</Text> : null}
   </Box>;
   const details = <Box flexDirection="column" width={inner}>
-    {layout.split && !live && samples ? <Box flexDirection="column">
-      <Text color={COLOR.muted}>TRACK WAVEFORM</Text>
-      <WaveformPanel samples={samples} width={inner} height={layout.waveRows} fraction={fraction} palette={COLOR} />
+    {layout.split && !live && (visualizer || samples) ? <Box flexDirection="column">
+      <Text color={COLOR.muted}>{visualizer ? "LIVE BAND ENERGY" : "TRACK WAVEFORM"}</Text>
+      {visualizer ? <SpectrumPanel levels={spectrum} width={inner} height={layout.waveRows} paused={st.paused || Boolean(st.loading)} palette={COLOR} />
+        : <WaveformPanel samples={samples} width={inner} height={layout.waveRows} fraction={fraction} palette={COLOR} />}
     </Box> : null}
     {live ? <Text color={COLOR.accent} wrap="truncate-end">LIVE · no seeking or restart</Text> : <Text color={RULE}>{"─".repeat(at)}<Text color={COLOR.accent}>●</Text>{"─".repeat(progressWidth - at - 1)}</Text>}
     <Box justifyContent="space-between">
@@ -105,7 +122,7 @@ export function NowPlaying({ embedded = false, onDownload = () => {} }: { embedd
       </Box> : null}
       {layout.split && height >= 23 ? <Box height={1} /> : null}
       {details}
-      {layout.split && height >= 23 ? <Text color={COLOR.muted} wrap="truncate-end">T {store.config.playerTheme === "calm" ? "Calm" : "Lavender"} · Art {simpleArtwork() ? "simple" : graphicsPainter ? graphicsProtocol === "iterm" ? "iTerm2" : "Kitty" : "text fallback"}</Text> : null}
+      {layout.split && height >= 23 ? <Text color={COLOR.muted} wrap="truncate-end">T {store.config.playerTheme === "calm" ? "Calm" : "Lavender"} · Art {simpleArtwork() ? "simple" : graphicsPainter ? graphicsProtocol === "iterm" ? "iTerm2" : graphicsProtocol === "sixel" ? "Sixel" : "Kitty" : "text fallback"}</Text> : null}
     </Box>
     <Box flexDirection="column" marginLeft={layout.split ? 1 : 0} width={layout.split ? layout.right : width} height={layout.split ? height : Math.max(3, height - 6)}>
       <Box display={lyricsVisible || searchVisible ? "none" : "flex"}>

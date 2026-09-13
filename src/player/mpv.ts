@@ -6,6 +6,7 @@ import path from "node:path";
 import fs from "node:fs";
 import type { ResolvedMedia } from "./media";
 import { mediaAction, mediaBindings, MEDIA_SECTION } from "./media-keys";
+import { BANDS, BandMeter, spectrumGraph } from "./spectrum";
 
 interface Pending {
   timer: ReturnType<typeof setTimeout>;
@@ -52,6 +53,10 @@ export class MpvPlayer extends EventEmitter {
   private currentEntryId: number | null = null;
   private nextEntry: { id: number; token: number } | null = null;
   private lastAdvancedToken: number | null = null;
+  private readonly spectrumEnabled = process.env.JUKEBOXCLI_VISUALIZER === "1";
+  private readonly meters = BANDS.map(() => new BandMeter());
+  private spectrumTimer: ReturnType<typeof setTimeout> | null = null;
+  private lastPosition = 0;
 
   constructor(mpvPath: string) {
     super();
@@ -85,6 +90,10 @@ export class MpvPlayer extends EventEmitter {
     this.currentEntryId = null;
     this.lastAdvancedToken = null;
     this.loaded = false;
+    if (this.spectrumTimer) clearTimeout(this.spectrumTimer);
+    this.spectrumTimer = null;
+    this.meters.forEach(m => m.clear());
+    if (this.spectrumEnabled) this.emit("spectrum", BANDS.map(() => -120));
     if (this.sock) {
       try {
         this.sock.destroy();
@@ -126,6 +135,7 @@ export class MpvPlayer extends EventEmitter {
           "--no-video",
           "--no-terminal",
           "--really-quiet",
+          ...(this.spectrumEnabled ? [`--af=lavfi=[${spectrumGraph()}]`] : []),
           ...(process.platform === "darwin" && process.env.JUKEBOXCLI_MEDIA_KEYS === "0" ? ["--input-media-keys=no"] : []),
           "--prefetch-playlist=yes",
           "--cache=yes",
@@ -134,9 +144,19 @@ export class MpvPlayer extends EventEmitter {
           `--volume=${this.initialVolume}`,
           `--input-ipc-server=${this.ipcPath}`,
         ],
-        { stdio: "ignore" },
+        { stdio: this.spectrumEnabled ? ["ignore", "ignore", "ignore", ...BANDS.map(() => "pipe" as const)] : "ignore" },
       );
       this.proc = proc;
+      if (this.spectrumEnabled) BANDS.forEach((_, i) => {
+        proc.stdio[i + 3]?.on("data", (chunk: Buffer) => {
+          this.meters[i]!.push(chunk.toString());
+          if (this.spectrumTimer) return;
+          this.spectrumTimer = setTimeout(() => {
+            this.spectrumTimer = null;
+            this.emit("spectrum", this.meters.map(m => m.at(this.lastPosition)?.db ?? -120));
+          }, 100);
+        });
+      });
       proc.on("error", (err) => {
         if (settled) return;
         settled = true;
@@ -214,6 +234,10 @@ export class MpvPlayer extends EventEmitter {
           if (action && this.mediaKeysReady) this.emit("media-key", action);
         } else if (msg.event === "start-file") {
           this.currentEntryId = Number(msg.playlist_entry_id);
+          this.meters.forEach(m => m.clear());
+          if (this.spectrumEnabled) this.emit("spectrum", BANDS.map(() => -120));
+        } else if (msg.event === "seek") {
+          this.meters.forEach(m => m.clear());
         } else if (msg.event === "file-loaded") {
           this.loaded = true;
           this.notifyAdvance();
@@ -223,6 +247,7 @@ export class MpvPlayer extends EventEmitter {
           this.emit("load-cancelled");
           this.emit("media-error", this.nextEntry?.id === Number(msg.playlist_entry_id) ? this.nextEntry.token : null);
         } else if (msg.event === "property-change") {
+          if (msg.name === "time-pos" && typeof msg.data === "number") this.lastPosition = msg.data;
           this.emit("property", msg.name as string, msg.data);
         } else if (
           msg.event === "end-file" &&
@@ -438,6 +463,9 @@ export class MpvPlayer extends EventEmitter {
     this.emit("load-cancelled");
     this.quitting = true;
     this.loaded = false;
+    if (this.spectrumTimer) clearTimeout(this.spectrumTimer);
+    this.spectrumTimer = null;
+    this.meters.forEach(m => m.clear());
     try {
       this.sock?.write(JSON.stringify({ command: ["quit"] }) + "\n");
     } catch {
