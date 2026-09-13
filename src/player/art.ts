@@ -132,6 +132,12 @@ export interface Waveform {
   samples: number[];
 }
 
+/** Fill the square-ish text cover with the centred album image, not 16:9 thumbnail bars. */
+export function coverArtFilter(cols: number, rows: number): string {
+  const px = rows * 2;
+  return `crop='min(iw,ih)':'min(iw,ih)',scale=${cols}:${px}:force_original_aspect_ratio=decrease,pad=${cols}:${px}:(ow-iw)/2:(oh-ih)/2`;
+}
+
 /** How long a cached extraction survives before a re-read can refresh it. */
 const CACHE_TTL_MS = 10 * 60 * 1000;
 
@@ -201,7 +207,7 @@ export async function loadCoverArt(
         "1",
         // Crop to the render aspect (cover-fit), then scale to exact pixels.
         "-vf",
-        `scale=${cols}:${px}:force_original_aspect_ratio=decrease,pad=${cols}:${px}:(ow-iw)/2:(oh-ih)/2`,
+        coverArtFilter(cols, rows),
         "-f",
         "rawvideo",
         "-pix_fmt",
