@@ -7,7 +7,7 @@ import path from "node:path";
 import net from "node:net";
 import assert from "node:assert/strict";
 import { execa } from "execa";
-import { BANDS, BandMeter, spectrumGraph, spectrumRows } from "./spectrum-core";
+import { BANDS, BandMeter, SpectrumDynamics, spectrumGraph, spectrumRows } from "./spectrum-core";
 
 const dir = mkdtempSync(path.join(tmpdir(), "jukeboxcli-spectrum-"));
 const file = path.join(dir, "stereo-tones.wav"), ipc = path.join(dir, "ipc.sock");
@@ -54,6 +54,7 @@ async function cpu(pid: number): Promise<number> {
   return parts.reduce((total, n) => total * 60 + n, 0);
 }
 let renderTimer: ReturnType<typeof setInterval> | undefined;
+const dynamics = new SpectrumDynamics();
 process.once("SIGINT", interrupt); process.once("SIGTERM", interrupt);
 try {
   proc = spawn("mpv", ["--no-config", "--idle=yes", "--no-video", "--no-terminal", "--pause=yes", "--volume=0",
@@ -100,10 +101,11 @@ try {
     renderTimer = setInterval(() => {
       const width = Math.max(8, Math.min(100, (process.stdout.columns || 80) - 2));
       const values = meters.map(m => paused ? -120 : m.at(position)?.db ?? -120);
-      const rows = spectrumRows(values, width, Math.max(1, Math.min(8, (process.stdout.rows || 24) - 5)));
+      const frame = dynamics.update(values, paused);
+      const rows = spectrumRows(frame.body, width, Math.max(1, Math.min(8, (process.stdout.rows || 24) - 5)), frame.peaks);
       const colour = process.env.NO_COLOR === undefined ? "\x1b[38;5;103m" : "";
       const reset = colour ? "\x1b[0m" : "";
-      process.stdout.write("\x1b[H\x1b[J" + "JukeboxCli · LIVE BAND ENERGY · dotted / muted prototype\n" +
+      process.stdout.write("\x1b[H\x1b[J" + "JukeboxCli · LIVE SPECTRUM · classic peak\n" +
         `${position.toFixed(2)}s · ${paused ? "paused / blank" : "125 Hz → 4 kHz → silence"}\n` +
         colour + rows.join("\n") + reset + "\n60 Hz                         →                         8 kHz\n");
     }, 100);

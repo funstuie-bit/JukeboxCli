@@ -9,6 +9,49 @@ export function spectrumGraph(input = "in", output = "out") {
 
 export interface Sample { time: number; db: number }
 
+const dbToLevel = (value: number) => Number.isFinite(value)
+  ? Math.max(0, Math.min(1, (value + 65) / 55))
+  : 0;
+const levelToDb = (value: number) => value <= 0 ? -120 : value * 55 - 65;
+
+export interface SpectrumFrame { body: number[]; peaks: number[] }
+
+/** Fast attack, eased decay and held/falling caps for a classic LED meter. */
+export class SpectrumDynamics {
+  private body: number[] = [];
+  private peaks: number[] = [];
+  private holds: number[] = [];
+
+  update(db: number[], paused = false): SpectrumFrame {
+    if (paused) {
+      this.reset(db.length);
+      return { body: this.body.map(levelToDb), peaks: this.peaks.map(levelToDb) };
+    }
+    const target = db.map(dbToLevel);
+    if (this.body.length !== target.length) this.reset(target.length);
+    for (let i = 0; i < target.length; i++) {
+      const previous = this.body[i] ?? 0;
+      const next = target[i] ?? 0;
+      this.body[i] = previous + (next - previous) * (next > previous ? 0.78 : 0.18);
+      if (this.body[i]! >= (this.peaks[i] ?? 0)) {
+        this.peaks[i] = this.body[i]!;
+        this.holds[i] = 7;
+      } else if ((this.holds[i] ?? 0) > 0) {
+        this.holds[i]!--;
+      } else {
+        this.peaks[i] = Math.max(this.body[i]!, (this.peaks[i] ?? 0) - 0.045);
+      }
+    }
+    return { body: this.body.map(levelToDb), peaks: this.peaks.map(levelToDb) };
+  }
+
+  reset(size = this.body.length) {
+    this.body = Array(size).fill(0);
+    this.peaks = Array(size).fill(0);
+    this.holds = Array(size).fill(0);
+  }
+}
+
 /** Bounded metadata line parser and timestamped history; never stores audio. */
 export class BandMeter {
   private text = "";
@@ -41,17 +84,38 @@ export class BandMeter {
   }
 }
 
-export function spectrumRows(db: number[], width: number, height: number): string[] {
+function resample(values: number[], count: number): number[] {
+  if (!values.length || count < 1) return [];
+  if (values.length === 1 || count === 1) return [values[Math.floor((values.length - 1) / 2)] ?? 0];
+  return Array.from({ length: count }, (_, i) => {
+    const position = i * (values.length - 1) / (count - 1);
+    const left = Math.floor(position), fraction = position - left;
+    return (values[left] ?? 0) * (1 - fraction) + (values[Math.min(values.length - 1, left + 1)] ?? 0) * fraction;
+  });
+}
+
+export function spectrumRows(db: number[], width: number, height: number, peakDb: number[] = []): string[] {
   width = Math.max(1, Math.floor(width)); height = Math.max(1, Math.floor(height));
   const glyphs = " ▁▂▃▄▅▆▇█";
-  const levels = db.map(value => Number.isFinite(value) ? Math.max(0, Math.min(1, (value + 65) / 55)) : 0);
-  if (!levels.length) return Array.from({ length: height }, () => " ".repeat(width));
-  const gaps = width >= levels.length * 2;
-  return Array.from({ length: height }, (_, row) => Array.from({ length: width }, (_, x) => {
-    const band = Math.min(levels.length - 1, Math.floor(x * levels.length / width));
-    const nextBand = Math.floor((x + 1) * levels.length / width);
-    if (gaps && nextBand !== band) return " ";
-    const remaining = levels[band]! * height * 8 - (height - row - 1) * 8;
-    return glyphs[Math.max(0, Math.min(8, Math.ceil(remaining)))]!;
-  }).join(""));
+  if (!db.length) return Array.from({ length: height }, () => " ".repeat(width));
+  const barWidth = width >= 6 ? 2 : 1;
+  const gap = width >= 3 ? 1 : 0;
+  const bars = Math.max(1, Math.floor((width + gap) / (barWidth + gap)));
+  const renderWidth = bars * barWidth + (bars - 1) * gap;
+  const leftPad = Math.floor((width - renderWidth) / 2);
+  const rightPad = width - renderWidth - leftPad;
+  const levels = resample(db.map(dbToLevel), bars);
+  const peaks = peakDb.length ? resample(peakDb.map(dbToLevel), bars) : [];
+  return Array.from({ length: height }, (_, row) => {
+    const fromBottom = height - row - 1;
+    const content = levels.map((level, band) => {
+      const remaining = level * height * 8 - fromBottom * 8;
+      let glyph = glyphs[Math.max(0, Math.min(8, Math.ceil(remaining)))]!;
+      const peak = peaks[band] ?? 0;
+      const peakRow = Math.min(height - 1, Math.floor(peak * height));
+      if (peak > level + 0.5 / height && peakRow === fromBottom && remaining <= 0) glyph = "▀";
+      return glyph.repeat(barWidth);
+    }).join(" ".repeat(gap));
+    return " ".repeat(leftPad) + content + " ".repeat(rightPad);
+  });
 }

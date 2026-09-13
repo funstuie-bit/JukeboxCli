@@ -11,7 +11,7 @@ import { graphicsPainter, graphicsProtocol, simpleArtwork } from "../../player/g
 import { RadioFallback } from "../components/RadioFallback";
 import { LyricsPanel } from "../components/LyricsPanel";
 import { PlayerSearch } from "../components/PlayerSearch";
-import { spectrumRows } from "../../player/spectrum";
+import { BANDS, SpectrumDynamics, spectrumRows } from "../../player/spectrum";
 
 export function playerLayout(width: number, height: number, live = false, waveform = false) {
   const split = width >= 86 && height >= 16;
@@ -42,14 +42,9 @@ const WaveformPanel = memo(function WaveformPanel({ samples, width, height, frac
 const SpectrumPanel = memo(function SpectrumPanel({ levels, width, height, paused, palette }: {
   levels?: number[]; width: number; height: number; paused: boolean; palette: PlayerPalette;
 }) {
-  const shown = useRef(Array(8).fill(-120));
-  const target = paused ? Array(8).fill(-120) : levels ?? Array(8).fill(-120);
-  shown.current = target.map((value, i) => {
-    const previous = shown.current[i] ?? -120;
-    if (paused || previous <= -100) return value;
-    return previous + (value - previous) * (value > previous ? 0.7 : 0.22);
-  });
-  const rows = spectrumRows(shown.current, width, height);
+  const dynamics = useRef(new SpectrumDynamics());
+  const frame = dynamics.current.update(levels ?? BANDS.map(() => -120), paused);
+  const rows = spectrumRows(frame.body, width, height, frame.peaks);
   return <Box flexDirection="column">{rows.map((row, i) =>
     <Text key={i} color={i < Math.ceil(height / 2) ? palette.alt : palette.accent}>{row}</Text>)}</Box>;
 });
@@ -107,7 +102,7 @@ export function NowPlaying({ embedded = false, onDownload = () => {} }: { embedd
   </Box>;
   const details = <Box flexDirection="column" width={inner}>
     {layout.split && !live && (visualizer || samples) ? <Box flexDirection="column">
-      <Text color={COLOR.muted}>{visualizer ? "LIVE EQUALIZER · 60 Hz — 8 kHz" : "TRACK WAVEFORM"}</Text>
+      <Text color={COLOR.muted}>{visualizer ? "LIVE SPECTRUM · CLASSIC PEAK" : "TRACK WAVEFORM"}</Text>
       {visualizer ? <SpectrumPanel levels={spectrum} width={inner} height={layout.waveRows} paused={st.paused || Boolean(st.loading)} palette={COLOR} />
         : <WaveformPanel samples={samples} width={inner} height={layout.waveRows} fraction={fraction} palette={COLOR} />}
     </Box> : null}

@@ -154,7 +154,7 @@ export class MpvPlayer extends EventEmitter {
           this.spectrumTimer = setTimeout(() => {
             this.spectrumTimer = null;
             this.emit("spectrum", this.meters.map(m => m.at(this.lastPosition)?.db ?? -120));
-          }, 100);
+          }, 50);
         });
       });
       proc.on("error", (err) => {

@@ -1,32 +1,25 @@
 # Audio-reactive visualiser
 
-The eight-band visualiser is available as an experimental opt-in in Now Playing.
-Normal launches retain the precomputed local-track waveform and do no live audio
-analysis. Start the source checkout with:
-
-```sh
-npm run visualizer
-```
-
-Or enable it for an installed command:
-
-```sh
-JUKEBOXCLI_VISUALIZER=1 jukeboxcli
-```
+The eight-band visualiser is an experimental opt-in in Now Playing. Normal
+launches retain the precomputed local-track waveform and do no live analysis.
+Start an installed build with `JUKEBOXCLI_VISUALIZER=1 jukeboxcli`, or use
+`npm run visualizer` from the source checkout.
 
 ## What works
 
 An mpv audio filter splits decoded audio into an unchanged playback branch and
 an analysis branch. The latter measures eight octave-spaced frequency bands
 (60, 125, 250, 500, 1000, 2000, 4000, 8000 Hz). This is **live band-pass RMS
-energy**, not an FFT and not decorative/random animation. Analysis runs at
-20 frames/sec; the terminal demo redraws at 10 frames/sec.
+energy**, not an FFT and not decorative/random animation. Analysis and the
+Now Playing panel update at up to 20 frames/sec; the standalone demo redraws at
+10 frames/sec.
 
-The Now Playing panel uses eight separated, filled vertical bars with fractional
-block cells. It grows from two rows in a short split view to five rows in a tall
-terminal, smooths fast attacks and slower decays, and leaves the terminal
-background visible. This is not extra frequency resolution or a time-domain
-waveform. Set `NO_COLOR=1` for uncoloured bars.
+The Now Playing panel uses a classic LED-style presentation inspired by the
+useful parts of cliamp's visual hierarchy: narrow two-cell bars, one-cell gaps,
+linear interpolation between the eight readings, fast attack, eased decay, and
+held/falling peak caps. It leaves the terminal background visible. The extra
+columns improve motion and shape but are not extra measured frequency resolution
+or an FFT. Set `NO_COLOR=1` for uncoloured bars.
 
 No microphone/system-audio capture, capture permissions, loopback driver, Python,
 native helper or second media download. The visualiser uses the existing mpv
@@ -36,7 +29,7 @@ playback. Audio on the playback branch is never downmixed for analysis.
 
 Band readings carry media timestamps. The renderer chooses readings near mpv's
 playback position, not simply the most recently decoded frame (which can be
-ahead of the audible output). Pause blanks the demo, silence yields no dots,
+ahead of the audible output). Pause blanks the demo, silence yields no bars,
 and seek clears old histories. Stale/missing samples render blank. Measurements
 are pre-volume: muting makes the test silent but does not erase source energy.
 
@@ -72,13 +65,22 @@ The demo responds to current terminal size; unit tests cover small dimensions.
 
 ## Verification and limits
 
-The fixture harness checks band peaks, silence, unchanged stereo PCM graph hashes,
-settled pause position and stale readings after seeking. Unit tests cover filled
-bar mapping, non-finite input, bounded parsing and timestamp selection.
-
-The benchmark compares repeated baseline/filtered runs with generated pink noise.
-It measures mpv CPU and RSS only, excluding Node, terminal rendering and startup;
-short runs are not battery-life or release-performance guarantees.
+- Actual mpv 0.41.0 / FFmpeg libraries 9.0.1 on the development Mac passed.
+- 125 Hz peaks in the 125 Hz band; 4 kHz peaks in the 4 kHz band after a seek.
+  Silence settles below -80 dB in all bands, represented by a -120 dB floor.
+- Stereo output graph hashes match; pause clock freezes after settling;
+  backwards seek discards prior high-frequency/silent readings.
+- A 70×18 real PTY demo exercised low/high response, pause blanking and silence.
+- Short repeated baseline/filtered CPU comparisons use generated stereo pink
+  noise and muted real mpv output. They measure **mpv CPU only**, excluding Node,
+  terminal rendering and startup. Numbers are diagnostic, not a battery/runtime
+  or release-performance guarantee. On Apple M1 Max / macOS 26.4.1, a repeated
+  run measured 4.0%/4.0% baseline versus 6.6%/6.6% filtered (about 2.6 percentage
+  points additional mpv CPU). RSS varied 147–179 MiB baseline / 148–150 MiB
+  filtered, so no memory-overhead conclusion is drawn from this short run.
+- Tests cover LED interpolation and peak motion, missing/non-finite readings,
+  bounded metadata parsing, timestamp selection, stale history clearing and
+  honest silent rendering.
 
 Not yet verified: long-running radio, YouTube resolution/stream transitions,
 preloaded queue transitions, speed changes, every sample format, Bluetooth/audio
@@ -86,24 +88,25 @@ device latency, independent Intel/Apple Silicon and terminal matrix. Eight broad
 bands are an initial design, not a high-resolution FFT spectrum. There is no
 claim of system-wide visualisation or native media-key support.
 
-## Before enabling this by default
+## Remaining integration gates
 
-1. Make filter failure restart ordinary playback rather than requiring a launch
+1. Make filter failure restore ordinary playback rather than requiring a launch
    without `JUKEBOXCLI_VISUALIZER=1`.
-2. Keep checking process restart, track/preload changes, radio reconnect,
-   seeking and decoder PTS resets. Keep pipe draining separate from rendering;
-   close every descriptor on exit. Analyse a single stream, with bounded memory.
-3. Add a saved Now Playing toggle and automatic waveform fallback, with hidden
-   and small-window policies. Analysis already stays off in normal launches.
-4. Add Full-App tests, muted real local/HTTP/radio/YouTube acceptance, sustained CPU/
-   RSS and measured audible-clock alignment, followed by real-terminal visual
-   review before enabling it. No audio-engine rewrite is required.
+2. Keep checking process restart, track/preload changes, radio reconnect, seeking and
+   decoder PTS resets. Keep pipe draining separate from rendering; close every
+   descriptor on exit. Analyse a single stream, with bounded memory.
+3. Add a saved Now Playing visualiser toggle and waveform fallback, with hidden
+   and small-window policies. Stop analysis work when
+   disabled if filter reconfiguration proves safe; never block audio on a UI.
+4. Full-App tests, muted real local/HTTP/radio/YouTube acceptance, sustained CPU/
+   RSS and measured audible-clock alignment; then Stu's visual acceptance before
+   enabling or promoting it. No rewrite of the audio engine is justified yet.
 
 ## Sources and implementation
 
 The graph uses the primary [FFmpeg filter documentation](https://ffmpeg.org/ffmpeg-filters.html):
 `asplit`, `aresample`, `asetnsamples`, `bandpass`, `astats`, `ametadata`, `anullsink`.
-Use installed filter help and the fixture harness to check local capabilities.
-`src/player/spectrum.ts` builds the graph, parses metadata and renders filled bars;
+Installed filter help and actual mpv execution verified the available options.
+`src/player/spectrum.ts` builds the graph, parses metadata and renders the LED spectrum;
 `scripts/prototype-visualiser.ts` is the real-player acceptance/demo harness;
 `scripts/benchmark-spectrum.ts` compares baseline and filtered mpv.

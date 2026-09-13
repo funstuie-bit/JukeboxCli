@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { BANDS, BandMeter, spectrumGraph, spectrumRows } from "../scripts/spectrum-core";
+import { BANDS, BandMeter, SpectrumDynamics, spectrumGraph, spectrumRows } from "../scripts/spectrum-core";
 const record = (time: number, db: string) => `frame:0 pts:0 pts_time:${time}\nlavfi.astats.Overall.RMS_level=${db}\n`;
 describe("isolated spectrum prototype", () => {
   it("splits analysis from unchanged output and uses fixed inherited pipes", () => {
@@ -36,12 +36,23 @@ describe("isolated spectrum prototype", () => {
       expect(rows.join("").trim()).not.toBe("");
     }
   });
-  it("renders filled vertical bars from the bottom with fractional cells", () => {
+  it("renders narrow interpolated LED bars from the bottom", () => {
     expect(spectrumRows([-10, -65], 2, 1)).toEqual(["█ "]);
     expect(spectrumRows([-65, -10], 2, 1)).toEqual([" █"]);
     expect(spectrumRows([-10], 1, 2)).toEqual(["█", "█"]);
     expect(spectrumRows([-37.5], 1, 2)).toEqual([" ", "█"]);
-    expect(spectrumRows(BANDS.map(() => -10), 24, 1)).toEqual(["██ ".repeat(8)]);
+    expect(spectrumRows(BANDS.map(() => -10), 24, 1)).toEqual(["██ ██ ██ ██ ██ ██ ██ ██ "]);
+  });
+  it("uses fast attack, slow decay and falling peak caps", () => {
+    const motion = new SpectrumDynamics();
+    const attack = motion.update([-10]);
+    expect(attack.body[0]).toBeGreaterThan(-25);
+    motion.update([-120]);
+    const falling = motion.update([-120]);
+    expect(falling.body[0]).toBeLessThan(attack.body[0]!);
+    expect(falling.peaks[0]).toBeGreaterThan(falling.body[0]!);
+    expect(spectrumRows(falling.body, 6, 3, falling.peaks).join("")).toContain("▀");
+    expect(motion.update([-10], true)).toEqual({ body: [-120], peaks: [-120] });
   });
   it("leaves missing, non-finite and sub-floor readings blank", () => {
     for (const values of [[], [NaN, Infinity, -Infinity], [-120, -66, -65]]) {
