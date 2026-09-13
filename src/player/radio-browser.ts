@@ -27,7 +27,10 @@ export interface RadioFacet { name: string; query: string; count: number }
 export type RadioFacetKind = "tags" | "countries";
 
 function queryUrl(input: string, api: string): URL {
-  const query = cleanText(input).trim();
+  // Blank is meaningful: it requests the most-clicked working stations.
+  // cleanText's display fallback is "Untitled", so only apply it to text.
+  const raw = input.trim();
+  const query = raw ? cleanText(raw).trim() : "";
   if (query.length > 120) throw Error("Keep radio searches under 120 characters.");
   const url = new URL(`${api.replace(/\/$/, "")}/stations/search`);
   url.searchParams.set("hidebroken", "true");

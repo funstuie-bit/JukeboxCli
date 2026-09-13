@@ -15,6 +15,7 @@ describe("Radio Browser directory", () => {
     expect(requested?.pathname).toBe("/json/stations/search");
     expect(requested?.searchParams.get("order")).toBe("clickcount");
     expect(requested?.searchParams.get("hidebroken")).toBe("true");
+    expect(requested?.searchParams.has("name")).toBe(false);
     expect(result.tracks[0]).toMatchObject({ title: "Fixture FM", streamUrl: "https://radio.example/live.mp3",
       artist: "France · MP3 · 192 kbps", album: "jazz · soul", thumbnailUrl: "https://radio.example/art.png",
       stationWebsite: "https://radio.example/", streamType: "radio", isLive: true });
