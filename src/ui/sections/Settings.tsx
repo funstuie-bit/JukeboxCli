@@ -25,6 +25,7 @@ import {
 } from "../../library/move-library";
 import { defaultLibraryDir } from "../../config/paths";
 import { COLOR, ICON } from "../theme";
+import { nextSpectrumMode } from "../../player/spectrum";
 import {
   detectBrowserProfiles,
   browserCookieArg,
@@ -197,7 +198,7 @@ export function Settings() {
       detail: "Delete every download",
       danger: true,
     },
-    { value: "appearance", name: "Player appearance", detail: `${config.playerTheme === "calm" ? "Calm" : "Lavender"} · motion ${config.reducedMotion === false ? "on" : "off"}` },
+    { value: "appearance", name: "Player appearance", detail: `${config.playerTheme === "calm" ? "Calm" : "Lavender"} · visualizer ${config.visualizerMode ?? "classic"}` },
   ];
 
   function openSetting(v: Mode | "open-folder"): void {
@@ -435,13 +436,17 @@ export function Settings() {
   }
 
   if (mode === "appearance") {
-    return frame("Player appearance", <SelectField title="Player and navigation colours; motion is decorative, not audio-reactive."
+    return frame("Player appearance", <SelectField title="Colours, fallback motion and live visualizer style."
       focused={focused} options={[
         { label: `Theme: ${config.playerTheme === "calm" ? "Calm" : "Lavender"} (toggle)`, value: "theme" },
         { label: `Reduced motion: ${config.reducedMotion === false ? "off" : "on"} (toggle)`, value: "motion" },
+        { label: `Visualizer: ${config.visualizerMode === "smooth" ? "Smooth" : config.visualizerMode === "mirror" ? "Bass Mirror" : "Classic Peak"} (cycle)`, value: "visualizer" },
       ]} onSelect={value => {
-        setConfig(value === "theme" ? { ...config, playerTheme: config.playerTheme === "calm" ? "lavender" : "calm" }
-          : { ...config, reducedMotion: !(config.reducedMotion ?? true) });
+        setConfig(value === "theme"
+          ? { ...config, playerTheme: config.playerTheme === "calm" ? "lavender" : "calm" }
+          : value === "visualizer"
+            ? { ...config, visualizerMode: nextSpectrumMode(config.visualizerMode) }
+            : { ...config, reducedMotion: !(config.reducedMotion ?? true) });
       }} onCancel={() => setMode("menu")} />);
   }
 

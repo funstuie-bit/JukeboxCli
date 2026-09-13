@@ -21,6 +21,15 @@ held/falling peak caps. It leaves the terminal background visible. The extra
 columns improve motion and shape but are not extra measured frequency resolution
 or an FFT. Set `NO_COLOR=1` for uncoloured bars.
 
+Press `v` in Now Playing to cycle three saved presentations:
+
+- **Classic Peak** — separated two-cell LED bars with held/falling caps.
+- **Smooth** — a continuous one-cell skyline, low frequencies on the left.
+- **Bass Mirror** — a dense symmetric skyline with bass at the centre.
+
+The selected mode is stored in JukeboxCli's config. Switching presentation does
+not restart mpv, add analysis processes or change the audio measurements.
+
 No microphone/system-audio capture, capture permissions, loopback driver, Python,
 native helper or second media download. The visualiser uses the existing mpv
 process's libavfilter and inherits eight metadata pipes from its parent. FFmpeg

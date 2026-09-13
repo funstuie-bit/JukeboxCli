@@ -15,16 +15,16 @@ describe("player appearance persistence", () => {
     await saveConfig({ ...defaultConfig, lyricsOnline: true });
     expect((await loadConfig()).lyricsOnline).toBe(true);
   });
-  it("defaults old/invalid settings to lavender and reduced motion", async () => {
+  it("defaults old/invalid settings to lavender, reduced motion and classic visualizer", async () => {
     await fs.mkdir(path.dirname(configFile), { recursive: true });
-    await fs.writeFile(configFile, JSON.stringify({ playerTheme: "invalid", reducedMotion: "no" }));
-    expect(await loadConfig()).toMatchObject({ playerTheme: "lavender", reducedMotion: true });
+    await fs.writeFile(configFile, JSON.stringify({ playerTheme: "invalid", reducedMotion: "no", visualizerMode: "invalid" }));
+    expect(await loadConfig()).toMatchObject({ playerTheme: "lavender", reducedMotion: true, visualizerMode: "classic" });
     await fs.writeFile(configFile, "{}");
     expect(await loadConfig()).toMatchObject({ playerTheme: "lavender", reducedMotion: true });
   });
   it("restores choices without changing unrelated settings or the shared palette", async () => {
-    await saveConfig({ ...defaultConfig, playerTheme: "calm", reducedMotion: false, retries: 7 });
-    expect(await loadConfig()).toMatchObject({ playerTheme: "calm", reducedMotion: false, retries: 7 });
+    await saveConfig({ ...defaultConfig, playerTheme: "calm", reducedMotion: false, visualizerMode: "mirror", retries: 7 });
+    expect(await loadConfig()).toMatchObject({ playerTheme: "calm", reducedMotion: false, visualizerMode: "mirror", retries: 7 });
     expect(playerPalette("calm").accent).not.toBe(COLOR.accent);
     expect(playerPalette("lavender").accent).toBe(COLOR.accent);
   });

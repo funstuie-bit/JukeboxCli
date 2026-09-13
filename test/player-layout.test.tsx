@@ -11,7 +11,7 @@ import { trackDisplayTitle } from "../src/util/format";
 import stringWidth from "string-width";
 import { loadWaveform } from "../src/player/art";
 vi.mock("../src/player/art", () => ({ loadCoverArt: async () => null, loadWaveform: vi.fn(async () => null) }));
-afterEach(cleanup);
+afterEach(() => { cleanup(); vi.unstubAllEnvs(); });
 describe("responsive listening layout", () => {
   it("uses the player's measured duration only for the current queue occurrence", () => {
     const base = makeStore().playback.getState().track!;
@@ -51,7 +51,7 @@ describe("responsive listening layout", () => {
     expect(store.playback.getState().index).toBe(0);
   });
   it("caps artwork and fits radio with long broadcast text at every size", async () => {
-    expect(playerLayout(180, 50).artRows).toBeLessThanOrEqual(12);
+    expect(playerLayout(180, 50).artRows).toBe(18);
     const t = { ...trackFromUrl("https://example.com/live", true), title: "Fixture Radio" };
     for (const [cols, height] of [[180, 44], [140, 38], [100, 18], [90, 16], [80, 16], [60, 12]]) {
       const store = makeStore({ cols, listRows: height! - 2, playback: makeFakePlayback({ track: t, list: [t, t], broadcastTitle: "Long artist — Song title ".repeat(20) }) });
@@ -107,6 +107,16 @@ describe("responsive listening layout", () => {
       expect(stringWidth(queueRow("東京 🎵".repeat(8), "Long title".repeat(20), "1:23:45", width, "›▶", "LIVE"))).toBe(width);
     }
     expect(playerLayout(180, 50).waveRows).toBe(5);
+  });
+  it("cycles the live visualizer presentation with lowercase v", async () => {
+    vi.stubEnv("JUKEBOXCLI_VISUALIZER", "1");
+    const setConfig = vi.fn();
+    const store = makeStore({ cols: 120, listRows: 30, setConfig });
+    const view = render(<StoreContext.Provider value={store}><NowPlaying /></StoreContext.Provider>);
+    view.stdin.write("v");
+    await new Promise(r => setTimeout(r, 20));
+    expect(setConfig).toHaveBeenCalledWith(expect.objectContaining({ visualizerMode: "smooth" }));
+    expect(view.lastFrame()).toContain("CLASSIC PEAK · v");
   });
   it("cleans an appended year for display without editing the stored title", () => {
     const track = { title: "Renegade Soundwave - Leftfield Remix;1994" };

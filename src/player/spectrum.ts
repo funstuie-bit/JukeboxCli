@@ -1,4 +1,10 @@
 export const BANDS = [60, 125, 250, 500, 1000, 2000, 4000, 8000] as const;
+export const SPECTRUM_MODES = ["classic", "smooth", "mirror"] as const;
+export type SpectrumMode = typeof SPECTRUM_MODES[number];
+
+export function nextSpectrumMode(mode: SpectrumMode = "classic"): SpectrumMode {
+  return SPECTRUM_MODES[(SPECTRUM_MODES.indexOf(mode) + 1) % SPECTRUM_MODES.length]!;
+}
 
 export function spectrumGraph(input = "in", output = "out") {
   return `[${input}]asplit[${output}][analysis];[analysis]aresample=48000,asetnsamples=n=2400,asplit=${BANDS.length}` +
@@ -94,18 +100,33 @@ function resample(values: number[], count: number): number[] {
   });
 }
 
-export function spectrumRows(db: number[], width: number, height: number, peakDb: number[] = []): string[] {
+function mirrorBands(values: number[], count: number): number[] {
+  if (!values.length || count < 1) return [];
+  if (count === 1) return [values[0] ?? 0];
+  return Array.from({ length: count }, (_, i) => {
+    const centre = (count - 1) / 2;
+    const distance = Math.abs(i - centre) / Math.max(0.5, centre);
+    const position = distance * (values.length - 1);
+    const left = Math.floor(position), fraction = position - left;
+    return (values[left] ?? 0) * (1 - fraction) + (values[Math.min(values.length - 1, left + 1)] ?? 0) * fraction;
+  });
+}
+
+export function spectrumRows(
+  db: number[], width: number, height: number, peakDb: number[] = [], mode: SpectrumMode = "classic",
+): string[] {
   width = Math.max(1, Math.floor(width)); height = Math.max(1, Math.floor(height));
   const glyphs = " ▁▂▃▄▅▆▇█";
   if (!db.length) return Array.from({ length: height }, () => " ".repeat(width));
-  const barWidth = width >= 6 ? 2 : 1;
-  const gap = width >= 3 ? 1 : 0;
+  const barWidth = mode === "classic" && width >= 6 ? 2 : 1;
+  const gap = mode === "classic" && width >= 3 ? 1 : 0;
   const bars = Math.max(1, Math.floor((width + gap) / (barWidth + gap)));
   const renderWidth = bars * barWidth + (bars - 1) * gap;
   const leftPad = Math.floor((width - renderWidth) / 2);
   const rightPad = width - renderWidth - leftPad;
-  const levels = resample(db.map(dbToLevel), bars);
-  const peaks = peakDb.length ? resample(peakDb.map(dbToLevel), bars) : [];
+  const source = db.map(dbToLevel);
+  const levels = mode === "mirror" ? mirrorBands(source, bars) : resample(source, bars);
+  const peaks = mode === "classic" && peakDb.length ? resample(peakDb.map(dbToLevel), bars) : [];
   return Array.from({ length: height }, (_, row) => {
     const fromBottom = height - row - 1;
     const content = levels.map((level, band) => {

@@ -132,7 +132,7 @@ const ALWAYS: Hint = { keys: "?", label: "Keys" };
 const PLAYER: Hint = { keys: "m", label: "Player" };
 export const PLAYER_HINTS: Hint[] = [
   { keys: "m/esc", label: "Back" }, { keys: "space", label: "Pause" },
-  { keys: "← →", label: "Seek" }, { keys: "l", label: "Lyrics" }, { keys: "b", label: "Artwork" }, { keys: "T/V", label: "Look/motion" }, { keys: "7", label: "Queue" }, ALWAYS,
+  { keys: "← →", label: "Seek" }, { keys: "l", label: "Lyrics" }, { keys: "b", label: "Artwork" }, { keys: "v", label: "Visualizer" }, { keys: "T/V", label: "Look/motion" }, { keys: "7", label: "Queue" }, ALWAYS,
 ];
 // tab is the one movement key the arrows can't cover (they belong to lists
 // and seeking), so every footer variant advertises it under the same name.

@@ -12,6 +12,8 @@ export interface Config {
   playerTheme?: "lavender" | "calm";
   /** Disable decorative fallback animation (default true). */
   reducedMotion?: boolean;
+  /** Live spectrum presentation; analysis remains separately opt-in. */
+  visualizerMode?: "classic" | "smooth" | "mirror";
   /** Where downloaded audio files live. */
   libraryDir: string;
   /** The user's YouTube handle (public playlists). */
@@ -62,6 +64,7 @@ export const defaultConfig: Config = {
   lyricsOnline: false,
   playerTheme: "lavender",
   reducedMotion: true,
+  visualizerMode: "classic",
   libraryDir: defaultLibraryDir,
   youtubeHandle: undefined,
   soundcloudHandle: undefined,
@@ -99,6 +102,8 @@ export async function loadConfig(): Promise<Config> {
     cfg.lyricsOnline = parsed.lyricsOnline === true;
     cfg.playerTheme = parsed.playerTheme === "calm" ? "calm" : "lavender";
     cfg.reducedMotion = typeof parsed.reducedMotion === "boolean" ? parsed.reducedMotion : true;
+    cfg.visualizerMode = parsed.visualizerMode === "smooth" || parsed.visualizerMode === "mirror"
+      ? parsed.visualizerMode : "classic";
     if (!cfg.spotifyHandle && parsed.spotifyProfile) {
       const ref = parseSpotifyInput(parsed.spotifyProfile);
       if (ref.type === "user") {
