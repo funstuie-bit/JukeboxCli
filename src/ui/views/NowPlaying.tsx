@@ -124,7 +124,7 @@ export function NowPlaying({ embedded = false, onDownload = () => {} }: { embedd
     <Text color={st.error ? COLOR.warn : COLOR.muted} wrap="truncate-end">{st.error || (st.loading ? "Loading…" : st.engine === "external" && t ? "Playing in your default app" : t ? `${isStream(t) ? "Streaming · not in Library" : "Saved locally"}${st.preloading ? " · preparing next…" : st.nextReady ? " · next prepared" : ""}` : "m closes this screen")}</Text>
   </Box>;
   return <Box width={width} height={height} flexDirection={layout.split ? "row" : "column"}>
-    <Box width={layout.left} height={layout.split ? undefined : layout.showcase ? height : 6} alignSelf="flex-start" borderStyle={layout.split ? "round" : undefined} borderColor={RULE} flexDirection="column" paddingX={1} flexShrink={0}>
+    <Box width={layout.left} height={layout.balanced ? height - 1 : layout.split ? undefined : layout.showcase ? height : 6} alignSelf="flex-start" borderStyle={layout.split ? "round" : undefined} borderColor={RULE} flexDirection="column" paddingX={1} flexShrink={0}>
       {layout.split ? <Box justifyContent="space-between"><Text bold color={COLOR.alt}>NOW PLAYING</Text><Text color={COLOR.muted}>{st.index >= 0 ? `${store.playback.queueEntries().findIndex(e => e.index === st.index) + 1}/${st.list.length}` : ""}</Text></Box> : null}
       {heading}
       {layout.split || layout.showcase ? <Box alignItems="center" justifyContent="center" flexShrink={0}>
@@ -135,6 +135,7 @@ export function NowPlaying({ embedded = false, onDownload = () => {} }: { embedd
       </Box> : null}
       {(layout.split || layout.showcase) && height >= 23 ? <Box height={1} /> : null}
       {details}
+      {layout.balanced ? <Box flexGrow={1} /> : null}
       {(layout.split || layout.showcase) && height >= 23 ? <Text color={COLOR.muted} wrap="truncate-end">T {store.config.playerTheme === "calm" ? "Calm" : "Lavender"}{visualizer ? ` · v ${visualizerMode}` : ""} · Art {simpleArtwork() ? "simple" : graphicsPainter ? graphicsProtocol === "iterm" ? "iTerm2" : graphicsProtocol === "sixel" ? "Sixel" : "Kitty" : "blocks"}</Text> : null}
     </Box>
     {!layout.showcase ? <Box flexDirection="column" marginLeft={layout.split ? 1 : 0} width={layout.split ? layout.right : width} height={layout.split ? height : Math.max(3, height - 6)}>

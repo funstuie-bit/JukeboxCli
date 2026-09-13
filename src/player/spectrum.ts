@@ -133,12 +133,31 @@ function mirrorBands(values: number[], count: number): number[] {
   });
 }
 
-/** A minimal contour: one horizontal mark at each interpolated band height. */
+/** Measured bands as hollow meters; unlike a contour these remain distinct at wide widths. */
 function outlineRows(levels: number[], width: number, height: number): string[] {
-  const columns = resample(levels, width);
+  if (width < 3) {
+    const columns = resample(levels, width);
+    return Array.from({ length: height }, (_, row) => {
+      const fromBottom = height - row - 1;
+      return columns.map(level => level > fromBottom / height ? "│" : " ").join("");
+    });
+  }
+  const count = Math.max(1, Math.min(levels.length, Math.floor((width + 1) / 4)));
+  const bands = resample(levels, count);
+  const gap = count > 1 ? 1 : 0;
+  const barWidth = Math.max(3, Math.floor((width - gap * (count - 1)) / count));
+  const renderWidth = barWidth * count + gap * (count - 1);
+  const left = Math.floor((width - renderWidth) / 2), right = width - renderWidth - left;
   return Array.from({ length: height }, (_, row) => {
-    const fromBottom = height - row - 1;
-    return columns.map(level => level > 0 && Math.min(height - 1, Math.ceil(level * height) - 1) === fromBottom ? "─" : " ").join("");
+    const body = bands.map(level => {
+      const filled = level > 0 ? Math.max(1, Math.min(height, Math.ceil(level * height))) : 0;
+      const top = height - filled;
+      if (!filled || row < top) return " ".repeat(barWidth);
+      if (filled === 1 || row === height - 1) return "└" + "─".repeat(barWidth - 2) + "┘";
+      if (row === top) return "┌" + "─".repeat(barWidth - 2) + "┐";
+      return "│" + " ".repeat(barWidth - 2) + "│";
+    }).join(" ".repeat(gap));
+    return " ".repeat(left) + body + " ".repeat(right);
   });
 }
 

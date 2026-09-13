@@ -6,7 +6,9 @@ remaining limits, see [feature status](FEATURES.md).
 ## Unreleased
 
 - Give very wide player screens a balanced 45/55 split, artwork up to 56
-  columns × 24 rows, a taller spectrum and queue rows capped for easier scanning.
+  columns × 24 rows, aligned panel bottoms, a taller spectrum and queue rows
+  capped for easier scanning. Outline draws distinct hollow band meters instead
+  of a long stepped contour.
 - Add Radio Browser under `9`: browse popular stations, genres/tags or countries,
   or search by station name. Results stay temporary until explicitly saved.
 - Show the real eight-band visualiser for live radio, and restore Sixel station

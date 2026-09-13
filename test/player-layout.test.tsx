@@ -66,6 +66,10 @@ describe("responsive listening layout", () => {
       expect(frame.split("\n").length).toBeLessThanOrEqual(height!);
       expect(Math.max(...frame.split("\n").map(s => stringWidth(s)))).toBeLessThanOrEqual(cols!);
       if (cols! >= 100) expect(frame).toContain("RADIO");
+      if (playerLayout(cols! - 2, height!).balanced) {
+        const panelBottom = frame.split("\n").find(row => row[0] === "╰");
+        expect(panelBottom?.[playerLayout(cols! - 2, height!).left + 1]).toBe("╰");
+      }
       view.unmount();
     }
   });

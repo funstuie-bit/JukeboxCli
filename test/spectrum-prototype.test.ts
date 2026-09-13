@@ -73,6 +73,9 @@ describe("isolated spectrum prototype", () => {
     expect(modes.every(rows => rows.length === 4 && rows.every(row => row.length === 24))).toBe(true);
     const mirror = spectrumRows(values, 24, 4, values, "mirror");
     expect(mirror.every(row => row === [...row].reverse().join(""))).toBe(true);
+    const outline = spectrumRows(values, 80, 7, values, "outline");
+    expect(outline.join("\n")).toMatch(/[┌┐│└┘]/);
+    expect(Math.max(...outline.flatMap(row => [...row.matchAll(/─+/g)].map(match => match[0].length)))).toBeLessThan(20);
   });
   it("leaves missing, non-finite and sub-floor readings blank", () => {
     for (const values of [[], [NaN, Infinity, -Infinity], [-120, -66, -65]]) {
