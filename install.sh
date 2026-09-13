@@ -1,7 +1,7 @@
 #!/bin/sh
 # Install a built package, not a link back into a development checkout.
 # Run from the repo root: ./install.sh
-# Requires Node.js 22+ (brew install node@22 or https://nodejs.org)
+# Requires Node.js 22+ and mpv. See README.md for platform-specific commands.
 
 set -eu
 cd "$(dirname "$0")"
@@ -21,12 +21,22 @@ fi
 
 # Node version check (needs >= 22)
 if ! command -v node >/dev/null 2>&1; then
-  echo "Node.js not found. Install it first: brew install node@22"
+  if [ "$(uname -s)" = "Darwin" ]; then
+    echo "Node.js not found. Install it first: brew install node@22"
+  else
+    echo "Node.js not found. Install Node.js 22 or newer, then rerun this installer."
+    echo "See: https://nodejs.org/en/download/package-manager"
+  fi
   exit 1
 fi
 install_node_major=$(node -e 'console.log(process.versions.node.split(".")[0])')
 if [ "$install_node_major" -lt 22 ]; then
-  echo "Node.js $install_node_major found, but 22+ is required. Upgrade: brew upgrade node"
+  if [ "$(uname -s)" = "Darwin" ]; then
+    echo "Node.js $install_node_major found, but 22+ is required. Upgrade: brew upgrade node"
+  else
+    echo "Node.js $install_node_major found, but 22+ is required. Upgrade Node.js, then rerun this installer."
+    echo "See: https://nodejs.org/en/download/package-manager"
+  fi
   exit 1
 fi
 

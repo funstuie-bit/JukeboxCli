@@ -1,0 +1,111 @@
+# Linux installation
+
+JukeboxCli runs on 64-bit Linux with Node.js 22 or newer and mpv. The source
+installer builds a standalone global command from the checkout. It does not
+keep the installed command linked to the repository.
+
+## Arch Linux
+
+Install the required packages:
+
+```sh
+sudo pacman -S --needed nodejs npm mpv
+```
+
+Check that Node.js is new enough:
+
+```sh
+node --version
+```
+
+The first number must be 22 or higher. If the distribution package is older,
+install a current Node.js release with [mise](https://mise.jdx.dev/) or another
+version manager before continuing.
+
+Clone and install JukeboxCli:
+
+```sh
+git clone https://github.com/funstuie-bit/JukeboxCli.git
+cd JukeboxCli
+./install.sh
+jukeboxcli --doctor
+jukeboxcli
+```
+
+The installer uses npm's configured global prefix. If `jukeboxcli` is not found
+after installation, add the `bin` directory under `npm config get prefix` to
+your `PATH`, or choose a prefix already on it:
+
+```sh
+./install.sh --prefix "$HOME/.local"
+```
+
+## Other Linux distributions
+
+Install Node.js 22 or newer, npm and mpv with your distribution's package
+manager, then run the same clone and install commands above. Common mpv package
+commands are:
+
+```sh
+# Debian or Ubuntu
+sudo apt install mpv
+
+# Fedora
+sudo dnf install mpv
+
+# openSUSE
+sudo zypper install mpv
+```
+
+Some stable distributions ship an older Node.js release. Use the
+[Node.js package-manager guide](https://nodejs.org/en/download/package-manager)
+or a version manager rather than continuing with Node.js 21 or older.
+
+## Tools and files
+
+JukeboxCli downloads app-managed copies of yt-dlp, ffmpeg and ffprobe into its
+cache when needed. A normal source installation therefore only requires Node.js,
+npm and mpv. `jukeboxcli --doctor` also reports whether system copies of the
+optional tools are on `PATH`; missing optional tools there do not mean automatic
+mode is broken.
+
+Fresh Linux profiles use these locations:
+
+- Music: `~/Music/JukeboxCli`
+- Config: `~/.config/JukeboxCli`
+- Data: `~/.local/share/JukeboxCli`
+- Cache: `~/.cache/JukeboxCli`
+- Logs: `~/.local/state/JukeboxCli`
+
+These follow the XDG environment variables when they are set. Run with an
+isolated profile when testing:
+
+```sh
+JUKEBOXCLI_HOME="$HOME/JukeboxCli-demo" jukeboxcli
+```
+
+Artwork works in Ghostty and Kitty-compatible terminals. Set
+`JUKEBOXCLI_ART=blocks` for a terminal-independent fallback. macOS media-key
+bridging is not available on Linux; playback controls inside JukeboxCli work
+normally.
+
+## Updating
+
+From a clean checkout:
+
+```sh
+cd JukeboxCli
+./update.sh
+```
+
+The updater refuses to overwrite local changes. Commit or stash them first.
+
+## Uninstalling
+
+Remove the globally installed package with:
+
+```sh
+npm uninstall --global jukeboxcli
+```
+
+This leaves your music and profile data in place.

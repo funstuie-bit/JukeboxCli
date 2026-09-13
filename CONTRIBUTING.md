@@ -1,7 +1,7 @@
 # Contributing
 
-You'll need macOS, Node.js 22+ and npm. Tests that play audio also need mpv and
-ffmpeg on PATH; tests that resolve online audio need yt-dlp.
+You'll need macOS or Linux, Node.js 22+ and npm. Tests that play audio also need
+mpv and ffmpeg on PATH; tests that resolve online audio need yt-dlp.
 
 ## Setup and verification
 

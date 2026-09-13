@@ -3,6 +3,12 @@
 Release notes describe what changed in each build. For what works now and the
 remaining limits, see [feature status](FEATURES.md).
 
+## Unreleased
+
+- Document source installation, updates, profile paths and terminal behaviour on
+  Linux, including an Arch Linux quick start.
+- Add x64 Linux install checks and platform-appropriate Node.js installer errors.
+
 ## 0.1.1-beta.3: Settings crash fix
 
 - Fix the React hook-order crash when opening Download pacing or running a

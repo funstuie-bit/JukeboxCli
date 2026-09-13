@@ -1,10 +1,11 @@
 # JukeboxCli
 
-A Mac-first music player that lives in the terminal.
+A music player that lives in the terminal, for macOS and Linux.
 
 I started this as a boredom project and it got slightly out of hand. JukeboxCli now plays local music, searches YouTube Music without an account, handles live radio and keeps the lot in one editable queue. Streams stay streams unless you choose to save them.
 
 [![Mac install checks](https://github.com/funstuie-bit/JukeboxCli/actions/workflows/mac-install.yml/badge.svg?branch=main)](https://github.com/funstuie-bit/JukeboxCli/actions/workflows/mac-install.yml)
+[![Linux install checks](https://github.com/funstuie-bit/JukeboxCli/actions/workflows/linux-install.yml/badge.svg?branch=main)](https://github.com/funstuie-bit/JukeboxCli/actions/workflows/linux-install.yml)
 
 ![JukeboxCli demo](docs/assets/jukeboxcli-demo.gif)
 
@@ -16,7 +17,7 @@ I started this as a boredom project and it got slightly out of hand. JukeboxCli 
 - Shows inline artwork in Ghostty, Kitty-compatible terminals and iTerm2, with a text fallback elsewhere.
 - Supports local LRC files and optional online lyrics.
 - Downloads from YouTube and SoundCloud, and imports music from supported Spotify links.
-- Handles shuffle, repeat, queue editing, listening history and macOS media keys through mpv.
+- Handles shuffle, repeat, queue editing and listening history. mpv supplies playback and macOS media-key support.
 
 Playing or browsing online music does not add it to your library. Downloads only start when you ask for one.
 
@@ -24,7 +25,26 @@ Playing or browsing online music does not add it to your library. Downloads only
 
 ## Install
 
-JukeboxCli currently supports macOS and needs Node.js 22 or newer.
+JukeboxCli supports macOS and 64-bit Linux. It needs Node.js 22 or newer and mpv.
+
+### Linux
+
+On Arch Linux:
+
+```sh
+sudo pacman -S --needed nodejs npm mpv
+git clone https://github.com/funstuie-bit/JukeboxCli.git
+cd JukeboxCli
+./install.sh
+jukeboxcli --doctor
+jukeboxcli
+```
+
+For other distributions, install Node.js 22+, npm and mpv, then use the same
+source installation commands. See the [Linux install guide](docs/linux-install.md)
+for package-manager examples, profile paths and troubleshooting.
+
+### macOS
 
 The easiest install is the project’s Homebrew formula:
 
@@ -46,7 +66,7 @@ cd JukeboxCli
 jukeboxcli
 ```
 
-You need Node 22+ and Homebrew before running the source installer. It installs mpv if needed and builds a command you can run from anywhere (moving the cloned folder won't break it). The app can download its own yt-dlp and ffmpeg copies on first launch.
+You need Node 22+ and Homebrew before running the macOS source installer. It installs mpv if needed and builds a command you can run from anywhere (moving the cloned folder won't break it). The app can download its own yt-dlp and ffmpeg copies on first launch.
 
 Check an installation without opening the player:
 
@@ -56,14 +76,14 @@ jukeboxcli --doctor
 
 ### Updating
 
-Homebrew install:
+Homebrew install (macOS):
 
 ```sh
 brew update
 brew upgrade jukeboxcli
 ```
 
-Source install:
+Source install (macOS or Linux):
 
 ```sh
 cd JukeboxCli
@@ -132,7 +152,7 @@ Run `jukeboxcli --help` for the full list. Spotify support imports music from su
 
 ## Current status
 
-The current prerelease is [0.1.1-beta.3](https://github.com/funstuie-bit/JukeboxCli/releases/tag/v0.1.1-beta.3). I use it, but it's still an early Mac project. Automated install checks run on Apple Silicon. Intel Macs aren't part of those checks, and I'm not claiming this works everywhere.
+The current prerelease is [0.1.1-beta.3](https://github.com/funstuie-bit/JukeboxCli/releases/tag/v0.1.1-beta.3). I use it, but it's still an early project. Automated install checks run on Apple Silicon and x64 Linux. Intel Macs and other Linux architectures aren't part of those checks, and I'm not claiming this works everywhere.
 
 A few limits are worth knowing:
 
@@ -163,6 +183,7 @@ More detail:
 - [Online listening and radio](docs/listening-online.md)
 - [Lyrics](docs/lyrics.md)
 - [Install and macOS controls](docs/mac-controls-and-install.md)
+- [Linux installation](docs/linux-install.md)
 - [Architecture](docs/architecture.md)
 - [Roadmap](docs/roadmap.md)
 - [Changelog](CHANGELOG.md)

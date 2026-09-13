@@ -1,0 +1,29 @@
+name: Linux install checks
+on:
+  push:
+    branches: [main]
+    paths: ["src/**", "test/**", "scripts/**", "docs/linux-install.md", "package*.json", "install.sh", "update.sh", "vitest.config.ts", ".github/workflows/linux-install.yml"]
+  pull_request:
+    paths: ["src/**", "test/**", "scripts/**", "docs/linux-install.md", "package*.json", "install.sh", "update.sh", "vitest.config.ts", ".github/workflows/linux-install.yml"]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  install:
+    name: x64 Linux install
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install mpv
+        run: sudo apt-get update && sudo apt-get install --yes mpv
+      - run: npm ci
+      - run: npm test
+      - run: npm run typecheck
+      - run: npm run build && npx --no-install tsx scripts/check-dist-imports.ts
+      - name: Verify source installer
+        run: ./install.sh --check
