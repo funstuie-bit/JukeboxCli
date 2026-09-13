@@ -13,7 +13,8 @@ an analysis branch. The latter measures eight octave-spaced frequency bands
 (60, 125, 250, 500, 1000, 2000, 4000, 8000 Hz). This is **live band-pass RMS
 energy**, not an FFT and not decorative/random animation. Analysis and the
 Now Playing panel update at up to 20 frames/sec; the standalone demo redraws at
-10 frames/sec.
+10 frames/sec. The same decoded-audio path now drives local, online and live
+radio playback; live stations no longer hide the panel.
 
 The Now Playing panel uses a classic LED-style presentation inspired by the
 useful parts of cliamp's visual hierarchy: narrow two-cell bars, one-cell gaps,

@@ -23,6 +23,8 @@ interface DirectoryStation {
 }
 
 export interface RadioDirectoryResult { tracks: StreamTrack[]; note: string }
+export interface RadioFacet { name: string; query: string; count: number }
+export type RadioFacetKind = "tags" | "countries";
 
 function queryUrl(input: string, api: string): URL {
   const query = cleanText(input).trim();
@@ -75,7 +77,8 @@ async function boundedJson(response: Response): Promise<unknown> {
 }
 
 function text(value: unknown): string {
-  return typeof value === "string" ? cleanText(value).trim() : "";
+  if (typeof value !== "string" || !value.trim()) return "";
+  return cleanText(value).trim();
 }
 
 function stationTrack(row: DirectoryStation): StreamTrack | undefined {
@@ -124,5 +127,39 @@ export async function searchRadioDirectory(input: string, signal: AbortSignal, f
     if (combined.aborted) throw Error("The radio directory timed out. Check your connection and try again.");
     if (error instanceof Error && /^(The radio directory|Keep radio)/.test(error.message)) throw error;
     throw Error("Could not search the radio directory. Check your connection and try again.");
+  }
+}
+
+/** Load browsable directory filters; selecting one still uses the bounded station search above. */
+export async function listRadioFacets(kind: RadioFacetKind, signal: AbortSignal, fetcher: Fetcher = fetch, api = API): Promise<RadioFacet[]> {
+  signal.throwIfAborted();
+  const combined = AbortSignal.any([signal, AbortSignal.timeout(10_000)]);
+  const url = new URL(`${api.replace(/\/$/, "")}/${kind}`);
+  url.searchParams.set("hidebroken", "true");
+  url.searchParams.set("limit", kind === "tags" ? "300" : "250");
+  url.searchParams.set("order", "stationcount");
+  url.searchParams.set("reverse", "true");
+  try {
+    const response = await fetcher(url, { signal: combined, credentials: "omit",
+      headers: { Accept: "application/json", "User-Agent": "JukeboxCli/0.1 radio-directory" } });
+    if (!response.ok) { await response.body?.cancel(); throw Error("The radio directory is unavailable right now."); }
+    const value = await boundedJson(response);
+    if (!Array.isArray(value)) throw Error("The radio directory returned an unreadable response.");
+    const found = new Map<string, RadioFacet>();
+    for (const raw of value) {
+      if (!raw || typeof raw !== "object") continue;
+      const row = raw as Record<string, unknown>;
+      const name = text(row.name).slice(0, 80);
+      const count = typeof row.stationcount === "number" && row.stationcount > 0 ? Math.round(row.stationcount) : 0;
+      const code = text(row.iso_3166_1).toUpperCase();
+      const query = kind === "tags" ? `tag:${name}` : /^[A-Z]{2}$/.test(code) ? `country:${code}` : `country:${name}`;
+      if (name && count && !found.has(name.toLowerCase())) found.set(name.toLowerCase(), { name, query, count });
+    }
+    return [...found.values()];
+  } catch (error) {
+    signal.throwIfAborted();
+    if (combined.aborted) throw Error("The radio directory timed out. Check your connection and try again.");
+    if (error instanceof Error && error.message.startsWith("The radio directory")) throw error;
+    throw Error("Could not browse the radio directory. Check your connection and try again.");
   }
 }

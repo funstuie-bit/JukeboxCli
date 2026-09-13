@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { searchRadioDirectory } from "../src/player/radio-browser";
+import { listRadioFacets, searchRadioDirectory } from "../src/player/radio-browser";
 
 const signal = () => new AbortController().signal;
 const rows = [{ stationuuid: "one", name: " Fixture FM ", url_resolved: "https://radio.example/live.mp3",
@@ -45,5 +45,18 @@ describe("Radio Browser directory", () => {
     await expect(searchRadioDirectory("x", signal(), async () => new Response("no", { status: 503 }))).rejects.toThrow(/unavailable/);
     await expect(searchRadioDirectory("x", signal(), async () => new Response("{"))).rejects.toThrow(/unreadable/);
     await expect(searchRadioDirectory("x", signal(), async () => new Response("x".repeat(2 * 1024 * 1024 + 1)))).rejects.toThrow(/too large/);
+  });
+
+  it("loads browsable tags and countries with station counts", async () => {
+    const urls: URL[] = [];
+    const fetcher = async (input: URL | RequestInfo) => {
+      const url = new URL(String(input)); urls.push(url);
+      return Response.json(url.pathname.endsWith("/tags")
+        ? [{ name: "jazz", stationcount: 1134 }, { name: "Jazz", stationcount: 10 }, { name: "", stationcount: 2 }]
+        : [{ name: "United Kingdom", iso_3166_1: "GB", stationcount: 900 }]);
+    };
+    expect(await listRadioFacets("tags", signal(), fetcher)).toEqual([{ name: "jazz", query: "tag:jazz", count: 1134 }]);
+    expect(await listRadioFacets("countries", signal(), fetcher)).toEqual([{ name: "United Kingdom", query: "country:GB", count: 900 }]);
+    expect(urls.map(url => url.searchParams.get("order"))).toEqual(["stationcount", "stationcount"]);
   });
 });

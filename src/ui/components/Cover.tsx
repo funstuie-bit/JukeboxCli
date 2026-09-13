@@ -21,7 +21,7 @@ const Blocks = memo(function Blocks({ art }: { art: CoverArt }) {
     <Text key={y}>{art.cells.slice(y * art.cols, (y + 1) * art.cols).map((c, x) =>
       <Text key={x} color={hex(c.top)} backgroundColor={hex(c.bottom)}>▀</Text>)}</Text>)}</Box>;
 });
-export function Cover({ source, cols, rows, visible, fallback }: { source?: string; cols: number; rows: number; visible: boolean; fallback?: ReactNode }) {
+export function Cover({ source, cols, rows, visible, fallback, repaintKey }: { source?: string; cols: number; rows: number; visible: boolean; fallback?: ReactNode; repaintKey?: string }) {
   const ref = useRef<DOMElement>(null);
   const [loaded, setLoaded] = useState<{ key: string; image: CoverImage | null; art: CoverArt | null }>();
   const simple = simpleArtwork();
@@ -49,6 +49,11 @@ export function Cover({ source, cols, rows, visible, fallback }: { source?: stri
     const task = setImmediate(() => graphicsPainter?.paint());
     return () => { clearImmediate(task); remove(); };
   }, [image]);
+  useLayoutEffect(() => {
+    if (!image || repaintKey === undefined) return;
+    const task = setImmediate(() => graphicsPainter?.repaintSixel(image));
+    return () => clearImmediate(task);
+  }, [image, repaintKey]);
   // Fit with the probed cell dimensions; the terminal preserves pixel aspect.
   let w = cols, h = rows;
   if (image) { w = Math.min(cols, Math.max(1, Math.floor(rows * image.width / image.height / cellAspect)));

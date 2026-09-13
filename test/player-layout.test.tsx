@@ -61,6 +61,7 @@ describe("responsive listening layout", () => {
       const frame = view.lastFrame()!;
       expect(frame).not.toContain("No cover art");
       expect(frame).not.toContain("TRACK WAVEFORM");
+      if (cols! >= 100) expect(frame).toContain("LIVE SPECTRUM");
       expect(frame).toContain("LIVE · no seeking");
       expect(frame.split("\n").length).toBeLessThanOrEqual(height!);
       expect(Math.max(...frame.split("\n").map(s => stringWidth(s)))).toBeLessThanOrEqual(cols!);

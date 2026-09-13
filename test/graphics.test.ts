@@ -39,6 +39,13 @@ describe("terminal image lifecycle", () => {
     painter.set(sixel, () => rect); painter.paint(); painter.paint();
     expect(writes).toHaveLength(1);
   });
+  it("restores a Sixel image after a metadata row may have erased it", () => {
+    const sixel = { ...image, sixel: "\x1bPqfixture\x1b\\" };
+    const writes: string[] = []; const painter = new GraphicsPainter(s => writes.push(s), "sixel");
+    painter.set(sixel, () => rect); painter.paint(); painter.repaintSixel(sixel);
+    expect(writes).toHaveLength(2);
+    painter.repaintSixel({ ...sixel }); expect(writes).toHaveLength(2);
+  });
   it("respects an explicit missing inline capability even after an older cell-size reply", async () => {
     vi.stubEnv("TERM_PROGRAM", "iTerm.app");
     const stdin = Object.assign(new EventEmitter(), { isTTY: true, isRaw: false,

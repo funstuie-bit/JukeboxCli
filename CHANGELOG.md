@@ -5,8 +5,10 @@ remaining limits, see [feature status](FEATURES.md).
 
 ## Unreleased
 
-- Add Radio Browser directory search under `9` → `/`: browse popular stations or
-  search by station name, exact tag or country. Results stay temporary until saved.
+- Add Radio Browser under `9`: browse popular stations, genres/tags or countries,
+  or search by station name. Results stay temporary until explicitly saved.
+- Show the real eight-band visualiser for live radio, and restore Sixel station
+  artwork after a changing broadcast-metadata row erases its terminal cells.
 - Use sharp Sixel artwork automatically in Foot. Incremental screen updates keep
   unchanged image rows stable while the player and visualiser animate; block
   artwork remains available as a compatibility override.

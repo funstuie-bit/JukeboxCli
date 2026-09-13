@@ -21,10 +21,10 @@ export function playerLayout(width: number, height: number, live = false, wavefo
   // Borders (2), heading (4), transport/status (4), then optional rows.
   // Reserve these before artwork so the bottom border cannot run into the footer.
   const extraRows = (height >= 23 ? 2 : 0) + (live && height >= 26 ? 2 : 0)
-    + (!live && waveform ? 1 + waveRows : 0);
+    + (waveform ? 1 + waveRows : 0);
   const artCap = height >= 38 ? 18 : height >= 30 ? 15 : 12;
   const artRows = split ? Math.min(artCap, Math.max(0, height - 10 - extraRows))
-    : showcase ? Math.min(12, Math.max(6, height - 11 - (!live && waveform ? 1 + waveRows : 0))) : 0;
+    : showcase ? Math.min(12, Math.max(6, height - 11 - (waveform ? 1 + waveRows : 0))) : 0;
   return { split, showcase, left, right: width - left - 1, waveRows, artRows };
 }
 
@@ -106,7 +106,7 @@ export function NowPlaying({ embedded = false, onDownload = () => {} }: { embedd
     {layout.split ? <Text color={COLOR.muted} wrap="truncate-end">{t?.album ? cleanText(t.album) : t?.playlist ? cleanText(t.playlist) : " "}</Text> : null}
   </Box>;
   const details = <Box flexDirection="column" width={inner}>
-    {(layout.split || layout.showcase) && !live && (visualizer || samples) ? <Box flexDirection="column">
+    {(layout.split || layout.showcase) && (visualizer || (!live && samples)) ? <Box flexDirection="column">
       <Text color={COLOR.muted}>{visualizer ? `LIVE SPECTRUM · ${spectrumModeLabel(visualizerMode).toUpperCase()} · v` : "TRACK WAVEFORM"}</Text>
       {visualizer ? <SpectrumPanel levels={spectrum} width={inner} height={layout.waveRows} paused={st.paused || Boolean(st.loading)} palette={COLOR} mode={visualizerMode} />
         : <WaveformPanel samples={samples} width={inner} height={layout.waveRows} fraction={fraction} palette={COLOR} />}
@@ -125,6 +125,7 @@ export function NowPlaying({ embedded = false, onDownload = () => {} }: { embedd
       {heading}
       {layout.split || layout.showcase ? <Box alignItems="center" justifyContent="center" flexShrink={0}>
         <Cover source={source} cols={Math.min(inner, layout.split ? 40 : 28)} rows={artRows} visible={artVisible}
+          repaintKey={live ? `${Boolean(st.loading)}:${st.paused}:${st.broadcastTitle ?? ""}` : undefined}
           fallback={<RadioFallback live={live} rows={artRows} palette={COLOR} simple={simpleArtwork()}
             animate={active && !st.paused && !st.loading && !!t && store.config.reducedMotion === false} />} />
       </Box> : null}

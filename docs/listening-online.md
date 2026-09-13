@@ -25,13 +25,14 @@ still searches lyrics, while `S` searches music. Search captures normal
 transport/navigation shortcuts until Escape; both player layouts support it.
 
 `o` opens a YouTube/direct audio URL or website prompt. Enter accepts the input;
-select the result and Enter plays, `A` appends or `P` queues next. Use
-`9` → `/` searches the Radio Browser directory; leave the search blank for
-popular stations, type a station name, or use `tag:jazz` or `country:US`.
+select the result and Enter plays, `A` appends or `P` queues next. In `9`, use
+`B` for popular stations, `g` to browse genres and tags, `c` for countries, or
+`/` to search station names. Genre and country lists can themselves be filtered
+with `/`; there is no need to type query syntax.
 `9` → `R` explicitly opens a radio feed or station website. Select a directory
 or detected feed and press `f` to save; new favourites are never added automatically.
 In Radio / URL, `t` or `f` renames, `x` or `d` asks to remove a saved
-station (`y` confirms), and `g` refreshes artwork from its website.
+station (`y` confirms), and `G` refreshes artwork from its website.
 Queue removal is separate: `7` → `x` removes only that listening occurrence.
 
 Live radio shows no seek bar: space disconnects/reconnects at the live edge.
@@ -44,7 +45,7 @@ so you can retry or skip.
 
 ## Refresh a saved station's artwork
 
-Select the station in `9` and press `g`. Paste its website (it's filled in if
+Select the station in `9` and press `G`. Paste its website (it's filled in if
 already known), then choose a feed. You don't need to delete and re-add the
 station. Its saved name stays put and playback doesn't reconnect.
 
@@ -62,7 +63,7 @@ are inferred. `Playback.refreshStationArtwork` updates allowlisted metadata on
 matching current/queued radio entries with no engine command or queue-order edit.
 The existing session saver persists the enrichment. Aborted probes cannot write.
 
-g opens radio input for a station website (prefilled if known); it does not silently
+G opens radio input for a station website (prefilled if known); it does not silently
 search other sites. x/d removes with a named confirmation and is in the footer.
 Full-App regression seeds an artwork-less favourite, starts it, rediscovers its
 website, checks preserved name/enriched session, then cancels/confirms removal.
@@ -70,10 +71,10 @@ Real mpv smoke checks metadata refresh does not open another audio connection.
 
 ## Searching the station directory
 
-Directory search uses the free, community-maintained [Radio Browser](https://www.radio-browser.info/)
+Directory browsing uses the free, community-maintained [Radio Browser](https://www.radio-browser.info/)
 catalogue, which is also the source of cliamp's large station selection. JukeboxCli
-requests at most 75 working entries over HTTPS, sends no cookies and never probes
-every returned station. Results can be played, queued or saved like a manually
+loads bounded tag/country indexes and requests at most 75 working stations over
+HTTPS, sends no cookies and never probes every returned station. Results can be played, queued or saved like a manually
 found feed. Station availability, names, genres and artwork belong to the
 broadcasters and directory contributors, so they can be missing or stale.
 
@@ -135,9 +136,9 @@ remove duplicates for you.
 - `player/stations.ts` uses atomic owner-only JSON writes with a 500-station
   limit, names limited to 120 characters, same-URL rename/deduplication and
   explicit corrupt-file errors. It never silently overwrites invalid data.
-- `Listen.tsx`: 9 opens favourites, / searches the station directory, o opens URL
-  input, R opens radio input, enter accepts then plays, A/P queues, f saves/renames,
-  x removes with confirmation.
+- `Listen.tsx`: 9 opens favourites; B/g/c browse popular stations, tags or
+  countries; / searches station names; o opens URL input and R opens radio input.
+  Enter accepts then plays, A/P queues, f saves/renames and x removes with confirmation.
   Text/confirmation capture blocks global actions; input is width-bounded.
   Global o intent is consumed so a later 9 doesn't reopen an old form.
 - Help is one bounded group per page with scroll; navigation is intercepted

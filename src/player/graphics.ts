@@ -99,6 +99,11 @@ export class GraphicsPainter {
     const target = { image, rect }; this.targets.add(target);
     return () => { this.targets.delete(target); this.paint(); };
   }
+  /** A changed text row can erase cell-backed Sixel pixels; restore only that image. */
+  repaintSixel(image: CoverImage): void {
+    if (this.protocol !== "sixel" || this.uploaded !== image) return;
+    this.uploaded = undefined; this.rect = null; this.paint();
+  }
   clear(): void {
     // Inline images are text-cell content: Ink's full-frame redraw erases them.
     // Never erase a stale rectangle after Ink has painted new text there.

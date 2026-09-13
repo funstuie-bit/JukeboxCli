@@ -107,13 +107,14 @@ export const HELP_GROUPS: HelpGroup[] = [
     title: "Radio / URL (9)",
     hints: [
       { keys: "/", label: "Search Radio Browser directory" },
+      { keys: "B / g / c", label: "Popular / genres / countries" },
       { keys: "o", label: "YouTube / website / audio URL" },
       { keys: "R", label: "Detect radio website / feed / playlist" },
       { keys: "↵", label: "Accept link, then play selected" },
       { keys: "A P", label: "Append / queue next" },
       { keys: "f / t", label: "Save / rename radio favourite" },
       { keys: "x / d", label: "Remove favourite (confirm) / new link" },
-      { keys: "g", label: "Refresh artwork from station website" },
+      { keys: "G", label: "Refresh artwork from station website" },
       { keys: "space", label: "Live: disconnect / reconnect" },
     ],
   },
@@ -164,8 +165,8 @@ export function footerHints(
     case "home":
       return [{ keys: "↑↓", label: "Choose" }, { keys: "↵", label: "Open" }, PANE, PLAYER, ALWAYS];
     case "listen":
-      return [{ keys: "o", label: "Play URL" }, { keys: "R", label: "Radio URL" },
-        { keys: "x/d", label: "Remove" }, { keys: "g", label: "Artwork" }, { keys: "f/t", label: "Save/rename" }, ALWAYS];
+      return [{ keys: "B/g/c", label: "Browse radio" }, { keys: "/", label: "Find station" },
+        { keys: "o/R", label: "Play URL" }, { keys: "f/t", label: "Save/rename" }, ALWAYS];
     case "discover":
       return [{ keys: "/", label: "Search" }, { keys: "↵", label: "Stream" },
         { keys: "o", label: "Play URL" }, { keys: "A/P", label: "Queue" }, ALWAYS];

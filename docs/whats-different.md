@@ -100,8 +100,8 @@ and no cliamp code or assets are included.
 
 ### Find radio stations and feeds
 
-Search the community Radio Browser catalogue by station, exact tag or country,
-or browse its popular stations. You can also paste a station website or PLS/M3U
+Browse the community Radio Browser catalogue by popular stations, genre/tag or
+country, or search by station name. You can also paste a station website or PLS/M3U
 playlist. Select an available feed, then play, queue or save it. Rename or remove
 saved stations, or refresh their website artwork without deleting and adding it again.
 

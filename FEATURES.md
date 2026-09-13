@@ -12,14 +12,15 @@ or online service will cooperate. The limits are listed below.
 - Mixed local, online and live queue: append, play next, reorder, remove,
   shuffle/repeat and paused session restore. Queue removal never deletes music.
 - YouTube/direct audio playback without importing or downloading.
-- Search the community Radio Browser directory by station, tag or country. Save,
+- Browse the community Radio Browser directory by popular stations, genre/tag or
+  country, or search it by station name. Save,
   rename and remove favourites; find feeds from websites or PLS/M3U playlists,
   and refresh station artwork. Live pause disconnects; play reconnects.
 - Stream/radio listening history and replay from Home.
 - Ghostty/Kitty-compatible, iTerm2 and Sixel artwork, including sharp stable
   covers in Foot; a text drawing in Apple's Terminal and blocks elsewhere.
   Lavender/Calm themes and optional decorative motion.
-- Live eight-band visualiser by default on Linux, with six persistent styles;
+- Live eight-band visualiser for music and radio by default on Linux, with six persistent styles;
   macOS remains opt-in. The static local waveform is available with an override.
 - Local whole-track waveform; optional local/cached/online lyrics with supplied
   line/word timing, manual matching and a plain-text alternate provider.

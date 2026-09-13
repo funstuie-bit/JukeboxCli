@@ -108,7 +108,8 @@ JukeboxCli opens on Home. Search online, browse internet radio or open your loca
 | `8`, then `/` | Search online |
 | `o` | Play a YouTube or direct audio URL |
 | `9` | Open radio and saved stations |
-| `9`, then `/` | Search internet radio |
+| `9`, then `B`, `g` or `c` | Browse popular radio, genres or countries |
+| `9`, then `/` | Search for a station by name |
 | `1` | Open the local library |
 | `m` or `6` | Open Now Playing |
 | `7` | Open the queue |

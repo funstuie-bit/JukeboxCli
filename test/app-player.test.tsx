@@ -97,7 +97,9 @@ vi.mock("../src/player/radio-browser", async () => {
     return { tracks: [{ ...track, title: query || "Popular Fixture", artist: "United Kingdom · MP3 · 128 kbps",
       thumbnailUrl: "https://directory.example/logo.png", stationWebsite: "https://directory.example/" }],
       note: "Found 1 station in Radio Browser · play, queue or save" };
-  } };
+  }, listRadioFacets: async (kind: "tags" | "countries") => kind === "tags"
+    ? [{ name: "ambient", query: "tag:ambient", count: 321 }, { name: "jazz", query: "tag:jazz", count: 123 }]
+    : [{ name: "United Kingdom", query: "country:GB", count: 456 }] };
 });
 const app = (props: Parameters<typeof App>[0] = {}) => render(<ThemeProvider theme={uiTheme}><App {...props} /></ThemeProvider>);
 async function press(view: ReturnType<typeof app>, key: string) { view.stdin.write(key); await tick(); }
@@ -239,9 +241,9 @@ describe("App player workflow", () => {
   it("refreshes an old favourite and queued artwork while retaining names, then removes via d", async () => {
     saveStation("My custom radio", "https://example.com/live.mp3");
     const view = app(); await tick(); await tick(); await press(view, "9");
-    expect(view.lastFrame()).toContain("x/d Remove");
+    expect(view.lastFrame()).toContain("x/d remove");
     await press(view, "\r"); // start the legacy favourite without artwork
-    await press(view, "g"); expect(view.lastFrame()).toContain("Paste the station WEBSITE");
+    await press(view, "G"); expect(view.lastFrame()).toContain("Paste the station WEBSITE");
     await press(view, "https://example.com/radio"); await press(view, "\r");
     expect(view.lastFrame()).toContain("Refreshed 1 saved station");
     expect(readStations()).toEqual([{ name: "My custom radio", url: "https://example.com/live.mp3",
@@ -286,7 +288,7 @@ describe("App player workflow", () => {
   it("searches the radio directory and keeps results temporary until saved", async () => {
     const view = app(); await tick(); await tick(); await press(view, "9");
     await vi.waitFor(() => expect(view.lastFrame()).toContain("Radio / URL · Saved stations"));
-    await press(view, "/"); expect(view.lastFrame()).toContain("tag:jazz");
+    await press(view, "/"); expect(view.lastFrame()).toContain("Search station name");
     await press(view, "Fixture Radio"); await press(view, "\r");
     expect(view.lastFrame()).toContain("[directory] [LIVE] Fixture Radio");
     expect(view.lastFrame()).toContain("United Kingdom · MP3 · 128 kbps");
@@ -294,6 +296,13 @@ describe("App player workflow", () => {
     await press(view, "f"); await press(view, "\r");
     expect(readStations()).toEqual([{ name: "Fixture Radio", url: "https://directory.example/live.mp3",
       thumbnailUrl: "https://directory.example/logo.png", websiteUrl: "https://directory.example/" }]);
+  });
+  it("browses radio genres without requiring query syntax", async () => {
+    const view = app(); await tick(); await tick(); await press(view, "9");
+    await vi.waitFor(() => expect(view.lastFrame()).toContain("B popular · g genres"));
+    await press(view, "g"); await vi.waitFor(() => expect(view.lastFrame()).toContain("Genres & tags"));
+    expect(view.lastFrame()).toContain("ambient · 321 stations");
+    await press(view, "\r"); await vi.waitFor(() => expect(view.lastFrame()).toContain("[directory] [LIVE] tag:ambient"));
   });
   it("opens URLs without downloading, saves radio, reconnects and restores favourites", async () => {
     const view = app(); await tick(); await tick();
