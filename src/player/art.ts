@@ -87,7 +87,7 @@ export function loadSixelImage(
     try {
       const { stdout } = await execa(ffmpegPath(), ["-nostdin", "-v", "error", "-i", source,
         "-map", "0:v:0", "-frames:v", "1", "-vf",
-        `scale=${width}:${height}:force_original_aspect_ratio=decrease,pad=${width}:${height}:(ow-iw)/2:(oh-ih)/2:color=black@0`,
+        `crop='min(iw,ih)':'min(iw,ih)',scale=${width}:${height}:force_original_aspect_ratio=decrease,pad=${width}:${height}:(ow-iw)/2:(oh-ih)/2:color=black@0`,
         "-pix_fmt", "rgba", "-f", "rawvideo", "pipe:1"],
       { encoding: "buffer", timeout: 8000, maxBuffer: 8 * 1024 * 1024 });
       const rgba = Buffer.from(stdout);

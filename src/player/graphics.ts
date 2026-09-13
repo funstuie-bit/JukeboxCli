@@ -57,10 +57,9 @@ export async function probeGraphics(input = process.stdin, output = process.stdo
       // Preserve early user keystrokes, excluding complete protocol replies.
       const rest = buffer.replace(/\x1b_G[^\x1b]*(?:\x1b\\|$)/g, "").replace(/\x1b\[6;\d+;\d+t/g, "").replace(/\x1b\[\?[\d;]*c/g, "").replace(/\x1b\]1337;(?:Capabilities|ReportCellSize)[^\x07\x1b]*(?:\x07|\x1b\\|$)/g, "");
       if (rest) input.unshift(Buffer.from(rest));
-      // Sixel pixels belong to text cells. Ink clears those cells on every
-      // dynamic frame, so repainting flashes and not repainting loses the
-      // image. Prefer stable true-colour blocks unless explicitly requested.
-      resolve(supported && (graphicsProtocol !== "sixel" || process.env.JUKEBOXCLI_ART === "sixel"));
+      // Ink is launched with incremental rendering, so unchanged Sixel rows
+      // are left alone while the player and visualizer update around them.
+      resolve(supported);
     };
     const onData = (data: Buffer | string) => {
       buffer += data.toString();
@@ -115,9 +114,11 @@ export class GraphicsPainter {
     if (!rect || rect.cols < 1 || rect.rows < 1) { this.clear(); return; }
     const image = target!.image;
     if (this.protocol === "iterm") {
+      if (this.uploaded === image && this.rect && sameRect(this.rect, rect)) return;
       this.write(inlineImage(image, rect)); this.uploaded = image; this.rect = rect; return;
     }
     if (this.protocol === "sixel") {
+      if (this.uploaded === image && this.rect && sameRect(this.rect, rect)) return;
       this.write(sixelPlacement(image, rect)); this.uploaded = image; this.rect = rect; return;
     }
     if (this.uploaded !== image) {
@@ -126,6 +127,9 @@ export class GraphicsPainter {
     this.write(imagePlacement(rect));
     this.rect = rect;
   }
+}
+function sameRect(a: ImageRect, b: ImageRect): boolean {
+  return a.x === b.x && a.y === b.y && a.cols === b.cols && a.rows === b.rows;
 }
 export let graphicsPainter: GraphicsPainter | undefined;
 export function enableGraphics(): void {

@@ -88,10 +88,9 @@ isolated profile when testing:
 JUKEBOXCLI_HOME="$HOME/JukeboxCli-demo" jukeboxcli
 ```
 
-Foot and other Sixel-only terminals automatically use stable true-colour block
-artwork: Sixel pixels occupy terminal cells and visibly flash when Ink redraws
-the animated player. Set `JUKEBOXCLI_ART=sixel` to opt into high-resolution
-Sixel despite that limitation, or `JUKEBOXCLI_ART=blocks` to request blocks
+Foot and other Sixel terminals automatically use high-resolution Sixel artwork.
+The player uses incremental terminal updates so changing visualizer rows do not
+erase and flash unchanged artwork rows. Set `JUKEBOXCLI_ART=blocks` to request blocks
 explicitly. Ghostty and Kitty-compatible terminals use their persistent image
 protocol. macOS media-key bridging is not available on Linux; playback controls
 inside JukeboxCli work normally.

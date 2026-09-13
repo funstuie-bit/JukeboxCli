@@ -91,7 +91,13 @@ async function main(): Promise<void> {
       <ThemeProvider theme={uiTheme}>
         <App initialAdd={command.initialAdd} initialOverrides={command.overrides} />
       </ThemeProvider>,
-      { onRender: () => { setImmediate(() => graphics.graphicsPainter?.paint()); } },
+      {
+        // Sixel images occupy terminal cells. Updating only changed text lines
+        // keeps Foot from erasing and repainting the cover on every visualizer
+        // frame, which previously made otherwise-sharp artwork flash.
+        incrementalRendering: true,
+        onRender: () => { setImmediate(() => graphics.graphicsPainter?.paint()); },
+      },
     );
     await waitUntilExit();
     graphics.graphicsPainter?.clear();
