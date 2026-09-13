@@ -35,11 +35,11 @@ import {
 import { Sidebar } from "./components/Sidebar";
 import { NowPlayingBar } from "./components/NowPlayingBar";
 import { Rule } from "./components/Rule";
-import { Footer } from "./components/Footer";
+import { Footer, SplitFooter } from "./components/Footer";
 import { HelpOverlay } from "./components/HelpOverlay";
 import { Logo } from "./components/Logo";
 import { LOGO_LINES } from "./logo";
-import { footerHints, sectionForDigit, PLAYER_HINTS } from "./keymap";
+import { footerHints, sectionForDigit, PLAYER_HINTS, WIDE_PLAYER_HINTS, WIDE_QUEUE_HINTS } from "./keymap";
 import {
   handlePlayerMode,
   handlePlayerTransport,
@@ -52,7 +52,7 @@ import { Playlists } from "./sections/Playlists";
 import { History } from "./sections/History";
 import { Download } from "./sections/Download";
 import { Settings } from "./sections/Settings";
-import { NowPlaying as NowPlayingView } from "./views/NowPlaying";
+import { NowPlaying as NowPlayingView, playerLayout } from "./views/NowPlaying";
 import { ListeningQueue } from "./views/ListeningQueue";
 import { Home } from "./sections/Home";
 import { useMouseWheel } from "./hooks/useMouseWheel";
@@ -682,6 +682,7 @@ export function App({ initialAdd, initialOverrides }: { initialAdd?: string; ini
   }
 
   const ruleWidth = Math.max(10, cols - 2);
+  const expandedPlayerLayout = playerLayout(ruleWidth, listRows + 2);
 
   return (
     <StoreContext.Provider value={store}>
@@ -741,7 +742,10 @@ export function App({ initialAdd, initialOverrides }: { initialAdd?: string; ini
             >
             {showDivider ? <Rule width={ruleWidth} /> : null}
             {!nowPlayingView && section !== "player" ? <NowPlayingBar /> : null}
-            {showFooter ? (
+            {showFooter && nowPlayingView && expandedPlayerLayout.balanced ? (
+              <SplitFooter left={expandedPlayerLayout.left} right={expandedPlayerLayout.right}
+                leftHints={WIDE_PLAYER_HINTS} rightHints={WIDE_QUEUE_HINTS} />
+            ) : showFooter ? (
               <Footer
                 hints={
                   nowPlayingView

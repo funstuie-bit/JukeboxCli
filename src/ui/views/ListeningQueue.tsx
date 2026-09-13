@@ -6,8 +6,8 @@ import stringWidth from "string-width";
 import { playerPalette, RULE } from "../theme";
 import { isLive, isStream } from "../../player/media";
 
-export function ListeningQueue({ height, width, active, framed = false }: {
-  height?: number; width?: number; active?: boolean; framed?: boolean;
+export function ListeningQueue({ height, width, active, framed = false, controlsOutside = false }: {
+  height?: number; width?: number; active?: boolean; framed?: boolean; controlsOutside?: boolean;
 }) {
   const store = useStore();
   const COLOR = playerPalette(store.config.playerTheme);
@@ -53,7 +53,7 @@ export function ListeningQueue({ height, width, active, framed = false }: {
   const start = Math.max(0, Math.min(selected - Math.floor(rows / 2), entries.length - rows));
   return <Box flexDirection="column" width={width ?? store.contentWidth} height={height} borderStyle={framed ? "round" : undefined} borderColor={RULE} paddingX={framed ? 1 : 0}>
     <Text bold color={COLOR.alt} wrap="truncate-end">Playback queue · {entries.length} tracks · {state.shuffle ? "shuffled" : "in order"}</Text>
-    {!dense || confirmClear || error || !entries.length ? <Text color={COLOR.muted} wrap="truncate-end">{confirmClear ? "Clear queue and stop? y clear · esc cancel (files stay)" : error || (entries.length ? "↑↓ select  enter play  u/D move  x remove  X clear" : "Empty · select a song in Library, then A append or P play next")}</Text> : null}
+    {confirmClear || error || !entries.length || (!controlsOutside && !dense) ? <Text color={COLOR.muted} wrap="truncate-end">{confirmClear ? "Clear queue and stop? y clear · esc cancel (files stay)" : error || (entries.length ? "↑↓ select  enter play  u/D move  x remove  X clear" : "Empty · select a song in Library, then A append or P play next")}</Text> : null}
     {columns ? <Text color={COLOR.muted}>{queueRow("ARTIST", "TITLE", "TIME", contentCols, "  ", "TYPE")}</Text> : null}
     {entries.slice(start, start + rows).map((row, offset) => {
       const here = start + offset === selected;
@@ -69,7 +69,7 @@ export function ListeningQueue({ height, width, active, framed = false }: {
       </Text>;
     })}
     {!dense ? <><Box flexGrow={1} />
-    <Text color={COLOR.muted} wrap="truncate-end">{entries.length ? `› selected · ▶ playing / Ⅱ paused · 9 saved stations` : "7 Queue · 8 Discover"}</Text></> : null}
+    {!controlsOutside ? <Text color={COLOR.muted} wrap="truncate-end">{entries.length ? `› selected · ▶ playing / Ⅱ paused · 9 saved stations` : "7 Queue · 8 Discover"}</Text> : null}</> : null}
   </Box>;
 }
 

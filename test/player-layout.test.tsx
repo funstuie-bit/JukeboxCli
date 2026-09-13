@@ -10,6 +10,8 @@ import { RadioFallback } from "../src/ui/components/RadioFallback";
 import { trackDisplayTitle } from "../src/util/format";
 import stringWidth from "string-width";
 import { loadWaveform } from "../src/player/art";
+import { SplitFooter } from "../src/ui/components/Footer";
+import { WIDE_PLAYER_HINTS, WIDE_QUEUE_HINTS } from "../src/ui/keymap";
 vi.mock("../src/player/art", () => ({ loadCoverArt: async () => null, loadWaveform: vi.fn(async () => null) }));
 afterEach(() => { cleanup(); vi.unstubAllEnvs(); });
 describe("responsive listening layout", () => {
@@ -69,6 +71,8 @@ describe("responsive listening layout", () => {
       if (playerLayout(cols! - 2, height!).balanced) {
         const panelBottom = frame.split("\n").find(row => row[0] === "╰");
         expect(panelBottom?.[playerLayout(cols! - 2, height!).left + 1]).toBe("╰");
+        expect(frame).not.toContain("↑↓ select  enter play");
+        expect(frame).not.toContain("S Search ·");
       }
       view.unmount();
     }
@@ -126,6 +130,16 @@ describe("responsive listening layout", () => {
     expect(playerLayout(180, 50).waveRows).toBe(7);
     expect(queueContentWidth(90)).toBe(90);
     expect(queueContentWidth(140)).toBe(104);
+  });
+  it("puts wide player and queue controls below the panels with an aligned divider", () => {
+    const store = makeStore();
+    const view = render(<StoreContext.Provider value={store}><SplitFooter left={81} right={98}
+      leftHints={WIDE_PLAYER_HINTS} rightHints={WIDE_QUEUE_HINTS} /></StoreContext.Provider>);
+    const footer = view.lastFrame()!;
+    expect(footer[81]).toBe("│");
+    expect(footer).toContain("m/esc Back");
+    expect(footer).toContain("↑↓ Select");
+    expect(footer).toContain("x/X Remove/clear");
   });
   it("cycles the live visualizer presentation with lowercase v", async () => {
     vi.stubEnv("JUKEBOXCLI_VISUALIZER", "1");

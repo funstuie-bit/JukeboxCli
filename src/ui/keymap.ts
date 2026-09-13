@@ -136,6 +136,15 @@ export const PLAYER_HINTS: Hint[] = [
   { keys: "m/esc", label: "Back" }, { keys: "space", label: "Pause" },
   { keys: "← →", label: "Seek" }, { keys: "l", label: "Lyrics" }, { keys: "b", label: "Artwork" }, { keys: "v", label: "Visualizer" }, { keys: "T/V", label: "Look/motion" }, { keys: "7", label: "Queue" }, ALWAYS,
 ];
+export const WIDE_PLAYER_HINTS: Hint[] = [
+  { keys: "m/esc", label: "Back" }, { keys: "space", label: "Toggle" },
+  { keys: "l", label: "Lyrics" }, { keys: "b", label: "Art" }, { keys: "v", label: "Visualizer" },
+];
+export const WIDE_QUEUE_HINTS: Hint[] = [
+  { keys: "↑↓", label: "Select" }, { keys: "↵", label: "Play" },
+  { keys: "u/D", label: "Move" }, { keys: "x/X", label: "Remove/clear" },
+  { keys: "S", label: "Search" }, ALWAYS,
+];
 // tab is the one movement key the arrows can't cover (they belong to lists
 // and seeking), so every footer variant advertises it under the same name.
 const PANE: Hint = { keys: "tab", label: "Pane" };

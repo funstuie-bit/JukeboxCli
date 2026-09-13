@@ -9,6 +9,8 @@ remaining limits, see [feature status](FEATURES.md).
   columns × 24 rows, aligned panel bottoms, a taller spectrum and queue rows
   capped for easier scanning. Outline draws distinct hollow band meters instead
   of a long stepped contour.
+- Put wide player and queue shortcuts in one shared footer below the divider,
+  separated by `│`; queue confirmations and errors stay inside its panel.
 - Add Radio Browser under `9`: browse popular stations, genres/tags or countries,
   or search by station name. Results stay temporary until explicitly saved.
 - Show the real eight-band visualiser for live radio, and restore Sixel station

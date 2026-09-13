@@ -26,8 +26,9 @@ The player puts station/song information above its artwork, alongside a clearly
 named **Playback queue**. Very wide terminals use a balanced 45/55 split, artwork
 up to 56 columns × 24 rows and a taller visualiser. Queue rows stay bounded so
 their time column does not drift across the screen, and both panels share a
-bottom edge. Standard two-panel windows keep the smaller layout, and compact
-windows stack details over the queue.
+bottom edge. Their shortcut groups share one row below the divider, separated
+by `│`, instead of placing queue controls inside its panel. Standard two-panel
+windows keep the smaller layout, and compact windows stack details over the queue.
 
 Outline draws eight hollow, audio-reactive meter columns rather than connecting
 the bands into a single contour.

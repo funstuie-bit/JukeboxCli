@@ -140,10 +140,10 @@ export function NowPlaying({ embedded = false, onDownload = () => {} }: { embedd
     </Box>
     {!layout.showcase ? <Box flexDirection="column" marginLeft={layout.split ? 1 : 0} width={layout.split ? layout.right : width} height={layout.split ? height : Math.max(3, height - 6)}>
       <Box display={lyricsVisible || searchVisible ? "none" : "flex"}>
-        <ListeningQueue height={(layout.split ? height : Math.max(3, height - 6)) - 1} width={layout.split ? layout.right : width} active={active && !lyricsVisible && !searchVisible} framed />
+        <ListeningQueue height={(layout.split ? height : Math.max(3, height - 6)) - 1} width={layout.split ? layout.right : width} active={active && !lyricsVisible && !searchVisible} framed controlsOutside={layout.balanced} />
       </Box>
       {lyricsVisible ? <Box display={searchVisible ? "none" : "flex"}><LyricsPanel height={(layout.split ? height : Math.max(3, height - 6)) - 1} width={layout.split ? layout.right : width} active={active && !searchVisible} /></Box> : null}
-      {!searchVisible ? <Text color={COLOR.alt} wrap="truncate-end">S Search · l: local / s: songs / v: videos</Text> : null}
+      {!searchVisible && !layout.balanced ? <Text color={COLOR.alt} wrap="truncate-end">S Search · l: local / s: songs / v: videos</Text> : null}
       {searchVisible ? <PlayerSearch height={layout.split ? height : Math.max(3, height - 6)} width={layout.split ? layout.right : width}
         active={active} onClose={() => setSearchVisible(false)} onDownload={onDownload} /> : null}
     </Box> : null}
