@@ -11,7 +11,7 @@ import { graphicsPainter, graphicsProtocol, simpleArtwork } from "../../player/g
 import { RadioFallback } from "../components/RadioFallback";
 import { LyricsPanel } from "../components/LyricsPanel";
 import { PlayerSearch } from "../components/PlayerSearch";
-import { BANDS, SpectrumDynamics, nextSpectrumMode, spectrumRows, visualizerEnabled, type SpectrumMode } from "../../player/spectrum";
+import { BANDS, SpectrumDynamics, nextSpectrumMode, spectrumModeLabel, spectrumRows, visualizerEnabled, type SpectrumMode } from "../../player/spectrum";
 
 export function playerLayout(width: number, height: number, live = false, waveform = false) {
   const split = width >= 86 && height >= 16;
@@ -107,7 +107,7 @@ export function NowPlaying({ embedded = false, onDownload = () => {} }: { embedd
   </Box>;
   const details = <Box flexDirection="column" width={inner}>
     {(layout.split || layout.showcase) && !live && (visualizer || samples) ? <Box flexDirection="column">
-      <Text color={COLOR.muted}>{visualizer ? `LIVE SPECTRUM · ${visualizerMode === "classic" ? "CLASSIC PEAK" : visualizerMode === "smooth" ? "SMOOTH" : "BASS MIRROR"} · v` : "TRACK WAVEFORM"}</Text>
+      <Text color={COLOR.muted}>{visualizer ? `LIVE SPECTRUM · ${spectrumModeLabel(visualizerMode).toUpperCase()} · v` : "TRACK WAVEFORM"}</Text>
       {visualizer ? <SpectrumPanel levels={spectrum} width={inner} height={layout.waveRows} paused={st.paused || Boolean(st.loading)} palette={COLOR} mode={visualizerMode} />
         : <WaveformPanel samples={samples} width={inner} height={layout.waveRows} fraction={fraction} palette={COLOR} />}
     </Box> : null}

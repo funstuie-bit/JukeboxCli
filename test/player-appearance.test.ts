@@ -23,8 +23,8 @@ describe("player appearance persistence", () => {
     expect(await loadConfig()).toMatchObject({ playerTheme: "lavender", reducedMotion: true });
   });
   it("restores choices without changing unrelated settings or the shared palette", async () => {
-    await saveConfig({ ...defaultConfig, playerTheme: "calm", reducedMotion: false, visualizerMode: "mirror", retries: 7 });
-    expect(await loadConfig()).toMatchObject({ playerTheme: "calm", reducedMotion: false, visualizerMode: "mirror", retries: 7 });
+    await saveConfig({ ...defaultConfig, playerTheme: "calm", reducedMotion: false, visualizerMode: "mosaic", retries: 7 });
+    expect(await loadConfig()).toMatchObject({ playerTheme: "calm", reducedMotion: false, visualizerMode: "mosaic", retries: 7 });
     expect(playerPalette("calm").accent).not.toBe(COLOR.accent);
     expect(playerPalette("lavender").accent).toBe(COLOR.accent);
   });

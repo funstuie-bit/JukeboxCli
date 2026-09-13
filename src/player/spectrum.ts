@@ -1,6 +1,18 @@
 export const BANDS = [60, 125, 250, 500, 1000, 2000, 4000, 8000] as const;
-export const SPECTRUM_MODES = ["classic", "smooth", "mirror"] as const;
+export const SPECTRUM_MODES = ["classic", "smooth", "mirror", "outline", "bricks", "mosaic"] as const;
 export type SpectrumMode = typeof SPECTRUM_MODES[number];
+const SPECTRUM_LABELS: Record<SpectrumMode, string> = {
+  classic: "Classic Peak",
+  smooth: "Smooth",
+  mirror: "Bass Mirror",
+  outline: "Outline",
+  bricks: "Bricks",
+  mosaic: "Mosaic",
+};
+
+export function spectrumModeLabel(mode: SpectrumMode): string {
+  return SPECTRUM_LABELS[mode];
+}
 
 /** Linux has completed live visualizer acceptance; other platforms remain opt-in. */
 export function visualizerEnabled(
@@ -121,19 +133,66 @@ function mirrorBands(values: number[], count: number): number[] {
   });
 }
 
+/** A minimal contour: one horizontal mark at each interpolated band height. */
+function outlineRows(levels: number[], width: number, height: number): string[] {
+  const columns = resample(levels, width);
+  return Array.from({ length: height }, (_, row) => {
+    const fromBottom = height - row - 1;
+    return columns.map(level => level > 0 && Math.min(height - 1, Math.ceil(level * height) - 1) === fromBottom ? "─" : " ").join("");
+  });
+}
+
+/** Eight measured bands as chunky, half-height blocks with visible gutters. */
+function brickRows(levels: number[], width: number, height: number): string[] {
+  const bands = levels.slice(0, Math.max(1, Math.min(levels.length, width)));
+  const gap = width >= bands.length * 2 - 1 ? 1 : 0;
+  const barWidth = Math.max(1, Math.floor((width - gap * (bands.length - 1)) / bands.length));
+  const renderWidth = barWidth * bands.length + gap * (bands.length - 1);
+  const left = Math.floor((width - renderWidth) / 2), right = width - renderWidth - left;
+  return Array.from({ length: height }, (_, row) => {
+    const threshold = (height - row - 1) / height;
+    const body = bands.map(level => (level > threshold ? "▄" : " ").repeat(barWidth)).join(" ".repeat(gap));
+    return " ".repeat(left) + body + " ".repeat(right);
+  });
+}
+
+/** Fixed band-wired tiles: loud passages illuminate progressively denser texture. */
+function mosaicRows(levels: number[], width: number, height: number): string[] {
+  const tiles = Math.max(1, Math.floor((width + 1) / 3));
+  const renderWidth = tiles * 2 + tiles - 1;
+  const left = Math.max(0, Math.floor((width - renderWidth) / 2));
+  const shades = " ░▒▓█";
+  return Array.from({ length: height }, (_, row) => {
+    const body = Array.from({ length: tiles }, (_, tile) => {
+      const verticalBand = height === 1 ? Math.floor((levels.length - 1) / 2)
+        : Math.round((height - row - 1) * (levels.length - 1) / (height - 1));
+      const jitter = ((row * 11 + tile * 7) % 3) - 1;
+      const band = Math.max(0, Math.min(levels.length - 1, verticalBand + jitter));
+      const threshold = 0.06 + ((row * 37 + tile * 61 + 17) % 100) / 100 * 0.72;
+      const intensity = Math.max(0, Math.min(1, ((levels[band] ?? 0) - threshold) / Math.max(0.01, 1 - threshold)));
+      const glyph = shades[Math.min(4, Math.ceil(intensity * 4))]!;
+      return glyph.repeat(2);
+    }).join(" ");
+    return " ".repeat(left) + body + " ".repeat(Math.max(0, width - left - renderWidth));
+  });
+}
+
 export function spectrumRows(
   db: number[], width: number, height: number, peakDb: number[] = [], mode: SpectrumMode = "classic",
 ): string[] {
   width = Math.max(1, Math.floor(width)); height = Math.max(1, Math.floor(height));
   const glyphs = " ▁▂▃▄▅▆▇█";
   if (!db.length) return Array.from({ length: height }, () => " ".repeat(width));
+  const source = db.map(dbToLevel);
+  if (mode === "outline") return outlineRows(source, width, height);
+  if (mode === "bricks") return brickRows(source, width, height);
+  if (mode === "mosaic") return mosaicRows(source, width, height);
   const barWidth = mode === "classic" && width >= 6 ? 2 : 1;
   const gap = mode === "classic" && width >= 3 ? 1 : 0;
   const bars = Math.max(1, Math.floor((width + gap) / (barWidth + gap)));
   const renderWidth = bars * barWidth + (bars - 1) * gap;
   const leftPad = Math.floor((width - renderWidth) / 2);
   const rightPad = width - renderWidth - leftPad;
-  const source = db.map(dbToLevel);
   const levels = mode === "mirror" ? mirrorBands(source, bars) : resample(source, bars);
   const peaks = mode === "classic" && peakDb.length ? resample(peakDb.map(dbToLevel), bars) : [];
   return Array.from({ length: height }, (_, row) => {

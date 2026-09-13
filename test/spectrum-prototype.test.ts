@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { BANDS, BandMeter, SpectrumDynamics, nextSpectrumMode, spectrumGraph, spectrumRows, visualizerEnabled } from "../scripts/spectrum-core";
+import { BANDS, SPECTRUM_MODES, BandMeter, SpectrumDynamics, nextSpectrumMode, spectrumGraph, spectrumRows, visualizerEnabled } from "../scripts/spectrum-core";
 const record = (time: number, db: string) => `frame:0 pts:0 pts_time:${time}\nlavfi.astats.Overall.RMS_level=${db}\n`;
 describe("isolated spectrum prototype", () => {
   it("enables Linux by default with an explicit off switch", () => {
@@ -63,12 +63,15 @@ describe("isolated spectrum prototype", () => {
   it("cycles distinct persistent presentation modes over the same readings", () => {
     expect(nextSpectrumMode()).toBe("smooth");
     expect(nextSpectrumMode("smooth")).toBe("mirror");
-    expect(nextSpectrumMode("mirror")).toBe("classic");
+    expect(nextSpectrumMode("mirror")).toBe("outline");
+    expect(nextSpectrumMode("outline")).toBe("bricks");
+    expect(nextSpectrumMode("bricks")).toBe("mosaic");
+    expect(nextSpectrumMode("mosaic")).toBe("classic");
     const values = [-12, -55, -30, -45, -20, -60, -38, -24];
-    const classic = spectrumRows(values, 24, 4, values, "classic");
-    const smooth = spectrumRows(values, 24, 4, values, "smooth");
+    const modes = SPECTRUM_MODES.map(mode => spectrumRows(values, 24, 4, values, mode));
+    expect(new Set(modes.map(rows => rows.join("\n"))).size).toBe(SPECTRUM_MODES.length);
+    expect(modes.every(rows => rows.length === 4 && rows.every(row => row.length === 24))).toBe(true);
     const mirror = spectrumRows(values, 24, 4, values, "mirror");
-    expect(new Set([classic.join("\n"), smooth.join("\n"), mirror.join("\n")]).size).toBe(3);
     expect(mirror.every(row => row === [...row].reverse().join(""))).toBe(true);
   });
   it("leaves missing, non-finite and sub-floor readings blank", () => {

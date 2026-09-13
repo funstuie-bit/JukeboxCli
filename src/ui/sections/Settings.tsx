@@ -25,7 +25,7 @@ import {
 } from "../../library/move-library";
 import { defaultLibraryDir } from "../../config/paths";
 import { COLOR, ICON } from "../theme";
-import { nextSpectrumMode } from "../../player/spectrum";
+import { nextSpectrumMode, spectrumModeLabel } from "../../player/spectrum";
 import {
   detectBrowserProfiles,
   browserCookieArg,
@@ -440,7 +440,7 @@ export function Settings() {
       focused={focused} options={[
         { label: `Theme: ${config.playerTheme === "calm" ? "Calm" : "Lavender"} (toggle)`, value: "theme" },
         { label: `Reduced motion: ${config.reducedMotion === false ? "off" : "on"} (toggle)`, value: "motion" },
-        { label: `Visualizer: ${config.visualizerMode === "smooth" ? "Smooth" : config.visualizerMode === "mirror" ? "Bass Mirror" : "Classic Peak"} (cycle)`, value: "visualizer" },
+        { label: `Visualizer: ${spectrumModeLabel(config.visualizerMode ?? "classic")} (cycle)`, value: "visualizer" },
       ]} onSelect={value => {
         setConfig(value === "theme"
           ? { ...config, playerTheme: config.playerTheme === "calm" ? "lavender" : "calm" }

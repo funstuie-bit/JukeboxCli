@@ -22,12 +22,17 @@ held/falling peak caps. It leaves the terminal background visible. The extra
 columns improve motion and shape but are not extra measured frequency resolution
 or an FFT. Set `NO_COLOR=1` for uncoloured bars.
 
-Press `v` in Now Playing to cycle three saved presentations:
+Press `v` in Now Playing to cycle six saved presentations:
 
 - **Classic Peak** — separated two-cell LED bars with held/falling caps.
 - **Smooth** — a continuous one-cell skyline, low frequencies on the left.
 - **Bass Mirror** — a dense symmetric skyline with bass at the centre.
+- **Outline** — a minimal interpolated contour with no filled area.
+- **Bricks** — the eight measured bands as chunky half-height blocks and gutters.
+- **Mosaic** — fixed frequency-wired tiles whose density and shade follow band energy.
 
+The latter three take visual-design inspiration from cliamp but use original
+rendering over JukeboxCli's existing measurements; no cliamp source is included.
 The selected mode is stored in JukeboxCli's config. Switching presentation does
 not restart mpv, add analysis processes or change the audio measurements.
 When the embedded Player is too narrow for side-by-side panels but has at least

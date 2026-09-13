@@ -4,6 +4,7 @@ import { parseSpotifyInput } from "../sources/spotify/public";
 import { normalizeSpotifyHandle } from "../sources/spotify/handle";
 import { configFile, defaultLibraryDir } from "./paths";
 import { resolveDefaultLibraryDir } from "./music-dir";
+import { SPECTRUM_MODES, type SpectrumMode } from "../player/spectrum";
 
 export interface Config {
   /** Explicit opt-in to LRCLIB metadata queries while the lyrics panel is open. */
@@ -13,7 +14,7 @@ export interface Config {
   /** Disable decorative fallback animation (default true). */
   reducedMotion?: boolean;
   /** Live spectrum presentation; analysis remains separately opt-in. */
-  visualizerMode?: "classic" | "smooth" | "mirror";
+  visualizerMode?: SpectrumMode;
   /** Where downloaded audio files live. */
   libraryDir: string;
   /** The user's YouTube handle (public playlists). */
@@ -102,8 +103,8 @@ export async function loadConfig(): Promise<Config> {
     cfg.lyricsOnline = parsed.lyricsOnline === true;
     cfg.playerTheme = parsed.playerTheme === "calm" ? "calm" : "lavender";
     cfg.reducedMotion = typeof parsed.reducedMotion === "boolean" ? parsed.reducedMotion : true;
-    cfg.visualizerMode = parsed.visualizerMode === "smooth" || parsed.visualizerMode === "mirror"
-      ? parsed.visualizerMode : "classic";
+    cfg.visualizerMode = SPECTRUM_MODES.includes(parsed.visualizerMode as SpectrumMode)
+      ? parsed.visualizerMode as SpectrumMode : "classic";
     if (!cfg.spotifyHandle && parsed.spotifyProfile) {
       const ref = parseSpotifyInput(parsed.spotifyProfile);
       if (ref.type === "user") {
