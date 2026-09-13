@@ -15,6 +15,7 @@ import { BANDS, SpectrumDynamics, nextSpectrumMode, spectrumRows, type SpectrumM
 
 export function playerLayout(width: number, height: number, live = false, waveform = false) {
   const split = width >= 86 && height >= 16;
+  const showcase = !split && width >= 40 && height >= 22;
   const left = split ? Math.min(56, Math.max(40, Math.floor(width * 0.36))) : width;
   const waveRows = height >= 34 ? 5 : height >= 28 ? 4 : height >= 23 ? 3 : height >= 18 ? 2 : 1;
   // Borders (2), heading (4), transport/status (4), then optional rows.
@@ -22,8 +23,9 @@ export function playerLayout(width: number, height: number, live = false, wavefo
   const extraRows = (height >= 23 ? 2 : 0) + (live && height >= 26 ? 2 : 0)
     + (!live && waveform ? 1 + waveRows : 0);
   const artCap = height >= 38 ? 18 : height >= 30 ? 15 : 12;
-  const artRows = split ? Math.min(artCap, Math.max(0, height - 10 - extraRows)) : 0;
-  return { split, left, right: width - left - 1, waveRows, artRows };
+  const artRows = split ? Math.min(artCap, Math.max(0, height - 10 - extraRows))
+    : showcase ? Math.min(12, Math.max(6, height - 11 - (!live && waveform ? 1 + waveRows : 0))) : 0;
+  return { split, showcase, left, right: width - left - 1, waveRows, artRows };
 }
 
 /** A whole-track loudness envelope, not a pretend live spectrum. */
@@ -97,14 +99,14 @@ export function NowPlaying({ embedded = false, onDownload = () => {} }: { embedd
   const at = Math.min(progressWidth - 1, Math.floor(fraction * progressWidth));
   const t = st.track;
   const live = isLive(t);
-  const artRows = playerLayout(width, height, live, !!samples).artRows;
+  const artRows = playerLayout(width, height, live, visualizer || !!samples).artRows;
   const heading = <Box flexDirection="column" width={inner}>
     <Text color={COLOR.accent} bold wrap="truncate-end">{t ? cleanText(trackDisplayTitle(t)) : "Nothing playing"}</Text>
     <Box height={layout.split && live && height >= 26 ? 3 : 1} overflow="hidden"><Text color={COLOR.alt} wrap={layout.split && live && height >= 26 ? "wrap" : "truncate-end"}>{live ? cleanText(st.broadcastTitle || "Waiting for station song information") : t?.artist ? cleanText(t.artist) : t ? "Online audio" : "Library · 8 Discover · o Play URL"}</Text></Box>
     {layout.split ? <Text color={COLOR.muted} wrap="truncate-end">{t?.album ? cleanText(t.album) : t?.playlist ? cleanText(t.playlist) : " "}</Text> : null}
   </Box>;
   const details = <Box flexDirection="column" width={inner}>
-    {layout.split && !live && (visualizer || samples) ? <Box flexDirection="column">
+    {(layout.split || layout.showcase) && !live && (visualizer || samples) ? <Box flexDirection="column">
       <Text color={COLOR.muted}>{visualizer ? `LIVE SPECTRUM · ${visualizerMode === "classic" ? "CLASSIC PEAK" : visualizerMode === "smooth" ? "SMOOTH" : "BASS MIRROR"} · v` : "TRACK WAVEFORM"}</Text>
       {visualizer ? <SpectrumPanel levels={spectrum} width={inner} height={layout.waveRows} paused={st.paused || Boolean(st.loading)} palette={COLOR} mode={visualizerMode} />
         : <WaveformPanel samples={samples} width={inner} height={layout.waveRows} fraction={fraction} palette={COLOR} />}
@@ -118,19 +120,19 @@ export function NowPlaying({ embedded = false, onDownload = () => {} }: { embedd
     <Text color={st.error ? COLOR.warn : COLOR.muted} wrap="truncate-end">{st.error || (st.loading ? "Loading…" : st.engine === "external" && t ? "Playing in your default app" : t ? `${isStream(t) ? "Streaming · not in Library" : "Saved locally"}${st.preloading ? " · preparing next…" : st.nextReady ? " · next prepared" : ""}` : "m closes this screen")}</Text>
   </Box>;
   return <Box width={width} height={height} flexDirection={layout.split ? "row" : "column"}>
-    <Box width={layout.left} height={layout.split ? undefined : 6} alignSelf="flex-start" borderStyle={layout.split ? "round" : undefined} borderColor={RULE} flexDirection="column" paddingX={1} flexShrink={0}>
+    <Box width={layout.left} height={layout.split ? undefined : layout.showcase ? height : 6} alignSelf="flex-start" borderStyle={layout.split ? "round" : undefined} borderColor={RULE} flexDirection="column" paddingX={1} flexShrink={0}>
       {layout.split ? <Box justifyContent="space-between"><Text bold color={COLOR.alt}>NOW PLAYING</Text><Text color={COLOR.muted}>{st.index >= 0 ? `${store.playback.queueEntries().findIndex(e => e.index === st.index) + 1}/${st.list.length}` : ""}</Text></Box> : null}
       {heading}
-      {layout.split ? <Box alignItems="center" justifyContent="center" flexShrink={0}>
-        <Cover source={source} cols={Math.min(inner, 40)} rows={artRows} visible={artVisible}
+      {layout.split || layout.showcase ? <Box alignItems="center" justifyContent="center" flexShrink={0}>
+        <Cover source={source} cols={Math.min(inner, layout.split ? 40 : 28)} rows={artRows} visible={artVisible}
           fallback={<RadioFallback live={live} rows={artRows} palette={COLOR} simple={simpleArtwork()}
             animate={active && !st.paused && !st.loading && !!t && store.config.reducedMotion === false} />} />
       </Box> : null}
-      {layout.split && height >= 23 ? <Box height={1} /> : null}
+      {(layout.split || layout.showcase) && height >= 23 ? <Box height={1} /> : null}
       {details}
-      {layout.split && height >= 23 ? <Text color={COLOR.muted} wrap="truncate-end">T {store.config.playerTheme === "calm" ? "Calm" : "Lavender"}{visualizer ? ` · v ${visualizerMode}` : ""} · Art {simpleArtwork() ? "simple" : graphicsPainter ? graphicsProtocol === "iterm" ? "iTerm2" : graphicsProtocol === "sixel" ? "Sixel" : "Kitty" : "blocks"}</Text> : null}
+      {(layout.split || layout.showcase) && height >= 23 ? <Text color={COLOR.muted} wrap="truncate-end">T {store.config.playerTheme === "calm" ? "Calm" : "Lavender"}{visualizer ? ` · v ${visualizerMode}` : ""} · Art {simpleArtwork() ? "simple" : graphicsPainter ? graphicsProtocol === "iterm" ? "iTerm2" : graphicsProtocol === "sixel" ? "Sixel" : "Kitty" : "blocks"}</Text> : null}
     </Box>
-    <Box flexDirection="column" marginLeft={layout.split ? 1 : 0} width={layout.split ? layout.right : width} height={layout.split ? height : Math.max(3, height - 6)}>
+    {!layout.showcase ? <Box flexDirection="column" marginLeft={layout.split ? 1 : 0} width={layout.split ? layout.right : width} height={layout.split ? height : Math.max(3, height - 6)}>
       <Box display={lyricsVisible || searchVisible ? "none" : "flex"}>
         <ListeningQueue height={(layout.split ? height : Math.max(3, height - 6)) - 1} width={layout.split ? layout.right : width} active={active && !lyricsVisible && !searchVisible} framed />
       </Box>
@@ -138,6 +140,6 @@ export function NowPlaying({ embedded = false, onDownload = () => {} }: { embedd
       {!searchVisible ? <Text color={COLOR.alt} wrap="truncate-end">S Search · l: local / s: songs / v: videos</Text> : null}
       {searchVisible ? <PlayerSearch height={layout.split ? height : Math.max(3, height - 6)} width={layout.split ? layout.right : width}
         active={active} onClose={() => setSearchVisible(false)} onDownload={onDownload} /> : null}
-    </Box>
+    </Box> : null}
   </Box>;
 }

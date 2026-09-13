@@ -83,7 +83,8 @@ describe("responsive listening layout", () => {
   });
   it("top-aligns the compact player with the queue and stacks on small screens", () => {
     expect(playerLayout(138, 38)).toMatchObject({ split: true });
-    expect(playerLayout(58, 12).split).toBe(false);
+    expect(playerLayout(58, 12)).toMatchObject({ split: false, showcase: false });
+    expect(playerLayout(60, 26, false, true)).toMatchObject({ split: false, showcase: true });
     for (const [cols, height] of [[140, 38], [100, 18], [80, 16], [60, 12]]) {
       const store = makeStore({ cols, listRows: height! - 2 });
       const view = render(<StoreContext.Provider value={store}><NowPlaying /></StoreContext.Provider>);
@@ -99,6 +100,15 @@ describe("responsive listening layout", () => {
       }
       view.unmount();
     }
+  });
+  it("prioritises artwork and spectrum over a duplicate queue in compact Player", async () => {
+    vi.stubEnv("JUKEBOXCLI_VISUALIZER", "1");
+    const store = makeStore({ cols: 64, contentWidth: 52, listRows: 24 });
+    const view = render(<StoreContext.Provider value={store}><NowPlaying embedded /></StoreContext.Provider>);
+    await new Promise(r => setTimeout(r, 20));
+    expect(view.lastFrame()).toContain("Cover unavailable");
+    expect(view.lastFrame()).toContain("LIVE SPECTRUM");
+    expect(view.lastFrame()).not.toContain("Playback queue");
   });
   it("keeps column widths exact for wide characters and long names", () => {
     expect(stringWidth(fitRow("東京 🎵 test", 8))).toBe(8);

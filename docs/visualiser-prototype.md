@@ -29,6 +29,9 @@ Press `v` in Now Playing to cycle three saved presentations:
 
 The selected mode is stored in JukeboxCli's config. Switching presentation does
 not restart mpv, add analysis processes or change the audio measurements.
+When the embedded Player is too narrow for side-by-side panels but has at least
+22 rows, it shows artwork and the spectrum instead of duplicating the queue;
+the complete queue remains available in section `7`.
 
 No microphone/system-audio capture, capture permissions, loopback driver, Python,
 native helper or second media download. The visualiser uses the existing mpv
