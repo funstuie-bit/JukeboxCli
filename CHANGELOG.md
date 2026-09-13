@@ -5,6 +5,10 @@ remaining limits, see [feature status](FEATURES.md).
 
 ## Unreleased
 
+- Prefer the distribution ffmpeg/ffprobe pair on Linux, avoiding crashes seen
+  when the generic static build opens HTTPS artwork on some systems.
+- Prefer a site's touch icon when its advertised social image is only a generic
+  favicon, recovering stations with a broken root favicon URL.
 - Render cover artwork with the Sixel protocol in Foot and other terminals that
   advertise Sixel support.
 - Promote the tested eight-band mpv visualiser to an experimental opt-in in Now

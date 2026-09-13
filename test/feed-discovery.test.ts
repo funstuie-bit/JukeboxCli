@@ -23,6 +23,12 @@ describe("website feed parsing", () => {
       Array.from({ length: 20 }, (_, i) => `<audio src='https://example.com/${i}'>`).join(""), "https://example.com");
     expect(tracks).toHaveLength(12); expect(tracks[0]?.thumbnailUrl).toBeUndefined();
   });
+  it("prefers a touch icon over a generic favicon social image", () => {
+    const tracks = feedsFromHtml(`<meta property='og:image' content='/favicon.png'>
+      <link rel='apple-touch-icon' href='/assets/apple-touch-icon.png'>
+      <audio src='/live'>`, "https://radio.example/");
+    expect(tracks[0]?.thumbnailUrl).toBe("https://radio.example/assets/apple-touch-icon.png");
+  });
   it("parses PLS and M3U lists without following nested lists or HLS segments", () => {
     const pls = feedsFromPlaylist("[playlist]\nFile1=https://stream.example/live\nTitle1=Test FM\nFile2=file:///private\nFile3=/more.pls", "https://example.com/list.pls");
     expect(pls).toHaveLength(1); expect(pls[0]?.title).toBe("Test FM");

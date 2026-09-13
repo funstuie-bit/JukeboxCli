@@ -1,7 +1,7 @@
 # JukeboxCli architecture
 
-Mac-first terminal music player built on the soundcli library/download foundations,
-using Ink/React, TypeScript, yt-dlp and mpv.
+Terminal music player for macOS and Linux, built on the soundcli
+library/download foundations using Ink/React, TypeScript, yt-dlp and mpv.
 
 `Playback` owns the listening queue, order, shuffle/repeat and current position.
 `DownloadQueue` handles downloads. They are separate: removing a track from the
@@ -17,8 +17,9 @@ See [Mac controls/install notes](mac-controls-and-install.md) for platform limit
 
 Source installs stage and bundle the locked production npm tree into an independent
 archive. Homebrew instead builds a pinned Git revision into libexec and declares
-system tool dependencies; JUKEBOXCLI_SYSTEM_TOOLS=1 disables app-managed binary fetches
-and auto-updates. Doctor is read-only and bypasses app/bootstrap work.
+system tool dependencies; JUKEBOXCLI_SYSTEM_TOOLS=1 disables app-managed binary
+fetches and auto-updates. Linux prefers its system ffmpeg/ffprobe pair before
+the generic static fallback. Doctor is read-only and bypasses app/bootstrap work.
 
 Versioned sessions resolve saved IDs through the library to recover moved paths.
 Save atomically, coalesce progress writes, flush on shutdown and restore paused.

@@ -1,15 +1,15 @@
 # Linux installation
 
-JukeboxCli runs on 64-bit Linux with Node.js 22 or newer and mpv. The source
-installer builds a standalone global command from the checkout. It does not
-keep the installed command linked to the repository.
+JukeboxCli runs on 64-bit Linux with Node.js 22 or newer, mpv and ffmpeg. The
+source installer builds a standalone global command from the checkout. It does
+not keep the installed command linked to the repository.
 
 ## Arch Linux
 
 Install the required packages:
 
 ```sh
-sudo pacman -S --needed nodejs npm mpv
+sudo pacman -S --needed nodejs npm mpv ffmpeg
 ```
 
 Check that Node.js is new enough:
@@ -42,19 +42,19 @@ your `PATH`, or choose a prefix already on it:
 
 ## Other Linux distributions
 
-Install Node.js 22 or newer, npm and mpv with your distribution's package
-manager, then run the same clone and install commands above. Common mpv package
+Install Node.js 22 or newer, npm, mpv and ffmpeg with your distribution's package
+manager, then run the same clone and install commands above. Common package
 commands are:
 
 ```sh
 # Debian or Ubuntu
-sudo apt install mpv
+sudo apt install mpv ffmpeg
 
 # Fedora
-sudo dnf install mpv
+sudo dnf install mpv ffmpeg
 
 # openSUSE
-sudo zypper install mpv
+sudo zypper install mpv ffmpeg
 ```
 
 Some stable distributions ship an older Node.js release. Use the
@@ -63,11 +63,10 @@ or a version manager rather than continuing with Node.js 21 or older.
 
 ## Tools and files
 
-JukeboxCli downloads app-managed copies of yt-dlp, ffmpeg and ffprobe into its
-cache when needed. A normal source installation therefore only requires Node.js,
-npm and mpv. `jukeboxcli --doctor` also reports whether system copies of the
-optional tools are on `PATH`; missing optional tools there do not mean automatic
-mode is broken.
+On Linux, JukeboxCli prefers the distribution's ffmpeg and ffprobe because they
+are integrated with its TLS and codec libraries. If they are unavailable, it can
+fall back to app-managed copies. yt-dlp remains app-managed in automatic mode.
+`jukeboxcli --doctor` reports the system tools visible on `PATH`.
 
 Fresh Linux profiles use these locations:
 

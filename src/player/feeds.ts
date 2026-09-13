@@ -29,9 +29,15 @@ function named(url: string, name: string, website?: string, thumbnailUrl?: strin
 /** Static HTML only: never execute scripts, follow arbitrary links or probe all candidates. */
 export function feedsFromHtml(html: string, pageUrl: string): StreamTrack[] {
   const meta = [...html.matchAll(/<meta\b[^>]*>/gi)].map(m => attrs(m[0]));
+  const links = [...html.matchAll(/<link\b[^>]*>/gi)].map(m => attrs(m[0]));
   const field = (key: string) => meta.find(a => (a.property ?? a.name)?.toLowerCase() === key)?.content;
   const name = field("og:site_name") || field("og:title") || entities(html.match(/<title[^>]*>([^<]*)/i)?.[1] || new URL(pageUrl).hostname);
-  const image = absolute(field("og:image"), pageUrl);
+  const socialImage = absolute(field("og:image"), pageUrl);
+  const touchIcon = absolute(links.find(a => a.rel?.toLowerCase().split(/\s+/).includes("apple-touch-icon"))?.href, pageUrl);
+  // A site's generic favicon is often tiny, and some sites publish a broken
+  // root /favicon.png while retaining a valid touch icon in their asset tree.
+  const image = socialImage && !/\/favicon(?:-[\w-]+)?\.png(?:[?#]|$)/i.test(socialImage)
+    ? socialImage : touchIcon ?? socialImage;
   const found = new Map<string, StreamTrack>();
   const add = (value: string | undefined, label?: string) => {
     const url = absolute(value, pageUrl);

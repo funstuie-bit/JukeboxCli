@@ -25,14 +25,15 @@ Playing or browsing online music does not add it to your library. Downloads only
 
 ## Install
 
-JukeboxCli supports macOS and 64-bit Linux. It needs Node.js 22 or newer and mpv.
+JukeboxCli supports macOS and 64-bit Linux. It needs Node.js 22 or newer, mpv
+and ffmpeg.
 
 ### Linux
 
 On Arch Linux:
 
 ```sh
-sudo pacman -S --needed nodejs npm mpv
+sudo pacman -S --needed nodejs npm mpv ffmpeg
 git clone https://github.com/funstuie-bit/JukeboxCli.git
 cd JukeboxCli
 ./install.sh
@@ -40,7 +41,7 @@ jukeboxcli --doctor
 jukeboxcli
 ```
 
-For other distributions, install Node.js 22+, npm and mpv, then use the same
+For other distributions, install Node.js 22+, npm, mpv and ffmpeg, then use the same
 source installation commands. See the [Linux install guide](docs/linux-install.md)
 for package-manager examples, profile paths and troubleshooting.
 

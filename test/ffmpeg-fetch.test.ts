@@ -12,6 +12,7 @@ import {
   ffmpegBinPath,
   ffprobeBinPath,
   needsFfFetch,
+  preferSystemFf,
   resolveFfFetch,
   resolvedFfmpegPath,
   resolvedFfprobePath,
@@ -19,6 +20,11 @@ import {
 import { USER_AGENT, type FetchImpl } from "../src/util/net";
 
 describe("ffAssetName", () => {
+  it("prefers distro-integrated ffmpeg only on Linux", () => {
+    expect(preferSystemFf("linux")).toBe(true);
+    expect(preferSystemFf("darwin")).toBe(false);
+    expect(preferSystemFf("win32")).toBe(false);
+  });
   it("maps windows to the x64 asset on every arch (arm64 emulates it)", () => {
     expect(ffAssetName("ffmpeg", "win32", "x64")).toBe("ffmpeg-win32-x64");
     expect(ffAssetName("ffmpeg", "win32", "arm64")).toBe("ffmpeg-win32-x64");

@@ -20,6 +20,10 @@ const RELEASE_BASE =
 
 export type FfTool = "ffmpeg" | "ffprobe";
 
+export function preferSystemFf(platform: NodeJS.Platform = process.platform): boolean {
+  return platform === "linux";
+}
+
 /** Name of the release asset that matches a platform/arch (exported for tests). */
 export function ffAssetName(
   tool: FfTool,
@@ -264,6 +268,18 @@ async function doEnsure(
     if (!pair) throw new Error("Managed tools: ffmpeg/ffprobe missing. Run brew install ffmpeg.");
     resolvedFfmpeg = pair.ffmpeg; resolvedFfprobe = pair.ffprobe;
     return;
+  }
+  // Linux distributions commonly ship a current ffmpeg pair integrated with
+  // their TLS/codec stack. Prefer it over the generic static fallback: the
+  // latter can print its version successfully yet still crash while opening
+  // HTTPS artwork on some Linux systems.
+  if (preferSystemFf()) {
+    const pair = await detect();
+    if (pair) {
+      resolvedFfmpeg = pair.ffmpeg; resolvedFfprobe = pair.ffprobe;
+      onStatus?.("using ffmpeg from your system");
+      return;
+    }
   }
   await fs.mkdir(binDir, { recursive: true });
   const haveFfmpeg = await present(ffmpegBinPath());

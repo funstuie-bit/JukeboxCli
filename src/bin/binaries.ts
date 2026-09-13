@@ -232,10 +232,10 @@ export async function ensureBinaries(
   onStatus?: (msg: string) => void,
 ): Promise<Binaries> {
   const ytDlp = await ensureYtDlp(onStatus);
-  // ffmpeg + ffprobe ride in the background: a first-run ~56 MB fetch must
-  // never block first paint. The download queue gates on its own ensure, so
-  // nothing that needs the pair can start before it lands.
-  if (process.env.JUKEBOXCLI_SYSTEM_TOOLS === "1") await ensureFfmpeg(onStatus);
+  // Resolve the Linux system pair before artwork can race ahead and select a
+  // cached generic build. Other automatic installs retain the background
+  // first-run fetch; the download queue gates independently before use.
+  if (process.env.JUKEBOXCLI_SYSTEM_TOOLS === "1" || process.platform === "linux") await ensureFfmpeg(onStatus);
   else void ensureFfmpeg(onStatus).catch(() => {});
   const mpv = process.env.JUKEBOXCLI_SYSTEM_TOOLS === "1" ? await detectMpv() : await resolveMpv();
   if (!mpv && process.env.JUKEBOXCLI_SYSTEM_TOOLS === "1") throw new Error("Managed tools: mpv missing. Run brew install mpv.");
