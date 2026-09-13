@@ -1,4 +1,4 @@
-import { memo, useEffect, useState } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 import { Box, Text, useInput } from "ink";
 import { usePlayback, useStore } from "../store";
 import { loadWaveform, type Waveform } from "../../player/art";
@@ -16,7 +16,7 @@ import { spectrumRows } from "../../player/spectrum";
 export function playerLayout(width: number, height: number, live = false, waveform = false) {
   const split = width >= 86 && height >= 16;
   const left = split ? Math.min(56, Math.max(40, Math.floor(width * 0.36))) : width;
-  const waveRows = height >= 26 ? 2 : 1;
+  const waveRows = height >= 34 ? 5 : height >= 28 ? 4 : height >= 23 ? 3 : height >= 18 ? 2 : 1;
   // Borders (2), heading (4), transport/status (4), then optional rows.
   // Reserve these before artwork so the bottom border cannot run into the footer.
   const extraRows = (height >= 23 ? 2 : 0) + (live && height >= 26 ? 2 : 0)
@@ -42,8 +42,16 @@ const WaveformPanel = memo(function WaveformPanel({ samples, width, height, frac
 const SpectrumPanel = memo(function SpectrumPanel({ levels, width, height, paused, palette }: {
   levels?: number[]; width: number; height: number; paused: boolean; palette: PlayerPalette;
 }) {
-  const rows = spectrumRows(paused ? Array(8).fill(-120) : levels ?? Array(8).fill(-120), width, height);
-  return <Box flexDirection="column">{rows.map((row, i) => <Text key={i} color={palette.alt}>{row}</Text>)}</Box>;
+  const shown = useRef(Array(8).fill(-120));
+  const target = paused ? Array(8).fill(-120) : levels ?? Array(8).fill(-120);
+  shown.current = target.map((value, i) => {
+    const previous = shown.current[i] ?? -120;
+    if (paused || previous <= -100) return value;
+    return previous + (value - previous) * (value > previous ? 0.7 : 0.22);
+  });
+  const rows = spectrumRows(shown.current, width, height);
+  return <Box flexDirection="column">{rows.map((row, i) =>
+    <Text key={i} color={i < Math.ceil(height / 2) ? palette.alt : palette.accent}>{row}</Text>)}</Box>;
 });
 
 export function NowPlaying({ embedded = false, onDownload = () => {} }: { embedded?: boolean; onDownload?: () => void }) {
@@ -99,7 +107,7 @@ export function NowPlaying({ embedded = false, onDownload = () => {} }: { embedd
   </Box>;
   const details = <Box flexDirection="column" width={inner}>
     {layout.split && !live && (visualizer || samples) ? <Box flexDirection="column">
-      <Text color={COLOR.muted}>{visualizer ? "LIVE BAND ENERGY" : "TRACK WAVEFORM"}</Text>
+      <Text color={COLOR.muted}>{visualizer ? "LIVE EQUALIZER · 60 Hz — 8 kHz" : "TRACK WAVEFORM"}</Text>
       {visualizer ? <SpectrumPanel levels={spectrum} width={inner} height={layout.waveRows} paused={st.paused || Boolean(st.loading)} palette={COLOR} />
         : <WaveformPanel samples={samples} width={inner} height={layout.waveRows} fraction={fraction} palette={COLOR} />}
     </Box> : null}

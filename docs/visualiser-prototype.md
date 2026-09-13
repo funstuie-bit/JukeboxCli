@@ -22,11 +22,11 @@ an analysis branch. The latter measures eight octave-spaced frequency bands
 energy**, not an FFT and not decorative/random animation. Analysis runs at
 20 frames/sec; the terminal demo redraws at 10 frames/sec.
 
-The preview uses a thin Braille-dot contour, interpolated between those same
-eight readings, with a muted slate/lavender foreground and no background fill.
-This is a lighter presentation, not extra frequency resolution or a time-domain
-waveform. It leaves the terminal background visible; it does not change terminal
-opacity. Set `NO_COLOR=1` for uncoloured dots.
+The Now Playing panel uses eight separated, filled vertical bars with fractional
+block cells. It grows from two rows in a short split view to five rows in a tall
+terminal, smooths fast attacks and slower decays, and leaves the terminal
+background visible. This is not extra frequency resolution or a time-domain
+waveform. Set `NO_COLOR=1` for uncoloured bars.
 
 No microphone/system-audio capture, capture permissions, loopback driver, Python,
 native helper or second media download. The visualiser uses the existing mpv
@@ -73,8 +73,8 @@ The demo responds to current terminal size; unit tests cover small dimensions.
 ## Verification and limits
 
 The fixture harness checks band peaks, silence, unchanged stereo PCM graph hashes,
-settled pause position and stale readings after seeking. Unit tests cover Braille
-mapping, non-finite input, bounded parsing and timestamp selection.
+settled pause position and stale readings after seeking. Unit tests cover filled
+bar mapping, non-finite input, bounded parsing and timestamp selection.
 
 The benchmark compares repeated baseline/filtered runs with generated pink noise.
 It measures mpv CPU and RSS only, excluding Node, terminal rendering and startup;
@@ -104,6 +104,6 @@ claim of system-wide visualisation or native media-key support.
 The graph uses the primary [FFmpeg filter documentation](https://ffmpeg.org/ffmpeg-filters.html):
 `asplit`, `aresample`, `asetnsamples`, `bandpass`, `astats`, `ametadata`, `anullsink`.
 Use installed filter help and the fixture harness to check local capabilities.
-`src/player/spectrum.ts` builds the graph, parses metadata and renders dotted contours;
+`src/player/spectrum.ts` builds the graph, parses metadata and renders filled bars;
 `scripts/prototype-visualiser.ts` is the real-player acceptance/demo harness;
 `scripts/benchmark-spectrum.ts` compares baseline and filtered mpv.

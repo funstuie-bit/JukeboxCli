@@ -106,7 +106,7 @@ describe("responsive listening layout", () => {
     for (const width of [48, 60, 90, 130]) {
       expect(stringWidth(queueRow("東京 🎵".repeat(8), "Long title".repeat(20), "1:23:45", width, "›▶", "LIVE"))).toBe(width);
     }
-    expect(playerLayout(180, 50).waveRows).toBe(2);
+    expect(playerLayout(180, 50).waveRows).toBe(5);
   });
   it("cleans an appended year for display without editing the stored title", () => {
     const track = { title: "Renegade Soundwave - Leftfield Remix;1994" };

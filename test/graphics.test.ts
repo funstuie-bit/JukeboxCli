@@ -33,6 +33,14 @@ describe("terminal image lifecycle", () => {
     expect(supportsInline("AbCdF")).toBe(true); expect(supportsInline("File")).toBe(false);
     expect(inlineImage({ ...image, png: new Uint8Array(740001) }, rect)).toBe("");
   });
+  it("does not retransmit an unchanged Sixel raster on playback redraws", () => {
+    const sixel = { ...image, sixel: "\x1bPqfixture\x1b\\" };
+    const writes: string[] = []; const painter = new GraphicsPainter(s => writes.push(s), "sixel");
+    painter.set(sixel, () => rect); painter.paint(); painter.paint(); painter.paint();
+    expect(writes).toHaveLength(1);
+    painter.set(sixel, () => ({ ...rect, y: rect.y + 1 })); painter.paint();
+    expect(writes).toHaveLength(2);
+  });
   it("respects an explicit missing inline capability even after an older cell-size reply", async () => {
     vi.stubEnv("TERM_PROGRAM", "iTerm.app");
     const stdin = Object.assign(new EventEmitter(), { isTTY: true, isRaw: false,

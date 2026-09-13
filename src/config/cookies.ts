@@ -10,11 +10,13 @@ import { execa } from "execa";
  * 1. Netscape cookies.txt file (user-provided or exported)
  * 2. Direct extraction from Chrome/Firefox profile via yt-dlp's --cookies-from-browser
  *
- * On macOS:
+ * Standard locations include:
  * - Chrome: ~/Library/Application Support/Google/Chrome/Default/Cookies
  * - Firefox: ~/Library/Application Support/Firefox/Profiles/*.default-release/cookies.sqlite
  * - Edge: ~/Library/Application Support/Microsoft Edge/Default/Cookies
  * - Brave: ~/Library/Application Support/BraveSoftware/Brave-Browser/Default/Cookies
+ * - Linux Chromium: ~/.config/chromium/Default/Cookies
+ * - Linux Firefox: ~/.mozilla/firefox/*.default-release/cookies.sqlite
  *
  * yt-dlp can read cookies directly from the browser with --cookies-from-browser <browser>:<profile>
  * which is simpler and keeps cookies fresh. We write a cookies.txt only if the user wants
@@ -22,7 +24,7 @@ import { execa } from "execa";
  */
 
 export interface BrowserProfile {
-  browser: "chrome" | "firefox" | "edge" | "brave" | "safari";
+  browser: "chrome" | "chromium" | "firefox" | "edge" | "brave" | "safari";
   profileName: string;
   /** Display label for the picker */
   label: string;
@@ -30,12 +32,14 @@ export interface BrowserProfile {
   profilePath: string;
 }
 
-/** Detect installed browsers and their profiles on macOS. */
-export async function detectBrowserProfiles(): Promise<BrowserProfile[]> {
-  const home = os.homedir();
+/** Detect installed browsers and profiles in their standard platform locations. */
+export async function detectBrowserProfiles(
+  platform: NodeJS.Platform = process.platform,
+  home = os.homedir(),
+): Promise<BrowserProfile[]> {
   const profiles: BrowserProfile[] = [];
 
-  const candidates: { browser: BrowserProfile["browser"]; basePath: string; label: string }[] = [
+  const candidates: { browser: BrowserProfile["browser"]; basePath: string; label: string }[] = platform === "darwin" ? [
     {
       browser: "chrome",
       basePath: path.join(home, "Library/Application Support/Google/Chrome"),
@@ -51,7 +55,17 @@ export async function detectBrowserProfiles(): Promise<BrowserProfile[]> {
       basePath: path.join(home, "Library/Application Support/BraveSoftware/Brave-Browser"),
       label: "Brave",
     },
-  ];
+  ] : platform === "linux" ? [
+    { browser: "chrome", basePath: path.join(home, ".config/google-chrome"), label: "Google Chrome" },
+    { browser: "chromium", basePath: path.join(home, ".config/chromium"), label: "Chromium" },
+    { browser: "edge", basePath: path.join(home, ".config/microsoft-edge"), label: "Microsoft Edge" },
+    { browser: "brave", basePath: path.join(home, ".config/BraveSoftware/Brave-Browser"), label: "Brave" },
+  ] : [];
+
+  const hasCookies = async (profilePath: string) => Promise.any([
+    fs.access(path.join(profilePath, "Cookies")),
+    fs.access(path.join(profilePath, "Network/Cookies")),
+  ]).then(() => true).catch(() => false);
 
   for (const c of candidates) {
     try {
@@ -59,7 +73,7 @@ export async function detectBrowserProfiles(): Promise<BrowserProfile[]> {
       // Default profile
       const hasDefault = entries.some(
         (e) => e.isDirectory() && e.name === "Default",
-      );
+      ) && await hasCookies(path.join(c.basePath, "Default"));
       if (hasDefault) {
         profiles.push({
           browser: c.browser,
@@ -70,7 +84,7 @@ export async function detectBrowserProfiles(): Promise<BrowserProfile[]> {
       }
       // Additional profiles (Profile 1, Profile 2, etc.)
       for (const e of entries) {
-        if (e.isDirectory() && /^Profile \d+$/.test(e.name)) {
+        if (e.isDirectory() && /^Profile \d+$/.test(e.name) && await hasCookies(path.join(c.basePath, e.name))) {
           profiles.push({
             browser: c.browser,
             profileName: e.name,
@@ -85,8 +99,11 @@ export async function detectBrowserProfiles(): Promise<BrowserProfile[]> {
   }
 
   // Firefox profiles (different structure)
-  const firefoxPath = path.join(home, "Library/Application Support/Firefox/Profiles");
+  const firefoxPath = platform === "darwin"
+    ? path.join(home, "Library/Application Support/Firefox/Profiles")
+    : platform === "linux" ? path.join(home, ".mozilla/firefox") : "";
   try {
+    if (!firefoxPath) return profiles;
     const entries = await fs.readdir(firefoxPath, { withFileTypes: true });
     for (const e of entries) {
       if (!e.isDirectory()) continue;

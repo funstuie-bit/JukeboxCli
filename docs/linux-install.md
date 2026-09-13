@@ -68,6 +68,11 @@ are integrated with its TLS and codec libraries. If they are unavailable, it can
 fall back to app-managed copies. yt-dlp remains app-managed in automatic mode.
 `jukeboxcli --doctor` reports the system tools visible on `PATH`.
 
+Browser-cookie setup detects Chrome, Chromium, Edge, Brave and Firefox profiles
+in their standard Linux config directories. Choose one under Settings → Download
+settings → Cookies; JukeboxCli passes the selected profile to yt-dlp without
+copying the cookie database.
+
 Fresh Linux profiles use these locations:
 
 - Music: `~/Music/JukeboxCli`

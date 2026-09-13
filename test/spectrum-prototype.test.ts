@@ -33,14 +33,15 @@ describe("isolated spectrum prototype", () => {
       expect(silent.join("").trim()).toBe("");
       const rows = spectrumRows(BANDS.map(() => -10), width, height);
       expect(rows).toHaveLength(height); expect(rows.every(row => row.length === width)).toBe(true);
-      expect(rows[0]).toBe("⠉".repeat(width));
-      expect(rows.slice(1).join("").trim()).toBe("");
+      expect(rows.join("").trim()).not.toBe("");
     }
   });
-  it("uses correct braille columns and interpolates a sparse contour", () => {
-    expect(spectrumRows([-10, -65], 2, 1)).toEqual(["⠑⠄"]);
-    expect(spectrumRows([-65, -10], 2, 1)).toEqual(["⠠⠊"]);
-    expect(spectrumRows([-10], 1, 2)).toEqual(["⠉", " "]);
+  it("renders filled vertical bars from the bottom with fractional cells", () => {
+    expect(spectrumRows([-10, -65], 2, 1)).toEqual(["█ "]);
+    expect(spectrumRows([-65, -10], 2, 1)).toEqual([" █"]);
+    expect(spectrumRows([-10], 1, 2)).toEqual(["█", "█"]);
+    expect(spectrumRows([-37.5], 1, 2)).toEqual([" ", "█"]);
+    expect(spectrumRows(BANDS.map(() => -10), 24, 1)).toEqual(["██ ".repeat(8)]);
   });
   it("leaves missing, non-finite and sub-floor readings blank", () => {
     for (const values of [[], [NaN, Infinity, -Infinity], [-120, -66, -65]]) {

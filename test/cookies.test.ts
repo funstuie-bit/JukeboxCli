@@ -32,7 +32,7 @@ describe("detectBrowserProfiles: firefox cookies gate", () => {
     // temporary HOME env var is enough to redirect it.
     process.env.HOME = fakeHome;
     try {
-      const profiles = await detectBrowserProfiles();
+      const profiles = await detectBrowserProfiles("darwin", fakeHome);
       const firefox = profiles.filter((p) => p.browser === "firefox");
       expect(firefox.map((p) => p.profileName)).toEqual([
         "xyz789.default-release",
@@ -58,11 +58,32 @@ describe("detectBrowserProfiles: firefox cookies gate", () => {
     const originalHome = os.homedir();
     process.env.HOME = fakeHome;
     try {
-      const profiles = await detectBrowserProfiles();
+      const profiles = await detectBrowserProfiles("darwin", fakeHome);
       expect(profiles.filter((p) => p.browser === "firefox")).toEqual([]);
     } finally {
       process.env.HOME = originalHome;
       await fs.rm(base, { recursive: true, force: true });
     }
+  });
+});
+
+describe("detectBrowserProfiles: Linux Chromium browsers", () => {
+  it("offers profiles with a cookie database and uses yt-dlp's Chromium name", async () => {
+    const base = await fs.mkdtemp(path.join(os.tmpdir(), "jukeboxcli-linux-cookies-"));
+    const profile = path.join(base, ".config/chromium/Default");
+    await fs.mkdir(profile, { recursive: true });
+    await fs.writeFile(path.join(profile, "Cookies"), "sqlite-bytes");
+    try {
+      expect(await detectBrowserProfiles("linux", base)).toContainEqual({
+        browser: "chromium", profileName: "Default", label: "Chromium · Default", profilePath: profile,
+      });
+    } finally { await fs.rm(base, { recursive: true, force: true }); }
+  });
+
+  it("does not offer an empty Chrome profile directory", async () => {
+    const base = await fs.mkdtemp(path.join(os.tmpdir(), "jukeboxcli-linux-cookies-"));
+    await fs.mkdir(path.join(base, ".config/google-chrome/Default"), { recursive: true });
+    try { expect(await detectBrowserProfiles("linux", base)).toEqual([]); }
+    finally { await fs.rm(base, { recursive: true, force: true }); }
   });
 });

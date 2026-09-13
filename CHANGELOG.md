@@ -5,6 +5,11 @@ remaining limits, see [feature status](FEATURES.md).
 
 ## Unreleased
 
+- Stop retransmitting unchanged Sixel artwork on every playback update, removing
+  visible flashing in Foot, and replace the sparse contour with a taller,
+  smoothed eight-band equalizer.
+- Detect Chrome, Chromium, Edge, Brave and Firefox cookie profiles in their
+  standard Linux locations.
 - Prefer the distribution ffmpeg/ffprobe pair on Linux, avoiding crashes seen
   when the generic static build opens HTTPS artwork on some systems.
 - Prefer a site's touch icon when its advertised social image is only a generic
