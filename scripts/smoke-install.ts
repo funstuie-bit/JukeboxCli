@@ -22,7 +22,7 @@ assert.equal((await execa(command, ["--version"], { env })).stdout.trim(), pkg.v
 await rename(source, path.join(temp, "moved source"));
 assert.match((await execa(command, ["--help"], { env })).stdout, /--doctor/);
 const doctor = await execa(command, ["--doctor"], { env, reject: false });
-assert.equal(JSON.parse(doctor.stdout).toolsMode, "managed (no tool downloads/updates)");
+assert.equal(JSON.parse(doctor.stdout).toolsMode, "system-managed tools (no app downloads/updates)");
 assert.equal(await readFile(path.join(profile, "keep.json"), "utf8"), '{"fixture":"must survive"}');
 // Reinstall into the same prefix from the moved checkout to exercise replacement.
 await execa("sh", ["./install.sh", "--prefix", prefix], { cwd: path.join(temp, "moved source"), env, timeout: 180000, stdout: "inherit", stderr: "inherit" });
