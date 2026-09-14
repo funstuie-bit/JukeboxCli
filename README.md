@@ -2,6 +2,10 @@
 
 A music player that lives in the terminal, for macOS and Linux.
 
+**Current build: 0.1.1-beta.4.** It includes the accepted Linux artwork,
+visualisers, radio and Chromium-cookie work, plus quick radio channels, yt-dlp
+release channels and five player themes.
+
 I started this as a boredom project and it got slightly out of hand. JukeboxCli now plays local music, searches YouTube Music without an account, handles live radio and keeps the lot in one editable queue. Streams stay streams unless you choose to save them.
 
 [![Mac install checks](https://github.com/funstuie-bit/JukeboxCli/actions/workflows/mac-install.yml/badge.svg?branch=main)](https://github.com/funstuie-bit/JukeboxCli/actions/workflows/mac-install.yml)
@@ -114,6 +118,14 @@ cd JukeboxCli
 
 `update.sh` refuses to overwrite a checkout with local changes.
 
+Radio also searches the community Radio Browser catalogue. In section **9**,
+press **M** for quick channels, **B** for popular stations, **g** for genres/tags,
+**c** for countries or **/** to search by station name. Quick choices cover
+Lo-fi, Synthwave, Ambient, Chillout, Jazz, Classical, House, Drum & Bass, Reggae
+and Rock. They are ordinary Radio Browser tag searches, not bundled or copied
+station feeds. Directory results stay temporary until you explicitly save one
+with **f**.
+
 ## First run
 
 JukeboxCli opens on Home. Search online, browse internet radio or open your local music. You don't need a library or a sign-in to get started.
@@ -123,6 +135,7 @@ JukeboxCli opens on Home. Search online, browse internet radio or open your loca
 | `8`, then `/` | Search online |
 | `o` | Play a YouTube or direct audio URL |
 | `9` | Open radio and saved stations |
+| `9`, then `M` | Browse quick Lo-fi, Synthwave, Ambient, Chillout, Jazz, Classical, House, Drum & Bass, Reggae or Rock channels |
 | `9`, then `B`, `g` or `c` | Browse popular radio, genres or countries |
 | `9`, then `/` | Search for a station by name |
 | `1` | Open the local library |
@@ -179,7 +192,7 @@ Run `jukeboxcli --help` for the full list. Spotify support imports music from su
 
 ## Current status
 
-The current prerelease is [0.1.1-beta.3](https://github.com/funstuie-bit/JukeboxCli/releases/tag/v0.1.1-beta.3). I use it, but it's still an early project. Automated install checks run on Apple Silicon and x64 Linux. Intel Macs and other Linux architectures aren't part of those checks, and I'm not claiming this works everywhere.
+The current prerelease is [0.1.1-beta.4](https://github.com/funstuie-bit/JukeboxCli/releases/tag/v0.1.1-beta.4). I use it, but it's still an early project. Automated install checks run on Apple Silicon and x64 Linux. Intel Macs and other Linux architectures aren't part of those checks, and I'm not claiming this works everywhere.
 
 A few limits are worth knowing:
 
@@ -208,6 +221,15 @@ with `JUKEBOXCLI_VISUALIZER=1 jukeboxcli`; see the
 [visualiser notes](docs/visualiser-prototype.md) for how it works and its limits.
 
 More detail:
+
+Automatic-tool installs follow yt-dlp's nightly channel by default, as upstream
+recommends for regular users. Settings → yt-dlp updates switches between nightly
+and stable and performs an immediate managed update; if downloads are active,
+the replacement is staged for the next launch. Package-manager installs using
+`JUKEBOXCLI_SYSTEM_TOOLS=1` continue to use their packaged yt-dlp. `jukeboxcli
+--doctor` is read-only and reports both the selected managed channel/version and
+the system tools on PATH. See the
+[Homebrew and Mac acceptance notes](docs/mac-controls-and-install.md).
 
 - [Feature status](FEATURES.md)
 - [Home, profiles and artwork](docs/first-run-and-home.md)

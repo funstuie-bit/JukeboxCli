@@ -5,7 +5,11 @@ import { binDir } from "../config/paths";
 import { findOnPath } from "../util/exec";
 import { fetchResilient, USER_AGENT, type FetchImpl } from "../util/net";
 
-const RELEASE_BASE = "https://github.com/yt-dlp/yt-dlp/releases/latest/download";
+export type YtDlpChannel = "stable" | "nightly";
+const RELEASE_REPO: Record<YtDlpChannel, string> = {
+  stable: "yt-dlp/yt-dlp",
+  nightly: "yt-dlp/yt-dlp-nightly-builds",
+};
 
 /** Name of the release asset that matches the current platform/arch. */
 function assetName(): string {
@@ -41,9 +45,10 @@ export function stagedYtDlpPath(): string {
 export async function downloadYtDlp(
   dest: string,
   fetchImpl: FetchImpl = fetch as FetchImpl,
+  channel: YtDlpChannel = "stable",
 ): Promise<void> {
   await fs.mkdir(binDir, { recursive: true });
-  const url = `${RELEASE_BASE}/${assetName()}`;
+  const url = `https://github.com/${RELEASE_REPO[channel]}/releases/latest/download/${assetName()}`;
   const res = await fetchResilient(url, {
     fetchImpl,
     headers: { "User-Agent": USER_AGENT },
@@ -225,14 +230,14 @@ export function resolvedYtDlpPath(): string {
  * nor a system binary is available. Returns the resolved path. Concurrent
  * callers share one run; a failed run clears, so the next call retries fresh.
  */
-export function ensureYtDlp(onStatus?: (msg: string) => void): Promise<string> {
-  inflight ??= doEnsure(onStatus).finally(() => {
+export function ensureYtDlp(onStatus?: (msg: string) => void, channel: YtDlpChannel = "stable"): Promise<string> {
+  inflight ??= doEnsure(onStatus, channel).finally(() => {
     inflight = null;
   });
   return inflight;
 }
 
-async function doEnsure(onStatus?: (msg: string) => void): Promise<string> {
+async function doEnsure(onStatus?: (msg: string) => void, channel: YtDlpChannel = "stable"): Promise<string> {
   if (resolvedYtDlp) return resolvedYtDlp;
   if (process.env.JUKEBOXCLI_SYSTEM_TOOLS === "1") {
     const system = await detectSystemYtDlp();
@@ -243,6 +248,7 @@ async function doEnsure(onStatus?: (msg: string) => void): Promise<string> {
   // A staged update (from the daily check) applies before first use.
   await finalizeStagedYtDlp().catch(() => false);
   resolvedYtDlp = await resolveYtDlp(onStatus, {
+    download: (dest) => downloadVerified(dest, (target) => downloadYtDlp(target, undefined, channel)),
     // A transient download failure silently downgrades this install to a
     // system yt-dlp. The fallback keeps working, but the missing bundled
     // binary is a live problem: retry the fetch in the background (a stale
@@ -250,7 +256,7 @@ async function doEnsure(onStatus?: (msg: string) => void): Promise<string> {
     // launch takes the normal bundled path without the user ever knowing.
     onSystemFallback: (path) => {
       if (path) {
-        void downloadVerified(ytDlpPath()).catch(() => {});
+        void downloadVerified(ytDlpPath(), (target) => downloadYtDlp(target, undefined, channel)).catch(() => {});
       }
     },
   });

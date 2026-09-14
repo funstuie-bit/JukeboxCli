@@ -24,7 +24,7 @@ import {
   type MoveProgress,
 } from "../../library/move-library";
 import { defaultLibraryDir } from "../../config/paths";
-import { COLOR, ICON } from "../theme";
+import { COLOR, ICON, nextPlayerTheme, playerThemeLabel } from "../theme";
 import { nextSpectrumMode, spectrumModeLabel } from "../../player/spectrum";
 import {
   detectBrowserProfiles,
@@ -43,6 +43,8 @@ import {
   type ConvertProgress,
   type ConvertResult,
 } from "../../library/convert";
+import { finalizeStagedYtDlp } from "../../bin/ytdlp-fetch";
+import { updateYtDlpNow } from "../../bin/ytdlp-update";
 
 type Mode =
   | "appearance"
@@ -57,6 +59,7 @@ type Mode =
   | "format"
   | "cookies"
   | "pacing"
+  | "ytdlp"
   | "import"
   | "convert"
   | "convert-run";
@@ -86,6 +89,7 @@ export function Settings() {
   const [browserProfiles, setBrowserProfiles] = useState<BrowserProfile[]>([]);
   const [profilesLoading, setProfilesLoading] = useState(false);
   const [cookiesError, setCookiesError] = useState<string | null>(null);
+  const [ytdlpStatus, setYtdlpStatus] = useState("");
   const [importResult, setImportResult] = useState<ImportResult | null>(null);
   const [importLoading, setImportLoading] = useState(false);
   const [importConfigPath, setImportConfigPath] = useState<string | null>(null);
@@ -168,6 +172,12 @@ export function Settings() {
         (config.sleepInterval ?? 1) !== 1 || (config.retries ?? 5) !== 5,
     },
     {
+      value: "ytdlp",
+      name: "yt-dlp updates",
+      detail: `${config.ytdlpChannel ?? "nightly"} · select to update now`,
+      set: (config.ytdlpChannel ?? "nightly") === "nightly",
+    },
+    {
       value: "import",
       name: "Import config",
       detail: "Import from yt-dlp config",
@@ -198,7 +208,7 @@ export function Settings() {
       detail: "Delete every download",
       danger: true,
     },
-    { value: "appearance", name: "Player appearance", detail: `${config.playerTheme === "calm" ? "Calm" : "Lavender"} · visualizer ${config.visualizerMode ?? "classic"}` },
+    { value: "appearance", name: "Player appearance", detail: `${playerThemeLabel(config.playerTheme)} · visualizer ${config.visualizerMode ?? "classic"}` },
   ];
 
   function openSetting(v: Mode | "open-folder"): void {
@@ -438,16 +448,38 @@ export function Settings() {
   if (mode === "appearance") {
     return frame("Player appearance", <SelectField title="Colours, fallback motion and live visualizer style."
       focused={focused} options={[
-        { label: `Theme: ${config.playerTheme === "calm" ? "Calm" : "Lavender"} (toggle)`, value: "theme" },
+        { label: `Theme: ${playerThemeLabel(config.playerTheme)} (cycle)`, value: "theme" },
         { label: `Reduced motion: ${config.reducedMotion === false ? "off" : "on"} (toggle)`, value: "motion" },
         { label: `Visualizer: ${spectrumModeLabel(config.visualizerMode ?? "classic")} (cycle)`, value: "visualizer" },
       ]} onSelect={value => {
         setConfig(value === "theme"
-          ? { ...config, playerTheme: config.playerTheme === "calm" ? "lavender" : "calm" }
+          ? { ...config, playerTheme: nextPlayerTheme(config.playerTheme) }
           : value === "visualizer"
             ? { ...config, visualizerMode: nextSpectrumMode(config.visualizerMode) }
             : { ...config, reducedMotion: !(config.reducedMotion ?? true) });
       }} onCancel={() => setMode("menu")} />);
+  }
+
+  if (mode === "ytdlp") {
+    return frame("yt-dlp updates", <Box flexDirection="column"><SelectField
+      title="Choose a release channel. Selecting one checks and installs it now."
+      focused={focused && !ytdlpStatus.startsWith("Updating")}
+      options={[
+        { label: `Nightly${(config.ytdlpChannel ?? "nightly") === "nightly" ? " · selected" : ""} (recommended by yt-dlp)`, value: "nightly" },
+        { label: `Stable${config.ytdlpChannel === "stable" ? " · selected" : ""}`, value: "stable" },
+      ]}
+      onSelect={value => {
+        const channel = value === "stable" ? "stable" : "nightly";
+        setConfig({ ...config, ytdlpChannel: channel });
+        if (process.env.JUKEBOXCLI_SYSTEM_TOOLS === "1") { setYtdlpStatus("Managed by your package manager; update yt-dlp there."); return; }
+        setYtdlpStatus(`Updating ${channel}…`);
+        void updateYtDlpNow(channel).then(async version => {
+          const applied = queue.activeCount === 0 && await finalizeStagedYtDlp();
+          setYtdlpStatus(`${channel} ${version} ${applied ? "installed" : "staged for next launch"}`);
+        }).catch(error => setYtdlpStatus(error instanceof Error ? error.message : "yt-dlp update failed"));
+      }} onCancel={() => setMode("menu")} />
+      {ytdlpStatus ? <Text color={ytdlpStatus.includes("failed") || ytdlpStatus.startsWith("Could not") ? COLOR.bad : COLOR.alt}>{ytdlpStatus}</Text> : null}
+    </Box>);
   }
 
   if (mode === "youtube") {

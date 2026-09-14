@@ -208,7 +208,7 @@ export function App({ initialAdd, initialOverrides }: { initialAdd?: string; ini
       await migrateOwnerLayout(library, cfg, exists);
       // Library is now the source of truth, so drop the legacy yt-dlp archive.
       void fs.rm(legacyArchiveFile, { force: true }).catch(() => {});
-      const binaries = await ensureBinaries(setStatus);
+      const binaries = await ensureBinaries(setStatus, cfg.ytdlpChannel ?? "nightly");
       const playback = new Playback(binaries.mpv, undefined, createStreamResolver(async () => sessionConfig.get()));
 
       // Recently played: record every track the player actually starts,
@@ -316,7 +316,7 @@ export function App({ initialAdd, initialOverrides }: { initialAdd?: string; ini
       // already running the current one (then it applies next launch).
       // Offline stays completely normal.
       if (cfg.ytdlpAutoUpdate !== false && process.env.JUKEBOXCLI_SYSTEM_TOOLS !== "1") {
-        void maybeUpdateYtDlp()
+        void maybeUpdateYtDlp(undefined, cfg.ytdlpChannel ?? "nightly")
           .then(async (staged) => {
             if (staged && queue.stats().downloading === 0) {
               await finalizeStagedYtDlp();

@@ -1,18 +1,36 @@
 # Roadmap
 
+## 0.1.1-beta.4
+
+Beta.4 rolls the accepted Linux work into a release: stable Sixel artwork in
+Foot, six live visualisers for music and radio, Radio Browser discovery, the
+balanced wide player, and GNOME-Keyring-aware Chromium cookies.
+
+It also adds:
+
+- Stable or nightly yt-dlp channels under Settings, with an immediate update
+  action. Nightly is the default for app-managed installs; package-managed
+  installs stay package-managed.
+- Managed yt-dlp path, version and selected channel in `--doctor`.
+- Ten Radio Browser quick channels: Lo-fi, Synthwave, Ambient, Chillout, Jazz,
+  Classical, House, Drum & Bass, Reggae and Rock. These are directory searches,
+  not copied or proxied cliamp feeds.
+- Ember, Ocean and Forest player themes alongside Lavender and Calm.
+
 ## Next
 
-- Finish hands-on checks of the first tagged prerelease and collect feedback.
-- Check more fresh Apple Silicon installs, terminal artwork and physical media
-  keys. Intel testing isn't a priority at the moment.
-- Fix timing-sensitive UI tests and keep an eye on development-tool security fixes.
+- Hands-on beta.4 checks on macOS, especially iTerm2 artwork, physical media
+  keys/Control Centre and a clean Intel Mac installation.
+- Wider Linux terminal, browser and keyring coverage; KWallet continues through
+  yt-dlp's own platform handling.
+- Keep an eye on online extractor and Radio Browser changes.
 
 ## Later
 
-- Come back to the [visualiser prototype](visualiser-prototype.md). It needs
-  longer playback tests and another look at the visuals before it goes in the player.
-- Try colours taken from cover artwork and see what else terminals can display.
-- Consider other platforms once there are installation and playback tests for them.
+- Try colours taken from cover artwork.
+- Consider optional mouse controls, a Vim key preset and automatic pagination
+  while playing very large online collections.
+- Consider other platforms once there are installation and playback tests.
 
 ## Not planned
 
@@ -22,4 +40,6 @@
 - Automatic downloads just from playing or queueing a track.
 - Rewriting the interface framework just to look like another player.
 
-See [feature status](../FEATURES.md) for what is already implemented.
+There is no universal gapless guarantee, DRM support, general Radio Garden
+browsing or automatic signed-in Music API access. See
+[feature status](../FEATURES.md) for the current contract and known limits.

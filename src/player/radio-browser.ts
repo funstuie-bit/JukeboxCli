@@ -25,6 +25,19 @@ interface DirectoryStation {
 export interface RadioDirectoryResult { tracks: StreamTrack[]; note: string }
 export interface RadioFacet { name: string; query: string; count: number }
 export type RadioFacetKind = "tags" | "countries";
+/** Small first-party shortcuts into Radio Browser; no third-party hosted feeds. */
+export const QUICK_RADIO_CHANNELS: readonly RadioFacet[] = [
+  { name: "Lo-fi", query: "tag:lofi", count: 0 },
+  { name: "Synthwave", query: "tag:synthwave", count: 0 },
+  { name: "Ambient", query: "tag:ambient", count: 0 },
+  { name: "Chillout", query: "tag:chillout", count: 0 },
+  { name: "Jazz", query: "tag:jazz", count: 0 },
+  { name: "Classical", query: "tag:classical", count: 0 },
+  { name: "House", query: "tag:house", count: 0 },
+  { name: "Drum & Bass", query: "tag:drum and bass", count: 0 },
+  { name: "Reggae", query: "tag:reggae", count: 0 },
+  { name: "Rock", query: "tag:rock", count: 0 },
+];
 
 function queryUrl(input: string, api: string): URL {
   // Blank is meaningful: it requests the most-clicked working stations.

@@ -92,7 +92,7 @@ vi.mock("../src/player/feeds", async importOriginal => {
 });
 vi.mock("../src/player/radio-browser", async () => {
   const { trackFromUrl } = await import("../src/player/url");
-  return { searchRadioDirectory: async (query: string) => {
+  return { QUICK_RADIO_CHANNELS: [{ name: "Lo-fi", query: "tag:lofi", count: 0 }], searchRadioDirectory: async (query: string) => {
     const track = trackFromUrl("https://directory.example/live.mp3", true);
     return { tracks: [{ ...track, title: query || "Popular Fixture", artist: "United Kingdom · MP3 · 128 kbps",
       thumbnailUrl: "https://directory.example/logo.png", stationWebsite: "https://directory.example/" }],
@@ -272,7 +272,7 @@ describe("App player workflow", () => {
     await press(view, "\u001b"); await press(view, "5"); await press(view, "\u001b[F"); await press(view, "\r");
     expect(view.lastFrame()).toContain("Theme: Calm");
     expect(view.lastFrame()).toContain("Reduced motion: off");
-    await press(view, "\r"); expect(view.lastFrame()).toContain("Theme: Lavender");
+    await press(view, "\r"); expect(view.lastFrame()).toContain("Theme: Ember");
     await press(view, "\u001b[B"); await press(view, "\r");
     expect(view.lastFrame()).toContain("Reduced motion: on");
   });
@@ -303,6 +303,13 @@ describe("App player workflow", () => {
     await press(view, "g"); await vi.waitFor(() => expect(view.lastFrame()).toContain("Genres & tags"));
     expect(view.lastFrame()).toContain("ambient · 321 stations");
     await press(view, "\r"); await vi.waitFor(() => expect(view.lastFrame()).toContain("[directory] [LIVE] tag:ambient"));
+  });
+  it("opens quick radio moods without depending on hosted station lists", async () => {
+    const view = app(); await tick(); await tick(); await press(view, "9");
+    await vi.waitFor(() => expect(view.lastFrame()).toContain("M quick channels"));
+    await press(view, "M"); expect(view.lastFrame()).toContain("Quick channels");
+    expect(view.lastFrame()).toContain("Lo-fi");
+    await press(view, "\r"); await vi.waitFor(() => expect(view.lastFrame()).toContain("[directory] [LIVE] tag:lofi"));
   });
   it("opens URLs without downloading, saves radio, reconnects and restores favourites", async () => {
     const view = app(); await tick(); await tick();

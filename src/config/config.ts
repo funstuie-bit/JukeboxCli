@@ -6,12 +6,14 @@ import { configFile, defaultLibraryDir } from "./paths";
 import { resolveDefaultLibraryDir } from "./music-dir";
 import { SPECTRUM_MODES, type SpectrumMode } from "../player/spectrum";
 import { withDetectedLinuxKeyring } from "./cookies";
+import { PLAYER_THEMES, type PlayerTheme } from "../ui/theme";
+import type { YtDlpChannel } from "../bin/ytdlp-fetch";
 
 export interface Config {
   /** Explicit opt-in to LRCLIB metadata queries while the lyrics panel is open. */
   lyricsOnline?: boolean;
   /** Player/queue and navigation chrome palette. */
-  playerTheme?: "lavender" | "calm";
+  playerTheme?: PlayerTheme;
   /** Disable decorative fallback animation (default true). */
   reducedMotion?: boolean;
   /** Live spectrum presentation; analysis remains separately opt-in. */
@@ -30,6 +32,8 @@ export interface Config {
   firstRunComplete: boolean;
   /** Check for yt-dlp updates at every launch (staged, applied when idle). */
   ytdlpAutoUpdate?: boolean;
+  /** Managed yt-dlp release channel. Nightly is upstream's regular-user recommendation. */
+  ytdlpChannel?: YtDlpChannel;
   /** Path to a cookies.txt file for yt-dlp (Netscape format). Bypasses rate limits. */
   cookiesFile?: string;
   /** Browser profile for yt-dlp --cookies-from-browser (e.g. "chrome:Default"). Takes precedence over cookiesFile. */
@@ -74,6 +78,7 @@ export const defaultConfig: Config = {
   spotifyProfile: undefined,
   firstRunComplete: false,
   ytdlpAutoUpdate: true,
+  ytdlpChannel: "nightly",
   cookiesFile: undefined,
   cookiesFromBrowser: undefined,
   audioFormat: "best",
@@ -102,11 +107,12 @@ export async function loadConfig(): Promise<Config> {
     const parsed = JSON.parse(raw) as Partial<Config>;
     const cfg = { ...defaultConfig, ...parsed };
     cfg.lyricsOnline = parsed.lyricsOnline === true;
-    cfg.playerTheme = parsed.playerTheme === "calm" ? "calm" : "lavender";
+    cfg.playerTheme = PLAYER_THEMES.includes(parsed.playerTheme as PlayerTheme) ? parsed.playerTheme as PlayerTheme : "lavender";
     cfg.reducedMotion = typeof parsed.reducedMotion === "boolean" ? parsed.reducedMotion : true;
     cfg.visualizerMode = SPECTRUM_MODES.includes(parsed.visualizerMode as SpectrumMode)
       ? parsed.visualizerMode as SpectrumMode : "classic";
     cfg.cookiesFromBrowser = withDetectedLinuxKeyring(cfg.cookiesFromBrowser);
+    cfg.ytdlpChannel = parsed.ytdlpChannel === "stable" ? "stable" : "nightly";
     if (!cfg.spotifyHandle && parsed.spotifyProfile) {
       const ref = parseSpotifyInput(parsed.spotifyProfile);
       if (ref.type === "user") {

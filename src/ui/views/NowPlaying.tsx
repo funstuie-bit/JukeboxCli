@@ -3,7 +3,7 @@ import { Box, Text, useInput } from "ink";
 import { usePlayback, useStore } from "../store";
 import { loadWaveform, type Waveform } from "../../player/art";
 import { cleanText, formatDuration, trackDisplayTitle } from "../../util/format";
-import { RULE, playerPalette, type PlayerPalette } from "../theme";
+import { RULE, nextPlayerTheme, playerPalette, playerThemeLabel, type PlayerPalette } from "../theme";
 import { ListeningQueue } from "./ListeningQueue";
 import { isLive, isStream } from "../../player/media";
 import { Cover } from "../components/Cover";
@@ -80,7 +80,7 @@ export function NowPlaying({ embedded = false, onDownload = () => {} }: { embedd
     if (input === "S" || (input === "/" && !lyricsVisible)) { setSearchVisible(true); return; }
     if (input === "b") setArtVisible(v => !v);
     if (input === "l") setLyricsVisible(v => !v);
-    if (input === "T") store.setConfig({ ...store.config, playerTheme: store.config.playerTheme === "calm" ? "lavender" : "calm" });
+    if (input === "T") store.setConfig({ ...store.config, playerTheme: nextPlayerTheme(store.config.playerTheme) });
     if (input === "V") store.setConfig({ ...store.config, reducedMotion: !(store.config.reducedMotion ?? true) });
     if (input === "v" && visualizer) store.setConfig({ ...store.config, visualizerMode: nextSpectrumMode(visualizerMode) });
   }, { isActive: active });
@@ -136,7 +136,7 @@ export function NowPlaying({ embedded = false, onDownload = () => {} }: { embedd
       {(layout.split || layout.showcase) && height >= 23 ? <Box height={1} /> : null}
       {details}
       {layout.balanced ? <Box flexGrow={1} /> : null}
-      {(layout.split || layout.showcase) && height >= 23 ? <Text color={COLOR.muted} wrap="truncate-end">T {store.config.playerTheme === "calm" ? "Calm" : "Lavender"}{visualizer ? ` · v ${visualizerMode}` : ""} · Art {simpleArtwork() ? "simple" : graphicsPainter ? graphicsProtocol === "iterm" ? "iTerm2" : graphicsProtocol === "sixel" ? "Sixel" : "Kitty" : "blocks"}</Text> : null}
+      {(layout.split || layout.showcase) && height >= 23 ? <Text color={COLOR.muted} wrap="truncate-end">T {playerThemeLabel(store.config.playerTheme)}{visualizer ? ` · v ${visualizerMode}` : ""} · Art {simpleArtwork() ? "simple" : graphicsPainter ? graphicsProtocol === "iterm" ? "iTerm2" : graphicsProtocol === "sixel" ? "Sixel" : "Kitty" : "blocks"}</Text> : null}
     </Box>
     {!layout.showcase ? <Box flexDirection="column" marginLeft={layout.split ? 1 : 0} width={layout.split ? layout.right : width} height={layout.split ? height : Math.max(3, height - 6)}>
       <Box display={lyricsVisible || searchVisible ? "none" : "flex"}>

@@ -52,10 +52,22 @@ export const ICON = {
 export const RULE = "#52617c";
 
 export type PlayerPalette = { [K in keyof typeof COLOR]: string };
+export const PLAYER_THEMES = ["lavender", "calm", "ember", "ocean", "forest"] as const;
+export type PlayerTheme = typeof PLAYER_THEMES[number];
+export function playerThemeLabel(theme?: string): string {
+  return theme === "calm" ? "Calm" : theme === "ember" ? "Ember" : theme === "ocean" ? "Ocean" : theme === "forest" ? "Forest" : "Lavender";
+}
+export function nextPlayerTheme(theme?: string): PlayerTheme {
+  const at = PLAYER_THEMES.indexOf(theme as PlayerTheme);
+  return PLAYER_THEMES[(at < 0 ? 0 : at + 1) % PLAYER_THEMES.length]!;
+}
 /** Player-local theme: no global mutable colours or cross-profile leakage. */
 export function playerPalette(theme?: string): PlayerPalette {
-  return theme === "calm" ? { ...COLOR, accent: "#bdcbd5", alt: "#acbdca", muted: "#aab4c6",
-    selection: "#bdcbd5", good: "#b3d2c5" } : { ...COLOR, muted: "#aab4ce" };
+  if (theme === "calm") return { ...COLOR, accent: "#bdcbd5", alt: "#acbdca", muted: "#aab4c6", selection: "#bdcbd5", good: "#b3d2c5" };
+  if (theme === "ember") return { ...COLOR, accent: "#ff9b62", alt: "#f4bd72", muted: "#bba79a", selection: "#ff9b62", selectedText: "#23150f", good: "#9ed18b" };
+  if (theme === "ocean") return { ...COLOR, accent: "#65c7d0", alt: "#82aef2", muted: "#9daec8", selection: "#65c7d0", selectedText: "#0d2028", good: "#83d6b1" };
+  if (theme === "forest") return { ...COLOR, accent: "#8dcc85", alt: "#c0bd72", muted: "#a6b59f", selection: "#8dcc85", selectedText: "#122016", good: "#79d5aa" };
+  return { ...COLOR, muted: "#aab4ce" };
 }
 
 /** Parse "#rrggbb" into [r, g, b]. */

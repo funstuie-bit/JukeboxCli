@@ -65,8 +65,13 @@ or a version manager rather than continuing with Node.js 21 or older.
 
 On Linux, JukeboxCli prefers the distribution's ffmpeg and ffprobe because they
 are integrated with its TLS and codec libraries. If they are unavailable, it can
-fall back to app-managed copies. yt-dlp remains app-managed in automatic mode.
-`jukeboxcli --doctor` reports the system tools visible on `PATH`.
+fall back to app-managed copies. yt-dlp remains app-managed in automatic mode
+and follows the nightly channel by default. Settings → yt-dlp updates can switch
+to stable or back to nightly and update immediately; an active download causes
+the replacement to be staged for the next launch. Package-managed installs with
+`JUKEBOXCLI_SYSTEM_TOOLS=1` keep using the system yt-dlp instead. `jukeboxcli
+--doctor` reports both the managed channel/version and system tools on `PATH`
+without downloading or changing anything.
 
 Browser-cookie setup detects Chrome, Chromium, Edge, Brave and Firefox profiles
 in their standard Linux config directories. Choose one under Settings → Download

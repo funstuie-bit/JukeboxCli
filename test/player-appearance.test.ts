@@ -3,7 +3,7 @@ import { promises as fs } from "node:fs";
 import path from "node:path";
 import { configFile } from "../src/config/paths";
 import { defaultConfig, loadConfig, saveConfig } from "../src/config/config";
-import { playerPalette, COLOR } from "../src/ui/theme";
+import { nextPlayerTheme, playerPalette, COLOR } from "../src/ui/theme";
 
 describe("player appearance persistence", () => {
   it("requires an explicit persisted boolean to enable online lyrics", async () => {
@@ -23,9 +23,11 @@ describe("player appearance persistence", () => {
     expect(await loadConfig()).toMatchObject({ playerTheme: "lavender", reducedMotion: true });
   });
   it("restores choices without changing unrelated settings or the shared palette", async () => {
-    await saveConfig({ ...defaultConfig, playerTheme: "calm", reducedMotion: false, visualizerMode: "mosaic", retries: 7 });
-    expect(await loadConfig()).toMatchObject({ playerTheme: "calm", reducedMotion: false, visualizerMode: "mosaic", retries: 7 });
+    await saveConfig({ ...defaultConfig, playerTheme: "ocean", reducedMotion: false, visualizerMode: "mosaic", retries: 7 });
+    expect(await loadConfig()).toMatchObject({ playerTheme: "ocean", reducedMotion: false, visualizerMode: "mosaic", retries: 7 });
     expect(playerPalette("calm").accent).not.toBe(COLOR.accent);
     expect(playerPalette("lavender").accent).toBe(COLOR.accent);
+    expect(new Set(["lavender", "calm", "ember", "ocean", "forest"].map(t => playerPalette(t).accent)).size).toBe(5);
+    expect(nextPlayerTheme("forest")).toBe("lavender");
   });
 });

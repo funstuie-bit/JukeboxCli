@@ -5,7 +5,7 @@ import { TextField } from "../components/TextField";
 import { COLOR } from "../theme";
 import { cleanText } from "../../util/format";
 import { discoverFeeds } from "../../player/feeds";
-import { listRadioFacets, searchRadioDirectory, type RadioFacet, type RadioFacetKind } from "../../player/radio-browser";
+import { listRadioFacets, QUICK_RADIO_CHANNELS, searchRadioDirectory, type RadioFacet, type RadioFacetKind } from "../../player/radio-browser";
 import { readStations, removeStation, saveStation, refreshStations, stationTrack, type Station } from "../../player/stations";
 import type { StreamTrack } from "../../player/media";
 
@@ -25,7 +25,7 @@ export function Listen() {
   const [mode, setMode] = useState<"list" | "url" | "radio" | "directory" | "browse" | "browseFilter" | "name" | "remove" | "finding">(openUrlRequest ? "url" : "list");
   const [finding, setFinding] = useState<"feed" | "directory" | RadioFacetKind>("feed");
   const [facets, setFacets] = useState<RadioFacet[]>([]);
-  const [facetKind, setFacetKind] = useState<RadioFacetKind>("tags");
+  const [facetKind, setFacetKind] = useState<RadioFacetKind | "quick">("tags");
   const [facetFilter, setFacetFilter] = useState("");
   const [facetCursor, setFacetCursor] = useState(0);
   const [cursor, setCursor] = useState(0);
@@ -113,6 +113,7 @@ export function Listen() {
       return;
     }
     if (input === "B") { void submitDirectory(""); return; }
+    if (input === "M") { setFacetKind("quick"); setFacets([...QUICK_RADIO_CHANNELS]); setFacetFilter(""); setFacetCursor(0); setMode("browse"); setNotice("Quick channels · choose a mood, then pick a station"); return; }
     if (input === "g") { void browseDirectory("tags"); return; }
     if (input === "c") { void browseDirectory("countries"); return; }
     if (input === "/") { request.current?.abort(); setMode("directory"); setUrlText(""); setNotice(""); return; }
@@ -144,7 +145,7 @@ export function Listen() {
   }, { isActive: focused });
   return <Box flexDirection="column" width={contentWidth}>
     <Text bold color={COLOR.alt}>Radio / URL · Saved stations & found feeds</Text>
-    <Text color={COLOR.muted} wrap="truncate-end">B popular · g genres · c countries · / station search</Text>
+    <Text color={COLOR.muted} wrap="truncate-end">M quick channels · B popular · g genres · c countries · / search</Text>
     <Text color={COLOR.muted} wrap="truncate-end">Streams play without importing or downloading music.</Text>
     {mode === "url" || mode === "radio" ? <>
       <Text color={COLOR.accent} wrap="truncate-end">{mode === "radio" ? "Paste radio website, playlist or audio URL:" : "Paste YouTube / website / audio URL:"}</Text>
@@ -153,10 +154,10 @@ export function Listen() {
       <Text color={COLOR.accent} wrap="truncate-end">Search station name · blank = popular · esc returns to browsing</Text>
       {focused ? <TextField key="directory" defaultValue={urlText} onChange={setUrlText} width={contentWidth - 1} placeholder="Station name…" onSubmit={submitDirectory} /> : null}
     </> : mode === "browseFilter" ? <>
-      <Text color={COLOR.accent}>Filter {facetKind}:</Text>
-      {focused ? <TextField key={`filter:${facetKind}`} defaultValue={facetFilter} width={contentWidth - 1} placeholder={`Type part of a ${facetKind === "tags" ? "genre or tag" : "country"}…`} onSubmit={value => { setFacetFilter(value.trim()); setFacetCursor(0); setMode("browse"); }} /> : null}
+      <Text color={COLOR.accent}>Filter {facetKind === "quick" ? "quick channels" : facetKind}:</Text>
+      {focused ? <TextField key={`filter:${facetKind}`} defaultValue={facetFilter} width={contentWidth - 1} placeholder={`Type part of a ${facetKind === "quick" ? "quick channel" : facetKind === "tags" ? "genre or tag" : "country"}…`} onSubmit={value => { setFacetFilter(value.trim()); setFacetCursor(0); setMode("browse"); }} /> : null}
     </> : mode === "browse" ? <>
-      <Text color={COLOR.accent}>{facetKind === "tags" ? "Genres & tags" : "Countries"} · / filter · enter opens stations</Text>
+      <Text color={COLOR.accent}>{facetKind === "quick" ? "Quick channels" : facetKind === "tags" ? "Genres & tags" : "Countries"} · / filter · enter opens stations</Text>
       {(() => {
         const visible = facets.filter(f => !facetFilter || f.name.toLowerCase().includes(facetFilter.toLowerCase()));
         const picked = Math.min(facetCursor, Math.max(0, visible.length - 1));
@@ -164,8 +165,8 @@ export function Listen() {
         return visible.length ? visible.slice(from, from + rows).map((facet, i) => <Text key={facet.query} wrap="truncate-end"
           color={focused && picked === from + i ? COLOR.selectedText : COLOR.text}
           backgroundColor={focused && picked === from + i ? COLOR.selection : undefined}>
-          {picked === from + i ? "› " : "  "}{cleanText(facet.name)} · {facet.count.toLocaleString()} stations
-        </Text>) : <Text color={COLOR.muted}>No matching {facetKind}. Press / to change the filter.</Text>;
+          {picked === from + i ? "› " : "  "}{cleanText(facet.name)}{facetKind === "quick" ? "" : ` · ${facet.count.toLocaleString()} stations`}
+        </Text>) : <Text color={COLOR.muted}>No matching {facetKind === "quick" ? "quick channels" : facetKind}. Press / to change the filter.</Text>;
       })()}
     </> : mode === "name" ? <>
       <Text color={COLOR.accent} wrap="truncate-end">Name: {target?.title} · type replacement or enter to keep</Text>
@@ -186,7 +187,7 @@ export function Listen() {
     </> : mode === "finding" ? <Text color={COLOR.accent}>{finding === "directory" ? "Searching Radio Browser" : finding === "feed" ? "Looking for audio feeds" : `Loading ${finding}`}… esc cancels</Text>
       : mode === "remove" ? <><Text color={COLOR.warn} wrap="truncate-end">Remove favourite? {target ? cleanText(target.title) : ""}</Text><Text color={COLOR.warn}>y confirms · esc cancels (music and queue stay)</Text></> : <>
       <Text color={COLOR.muted} wrap="truncate-end">enter play · A/P queue · f save · t rename · x/d remove · G artwork</Text>
-      {!entries.length ? <Text color={COLOR.muted}>No saved stations yet. Press B/g/c to browse or R to add a radio stream.</Text> : null}
+      {!entries.length ? <Text color={COLOR.muted}>No saved stations yet. Press M/B/g/c to browse or R to add a radio stream.</Text> : null}
       {entries.slice(start, start + rows).map((entry, i) => <Text key={`${i}:${entry.id}`} wrap="truncate-end"
         color={focused && selected === start + i ? COLOR.selectedText : COLOR.text}
         backgroundColor={focused && selected === start + i ? COLOR.selection : undefined}>

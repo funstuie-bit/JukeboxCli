@@ -63,7 +63,7 @@ describe("shouldCheck", () => {
     expect(shouldCheck(null, now)).toBe(true);
     expect(
       shouldCheck(
-        { checkedAt: "yesterday" as unknown as number },
+        { checkedAt: "yesterday" as unknown as number, channel: "stable" },
         now,
       ),
     ).toBe(true);
@@ -71,13 +71,14 @@ describe("shouldCheck", () => {
 
   it("respects the daily interval", () => {
     expect(
-      shouldCheck({ checkedAt: now - UPDATE_CHECK_INTERVAL_MS - 1 }, now),
+      shouldCheck({ checkedAt: now - UPDATE_CHECK_INTERVAL_MS - 1, channel: "stable" }, now),
     ).toBe(true);
-    expect(shouldCheck({ checkedAt: now - 60_000 }, now)).toBe(false);
+    expect(shouldCheck({ checkedAt: now - 60_000, channel: "stable" }, now)).toBe(false);
+    expect(shouldCheck({ checkedAt: now - 60_000, channel: "stable" }, now, "nightly")).toBe(true);
   });
 
   it("treats a future-dated stamp as needing a check", () => {
-    expect(shouldCheck({ checkedAt: now + 60_000 }, now)).toBe(true);
+    expect(shouldCheck({ checkedAt: now + 60_000, channel: "stable" }, now)).toBe(true);
   });
 });
 
@@ -95,6 +96,8 @@ describe("fetchLatestVersion", () => {
     await expect(fetchLatestVersion(impl)).resolves.toBe("2026.06.09");
     // The redirect must NOT be followed: the Location header is the answer.
     expect(calls[0]!.init?.redirect).toBe("manual");
+    await fetchLatestVersion(impl, "nightly");
+    expect(calls[1]!.url).toContain("yt-dlp-nightly-builds");
   });
 
   it("returns null on a network failure or a missing Location", async () => {

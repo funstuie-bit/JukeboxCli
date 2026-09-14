@@ -3,7 +3,14 @@
 Release notes describe what changed in each build. For what works now and the
 remaining limits, see [feature status](FEATURES.md).
 
-## Unreleased
+## 0.1.1-beta.4 — Linux acceptance and listening choices (2026-09-13)
+
+- Release the accepted Linux artwork, visualisers, radio directory, balanced
+  player and Chromium GNOME-Keyring fix.
+- Add stable/nightly managed yt-dlp selection with immediate updates and
+  managed version/channel diagnostics. Nightly is the app-managed default.
+- Add ten first-party Radio Browser quick channels and three additional themes:
+  Ember, Ocean and Forest.
 
 - Use GNOME Keyring explicitly for Linux Chromium-family cookies when its
   Secret Service socket is present; retain yt-dlp's actual reason in the

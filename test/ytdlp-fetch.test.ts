@@ -149,4 +149,14 @@ describe("downloadYtDlp", () => {
       await fs.rm(dir, { recursive: true, force: true });
     }
   });
+
+  it("uses the nightly release repository when selected", async () => {
+    const dir = await fs.mkdtemp(path.join(os.tmpdir(), "soundcli-yt-nightly-"));
+    let requested = "";
+    const impl: FetchImpl = async url => { requested = String(url); return new Response(new Uint8Array([1])); };
+    try {
+      await downloadYtDlp(path.join(dir, "yt-dlp"), impl, "nightly");
+      expect(requested).toContain("yt-dlp/yt-dlp-nightly-builds/releases/latest/download");
+    } finally { await fs.rm(dir, { recursive: true, force: true }); }
+  });
 });

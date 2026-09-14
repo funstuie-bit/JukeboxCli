@@ -2,7 +2,7 @@ import { promises as fs } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { execa } from "execa";
-import { ensureYtDlp } from "./ytdlp-fetch";
+import { ensureYtDlp, type YtDlpChannel } from "./ytdlp-fetch";
 import {
   ensureFfmpeg,
   resolvedFfmpegPath,
@@ -230,8 +230,9 @@ async function resolveMpv(): Promise<string | null> {
 /** Resolve every binary we depend on, fetching yt-dlp if needed. */
 export async function ensureBinaries(
   onStatus?: (msg: string) => void,
+  ytdlpChannel: YtDlpChannel = "stable",
 ): Promise<Binaries> {
-  const ytDlp = await ensureYtDlp(onStatus);
+  const ytDlp = await ensureYtDlp(onStatus, ytdlpChannel);
   // Resolve the Linux system pair before artwork can race ahead and select a
   // cached generic build. Other automatic installs retain the background
   // first-run fetch; the download queue gates independently before use.

@@ -139,7 +139,8 @@ still won't have a match (and plenty of mine are instrumental anyway).
 
 - A Home screen with the jukebox drawing, recents and stations.
 - Replayable history for successfully started online tracks and radio, not just files.
-- Lavender/Calm colours and optional decorative motion, disabled by default.
+- Lavender, Calm, Ember, Ocean and Forest colours, plus optional decorative
+  motion disabled by default.
 - Ghostty/Kitty-compatible, Sixel and iTerm2 image rendering. JukeboxCli also
   defaults Apple's Terminal to a simple disc/radio drawing, with pixel art optional.
 - mpv-backed macOS media controls, installer dependency checks and read-only doctor

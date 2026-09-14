@@ -16,8 +16,8 @@ yt-dlp, builds a specific Git revision into Homebrew's libexec and links only
 `jukeboxcli`. Homebrew manages tool updates; `JUKEBOXCLI_SYSTEM_TOOLS=1` prevents
 the app from downloading or updating its own tool binaries.
 
-The formula pins the `v0.1.1-beta.3` source revision,
-version `0.1.1-beta.3`. It does not follow every source commit, even when that
+The formula pins the `v0.1.1-beta.4` source tag,
+version `0.1.1-beta.4`. It does not follow every source commit, even when that
 commit has the same package version. A future release needs an explicit pin
 update; use a source install if you need the latest checkout.
 
@@ -52,7 +52,8 @@ The installer builds an independent archive with locked production dependencies;
 moving the checkout afterward does not break the installed command. Source/package
 installs provide only `jukeboxcli`. Existing unrelated commands
 are not forcibly overwritten. Normal source installs can fetch managed yt-dlp
-and ffmpeg copies on first launch.
+and ffmpeg copies on first launch. Managed yt-dlp follows nightly by default;
+Settings can update immediately or switch to stable.
 
 `./install.sh --prefix /absolute/path` selects an npm prefix; add its `bin`
 directory to PATH. `./install.sh --check` verifies the build without installing

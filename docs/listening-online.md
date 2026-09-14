@@ -26,9 +26,11 @@ transport/navigation shortcuts until Escape; both player layouts support it.
 
 `o` opens a YouTube/direct audio URL or website prompt. Enter accepts the input;
 select the result and Enter plays, `A` appends or `P` queues next. In `9`, use
-`B` for popular stations, `g` to browse genres and tags, `c` for countries, or
-`/` to search station names. Genre and country lists can themselves be filtered
-with `/`; there is no need to type query syntax.
+`M` for quick Lo-fi, Synthwave, Ambient, Chillout, Jazz, Classical, House, Drum
+& Bass, Reggae and Rock choices, `B` for popular stations, `g` to browse genres
+and tags, `c` for countries, or `/` to search station names. These all query
+Radio Browser; no station feed list is bundled or copied. Lists can themselves
+be filtered with `/`; there is no need to type query syntax.
 `9` → `R` explicitly opens a radio feed or station website. Select a directory
 or detected feed and press `f` to save; new favourites are never added automatically.
 In Radio / URL, `t` or `f` renames, `x` or `d` asks to remove a saved

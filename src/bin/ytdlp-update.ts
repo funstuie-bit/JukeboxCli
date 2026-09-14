@@ -10,18 +10,23 @@ import { promises as fs } from "node:fs";
 import path from "node:path";
 import { execa } from "execa";
 import { toolEnv } from "./binaries";
-import { downloadYtDlp, stagedYtDlpPath, ytDlpPath } from "./ytdlp-fetch";
+import { downloadYtDlp, stagedYtDlpPath, ytDlpPath, type YtDlpChannel } from "./ytdlp-fetch";
 import { binDir } from "../config/paths";
 import { USER_AGENT, type FetchImpl } from "../util/net";
 
 /** Following this redirect reveals the latest tag (no GitHub API quota). */
-export const LATEST_URL = "https://github.com/yt-dlp/yt-dlp/releases/latest";
+export function latestUrl(channel: YtDlpChannel): string {
+  return channel === "nightly"
+    ? "https://github.com/yt-dlp/yt-dlp-nightly-builds/releases/latest"
+    : "https://github.com/yt-dlp/yt-dlp/releases/latest";
+}
 
 export const UPDATE_CHECK_INTERVAL_MS = 24 * 60 * 60 * 1000;
 
 export interface YtDlpCheckStamp {
   checkedAt: number;
   latest?: string;
+  channel?: YtDlpChannel;
 }
 
 export function stampPath(): string {
@@ -65,8 +70,10 @@ export function isNewerVersion(
 export function shouldCheck(
   stamp: YtDlpCheckStamp | null,
   now = Date.now(),
+  channel: YtDlpChannel = "stable",
 ): boolean {
   if (!stamp || typeof stamp.checkedAt !== "number") return true;
+  if (stamp.channel !== channel) return true;
   if (stamp.checkedAt > now) return true;
   return now - stamp.checkedAt >= UPDATE_CHECK_INTERVAL_MS;
 }
@@ -82,18 +89,19 @@ export async function readStamp(): Promise<YtDlpCheckStamp | null> {
   }
 }
 
-export async function writeStamp(latest: string): Promise<void> {
+export async function writeStamp(latest: string, channel: YtDlpChannel): Promise<void> {
   await fs.mkdir(binDir, { recursive: true });
-  const stamp: YtDlpCheckStamp = { checkedAt: Date.now(), latest };
+  const stamp: YtDlpCheckStamp = { checkedAt: Date.now(), latest, channel };
   await fs.writeFile(stampPath(), JSON.stringify(stamp));
 }
 
 /** Resolve the latest release version, or null on any network hiccup. */
 export async function fetchLatestVersion(
   fetchImpl: FetchImpl = fetch as FetchImpl,
+  channel: YtDlpChannel = "stable",
 ): Promise<string | null> {
   try {
-    const res = await fetchImpl(LATEST_URL, {
+    const res = await fetchImpl(latestUrl(channel), {
       redirect: "manual",
       headers: { "User-Agent": USER_AGENT },
       signal: AbortSignal.timeout(10_000),
@@ -124,6 +132,7 @@ export async function localYtDlpVersion(): Promise<string | null> {
  */
 export async function maybeUpdateYtDlp(
   fetchImpl: FetchImpl = fetch as FetchImpl,
+  channel: YtDlpChannel = "stable",
 ): Promise<boolean> {
   // Only the bundled binary is ours to update. When we're running on a system
   // yt-dlp (no bundled file present), skip the check so it can't re-trigger the
@@ -134,18 +143,33 @@ export async function maybeUpdateYtDlp(
     return false;
   }
   const stamp = await readStamp();
-  if (!shouldCheck(stamp)) return false;
+  if (!shouldCheck(stamp, Date.now(), channel)) return false;
 
-  const latest = await fetchLatestVersion(fetchImpl);
+  const latest = await fetchLatestVersion(fetchImpl, channel);
   if (!latest) return false;
 
   const current = await localYtDlpVersion();
-  if (!isNewerVersion(latest, current)) {
-    await writeStamp(latest);
+  // A deliberate channel switch must install that channel even when its
+  // date-like version sorts below the current one (nightly → stable).
+  const channelChanged = stamp?.channel !== undefined && stamp.channel !== channel;
+  if (!channelChanged && !isNewerVersion(latest, current)) {
+    await writeStamp(latest, channel);
     return false;
   }
 
-  await downloadYtDlp(stagedYtDlpPath());
-  await writeStamp(latest);
+  await downloadYtDlp(stagedYtDlpPath(), fetchImpl, channel);
+  await writeStamp(latest, channel);
   return true;
+}
+
+/** Explicitly stage the selected channel, including intentional downgrades. */
+export async function updateYtDlpNow(
+  channel: YtDlpChannel,
+  fetchImpl: FetchImpl = fetch as FetchImpl,
+): Promise<string> {
+  const latest = await fetchLatestVersion(fetchImpl, channel);
+  if (!latest) throw Error("Could not check yt-dlp releases. Check your connection.");
+  await downloadYtDlp(stagedYtDlpPath(), fetchImpl, channel);
+  await writeStamp(latest, channel);
+  return latest;
 }

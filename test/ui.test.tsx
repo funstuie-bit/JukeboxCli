@@ -480,7 +480,7 @@ describe("settings sub-page hook safety", () => {
   it("enters conversion and returns to the menu with an empty fixture library", async () => {
     const view = render(wrap(<Settings />, makeStore()));
     try {
-      await openEntry(view, 7);
+      await openEntry(view, 8);
       await vi.waitFor(() => expect(view.lastFrame()).toContain("Re-encode every download"));
       view.stdin.write("\r"); await tick();
       await vi.waitFor(() => expect(view.lastFrame()).toContain("Converted 0 songs"));
@@ -493,10 +493,10 @@ describe("settings sub-page hook safety", () => {
 describe("settings move music folder", () => {
   const CTRL_U = "\u0015";
 
-  /** Menu order: youtube, soundcloud, spotify, format, cookies, pacing, import, convert, open-folder, folder. */
+  /** Menu order: youtube, soundcloud, spotify, format, cookies, pacing, yt-dlp, import, convert, open-folder, folder. */
   async function openFolderPage(stdin: { write: (s: string) => void }) {
     await tick();
-    for (let i = 0; i < 9; i++) {
+    for (let i = 0; i < 10; i++) {
       stdin.write(DOWN);
       await tick();
     }
