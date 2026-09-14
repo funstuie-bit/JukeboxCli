@@ -54,6 +54,7 @@ describe("responsive listening layout", () => {
     expect(store.playback.getState().index).toBe(0);
   });
   it("caps artwork and fits radio with long broadcast text at every size", async () => {
+    vi.stubEnv("JUKEBOXCLI_VISUALIZER", "1");
     expect(playerLayout(180, 50)).toMatchObject({ balanced: true, left: 81, right: 98, artRows: 24, waveRows: 7 });
     const t = { ...trackFromUrl("https://example.com/live", true), title: "Fixture Radio" };
     for (const [cols, height] of [[180, 44], [140, 38], [100, 18], [90, 16], [80, 16], [60, 12]]) {
