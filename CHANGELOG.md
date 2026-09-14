@@ -5,6 +5,9 @@ remaining limits, see [feature status](FEATURES.md).
 
 ## Unreleased
 
+- Use GNOME Keyring explicitly for Linux Chromium-family cookies when its
+  Secret Service socket is present; retain yt-dlp's actual reason in the
+  download log when a recognised rate limit pauses the queue.
 - Give very wide player screens a balanced 45/55 split, artwork up to 56
   columns × 24 rows, aligned panel bottoms, a taller spectrum and queue rows
   capped for easier scanning. Outline draws distinct hollow band meters instead

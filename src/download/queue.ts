@@ -1228,6 +1228,7 @@ export class DownloadQueue extends EventEmitter {
       if (res.status === "ratelimited") {
         // Don't fail it: keep it (with its .part) and pause the whole queue.
         item.status = "paused";
+        if (res.error) this.logFailure(item, res.error);
         this.onRateLimited(RATE_LIMITED);
       } else if (res.status === "canceled") {
         // Distinguish a pause (keep it, resumable) from a real cancel.

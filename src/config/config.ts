@@ -5,6 +5,7 @@ import { normalizeSpotifyHandle } from "../sources/spotify/handle";
 import { configFile, defaultLibraryDir } from "./paths";
 import { resolveDefaultLibraryDir } from "./music-dir";
 import { SPECTRUM_MODES, type SpectrumMode } from "../player/spectrum";
+import { withDetectedLinuxKeyring } from "./cookies";
 
 export interface Config {
   /** Explicit opt-in to LRCLIB metadata queries while the lyrics panel is open. */
@@ -105,6 +106,7 @@ export async function loadConfig(): Promise<Config> {
     cfg.reducedMotion = typeof parsed.reducedMotion === "boolean" ? parsed.reducedMotion : true;
     cfg.visualizerMode = SPECTRUM_MODES.includes(parsed.visualizerMode as SpectrumMode)
       ? parsed.visualizerMode as SpectrumMode : "classic";
+    cfg.cookiesFromBrowser = withDetectedLinuxKeyring(cfg.cookiesFromBrowser);
     if (!cfg.spotifyHandle && parsed.spotifyProfile) {
       const ref = parseSpotifyInput(parsed.spotifyProfile);
       if (ref.type === "user") {

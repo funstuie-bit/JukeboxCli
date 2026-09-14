@@ -22,6 +22,10 @@ I started this as a boredom project and it got slightly out of hand. JukeboxCli 
 
 Playing or browsing online music does not add it to your library. Downloads only start when you ask for one.
 
+On Linux, Chromium-family cookie selections use GNOME Keyring when its Secret
+Service is present, so yt-dlp can decrypt the signed-in browser session instead
+of silently falling back to anonymous requests.
+
 The player puts station/song information above its artwork, alongside a clearly
 named **Playback queue**. Very wide terminals use a balanced 45/55 split, artwork
 up to 56 columns × 24 rows and a taller visualiser. Queue rows stay bounded so

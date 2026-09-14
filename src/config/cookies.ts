@@ -1,4 +1,4 @@
-import { promises as fs } from "node:fs";
+import { existsSync, promises as fs } from "node:fs";
 import path from "node:path";
 import os from "node:os";
 import { execa } from "execa";
@@ -30,12 +30,37 @@ export interface BrowserProfile {
   label: string;
   /** Path to the profile directory (for verification) */
   profilePath: string;
+  /** Explicit Linux Chromium keyring when auto-detection cannot identify it. */
+  keyring?: "gnomekeyring";
+}
+
+/** Detect the GNOME Secret Service socket used by Chromium/libsecret. */
+export function linuxChromiumKeyring(
+  platform: NodeJS.Platform = process.platform,
+  runtimeDir = process.env.XDG_RUNTIME_DIR ?? (process.getuid ? `/run/user/${process.getuid()}` : ""),
+  exists: (file: string) => boolean = existsSync,
+): BrowserProfile["keyring"] | undefined {
+  if (platform !== "linux" || !runtimeDir) return;
+  return exists(path.join(runtimeDir, "keyring", "control")) ? "gnomekeyring" : undefined;
+}
+
+/** Upgrade an old automatic Chromium selector only when GNOME Keyring is proven present. */
+export function withDetectedLinuxKeyring(
+  value: string | undefined,
+  platform: NodeJS.Platform = process.platform,
+  keyring = linuxChromiumKeyring(platform),
+): string | undefined {
+  if (!value || platform !== "linux" || !keyring || value.includes("+")) return value;
+  return /^(chrome|chromium|edge|brave):/.test(value)
+    ? value.replace(":", `+${keyring}:`)
+    : value;
 }
 
 /** Detect installed browsers and profiles in their standard platform locations. */
 export async function detectBrowserProfiles(
   platform: NodeJS.Platform = process.platform,
   home = os.homedir(),
+  linuxKeyring: BrowserProfile["keyring"] | null = linuxChromiumKeyring(platform) ?? null,
 ): Promise<BrowserProfile[]> {
   const profiles: BrowserProfile[] = [];
 
@@ -80,6 +105,7 @@ export async function detectBrowserProfiles(
           profileName: "Default",
           label: `${c.label} · Default`,
           profilePath: path.join(c.basePath, "Default"),
+          ...(linuxKeyring ? { keyring: linuxKeyring } : {}),
         });
       }
       // Additional profiles (Profile 1, Profile 2, etc.)
@@ -90,6 +116,7 @@ export async function detectBrowserProfiles(
             profileName: e.name,
             label: `${c.label} · ${e.name}`,
             profilePath: path.join(c.basePath, e.name),
+            ...(linuxKeyring ? { keyring: linuxKeyring } : {}),
           });
         }
       }
@@ -169,7 +196,7 @@ export async function extractCookies(
  * this field and uses --cookies-from-browser instead of --cookies.
  */
 export function browserCookieArg(profile: BrowserProfile): string {
-  return `${profile.browser}:${profile.profileName}`;
+  return `${profile.browser}${profile.keyring ? `+${profile.keyring}` : ""}:${profile.profileName}`;
 }
 
 /**

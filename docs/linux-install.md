@@ -71,7 +71,10 @@ fall back to app-managed copies. yt-dlp remains app-managed in automatic mode.
 Browser-cookie setup detects Chrome, Chromium, Edge, Brave and Firefox profiles
 in their standard Linux config directories. Choose one under Settings → Download
 settings → Cookies; JukeboxCli passes the selected profile to yt-dlp without
-copying the cookie database.
+copying the cookie database. When a GNOME Keyring Secret Service is active,
+Chromium-family profiles include that keyring explicitly so encrypted cookies
+do not fall back to an anonymous request. Firefox and non-GNOME keyrings retain
+yt-dlp's normal platform handling.
 
 Fresh Linux profiles use these locations:
 

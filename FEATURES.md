@@ -26,7 +26,8 @@ or online service will cooperate. The limits are listed below.
   macOS remains opt-in. The static local waveform is available with an override.
 - Local whole-track waveform; optional local/cached/online lyrics with supplied
   line/word timing, manual matching and a plain-text alternate provider.
-- Browser/file cookies for playback and downloads; no separate Music sign-in.
+- Browser/file cookies for playback and downloads, including detected GNOME
+  Keyring decryption for Chromium-family browsers on Linux; no separate Music sign-in.
 - macOS media controls through mpv, read-only doctor, independent source install
   and a pinned Homebrew source formula.
 
@@ -39,6 +40,7 @@ or online service will cooperate. The limits are listed below.
 - Radio directory entries are community-maintained, so availability and metadata
   vary. General Radio Garden browsing, DRM, authenticated feeds and JavaScript
   execution are unsupported.
+- Other Linux browser keyrings still use yt-dlp's normal platform detection.
 - Artwork and lyrics depend on available metadata and terminal/provider support.
 - macOS media controls may appear under mpv's system identity.
 

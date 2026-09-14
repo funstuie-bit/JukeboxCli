@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { promises as fs } from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { detectBrowserProfiles } from "../src/config/cookies";
+import { browserCookieArg, detectBrowserProfiles, linuxChromiumKeyring, withDetectedLinuxKeyring } from "../src/config/cookies";
 
 /**
  * Firefox profile detection: only profiles that actually hold a cookie
@@ -74,7 +74,7 @@ describe("detectBrowserProfiles: Linux Chromium browsers", () => {
     await fs.mkdir(profile, { recursive: true });
     await fs.writeFile(path.join(profile, "Cookies"), "sqlite-bytes");
     try {
-      expect(await detectBrowserProfiles("linux", base)).toContainEqual({
+      expect(await detectBrowserProfiles("linux", base, null)).toContainEqual({
         browser: "chromium", profileName: "Default", label: "Chromium · Default", profilePath: profile,
       });
     } finally { await fs.rm(base, { recursive: true, force: true }); }
@@ -83,7 +83,27 @@ describe("detectBrowserProfiles: Linux Chromium browsers", () => {
   it("does not offer an empty Chrome profile directory", async () => {
     const base = await fs.mkdtemp(path.join(os.tmpdir(), "jukeboxcli-linux-cookies-"));
     await fs.mkdir(path.join(base, ".config/google-chrome/Default"), { recursive: true });
-    try { expect(await detectBrowserProfiles("linux", base)).toEqual([]); }
+    try { expect(await detectBrowserProfiles("linux", base, null)).toEqual([]); }
     finally { await fs.rm(base, { recursive: true, force: true }); }
+  });
+
+  it("uses GNOME Keyring only when its Linux runtime socket is present", () => {
+    const keyring = linuxChromiumKeyring("linux", "/run/user/1000", file => file === "/run/user/1000/keyring/control");
+    expect(keyring).toBe("gnomekeyring");
+    expect(withDetectedLinuxKeyring("chromium:Default", "linux", keyring)).toBe("chromium+gnomekeyring:Default");
+    expect(withDetectedLinuxKeyring("firefox:main.default", "linux", keyring)).toBe("firefox:main.default");
+    expect(withDetectedLinuxKeyring("chromium+kwallet6:Default", "linux", keyring)).toBe("chromium+kwallet6:Default");
+  });
+
+  it("stores an explicit detected keyring in the yt-dlp browser selector", async () => {
+    const base = await fs.mkdtemp(path.join(os.tmpdir(), "jukeboxcli-linux-cookies-"));
+    const profile = path.join(base, ".config/chromium/Default");
+    await fs.mkdir(profile, { recursive: true });
+    await fs.writeFile(path.join(profile, "Cookies"), "sqlite-bytes");
+    try {
+      const [found] = await detectBrowserProfiles("linux", base, "gnomekeyring");
+      expect(found?.keyring).toBe("gnomekeyring");
+      expect(browserCookieArg(found!)).toBe("chromium+gnomekeyring:Default");
+    } finally { await fs.rm(base, { recursive: true, force: true }); }
   });
 });
