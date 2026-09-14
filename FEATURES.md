@@ -22,7 +22,8 @@ or online service will cooperate. The limits are listed below.
 - Lavender, Calm, Ember, Ocean and Forest player themes, plus optional
   decorative motion.
 - Responsive player layouts, including a balanced 45/55 player/queue split,
-  larger artwork and a taller spectrum in very wide terminals.
+  larger artwork and a taller spectrum in very wide terminals. Queue rows fill
+  the panel so selection and time stay aligned with its right edge.
 - Live eight-band visualiser for music and radio by default on Linux, with six
   persistent styles; macOS remains opt-in. A static local waveform is available.
 - Local whole-track waveform; optional local/cached/online lyrics with supplied

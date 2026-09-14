@@ -3,6 +3,11 @@
 Release notes describe what changed in each build. For what works now and the
 remaining limits, see [feature status](FEATURES.md).
 
+## Post-beta.4 wide queue test (2026-09-14)
+
+- Fill very wide queue panels so row highlights and the time column reach the
+  right border instead of stopping at the old 104-cell cap.
+
 ## 0.1.1-beta.4 — Linux acceptance and listening choices (2026-09-13)
 
 - Release the accepted Linux artwork, visualisers, radio directory, balanced

@@ -17,8 +17,8 @@ export function ListeningQueue({ height, width, active, framed = false, controls
   const [error, setError] = useState("");
   const [confirmClear, setConfirmClear] = useState(false);
   const cols = (width ?? store.contentWidth) - (framed ? 4 : 0);
-  // Very wide tables push duration to the far edge without adding useful
-  // information. Keep the panel roomy, but make its rows quick to scan.
+  // Fill the panel so the header, duration and selected-row highlight reach
+  // the right edge instead of leaving a false-looking empty column.
   const contentCols = queueContentWidth(cols);
   const dense = (height ?? store.listRows) < 10;
   const columns = cols >= 48 && !dense;
@@ -74,7 +74,7 @@ export function ListeningQueue({ height, width, active, framed = false, controls
 }
 
 /** Pad/truncate by terminal cells, so emoji and CJK cannot displace duration. */
-export function queueContentWidth(width: number): number { return Math.min(width, 104); }
+export function queueContentWidth(width: number): number { return Math.max(0, width); }
 export function fitRow(text: string, width: number): string {
   const limit = Math.max(0, width);
   let out = "";

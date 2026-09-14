@@ -130,7 +130,7 @@ describe("responsive listening layout", () => {
     }
     expect(playerLayout(180, 50).waveRows).toBe(7);
     expect(queueContentWidth(90)).toBe(90);
-    expect(queueContentWidth(140)).toBe(104);
+    expect(queueContentWidth(140)).toBe(140);
   });
   it("puts wide player and queue controls below the panels with an aligned divider", () => {
     const store = makeStore();
