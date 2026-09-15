@@ -16,8 +16,8 @@ yt-dlp, builds a specific Git revision into Homebrew's libexec and links only
 `jukeboxcli`. Homebrew manages tool updates; `JUKEBOXCLI_SYSTEM_TOOLS=1` prevents
 the app from downloading or updating its own tool binaries.
 
-The formula pins the `v0.1.1-beta.4` source tag,
-version `0.1.1-beta.4`. It does not follow every source commit, even when that
+The formula pins the `v1.0.0` source revision,
+version `1.0.0`. It does not follow every source commit, even when that
 commit has the same package version. A future release needs an explicit pin
 update; use a source install if you need the latest checkout.
 

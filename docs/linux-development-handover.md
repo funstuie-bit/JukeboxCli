@@ -1,32 +1,29 @@
 # Linux development handover
 
-This is the rebuild-safe starting point for the next soundstu session working on
-JukeboxCli from Linux. The Linux work is part of the product and release roadmap,
-not a throwaway port.
+This is the rebuild-safe starting point for Linux development. Linux and macOS
+use the same source history and release process.
 
 ## Repositories and history
 
-- Native development remote: `http://192.168.1.207:3000/admin/soundcli-fork.git`
-- Native development branch: `soundstu/jukeboxcli`
-- Public remote: `https://github.com/funstuie-bit/JukeboxCli.git`
-- Public/default branch: `main`
-- Released baseline: `v0.1.1-beta.4`
-- Last Linux functional commit before this handover: `c21a20e`
+- Canonical repository: `https://github.com/funstuie-bit/JukeboxCli.git`
+- Shared default branch: `main`
+- Production baseline: `v1.0.0`
 
-Gitea and GitHub contain equivalent source with unrelated rewritten commit
-histories. Do not merge them and do not force one repository over the other.
-Develop against the Gitea branch. For an accepted promotion, fast-forward Gitea
-main, then replay the bounded commits onto a new branch from GitHub main, run the
-larger public gate, and fast-forward GitHub main.
+The private mirror was reconciled for 1.0.0. Its earlier history lacked fixes
+present in the public repository; the two trees were not equivalent. Do not
+continue the old practice of separately replaying commits between repositories.
+Develop branches from current main and promote the same tested commits to both
+remotes. See [release process](release-process.md).
 
-Use the inline identity for every commit:
+If an old checkout reports diverging history, keep it as a backup and clone the
+canonical repository afresh. Preserve uncommitted work and profile data. Do not
+merge or rebase old private history into main. Selectively port any genuinely
+unpublished work after review.
 
-```sh
-git -c user.name="soundstu" -c user.email="soundstu@agents.local" \
-  commit -m "soundstu: <summary>"
-```
+Use your verified GitHub identity and a privacy-preserving noreply email for
+public commits, not a machine account or local agent email.
 
-Authentication must remain transient. Do not write the Gitea token into a
+Authentication must remain transient. Do not write a repository token into a
 remote URL, config, shell history, documentation or source file.
 
 ## Rebuild on Arch Linux
@@ -34,9 +31,9 @@ remote URL, config, shell history, documentation or source file.
 ```sh
 sudo pacman -S --needed git nodejs npm mpv ffmpeg chromium gnome-keyring libsecret
 mkdir -p ~/projects
-git clone http://192.168.1.207:3000/admin/soundcli-fork.git ~/projects/JukeboxCli
+git clone https://github.com/funstuie-bit/JukeboxCli.git ~/projects/JukeboxCli
 cd ~/projects/JukeboxCli
-git switch soundstu/jukeboxcli
+git switch main
 npm ci
 npm test
 npm run typecheck
@@ -60,7 +57,7 @@ Fresh Linux data uses XDG locations:
 - Music: `~/Music/JukeboxCli`
 
 These paths may contain private station URLs, history and browser-profile names.
-Back them up separately if Stu wants continuity; never commit them. Use an
+Back them up separately for continuity; never commit them. Use an
 isolated `JUKEBOXCLI_HOME=/absolute/test/profile` for destructive/manual tests.
 
 ## Accepted Linux state
@@ -73,12 +70,12 @@ isolated `JUKEBOXCLI_HOME=/absolute/test/profile` for destructive/manual tests.
 - Full-screen Now Playing uses the accepted balanced 45/55 player/queue layout,
   aligned panel bottoms and one shared footer. The latest queue fix removes the
   104-cell table cap so highlights and `TIME` reach the right border; it was
-  promoted at Stu's rebuild request without a final post-fix screenshot.
+  promoted before the production release.
 - Radio Browser supports `M` quick channels, `B` popular, `g` genres, `c`
   countries and `/` station search. Quick channels are tag searches for Lo-fi,
   Synthwave, Ambient, Chillout, Jazz, Classical, House, Drum & Bass, Reggae and
   Rock—not copied cliamp feeds. Themes Lavender, Calm, Ember, Ocean and Forest
-  cycle with `T` or Settings. Stu confirmed both additions on Linux and Mac.
+  cycle with `T` or Settings. Both additions have user acceptance on Linux and Mac.
 - Chromium Premium cookies work through detected GNOME Keyring. The original
   instant rate limit was anonymous fallback caused by failed cookie decryption.
 - App-managed yt-dlp defaults to nightly. Settings can update/switch stable or
@@ -89,10 +86,10 @@ isolated `JUKEBOXCLI_HOME=/absolute/test/profile` for destructive/manual tests.
 
 ## Verification and remaining work
 
-At handover, the native tree passes 660 tests with 5 skipped across 65 files,
-TypeScript checking, production build and distribution-import validation.
-Beta.4's public GitHub gate also passed x64 Linux source installation and Apple
-Silicon tests, independent reinstall and Homebrew formula installation.
+Both platforms now run the same test suite. Release gates include TypeScript
+checking, production build and distribution-import validation, x64 Linux source
+installation, and Apple Silicon independent reinstall and Homebrew installation.
+Read the CI results for the exact release commit rather than reusing old counts.
 
 First manual checks after rebuilding:
 
@@ -114,5 +111,6 @@ and automatic pagination for very large online collections. Account playlists,
 likes and personalised YouTube Music radio remain deliberately deferred; no
 separate Music sign-in work is planned.
 
-Update README, feature status, changelog, this handover and the shared vault with
-each coherent change. Preserve Fletch's handover.
+Update README, feature status, changelog and development notes with each coherent
+change. Keep machine-specific coordination and private host details out of this
+public repository.

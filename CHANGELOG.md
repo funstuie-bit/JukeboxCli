@@ -3,7 +3,12 @@
 Release notes describe what changed in each build. For what works now and the
 remaining limits, see [feature status](FEATURES.md).
 
-## Post-beta.4 wide queue test (2026-09-14)
+## 1.0.0 — First production release (2026-09-14)
+
+- Promote the accepted macOS and Linux player to a stable release.
+- Use one shared code history for both platforms and repository mirrors.
+- Make update.sh executable so the documented source-update command works.
+- Keep existing music, profiles and preferences unchanged.
 
 - Fill very wide queue panels so row highlights and the time column reach the
   right border instead of stopping at the old 104-cell cap.

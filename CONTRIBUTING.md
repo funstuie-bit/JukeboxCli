@@ -5,6 +5,9 @@ mpv and ffmpeg on PATH; tests that resolve online audio need yt-dlp.
 
 ## Setup and verification
 
+Both platforms use the same main branch and release history. Maintainers should
+follow the [release process](docs/release-process.md), including the private mirror.
+
 ```sh
 npm ci
 npm test

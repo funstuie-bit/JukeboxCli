@@ -2,7 +2,7 @@
 
 A music player that lives in the terminal, for macOS and Linux.
 
-**Current build: 0.1.1-beta.4.** It includes the accepted Linux artwork,
+**Current release: 1.0.0.** It includes the accepted Linux artwork,
 visualisers, radio and Chromium-cookie work, plus quick radio channels, yt-dlp
 release channels and five player themes.
 
@@ -193,7 +193,7 @@ Run `jukeboxcli --help` for the full list. Spotify support imports music from su
 
 ## Current status
 
-The current prerelease is [0.1.1-beta.4](https://github.com/funstuie-bit/JukeboxCli/releases/tag/v0.1.1-beta.4). I use it, but it's still an early project. Automated install checks run on Apple Silicon and x64 Linux. Intel Macs and other Linux architectures aren't part of those checks, and I'm not claiming this works everywhere.
+The current production release is [1.0.0](https://github.com/funstuie-bit/JukeboxCli/releases/tag/v1.0.0). Automated install checks run on Apple Silicon and x64 Linux. Intel Macs and other Linux architectures aren't part of those checks. Known limits below still apply.
 
 A few limits are worth knowing:
 

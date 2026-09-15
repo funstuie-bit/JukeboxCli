@@ -1,8 +1,8 @@
 # Roadmap
 
-## 0.1.1-beta.4
+## 1.0.0
 
-Beta.4 rolls the accepted Linux work into a release: stable Sixel artwork in
+The first production release includes the accepted Linux work: stable Sixel artwork in
 Foot, six live visualisers for music and radio, Radio Browser discovery, the
 balanced wide player, and GNOME-Keyring-aware Chromium cookies.
 
@@ -19,7 +19,7 @@ It also adds:
 
 ## Next
 
-- Hands-on beta.4 checks on macOS, especially iTerm2 artwork, physical media
+- Further hands-on checks on macOS, especially iTerm2 artwork repainting, physical media
   keys/Control Centre and a clean Intel Mac installation.
 - Wider Linux terminal, browser and keyring coverage; KWallet continues through
   yt-dlp's own platform handling.
