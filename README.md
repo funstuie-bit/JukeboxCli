@@ -2,7 +2,7 @@
 
 A music player that lives in the terminal, for macOS and Linux.
 
-**Current release: 1.0.2.** It includes the accepted Linux artwork,
+**Current release: 1.0.3.** It includes the accepted Linux artwork,
 visualisers, radio and Chromium-cookie work, plus quick radio channels, yt-dlp
 release channels and five player themes.
 
@@ -193,7 +193,7 @@ Run `jukeboxcli --help` for the full list. Spotify support imports music from su
 
 ## Current status
 
-The current production release is [1.0.2](https://github.com/funstuie-bit/JukeboxCli/releases/tag/v1.0.2). Automated install checks run on Apple Silicon and x64 Linux. Intel Macs and other Linux architectures aren't part of those checks. Known limits below still apply.
+The current production release is [1.0.3](https://github.com/funstuie-bit/JukeboxCli/releases/tag/v1.0.3). Automated install checks run on Apple Silicon and x64 Linux. Intel Macs and other Linux architectures aren't part of those checks. Known limits below still apply.
 
 A few limits are worth knowing:
 
@@ -225,6 +225,9 @@ More detail:
 
 Settings → yt-dlp updates lets you choose **App-managed nightly**, **App-managed
 stable**, or **System / package manager**, including on Homebrew installs.
+Startup checks allow up to 60 seconds for a cold yt-dlp launch and report timeout
+or process errors if the downloaded copy cannot run.
+
 Homebrew's copy remains the default until you opt in. Selecting an app-managed
 channel downloads and checks a separate copy in JukeboxCli's cache; restart to
 apply it. Selecting System switches back on the next launch without deleting the

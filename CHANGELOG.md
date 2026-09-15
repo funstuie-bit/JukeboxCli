@@ -3,6 +3,14 @@
 Release notes describe what changed in each build. For what works now and the
 remaining limits, see [feature status](FEATURES.md).
 
+## 1.0.3 — Allow slow yt-dlp startup
+
+- Allow 60 seconds for yt-dlp's startup check; a working cold Mac launch could
+  exceed the previous ten-second limit and incorrectly fail an update.
+- Report timeout, exit code or termination instead of guessing antivirus was
+  responsible. Remove the old soundcli name from the update error.
+- Add regression coverage for a successful 10.073-second startup and failures.
+
 ## 1.0.2 — Mac visualiser enabled by default
 
 - Enable the live audio visualiser on normal Mac launches, as on Linux.

@@ -157,7 +157,7 @@ describe("downloadVerified", () => {
         },
         async () => void calls.push("remove"),
       ),
-    ).rejects.toThrow(/antivirus/);
+    ).rejects.toThrow(/JukeboxCli downloaded yt-dlp, but verification failed: startup check failed/);
     expect(calls).toEqual([
       "download",
       "probe",

@@ -106,10 +106,26 @@ export async function finalizeStagedYtDlp(): Promise<boolean> {
   return true;
 }
 
+// Standalone builds can take more than ten seconds on a cold Mac launch.
+export const YTDLP_STARTUP_TIMEOUT_MS = 60_000;
+
+export async function checkYtDlpStartup(dest: string): Promise<boolean> {
+  try {
+    await execa(dest, ["--version"], { timeout: YTDLP_STARTUP_TIMEOUT_MS });
+    return true;
+  } catch (error) {
+    const failure = error as { timedOut?: boolean; exitCode?: number; code?: string; signal?: string };
+    const reason = failure?.timedOut ? "startup timed out after 60 seconds"
+      : failure?.signal ? `startup was terminated (${failure.signal})`
+      : typeof failure?.exitCode === "number" ? `startup exited with code ${failure.exitCode}`
+      : failure?.code ? `could not start (${failure.code})` : "startup check failed";
+    throw new Error(reason);
+  }
+}
+
 async function probeBinary(dest: string): Promise<boolean> {
   try {
-    await execa(dest, ["--version"], { timeout: 10_000 });
-    return true;
+    return await checkYtDlpStartup(dest);
   } catch {
     return false;
   }
@@ -130,27 +146,30 @@ export async function detectSystemYtDlp(
 
 /**
  * Download to `dest`, then check the binary actually runs. A failed probe
- * means a torn or antivirus-mangled exe: delete it and retry once before
- * giving up, so a bad first download can't masquerade as installed forever.
+ * can have several causes; retry once before giving up and report the reason.
  * The download/probe/remove seams are injectable for tests.
  */
 export async function downloadVerified(
   dest: string,
   download: (dest: string) => Promise<void> = downloadYtDlp,
-  probe: (dest: string) => Promise<boolean> = probeBinary,
+  probe: (dest: string) => Promise<boolean> = checkYtDlpStartup,
   remove: (p: string) => Promise<void> = async (p) => {
     await fs.rm(p, { force: true });
   },
 ): Promise<void> {
-  await download(dest);
-  if (await probe(dest)) return;
-  await remove(dest);
-  await download(dest);
-  if (await probe(dest)) return;
-  // Leave no torn exe behind: it would pass the exists check next launch.
-  await remove(dest);
+  let reason = "startup check failed";
+  for (let attempt = 0; attempt < 2; attempt++) {
+    await download(dest);
+    try {
+      if (await probe(dest)) return;
+    } catch (error) {
+      reason = error instanceof Error ? error.message : "startup check failed";
+    }
+    // An unusable download must not pass the existence check next launch.
+    await remove(dest);
+  }
   throw new Error(
-    "yt-dlp downloaded but won't start on this computer. Check that your antivirus isn't blocking soundcli, then try again.",
+    `JukeboxCli downloaded yt-dlp, but verification failed: ${reason}. The update was not installed.`,
   );
 }
 
