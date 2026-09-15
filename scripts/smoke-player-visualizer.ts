@@ -5,7 +5,8 @@ import os from "node:os";
 import path from "node:path";
 import { execa } from "execa";
 
-process.env.JUKEBOXCLI_VISUALIZER = "1";
+// Exercise the normal Mac/Linux launch, not an environment opt-in.
+delete process.env.JUKEBOXCLI_VISUALIZER;
 const { MpvPlayer } = await import("../src/player/mpv");
 const dir = mkdtempSync(path.join(os.tmpdir(), "jukeboxcli-player-spectrum-"));
 const file = path.join(dir, "tone.wav");

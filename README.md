@@ -2,7 +2,7 @@
 
 A music player that lives in the terminal, for macOS and Linux.
 
-**Current release: 1.0.1.** It includes the accepted Linux artwork,
+**Current release: 1.0.2.** It includes the accepted Linux artwork,
 visualisers, radio and Chromium-cookie work, plus quick radio channels, yt-dlp
 release channels and five player themes.
 
@@ -19,7 +19,7 @@ I started this as a boredom project and it got slightly out of hand. JukeboxCli 
 - Keeps local, online and live tracks in one persistent queue.
 - Searches songs, videos, albums, artists and playlists without a YouTube login.
 - Shows sharp cover artwork in Ghostty, Kitty-compatible, iTerm2 and Sixel terminals, with text and block fallbacks elsewhere.
-- Runs a live visualiser by default on Linux, with six styles you can cycle using `v`.
+- Runs a live visualiser by default on Mac and Linux, with six styles you can cycle using `v`.
 - Supports local LRC files and optional online lyrics.
 - Downloads from YouTube and SoundCloud, and imports music from supported Spotify links.
 - Handles shuffle, repeat, queue editing and listening history. mpv supplies playback and macOS media-key support.
@@ -193,7 +193,7 @@ Run `jukeboxcli --help` for the full list. Spotify support imports music from su
 
 ## Current status
 
-The current production release is [1.0.1](https://github.com/funstuie-bit/JukeboxCli/releases/tag/v1.0.1). Automated install checks run on Apple Silicon and x64 Linux. Intel Macs and other Linux architectures aren't part of those checks. Known limits below still apply.
+The current production release is [1.0.2](https://github.com/funstuie-bit/JukeboxCli/releases/tag/v1.0.2). Automated install checks run on Apple Silicon and x64 Linux. Intel Macs and other Linux architectures aren't part of those checks. Known limits below still apply.
 
 A few limits are worth knowing:
 
@@ -217,8 +217,8 @@ npm run build
 
 The codebase is TypeScript, React and Ink. mpv handles playback; yt-dlp and ffmpeg handle online media and conversion.
 
-The live visualiser is enabled by default on Linux and remains opt-in on macOS
-with `JUKEBOXCLI_VISUALIZER=1 jukeboxcli`; see the
+The live visualiser is enabled by default on Mac and Linux. Press lowercase `v`
+in Now Playing to cycle styles; uppercase `V` controls decorative motion instead. See the
 [visualiser notes](docs/visualiser-prototype.md) for how it works and its limits.
 
 More detail:

@@ -14,13 +14,13 @@ export function spectrumModeLabel(mode: SpectrumMode): string {
   return SPECTRUM_LABELS[mode];
 }
 
-/** Linux has completed live visualizer acceptance; other platforms remain opt-in. */
+/** Enable live analysis on supported desktop platforms, with an explicit off switch. */
 export function visualizerEnabled(
   env: NodeJS.ProcessEnv = process.env,
   platform: NodeJS.Platform = process.platform,
 ): boolean {
   if (env.JUKEBOXCLI_VISUALIZER === "0") return false;
-  return platform === "linux" || env.JUKEBOXCLI_VISUALIZER === "1";
+  return platform === "linux" || platform === "darwin" || env.JUKEBOXCLI_VISUALIZER === "1";
 }
 
 export function nextSpectrumMode(mode: SpectrumMode = "classic"): SpectrumMode {

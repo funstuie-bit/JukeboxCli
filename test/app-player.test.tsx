@@ -102,7 +102,13 @@ vi.mock("../src/player/radio-browser", async () => {
     : [{ name: "United Kingdom", query: "country:GB", count: 456 }] };
 });
 const app = (props: Parameters<typeof App>[0] = {}) => render(<ThemeProvider theme={uiTheme}><App {...props} /></ThemeProvider>);
-async function press(view: ReturnType<typeof app>, key: string) { view.stdin.write(key); await tick(); }
+async function press(view: ReturnType<typeof app>, key: string) {
+  // A visible Ink frame can precede React's passive useInput subscription.
+  // Let the newly mounted screen attach its handler before sending a key.
+  await tick();
+  view.stdin.write(key);
+  await tick();
+}
 afterEach(() => { startup.fresh = false; startup.writes = []; startup.readEffective = undefined; vi.unstubAllEnvs(); cleanup(); rmSync(sessionFile, { force: true }); rmSync(stationsFile, { force: true }); rmSync(path.join(paths.cache, "lyrics-v1.json"), { force: true }); });
 
 describe("App player workflow", () => {

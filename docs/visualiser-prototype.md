@@ -1,10 +1,9 @@
 # Audio-reactive visualiser
 
-The eight-band visualiser is enabled by default in Now Playing on Linux after
-hands-on Intel Linux acceptance. Set `JUKEBOXCLI_VISUALIZER=0 jukeboxcli` to use
-the precomputed local-track waveform and disable live analysis. macOS remains
-opt-in with `JUKEBOXCLI_VISUALIZER=1 jukeboxcli`; `npm run visualizer` does the
-same from a source checkout.
+The eight-band visualiser is enabled by default in Now Playing on Mac and Linux.
+Press lowercase `v` to cycle its six styles. Uppercase `V` controls decorative
+animation, not the audio-reactive visualiser. Set `JUKEBOXCLI_VISUALIZER=0 jukeboxcli`
+to use the precomputed local-track waveform and disable live analysis.
 
 ## What works
 

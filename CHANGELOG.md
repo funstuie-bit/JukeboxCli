@@ -3,6 +3,14 @@
 Release notes describe what changed in each build. For what works now and the
 remaining limits, see [feature status](FEATURES.md).
 
+## 1.0.2 — Mac visualiser enabled by default
+
+- Enable the live audio visualiser on normal Mac launches, as on Linux.
+- Keep lowercase `v` for visualiser styles and uppercase `V` for decorative motion.
+- Exercise the default launch in the real mpv smoke test; retain an explicit off switch.
+- Let onboarding test input handlers attach before sending keys on CI.
+- Includes the independent yt-dlp updates below; 1.0.1 was not published as Latest.
+
 ## 1.0.1 — Independent yt-dlp updates
 
 - Allow app-managed nightly/stable yt-dlp on Homebrew installations without

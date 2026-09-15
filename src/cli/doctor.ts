@@ -55,7 +55,7 @@ export async function installationReport() {
       : "automatic mpv/ffmpeg; yt-dlp provider reported separately",
     ytDlpProvider: provider,
     mediaKeys: process.platform === "darwin" && process.env.JUKEBOXCLI_MEDIA_KEYS !== "0" ? "mpv bridge enabled; physical/system acceptance required" : "off",
-    visualizer: visualizerEnabled() ? "enabled" : process.platform === "linux"
+    visualizer: visualizerEnabled() ? "enabled" : process.env.JUKEBOXCLI_VISUALIZER === "0"
       ? "disabled by JUKEBOXCLI_VISUALIZER=0"
       : "off (set JUKEBOXCLI_VISUALIZER=1 to enable)",
     managedYtDlp, pendingYtDlp, tools };
