@@ -32,9 +32,11 @@ jukeboxcli --doctor
 jukeboxcli
 ```
 
-The installer uses npm's configured global prefix. If `jukeboxcli` is not found
-after installation, add the `bin` directory under `npm config get prefix` to
-your `PATH`, or choose a prefix already on it:
+The installer uses npm's configured global prefix when the current user can
+write there. Distribution npm packages commonly configure a system-owned
+prefix such as `/usr`; in that case JukeboxCli automatically installs under
+`$HOME/.local` without requiring sudo. Ensure `$HOME/.local/bin` is on `PATH`.
+You can also choose an absolute prefix explicitly:
 
 ```sh
 ./install.sh --prefix "$HOME/.local"
@@ -124,6 +126,12 @@ Remove the globally installed package with:
 
 ```sh
 npm uninstall --global jukeboxcli
+```
+
+For an installation that used the automatic Linux fallback:
+
+```sh
+npm uninstall --global --prefix "$HOME/.local" jukeboxcli
 ```
 
 This leaves your music and profile data in place.

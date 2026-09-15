@@ -27,3 +27,5 @@ jobs:
       - run: npm run build && npx --no-install tsx scripts/check-dist-imports.ts
       - name: Verify source installer
         run: ./install.sh --check
+      - name: Independent user-prefix install and reinstall with an isolated profile
+        run: npx tsx scripts/smoke-install.ts

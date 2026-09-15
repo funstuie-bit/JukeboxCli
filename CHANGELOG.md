@@ -3,6 +3,16 @@
 Release notes describe what changed in each build. For what works now and the
 remaining limits, see [feature status](FEATURES.md).
 
+## Unreleased
+
+- Fall back to `$HOME/.local` when npm's configured global prefix is not usable
+  by the current user, so the documented Arch source install works without
+  running the JukeboxCli installer as root.
+- Exercise the automatic user-prefix path through the independent install and
+  reinstall smoke test on Linux CI.
+- Refresh Vitest to the patched 4.1.11 line and record exact esbuild install
+  script approvals, clearing the npm audit finding and npm 12 review warnings.
+
 ## 1.0.3 — Allow slow yt-dlp startup
 
 - Allow 60 seconds for yt-dlp's startup check; a working cold Mac launch could

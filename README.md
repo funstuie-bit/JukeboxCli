@@ -62,6 +62,10 @@ jukeboxcli --doctor
 jukeboxcli
 ```
 
+If npm's configured global directory is system-owned, as it normally is with
+Arch's npm package, the installer automatically uses `$HOME/.local`. Ensure
+`$HOME/.local/bin` is on your `PATH`; the installer prints the installed path.
+
 For other distributions, install Node.js 22+, npm, mpv and ffmpeg, then use the same
 source installation commands. See the [Linux install guide](docs/linux-install.md)
 for package-manager examples, profile paths and troubleshooting.

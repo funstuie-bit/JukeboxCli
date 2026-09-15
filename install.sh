@@ -57,6 +57,27 @@ if [ "$install_check" -eq 1 ]; then
   exit 0
 fi
 
+if [ -z "$install_prefix" ]; then
+  install_npm_prefix=$(npm config get prefix)
+  install_npm_prefix_writable=0
+  if [ -d "$install_npm_prefix" ] && [ -w "$install_npm_prefix" ]; then
+    install_npm_prefix_writable=1
+  elif [ ! -e "$install_npm_prefix" ]; then
+    install_npm_parent=$(dirname "$install_npm_prefix")
+    while [ ! -e "$install_npm_parent" ] && [ "$install_npm_parent" != "/" ]; do
+      install_npm_parent=$(dirname "$install_npm_parent")
+    done
+    if [ -d "$install_npm_parent" ] && [ -w "$install_npm_parent" ]; then
+      install_npm_prefix_writable=1
+    fi
+  fi
+  if [ "$install_npm_prefix_writable" -eq 0 ]; then
+    install_prefix="${HOME:?HOME is required for a user installation}/.local"
+    echo "npm's global prefix ($install_npm_prefix) is unavailable to this user."
+    echo "Installing JukeboxCli under $install_prefix instead."
+  fi
+fi
+
 echo "Installing global command..."
 install_stage=$(mktemp -d "${TMPDIR:-/tmp}/jukeboxcli-install.XXXXXX")
 install_archive=$(node --import tsx scripts/pack-install.ts "$install_stage")
