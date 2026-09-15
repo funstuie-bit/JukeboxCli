@@ -19,8 +19,8 @@ That downloads a separate cached copy and takes effect after restarting the app;
 it never replaces Homebrew's executable. Choose System / package manager to
 switch back. `JUKEBOXCLI_SYSTEM_TOOLS=1` still keeps mpv and ffmpeg system-managed.
 
-The formula pins the `v1.0.4` source revision,
-version `1.0.4`. It does not follow every source commit, even when that
+The formula pins the `v1.1.0` source revision,
+version `1.1.0`. It does not follow every source commit, even when that
 commit has the same package version. A future release needs an explicit pin
 update; use a source install if you need the latest checkout.
 
