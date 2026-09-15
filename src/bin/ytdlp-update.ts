@@ -10,7 +10,7 @@ import { promises as fs } from "node:fs";
 import path from "node:path";
 import { execa } from "execa";
 import { toolEnv } from "./binaries";
-import { downloadYtDlp, stagedYtDlpPath, ytDlpPath, type YtDlpChannel } from "./ytdlp-fetch";
+import { downloadYtDlp, downloadVerified, stagedYtDlpPath, ytDlpPath, type YtDlpChannel } from "./ytdlp-fetch";
 import { binDir } from "../config/paths";
 import { USER_AGENT, type FetchImpl } from "../util/net";
 
@@ -130,7 +130,21 @@ export async function localYtDlpVersion(): Promise<string | null> {
  * an update is staged and ready to promote. Offline or any failure means
  * false; the app keeps running on the cached binary.
  */
-export async function maybeUpdateYtDlp(
+let updating: Promise<unknown> = Promise.resolve();
+function serializeUpdate<T>(run: () => Promise<T>): Promise<T> {
+  const next = updating.catch(() => {}).then(run);
+  updating = next;
+  return next;
+}
+
+export function maybeUpdateYtDlp(
+  fetchImpl: FetchImpl = fetch as FetchImpl,
+  channel: YtDlpChannel = "stable",
+): Promise<boolean> {
+  return serializeUpdate(() => checkForUpdate(fetchImpl, channel));
+}
+
+async function checkForUpdate(
   fetchImpl: FetchImpl = fetch as FetchImpl,
   channel: YtDlpChannel = "stable",
 ): Promise<boolean> {
@@ -157,19 +171,23 @@ export async function maybeUpdateYtDlp(
     return false;
   }
 
-  await downloadYtDlp(stagedYtDlpPath(), fetchImpl, channel);
+  await downloadVerified(stagedYtDlpPath(), dest => downloadYtDlp(dest, fetchImpl, channel));
   await writeStamp(latest, channel);
   return true;
 }
 
 /** Explicitly stage the selected channel, including intentional downgrades. */
-export async function updateYtDlpNow(
+export function updateYtDlpNow(
   channel: YtDlpChannel,
   fetchImpl: FetchImpl = fetch as FetchImpl,
 ): Promise<string> {
+  return serializeUpdate(() => stageUpdate(channel, fetchImpl));
+}
+
+async function stageUpdate(channel: YtDlpChannel, fetchImpl: FetchImpl): Promise<string> {
   const latest = await fetchLatestVersion(fetchImpl, channel);
   if (!latest) throw Error("Could not check yt-dlp releases. Check your connection.");
-  await downloadYtDlp(stagedYtDlpPath(), fetchImpl, channel);
+  await downloadVerified(stagedYtDlpPath(), dest => downloadYtDlp(dest, fetchImpl, channel));
   await writeStamp(latest, channel);
   return latest;
 }

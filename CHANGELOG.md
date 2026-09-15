@@ -3,6 +3,16 @@
 Release notes describe what changed in each build. For what works now and the
 remaining limits, see [feature status](FEATURES.md).
 
+## 1.0.1 — Independent yt-dlp updates
+
+- Allow app-managed nightly/stable yt-dlp on Homebrew installations without
+  replacing Homebrew's copy or changing mpv/ffmpeg ownership.
+- Show the active executable and next-launch choice in Settings, with a system
+  provider option to switch back. Failed updates don't save a new preference.
+- Check staged executables can start, serialize update attempts, and apply
+  updates on restart rather than replacing a running extractor.
+- Doctor reports provider, requested channel, installed and pending versions.
+
 ## 1.0.0 — First production release (2026-09-14)
 
 - Promote the accepted macOS and Linux player to a stable release.

@@ -43,7 +43,8 @@ import {
   type ConvertProgress,
   type ConvertResult,
 } from "../../library/convert";
-import { finalizeStagedYtDlp } from "../../bin/ytdlp-fetch";
+import { detectSystemYtDlp, ytDlpPath } from "../../bin/ytdlp-fetch";
+import { ytDlpProvider } from "../../bin/ytdlp-policy";
 import { updateYtDlpNow } from "../../bin/ytdlp-update";
 
 type Mode =
@@ -76,7 +77,7 @@ function HintLine({ children }: { children: string }) {
 }
 
 export function Settings() {
-  const { config, setConfig, library, queue, playback, region, setCaptureMode, listRows } =
+  const { config, setConfig, library, queue, playback, binaries, region, setCaptureMode, listRows } =
     useStore();
   const focused = region === "content";
   const [mode, setMode] = useState<Mode>("menu");
@@ -90,6 +91,9 @@ export function Settings() {
   const [profilesLoading, setProfilesLoading] = useState(false);
   const [cookiesError, setCookiesError] = useState<string | null>(null);
   const [ytdlpStatus, setYtdlpStatus] = useState("");
+  const [ytdlpBusy, setYtdlpBusy] = useState(false);
+  const currentConfig = useRef(config);
+  currentConfig.current = config;
   const [importResult, setImportResult] = useState<ImportResult | null>(null);
   const [importLoading, setImportLoading] = useState(false);
   const [importConfigPath, setImportConfigPath] = useState<string | null>(null);
@@ -174,8 +178,8 @@ export function Settings() {
     {
       value: "ytdlp",
       name: "yt-dlp updates",
-      detail: `${config.ytdlpChannel ?? "nightly"} · select to update now`,
-      set: (config.ytdlpChannel ?? "nightly") === "nightly",
+      detail: ytDlpProvider(config.ytdlpProvider) === "system" ? "System · choose provider" : `App-managed ${config.ytdlpChannel ?? "nightly"}`,
+      set: ytDlpProvider(config.ytdlpProvider) === "managed",
     },
     {
       value: "import",
@@ -461,22 +465,35 @@ export function Settings() {
   }
 
   if (mode === "ytdlp") {
-    return frame("yt-dlp updates", <Box flexDirection="column"><SelectField
-      title="Choose a release channel. Selecting one checks and installs it now."
-      focused={focused && !ytdlpStatus.startsWith("Updating")}
+    const selected = ytDlpProvider(config.ytdlpProvider);
+    return frame("yt-dlp updates", <Box flexDirection="column">
+      <Text wrap="truncate-end">Active this launch: {binaries.ytDlp === ytDlpPath() ? "app-managed" : "system"} · {displayPath(binaries.ytDlp)}</Text>
+      <Text>Next launch: {selected === "system" ? "system / package manager" : `app-managed ${config.ytdlpChannel ?? "nightly"}`}</Text>
+      <SelectField
+      title="Choose yt-dlp only. App copies stay separate from system tools. Restart to apply."
+      focused={focused && !ytdlpBusy}
       options={[
-        { label: `Nightly${(config.ytdlpChannel ?? "nightly") === "nightly" ? " · selected" : ""} (recommended by yt-dlp)`, value: "nightly" },
-        { label: `Stable${config.ytdlpChannel === "stable" ? " · selected" : ""}`, value: "stable" },
+        { label: `App-managed nightly${selected === "managed" && (config.ytdlpChannel ?? "nightly") === "nightly" ? " · selected" : ""} (download/update)`, value: "nightly" },
+        { label: `App-managed stable${selected === "managed" && config.ytdlpChannel === "stable" ? " · selected" : ""} (download/update)`, value: "stable" },
+        { label: `System / package manager${selected === "system" ? " · selected" : ""}`, value: "system" },
       ]}
       onSelect={value => {
+        if (ytdlpBusy) return;
         const channel = value === "stable" ? "stable" : "nightly";
-        setConfig({ ...config, ytdlpChannel: channel });
-        if (process.env.JUKEBOXCLI_SYSTEM_TOOLS === "1") { setYtdlpStatus("Managed by your package manager; update yt-dlp there."); return; }
-        setYtdlpStatus(`Updating ${channel}…`);
-        void updateYtDlpNow(channel).then(async version => {
-          const applied = queue.activeCount === 0 && await finalizeStagedYtDlp();
-          setYtdlpStatus(`${channel} ${version} ${applied ? "installed" : "staged for next launch"}`);
-        }).catch(error => setYtdlpStatus(error instanceof Error ? error.message : "yt-dlp update failed"));
+        setYtdlpBusy(true);
+        setYtdlpStatus(value === "system" ? "Checking system yt-dlp…" : `Updating ${channel}…`);
+        void (async () => {
+          if (value === "system") {
+            if (!await detectSystemYtDlp()) throw Error("System yt-dlp not found. Install it with your package manager first.");
+            setConfig({ ...currentConfig.current, ytdlpProvider: "system" });
+            setYtdlpStatus("System yt-dlp selected. Restart JukeboxCli to apply; cached copies are kept.");
+          } else {
+            const version = await updateYtDlpNow(channel);
+            setConfig({ ...currentConfig.current, ytdlpProvider: "managed", ytdlpChannel: channel });
+            setYtdlpStatus(`${channel} ${version} ready. Restart JukeboxCli to apply. System tools unchanged.`);
+          }
+        })().catch(error => setYtdlpStatus(error instanceof Error ? error.message : "yt-dlp update failed"))
+          .finally(() => setYtdlpBusy(false));
       }} onCancel={() => setMode("menu")} />
       {ytdlpStatus ? <Text color={ytdlpStatus.includes("failed") || ytdlpStatus.startsWith("Could not") ? COLOR.bad : COLOR.alt}>{ytdlpStatus}</Text> : null}
     </Box>);

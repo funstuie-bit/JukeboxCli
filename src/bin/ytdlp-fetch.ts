@@ -4,6 +4,7 @@ import { execa } from "execa";
 import { binDir } from "../config/paths";
 import { findOnPath } from "../util/exec";
 import { fetchResilient, USER_AGENT, type FetchImpl } from "../util/net";
+import { ytDlpProvider, type YtDlpProvider } from "./ytdlp-policy";
 
 export type YtDlpChannel = "stable" | "nightly";
 const RELEASE_REPO: Record<YtDlpChannel, string> = {
@@ -230,18 +231,18 @@ export function resolvedYtDlpPath(): string {
  * nor a system binary is available. Returns the resolved path. Concurrent
  * callers share one run; a failed run clears, so the next call retries fresh.
  */
-export function ensureYtDlp(onStatus?: (msg: string) => void, channel: YtDlpChannel = "stable"): Promise<string> {
-  inflight ??= doEnsure(onStatus, channel).finally(() => {
+export function ensureYtDlp(onStatus?: (msg: string) => void, channel: YtDlpChannel = "stable", provider?: YtDlpProvider): Promise<string> {
+  inflight ??= doEnsure(onStatus, channel, provider).finally(() => {
     inflight = null;
   });
   return inflight;
 }
 
-async function doEnsure(onStatus?: (msg: string) => void, channel: YtDlpChannel = "stable"): Promise<string> {
+async function doEnsure(onStatus?: (msg: string) => void, channel: YtDlpChannel = "stable", provider?: YtDlpProvider): Promise<string> {
   if (resolvedYtDlp) return resolvedYtDlp;
-  if (process.env.JUKEBOXCLI_SYSTEM_TOOLS === "1") {
+  if (ytDlpProvider(provider) === "system") {
     const system = await detectSystemYtDlp();
-    if (!system) throw new Error("Managed tools: yt-dlp is missing. Run brew install yt-dlp.");
+    if (!system) throw new Error("System yt-dlp is missing. Install it with your package manager (on Mac: brew install yt-dlp).");
     resolvedYtDlp = system;
     return system;
   }

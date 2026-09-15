@@ -8,6 +8,7 @@ import { SPECTRUM_MODES, type SpectrumMode } from "../player/spectrum";
 import { withDetectedLinuxKeyring } from "./cookies";
 import { PLAYER_THEMES, type PlayerTheme } from "../ui/theme";
 import type { YtDlpChannel } from "../bin/ytdlp-fetch";
+import type { YtDlpProvider } from "../bin/ytdlp-policy";
 
 export interface Config {
   /** Explicit opt-in to LRCLIB metadata queries while the lyrics panel is open. */
@@ -34,6 +35,8 @@ export interface Config {
   ytdlpAutoUpdate?: boolean;
   /** Managed yt-dlp release channel. Nightly is upstream's regular-user recommendation. */
   ytdlpChannel?: YtDlpChannel;
+  /** Overrides only yt-dlp ownership; absent retains the install's default. */
+  ytdlpProvider?: YtDlpProvider;
   /** Path to a cookies.txt file for yt-dlp (Netscape format). Bypasses rate limits. */
   cookiesFile?: string;
   /** Browser profile for yt-dlp --cookies-from-browser (e.g. "chrome:Default"). Takes precedence over cookiesFile. */
@@ -113,6 +116,7 @@ export async function loadConfig(): Promise<Config> {
       ? parsed.visualizerMode as SpectrumMode : "classic";
     cfg.cookiesFromBrowser = withDetectedLinuxKeyring(cfg.cookiesFromBrowser);
     cfg.ytdlpChannel = parsed.ytdlpChannel === "stable" ? "stable" : "nightly";
+    cfg.ytdlpProvider = parsed.ytdlpProvider === "managed" || parsed.ytdlpProvider === "system" ? parsed.ytdlpProvider : undefined;
     if (!cfg.spotifyHandle && parsed.spotifyProfile) {
       const ref = parseSpotifyInput(parsed.spotifyProfile);
       if (ref.type === "user") {

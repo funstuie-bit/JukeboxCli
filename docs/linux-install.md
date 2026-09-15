@@ -67,10 +67,12 @@ On Linux, JukeboxCli prefers the distribution's ffmpeg and ffprobe because they
 are integrated with its TLS and codec libraries. If they are unavailable, it can
 fall back to app-managed copies. yt-dlp remains app-managed in automatic mode
 and follows the nightly channel by default. Settings → yt-dlp updates can switch
-to stable or back to nightly and update immediately; an active download causes
-the replacement to be staged for the next launch. Package-managed installs with
-`JUKEBOXCLI_SYSTEM_TOOLS=1` keep using the system yt-dlp instead. `jukeboxcli
---doctor` reports both the managed channel/version and system tools on `PATH`
+to stable or back to nightly and download an update for the next launch.
+Package-managed installs with `JUKEBOXCLI_SYSTEM_TOOLS=1` default to system yt-dlp
+but can opt into a separate app-managed copy in Settings without changing
+mpv/ffmpeg ownership. Choose System / package manager to switch back; restart
+after either change. `jukeboxcli --doctor` reports the selected provider, requested
+channel, cached version, pending update and system tools on `PATH`
 without downloading or changing anything.
 
 Browser-cookie setup detects Chrome, Chromium, Edge, Brave and Firefox profiles

@@ -30,9 +30,10 @@ or online service will cooperate. The limits are listed below.
   line/word timing, manual matching and a plain-text alternate provider.
 - Browser/file cookies for playback and downloads, including detected GNOME
   Keyring decryption for Chromium-family browsers on Linux; no separate Music sign-in.
-- App-managed yt-dlp nightly by default, with stable/nightly selection and an
-  immediate update action. Read-only doctor reports the managed channel/version
-  as well as system tools.
+- Choose system or app-managed yt-dlp independently of mpv/ffmpeg, including on
+  Homebrew. App nightly/stable updates are downloaded and startup-checked, then
+  applied on restart. Doctor separates provider, requested channel, installed
+  version, pending update and system tools.
 - macOS media controls through mpv, independent source install and a pinned
   Homebrew source formula.
 

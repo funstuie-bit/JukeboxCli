@@ -32,7 +32,8 @@ class Jukeboxcli < Formula
 
   def caveats
     <<~EOS
-      Run jukeboxcli --doctor to check dependencies. Homebrew manages tool updates.
+      Run jukeboxcli --doctor to check dependencies. Homebrew manages mpv and ffmpeg.
+      Settings can opt into a separate app-managed yt-dlp nightly; restart to apply.
       macOS media controls use mpv; system player identity may appear as mpv.
     EOS
   end

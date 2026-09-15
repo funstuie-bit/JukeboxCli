@@ -2,7 +2,7 @@
 
 A music player that lives in the terminal, for macOS and Linux.
 
-**Current release: 1.0.0.** It includes the accepted Linux artwork,
+**Current release: 1.0.1.** It includes the accepted Linux artwork,
 visualisers, radio and Chromium-cookie work, plus quick radio channels, yt-dlp
 release channels and five player themes.
 
@@ -193,7 +193,7 @@ Run `jukeboxcli --help` for the full list. Spotify support imports music from su
 
 ## Current status
 
-The current production release is [1.0.0](https://github.com/funstuie-bit/JukeboxCli/releases/tag/v1.0.0). Automated install checks run on Apple Silicon and x64 Linux. Intel Macs and other Linux architectures aren't part of those checks. Known limits below still apply.
+The current production release is [1.0.1](https://github.com/funstuie-bit/JukeboxCli/releases/tag/v1.0.1). Automated install checks run on Apple Silicon and x64 Linux. Intel Macs and other Linux architectures aren't part of those checks. Known limits below still apply.
 
 A few limits are worth knowing:
 
@@ -223,13 +223,18 @@ with `JUKEBOXCLI_VISUALIZER=1 jukeboxcli`; see the
 
 More detail:
 
-Automatic-tool installs follow yt-dlp's nightly channel by default, as upstream
-recommends for regular users. Settings → yt-dlp updates switches between nightly
-and stable and performs an immediate managed update; if downloads are active,
-the replacement is staged for the next launch. Package-manager installs using
-`JUKEBOXCLI_SYSTEM_TOOLS=1` continue to use their packaged yt-dlp. `jukeboxcli
---doctor` is read-only and reports both the selected managed channel/version and
-the system tools on PATH. See the
+Settings → yt-dlp updates lets you choose **App-managed nightly**, **App-managed
+stable**, or **System / package manager**, including on Homebrew installs.
+Homebrew's copy remains the default until you opt in. Selecting an app-managed
+channel downloads and checks a separate copy in JukeboxCli's cache; restart to
+apply it. Selecting System switches back on the next launch without deleting the
+cached copy. Failed updates leave the saved choice unchanged.
+
+This choice affects only yt-dlp: Homebrew still manages mpv and ffmpeg. Automatic
+app-managed updates also stage for the next launch, so running downloads and
+stream lookups aren't interrupted. `jukeboxcli --doctor` reports the selected
+provider, installed app version, requested channel and any pending update, plus
+system tools on PATH. See the
 [Homebrew and Mac acceptance notes](docs/mac-controls-and-install.md).
 
 - [Feature status](FEATURES.md)

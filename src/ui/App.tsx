@@ -4,8 +4,8 @@ import { Spinner } from "@inkjs/ui";
 import { ensureBinaries, type Binaries } from "../bin/binaries";
 import { ensureFfmpeg } from "../bin/ffmpeg-fetch";
 import { ensureMpvInstalled } from "../bin/mpv-install";
-import { finalizeStagedYtDlp } from "../bin/ytdlp-fetch";
 import { maybeUpdateYtDlp } from "../bin/ytdlp-update";
+import { ytDlpProvider } from "../bin/ytdlp-policy";
 import { loadConfig, type Config } from "../config/config";
 import { ConfigSession } from "../config/session";
 import { promises as fs } from "node:fs";
@@ -208,7 +208,7 @@ export function App({ initialAdd, initialOverrides }: { initialAdd?: string; ini
       await migrateOwnerLayout(library, cfg, exists);
       // Library is now the source of truth, so drop the legacy yt-dlp archive.
       void fs.rm(legacyArchiveFile, { force: true }).catch(() => {});
-      const binaries = await ensureBinaries(setStatus, cfg.ytdlpChannel ?? "nightly");
+      const binaries = await ensureBinaries(setStatus, cfg.ytdlpChannel ?? "nightly", cfg.ytdlpProvider);
       const playback = new Playback(binaries.mpv, undefined, createStreamResolver(async () => sessionConfig.get()));
 
       // Recently played: record every track the player actually starts,
@@ -312,16 +312,11 @@ export function App({ initialAdd, initialOverrides }: { initialAdd?: string; ini
 
       // Check for a newer yt-dlp on every boot (a stale extractor turns every
       // download from a source into "failed"). Async and silent: a newer
-      // binary is staged, then promoted right away unless a download is
-      // already running the current one (then it applies next launch).
+      // binary is staged for next launch, never replaced during an active
+      // download or stream lookup.
       // Offline stays completely normal.
-      if (cfg.ytdlpAutoUpdate !== false && process.env.JUKEBOXCLI_SYSTEM_TOOLS !== "1") {
+      if (cfg.ytdlpAutoUpdate !== false && ytDlpProvider(cfg.ytdlpProvider) === "managed") {
         void maybeUpdateYtDlp(undefined, cfg.ytdlpChannel ?? "nightly")
-          .then(async (staged) => {
-            if (staged && queue.stats().downloading === 0) {
-              await finalizeStagedYtDlp();
-            }
-          })
           .catch(() => {});
       }
       await sessionConfig.save(cfg);

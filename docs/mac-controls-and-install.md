@@ -13,11 +13,14 @@ jukeboxcli
 
 This is the project's own Homebrew formula. It installs Node, mpv, ffmpeg and
 yt-dlp, builds a specific Git revision into Homebrew's libexec and links only
-`jukeboxcli`. Homebrew manages tool updates; `JUKEBOXCLI_SYSTEM_TOOLS=1` prevents
-the app from downloading or updating its own tool binaries.
+`jukeboxcli`. Homebrew manages mpv and ffmpeg and supplies the default yt-dlp.
+In Settings → yt-dlp updates, you can opt into App-managed nightly or stable.
+That downloads a separate cached copy and takes effect after restarting the app;
+it never replaces Homebrew's executable. Choose System / package manager to
+switch back. `JUKEBOXCLI_SYSTEM_TOOLS=1` still keeps mpv and ffmpeg system-managed.
 
-The formula pins the `v1.0.0` source revision,
-version `1.0.0`. It does not follow every source commit, even when that
+The formula pins the `v1.0.1` source revision,
+version `1.0.1`. It does not follow every source commit, even when that
 commit has the same package version. A future release needs an explicit pin
 update; use a source install if you need the latest checkout.
 
@@ -53,7 +56,8 @@ moving the checkout afterward does not break the installed command. Source/packa
 installs provide only `jukeboxcli`. Existing unrelated commands
 are not forcibly overwritten. Normal source installs can fetch managed yt-dlp
 and ffmpeg copies on first launch. Managed yt-dlp follows nightly by default;
-Settings can update immediately or switch to stable.
+Settings can download updates or switch to stable; restart to apply. Existing
+downloads and stream lookups keep using the current executable until then.
 
 `./install.sh --prefix /absolute/path` selects an npm prefix; add its `bin`
 directory to PATH. `./install.sh --check` verifies the build without installing
