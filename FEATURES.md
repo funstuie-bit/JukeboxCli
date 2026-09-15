@@ -24,8 +24,8 @@ or online service will cooperate. The limits are listed below.
 - Responsive player layouts, including a balanced 45/55 player/queue split,
   larger artwork and a taller spectrum in very wide terminals. Queue rows fill
   the panel so selection and time stay aligned with its right edge.
-- Live eight-band visualiser for music and radio by default on Linux, with six
-  persistent styles; macOS remains opt-in. A static local waveform is available.
+- Live eight-band visualiser for music and radio by default on Linux and macOS,
+  with six persistent styles. A static local waveform is available.
 - Local whole-track waveform; optional local/cached/online lyrics with supplied
   line/word timing, manual matching and a plain-text alternate provider.
 - Browser/file cookies for playback and downloads, including detected GNOME

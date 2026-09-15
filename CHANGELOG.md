@@ -5,6 +5,8 @@ remaining limits, see [feature status](FEATURES.md).
 
 ## Unreleased
 
+## 1.0.4 — Safer Linux installs and terminal paste
+
 - Keep large terminal pastes inside JukeboxCli as a single paste event, so a
   `q` chunk cannot quit the app and leave the remaining text for the shell to
   execute. Intentional pastes still work in text fields and first-run setup.

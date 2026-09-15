@@ -2,9 +2,10 @@
 
 A music player that lives in the terminal, for macOS and Linux.
 
-**Current release: 1.0.3.** It includes the accepted Linux artwork,
-visualisers, radio and Chromium-cookie work, plus quick radio channels, yt-dlp
-release channels and five player themes.
+**Current release: 1.0.4.** It adds safe user-prefix installation on Linux and
+keeps large terminal pastes from escaping into the shell. It also includes the
+accepted artwork, visualisers, radio and Chromium-cookie work, quick radio
+channels, yt-dlp release channels and five player themes.
 
 I started this as a boredom project and it got slightly out of hand. JukeboxCli now plays local music, searches YouTube Music without an account, handles live radio and keeps the lot in one editable queue. Streams stay streams unless you choose to save them.
 
@@ -197,7 +198,7 @@ Run `jukeboxcli --help` for the full list. Spotify support imports music from su
 
 ## Current status
 
-The current production release is [1.0.3](https://github.com/funstuie-bit/JukeboxCli/releases/tag/v1.0.3). Automated install checks run on Apple Silicon and x64 Linux. Intel Macs and other Linux architectures aren't part of those checks. Known limits below still apply.
+The current production release is [1.0.4](https://github.com/funstuie-bit/JukeboxCli/releases/tag/v1.0.4). Automated install checks run on Apple Silicon and x64 Linux. Intel Macs and other Linux architectures aren't part of those checks. Known limits below still apply.
 
 A few limits are worth knowing:
 

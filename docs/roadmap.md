@@ -1,36 +1,50 @@
 # Roadmap
 
-## 1.0.0
+## Current release — 1.0.4
 
-The first production release includes the accepted Linux work: stable Sixel artwork in
-Foot, six live visualisers for music and radio, Radio Browser discovery, the
-balanced wide player, and GNOME-Keyring-aware Chromium cookies.
+The current production line includes local and online playback, an editable
+mixed queue, Radio Browser, lyrics, terminal artwork, six compact live
+visualiser styles, app-managed yt-dlp channels, Linux browser-keyring support,
+macOS media controls, source installers and a pinned Homebrew formula.
 
-It also adds:
+Version 1.0.4 makes a normal Arch/Linux source install fall back to the user's
+`$HOME/.local` prefix when npm points at a system-owned directory. It also owns
+bracketed paste for the full terminal session, preventing a large paste from
+quitting the app and leaving commands for the shell to execute.
 
-- Stable or nightly yt-dlp channels under Settings, with an immediate update
-  action. Nightly is the default for app-managed installs; package-managed
-  installs stay package-managed.
-- Managed yt-dlp path, version and selected channel in `--doctor`.
-- Ten Radio Browser quick channels: Lo-fi, Synthwave, Ambient, Chillout, Jazz,
-  Classical, House, Drum & Bass, Reggae and Rock. These are directory searches,
-  not copied or proxied cliamp feeds.
-- Ember, Ocean and Forest player themes alongside Lavender and Calm.
+## Next — hands-on coverage
 
-## Next
+- Check iTerm2 artwork repainting, physical media keys and Control Centre on
+  macOS, plus a clean Intel Mac installation.
+- Exercise more Linux terminals, browsers and keyrings. KWallet continues
+  through yt-dlp's platform handling unless testing shows a specific gap.
+- Track changes in YouTube extraction and the community Radio Browser service.
 
-- Further hands-on checks on macOS, especially iTerm2 artwork repainting, physical media
-  keys/Control Centre and a clean Intel Mac installation.
-- Wider Linux terminal, browser and keyring coverage; KWallet continues through
-  yt-dlp's own platform handling.
-- Keep an eye on online extractor and Radio Browser changes.
+## Planned prototype — full-screen visualiser
+
+Build a separate, Linux-first visualiser view while music or radio continues to
+play. It should use the existing audio-analysis connection, occupy the terminal
+instead of sharing the Now Playing layout, and return to the previous screen on
+Escape without changing the queue, playback position or saved compact style.
+
+The first bounded prototype should turn the existing eight frequency bands into
+a terminal-native display with responsive bars, peaks, mirroring, trails and
+colour movement. It must remain readable at different terminal sizes, stop work
+when hidden or paused, respect reduced-motion and `NO_COLOR`, and measure redraw
+cost and CPU use during local music and live radio.
+
+A more fluid Winamp/MilkDrop-like mode is a separate second step. It would need
+more FFT bins or bounded PCM samples for oscilloscope and geometric effects.
+Prototype that richer input only if the eight-band version cannot produce a
+convincing result; keep playback isolated and avoid a second media download.
+macOS support follows only after the capture path and performance pass there.
 
 ## Later
 
 - Try colours taken from cover artwork.
 - Consider optional mouse controls, a Vim key preset and automatic pagination
   while playing very large online collections.
-- Consider other platforms once there are installation and playback tests.
+- Consider other platforms once installation and playback tests exist.
 
 ## Not planned
 
