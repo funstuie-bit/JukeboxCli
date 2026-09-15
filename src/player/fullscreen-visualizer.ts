@@ -71,7 +71,7 @@ function projectMConfigDir(env: NodeJS.ProcessEnv = process.env): string {
  */
 export async function launchFullscreenVisualizer(): Promise<FullscreenVisualizerResult> {
   if (process.platform !== "linux") {
-    return { ok: false, message: "Fullscreen effects are currently a Linux prototype." };
+    return { ok: false, message: "Fullscreen effects are currently available on Linux." };
   }
   if (visualizerProcess && visualizerProcess.exitCode === null && !visualizerProcess.killed) {
     return { ok: true, message: "Fullscreen effects are already open." };

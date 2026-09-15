@@ -1,6 +1,6 @@
 # Audio-reactive visualiser
 
-## Fullscreen effects prototype
+## Fullscreen effects on Linux
 
 Linux also has an optional, separate projectM/MilkDrop graphics window. Install
 `projectM-pulseaudio`, then press uppercase `F` in Now Playing or launch it from
@@ -10,7 +10,7 @@ to return; playback and the compact terminal visualiser continue independently.
 The launcher skips projectM's built-in M/headphones introduction and starts on
 a shuffled playlist preset.
 
-This first prototype hears the whole active system output, so audio from another
+This first version hears the whole active system output, so audio from another
 application can affect its animation. JukeboxCLI does not start a second copy of
 the song. The ordinary terminal player has no projectM dependency.
 

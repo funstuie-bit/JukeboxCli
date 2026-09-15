@@ -2,9 +2,9 @@
 
 A music player that lives in the terminal, for macOS and Linux.
 
-**Current release: 1.0.4.** It adds safe user-prefix installation on Linux and
-keeps large terminal pastes from escaping into the shell. It also includes the
-accepted artwork, visualisers, radio and Chromium-cookie work, quick radio
+**Current release: 1.1.0.** It adds optional fullscreen MilkDrop-style effects
+on Linux while keeping the compact visualiser in the terminal. It also includes
+the accepted artwork, visualisers, radio and Chromium-cookie work, quick radio
 channels, yt-dlp release channels and five player themes.
 
 I started this as a boredom project and it got slightly out of hand. JukeboxCli now plays local music, searches YouTube Music without an account, handles live radio and keeps the lot in one editable queue. Streams stay streams unless you choose to save them.
@@ -21,7 +21,7 @@ I started this as a boredom project and it got slightly out of hand. JukeboxCli 
 - Searches songs, videos, albums, artists and playlists without a YouTube login.
 - Shows sharp cover artwork in Ghostty, Kitty-compatible, iTerm2 and Sixel terminals, with text and block fallbacks elsewhere.
 - Runs a live visualiser by default on Mac and Linux, with six styles you can cycle using `v`.
-- Offers an optional Linux fullscreen effects prototype powered by projectM/MilkDrop presets.
+- Offers optional Linux fullscreen effects powered by projectM/MilkDrop presets.
 - Supports local LRC files and optional online lyrics.
 - Downloads from YouTube and SoundCloud, and imports music from supported Spotify links.
 - Handles shuffle, repeat, queue editing and listening history. mpv supplies playback and macOS media-key support.
@@ -77,6 +77,20 @@ default on Linux; press `v` in Now Playing to cycle Classic Peak, Smooth, Bass
 Mirror, Outline, Bricks and Mosaic. Use `JUKEBOXCLI_VISUALIZER=0 jukeboxcli` if
 you prefer the static waveform.
 
+For a separate, old-school Winamp/MilkDrop-style fullscreen window, install the
+optional projectM frontend:
+
+```sh
+sudo pacman -S --needed projectm-pulseaudio
+```
+
+Then press uppercase `F` in Now Playing, or choose **Settings → Player
+appearance → Fullscreen effects**. JukeboxCLI selects the active
+PipeWire/PulseAudio output monitor, opens a shuffled preset fullscreen and leaves
+the terminal player and compact visualiser running. Close the graphics window
+with `Alt+F4` to return. Because this first implementation listens to the active
+system output, audio from other applications can also affect the animation.
+
 ### macOS
 
 The easiest install is the project’s Homebrew formula:
@@ -87,7 +101,7 @@ brew install funstuie-bit/jukeboxcli/jukeboxcli
 jukeboxcli
 ```
 
-This is the project's own formula, not part of Homebrew's main collection. It builds from source and installs Node, mpv, ffmpeg and yt-dlp. It uses a specific development build, so it won't pick up every commit on GitHub. The [install guide](docs/mac-controls-and-install.md) lists the version it installs.
+This is the project's own formula, not part of Homebrew's main collection. It builds from source and installs Node, mpv, ffmpeg and yt-dlp. It uses a specific tagged release, so it won't pick up every commit on GitHub. The [install guide](docs/mac-controls-and-install.md) lists the version it installs.
 
 To install from a clone instead:
 
@@ -199,7 +213,7 @@ Run `jukeboxcli --help` for the full list. Spotify support imports music from su
 
 ## Current status
 
-The current production release is [1.0.4](https://github.com/funstuie-bit/JukeboxCli/releases/tag/v1.0.4). Automated install checks run on Apple Silicon and x64 Linux. Intel Macs and other Linux architectures aren't part of those checks. Known limits below still apply.
+The current production release is [1.1.0](https://github.com/funstuie-bit/JukeboxCli/releases/tag/v1.1.0). Automated install checks run on Apple Silicon and x64 Linux. Intel Macs and other Linux architectures aren't part of those checks. Known limits below still apply.
 
 A few limits are worth knowing:
 
@@ -228,7 +242,7 @@ in Now Playing to cycle styles; uppercase `V` controls decorative motion instead
 [visualiser notes](docs/visualiser-prototype.md) for how it works and its limits.
 
 On Linux, install your distribution's `projectM-pulseaudio` package to enable
-the separate fullscreen effects prototype. Press uppercase `F` in Now Playing,
+the separate fullscreen effects mode. Press uppercase `F` in Now Playing,
 or choose **Settings → Player appearance → Fullscreen effects**. It listens to
 the active audio output while the existing terminal visualiser and player keep
 running. Close the graphics window to return to the terminal.

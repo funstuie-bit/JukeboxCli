@@ -5,6 +5,18 @@ remaining limits, see [feature status](FEATURES.md).
 
 ## Unreleased
 
+## 1.1.0 — Fullscreen MilkDrop effects on Linux
+
+- Add an optional projectM graphics window with evolving MilkDrop-style effects
+  in real fullscreen while playback and the compact terminal visualiser continue.
+- Open it with uppercase `F` in Now Playing or from Settings → Player appearance.
+- Capture the active PipeWire/PulseAudio output monitor without changing the
+  default microphone or opening a second copy of the song.
+- Skip projectM's branded M/headphones introduction, start on a shuffled
+  community preset and clean up the companion process when JukeboxCLI exits.
+- Keep projectM optional; ordinary startup, playback and terminal visuals work
+  unchanged when `projectM-pulseaudio` is absent.
+
 ## 1.0.4 — Safer Linux installs and terminal paste
 
 - Keep large terminal pastes inside JukeboxCli as a single paste event, so a

@@ -26,6 +26,8 @@ or online service will cooperate. The limits are listed below.
   the panel so selection and time stay aligned with its right edge.
 - Live eight-band visualiser for music and radio by default on Linux and macOS,
   with six persistent styles. A static local waveform is available.
+- Optional Linux fullscreen projectM/MilkDrop effects, launched with uppercase
+  `F` or from Player appearance; the terminal visualiser continues independently.
 - Local whole-track waveform; optional local/cached/online lyrics with supplied
   line/word timing, manual matching and a plain-text alternate provider.
 - Browser/file cookies for playback and downloads, including detected GNOME
@@ -43,6 +45,8 @@ or proxy cliamp feeds.
 
 ## Experimental and limited
 
+- Linux fullscreen effects capture the active system output, so unrelated audio
+  can affect the animation; projectM remains an optional external package.
 - [Audio-reactive visualiser](docs/visualiser-prototype.md): accepted on Intel
   Linux; wider stream, terminal and CPU testing remains useful.
 - YouTube discovery uses an unofficial API. Cookies do not supply account APIs.

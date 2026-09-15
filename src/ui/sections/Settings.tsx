@@ -457,7 +457,7 @@ export function Settings() {
         { label: `Theme: ${playerThemeLabel(config.playerTheme)} (cycle)`, value: "theme" },
         { label: `Reduced motion: ${config.reducedMotion === false ? "off" : "on"} (toggle)`, value: "motion" },
         { label: `Visualizer: ${spectrumModeLabel(config.visualizerMode ?? "classic")} (cycle)`, value: "visualizer" },
-        ...(process.platform === "linux" ? [{ label: fullscreenStatus || "Fullscreen effects: open projectM prototype", value: "fullscreen" }] : []),
+        ...(process.platform === "linux" ? [{ label: fullscreenStatus || "Fullscreen effects: open projectM", value: "fullscreen" }] : []),
       ]} onSelect={value => {
         if (value === "fullscreen") {
           setFullscreenStatus("Opening fullscreen effects…");

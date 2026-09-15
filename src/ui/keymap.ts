@@ -68,7 +68,7 @@ export const HELP_GROUPS: HelpGroup[] = [
       { keys: "b", label: "Player: show / hide artwork" },
       { keys: "T", label: "Player: lavender / calm theme" },
       { keys: "V", label: "Player: decorative motion on / off" },
-      { keys: "F", label: "Player: open fullscreen effects (Linux prototype)" },
+      { keys: "F", label: "Player: open fullscreen effects (Linux)" },
       { keys: "l", label: "Player: lyrics / queue panel" },
       { keys: "S", label: "Player search: l: local, s: songs, v: videos; Esc back" },
       { keys: "/", label: "Player queue: music search; lyrics panel: lyrics search" },

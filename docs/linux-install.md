@@ -109,7 +109,7 @@ protocol. The live visualizer is also enabled by default on Linux; use
 macOS media-key bridging is not available on Linux; playback controls
 inside JukeboxCli work normally.
 
-The optional fullscreen effects prototype uses projectM's PulseAudio frontend.
+The optional fullscreen effects mode uses projectM's PulseAudio frontend.
 On Arch Linux, install it with:
 
 ```sh
@@ -119,7 +119,8 @@ sudo pacman -S projectm-pulseaudio
 Then press uppercase `F` in Now Playing, or open it from **Settings → Player
 appearance**. JukeboxCLI points projectM at the current PipeWire/PulseAudio
 output monitor and asks it to start fullscreen. Closing the projectM window
-leaves playback and the terminal visualiser running.
+leaves playback and the terminal visualiser running. It starts with a shuffled
+community preset instead of projectM's branded introduction.
 
 ## Updating
 
