@@ -34,19 +34,27 @@ The effects pipeline can combine Cartesian/polar transforms, persistence between
 frames, palettes and parameterised presets. The current eight-band meter remains
 independent and is not the prototype's rendering foundation.
 
-Start with a feasibility spike comparing two presentations:
+The selected presentation is an optional Linux GPU window that enters real
+fullscreen. The existing compact visualiser stays in the terminal unchanged;
+there is no terminal-framebuffer version of this new mode. Closing the graphics
+window returns to the unchanged JukeboxCli screen and must not alter playback,
+the queue, position or the saved compact visualiser style.
 
-- A terminal-native true-colour or graphics-protocol framebuffer, which stays
-  inside JukeboxCli but has terminal resolution and refresh-rate limits.
-- A Linux GPU window that can enter real fullscreen, which is closer to the
-  original experience but adds a graphics/window-system dependency and leaves
-  the terminal while active.
+Start with a disposable [projectM](https://github.com/projectM-visualizer/projectm)
+integration spike. projectM is an open-source, MilkDrop-compatible OpenGL
+renderer whose core accepts PCM and performs its own FFT and beat detection.
+First test its standalone Linux frontend against the
+active PipeWire/PulseAudio output. If system-output capture includes unrelated
+audio, adds unacceptable latency or cannot follow JukeboxCli reliably, feed
+bounded decoded PCM from the existing mpv process into a small projectM frontend
+instead. Do not open a second media stream.
 
-Both must keep music/radio and the queue untouched, return cleanly to the prior
-screen on Escape, stop rendering when hidden, restore the terminal on failure,
-and measure CPU, frame pacing and audio latency. Presets must be original or
-compatibly licensed. Choose the presentation after seeing both spikes; macOS
-support follows only after its capture path and performance are measured.
+The dependency remains optional: ordinary startup, playback and the terminal
+visualiser must work when the fullscreen engine is absent. The spike must also
+verify fullscreen/window close behavior, process cleanup, track/radio changes,
+pause, CPU/GPU use and frame pacing. Presets must be original or compatibly
+licensed. macOS support follows only after its capture path and performance are
+measured.
 
 ## Later
 
