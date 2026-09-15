@@ -7,6 +7,8 @@ Linux also has an optional, separate projectM/MilkDrop graphics window. Install
 **Settings → Player appearance**. It opens on the real display in fullscreen
 and captures the active PipeWire/PulseAudio output. Close that graphics window
 to return; playback and the compact terminal visualiser continue independently.
+The launcher skips projectM's built-in M/headphones introduction and starts on
+a shuffled playlist preset.
 
 This first prototype hears the whole active system output, so audio from another
 application can affect its animation. JukeboxCLI does not start a second copy of

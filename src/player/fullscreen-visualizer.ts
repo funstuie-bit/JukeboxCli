@@ -11,6 +11,28 @@ export type FullscreenVisualizerResult =
 
 let visualizerProcess: ChildProcess | null = null;
 
+export function randomPresetCommand(
+  tools: { hyprctl: string | null; wtype: string | null; xdotool: string | null },
+  pid: number,
+): { command: string; args: string[] } | null {
+  if (tools.hyprctl) {
+    return {
+      command: tools.hyprctl,
+      args: ["dispatch", "sendshortcut", "CTRL,", "R,", "class:projectM-pulseaudio"],
+    };
+  }
+  if (tools.wtype) {
+    return { command: tools.wtype, args: ["-M", "ctrl", "r", "-m", "ctrl"] };
+  }
+  if (tools.xdotool) {
+    return {
+      command: tools.xdotool,
+      args: ["search", "--sync", "--onlyvisible", "--pid", String(pid), "windowactivate", "--sync", "key", "--clearmodifiers", "ctrl+r"],
+    };
+  }
+  return null;
+}
+
 /** Update one QSettings-style INI key without discarding unrelated settings. */
 export function setIniValue(source: string, section: string, key: string, value: string): string {
   const newline = source.includes("\r\n") ? "\r\n" : "\n";
@@ -55,9 +77,12 @@ export async function launchFullscreenVisualizer(): Promise<FullscreenVisualizer
     return { ok: true, message: "Fullscreen effects are already open." };
   }
 
-  const [projectM, pactl] = await Promise.all([
+  const [projectM, pactl, hyprctl, wtype, xdotool] = await Promise.all([
     findOnPath("projectM-pulseaudio"),
     findOnPath("pactl"),
+    process.env.HYPRLAND_INSTANCE_SIGNATURE ? findOnPath("hyprctl") : Promise.resolve(null),
+    findOnPath("wtype"),
+    findOnPath("xdotool"),
   ]);
   if (!projectM) {
     return { ok: false, message: "Install projectM-pulseaudio to use fullscreen effects." };
@@ -78,7 +103,10 @@ export async function launchFullscreenVisualizer(): Promise<FullscreenVisualizer
   try {
     const configDir = projectMConfigDir();
     await Promise.all([
-      writeIniValues(path.join(configDir, "qprojectM.conf"), { FullscreenOnStartup: "true" }),
+      writeIniValues(path.join(configDir, "qprojectM.conf"), {
+        FullscreenOnStartup: "true",
+        ShuffleOnStartup: "true",
+      }),
       writeIniValues(path.join(configDir, "qprojectM-pulseaudio.conf"), {
         pulseAudioDeviceName: `${sink}.monitor`,
         tryFirstAvailablePlaybackMonitor: "false",
@@ -94,6 +122,14 @@ export async function launchFullscreenVisualizer(): Promise<FullscreenVisualizer
     let settled = false;
     child.once("spawn", () => {
       settled = true;
+      // projectM opens with a built-in M/headphones branding preset. Once its
+      // fullscreen window has focus, select a real playlist preset immediately.
+      const introTimer = setTimeout(() => {
+        if (visualizerProcess !== child || child.exitCode !== null) return;
+        const action = randomPresetCommand({ hyprctl, wtype, xdotool }, child.pid ?? 0);
+        if (action) spawn(action.command, action.args, { stdio: "ignore" }).unref();
+      }, 1800);
+      introTimer.unref();
       resolve({ ok: true, message: "Fullscreen effects opened · close the window to return." });
     });
     child.once("error", () => {

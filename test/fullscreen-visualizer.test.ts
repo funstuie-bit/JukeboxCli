@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { setIniValue } from "../src/player/fullscreen-visualizer";
+import { randomPresetCommand, setIniValue } from "../src/player/fullscreen-visualizer";
 
 describe("projectM settings", () => {
   it("updates its key while retaining unrelated projectM preferences", () => {
@@ -13,5 +13,14 @@ describe("projectM settings", () => {
     expect(setIniValue("", "General", "pulseAudioDeviceName", "speakers.monitor")).toBe(
       "[General]\npulseAudioDeviceName=speakers.monitor\n",
     );
+  });
+
+  it("uses a focused-window helper to skip projectM's branded intro", () => {
+    expect(randomPresetCommand({ hyprctl: null, wtype: "/usr/bin/wtype", xdotool: null }, 42)).toEqual({
+      command: "/usr/bin/wtype",
+      args: ["-M", "ctrl", "r", "-m", "ctrl"],
+    });
+    expect(randomPresetCommand({ hyprctl: null, wtype: null, xdotool: "/usr/bin/xdotool" }, 42)?.args).toContain("42");
+    expect(randomPresetCommand({ hyprctl: "/usr/bin/hyprctl", wtype: null, xdotool: null }, 42)?.args).toContain("class:projectM-pulseaudio");
   });
 });
