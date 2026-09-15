@@ -18,6 +18,7 @@ import { legacyArchiveFile } from "../config/paths";
 import type { Track } from "../library/types";
 import { isStream, type PlayableTrack } from "../player/media";
 import { Playback, type PlaybackState } from "../player/playback";
+import { closeFullscreenVisualizer } from "../player/fullscreen-visualizer";
 import { createStreamResolver } from "../player/resolve";
 import { Discover } from "./sections/Discover";
 import { Listen } from "./sections/Listen";
@@ -371,6 +372,7 @@ export function App({ initialAdd, initialOverrides }: { initialAdd?: string; ini
       boot?.library.flushSync();
       boot?.session?.close();
       boot?.playback.quit();
+      closeFullscreenVisualizer();
     },
     [boot],
   );
@@ -417,6 +419,7 @@ export function App({ initialAdd, initialOverrides }: { initialAdd?: string; ini
     boot?.queue.suspend();
     boot?.library.flushSync();
     boot?.playback.quit();
+    closeFullscreenVisualizer();
     exit();
   }, [boot, exit]);
 

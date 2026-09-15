@@ -21,6 +21,7 @@ I started this as a boredom project and it got slightly out of hand. JukeboxCli 
 - Searches songs, videos, albums, artists and playlists without a YouTube login.
 - Shows sharp cover artwork in Ghostty, Kitty-compatible, iTerm2 and Sixel terminals, with text and block fallbacks elsewhere.
 - Runs a live visualiser by default on Mac and Linux, with six styles you can cycle using `v`.
+- Offers an optional Linux fullscreen effects prototype powered by projectM/MilkDrop presets.
 - Supports local LRC files and optional online lyrics.
 - Downloads from YouTube and SoundCloud, and imports music from supported Spotify links.
 - Handles shuffle, repeat, queue editing and listening history. mpv supplies playback and macOS media-key support.
@@ -225,6 +226,12 @@ The codebase is TypeScript, React and Ink. mpv handles playback; yt-dlp and ffmp
 The live visualiser is enabled by default on Mac and Linux. Press lowercase `v`
 in Now Playing to cycle styles; uppercase `V` controls decorative motion instead. See the
 [visualiser notes](docs/visualiser-prototype.md) for how it works and its limits.
+
+On Linux, install your distribution's `projectM-pulseaudio` package to enable
+the separate fullscreen effects prototype. Press uppercase `F` in Now Playing,
+or choose **Settings → Player appearance → Fullscreen effects**. It listens to
+the active audio output while the existing terminal visualiser and player keep
+running. Close the graphics window to return to the terminal.
 
 More detail:
 

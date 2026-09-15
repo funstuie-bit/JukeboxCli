@@ -68,6 +68,7 @@ export const HELP_GROUPS: HelpGroup[] = [
       { keys: "b", label: "Player: show / hide artwork" },
       { keys: "T", label: "Player: lavender / calm theme" },
       { keys: "V", label: "Player: decorative motion on / off" },
+      { keys: "F", label: "Player: open fullscreen effects (Linux prototype)" },
       { keys: "l", label: "Player: lyrics / queue panel" },
       { keys: "S", label: "Player search: l: local, s: songs, v: videos; Esc back" },
       { keys: "/", label: "Player queue: music search; lyrics panel: lyrics search" },
@@ -135,11 +136,11 @@ const ALWAYS: Hint = { keys: "?", label: "Keys" };
 const PLAYER: Hint = { keys: "m", label: "Player" };
 export const PLAYER_HINTS: Hint[] = [
   { keys: "m/esc", label: "Back" }, { keys: "space", label: "Pause" },
-  { keys: "← →", label: "Seek" }, { keys: "l", label: "Lyrics" }, { keys: "b", label: "Artwork" }, { keys: "v", label: "Visualizer" }, { keys: "T/V", label: "Look/motion" }, { keys: "7", label: "Queue" }, ALWAYS,
+  { keys: "← →", label: "Seek" }, { keys: "l", label: "Lyrics" }, { keys: "b", label: "Artwork" }, { keys: "v", label: "Visualizer" }, { keys: "F", label: "Fullscreen" }, { keys: "T/V", label: "Look/motion" }, { keys: "7", label: "Queue" }, ALWAYS,
 ];
 export const WIDE_PLAYER_HINTS: Hint[] = [
   { keys: "m/esc", label: "Back" }, { keys: "space", label: "Toggle" },
-  { keys: "l", label: "Lyrics" }, { keys: "b", label: "Art" }, { keys: "v", label: "Visualizer" },
+  { keys: "l", label: "Lyrics" }, { keys: "b", label: "Art" }, { keys: "v", label: "Visualizer" }, { keys: "F", label: "Fullscreen" },
 ];
 export const WIDE_QUEUE_HINTS: Hint[] = [
   { keys: "↑↓", label: "Select" }, { keys: "↵", label: "Play" },

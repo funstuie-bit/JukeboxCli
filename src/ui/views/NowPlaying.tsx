@@ -12,6 +12,7 @@ import { RadioFallback } from "../components/RadioFallback";
 import { LyricsPanel } from "../components/LyricsPanel";
 import { PlayerSearch } from "../components/PlayerSearch";
 import { BANDS, SpectrumDynamics, nextSpectrumMode, spectrumModeLabel, spectrumRows, visualizerEnabled, type SpectrumMode } from "../../player/spectrum";
+import { launchFullscreenVisualizer } from "../../player/fullscreen-visualizer";
 
 export function playerLayout(width: number, height: number, live = false, waveform = false) {
   const split = width >= 86 && height >= 16;
@@ -71,6 +72,7 @@ export function NowPlaying({ embedded = false, onDownload = () => {} }: { embedd
   const [searchVisible, setSearchVisible] = useState(false);
   const [wave, setWave] = useState<{ file: string; data: Waveform | null }>();
   const [spectrum, setSpectrum] = useState<number[]>();
+  const [fullscreenStatus, setFullscreenStatus] = useState("");
   const visualizer = visualizerEnabled();
   const visualizerMode = store.config.visualizerMode ?? "classic";
   // App unmounts expanded player for help; hidden embedded views get region=help.
@@ -83,6 +85,10 @@ export function NowPlaying({ embedded = false, onDownload = () => {} }: { embedd
     if (input === "T") store.setConfig({ ...store.config, playerTheme: nextPlayerTheme(store.config.playerTheme) });
     if (input === "V") store.setConfig({ ...store.config, reducedMotion: !(store.config.reducedMotion ?? true) });
     if (input === "v" && visualizer) store.setConfig({ ...store.config, visualizerMode: nextSpectrumMode(visualizerMode) });
+    if (input === "F" && process.platform === "linux") {
+      setFullscreenStatus("Opening fullscreen effects…");
+      void launchFullscreenVisualizer().then(result => setFullscreenStatus(result.message));
+    }
   }, { isActive: active });
   useEffect(() => {
     if (!file) return;
@@ -121,7 +127,7 @@ export function NowPlaying({ embedded = false, onDownload = () => {} }: { embedd
       <Text color={COLOR.alt}>{st.engine === "mpv" ? `${st.volume}%` : ""}</Text>
     </Box>
     <Text color={COLOR.muted} wrap="truncate-end">{`${!t ? "Stopped" : st.loading ? "Loading" : st.paused ? "Paused" : "Playing"} · shuffle ${st.shuffle ? "on" : "off"} · repeat ${st.repeat}`}</Text>
-    <Text color={st.error ? COLOR.warn : COLOR.muted} wrap="truncate-end">{st.error || (st.loading ? "Loading…" : st.engine === "external" && t ? "Playing in your default app" : t ? `${isStream(t) ? "Streaming · not in Library" : "Saved locally"}${st.preloading ? " · preparing next…" : st.nextReady ? " · next prepared" : ""}` : "m closes this screen")}</Text>
+    <Text color={st.error ? COLOR.warn : COLOR.muted} wrap="truncate-end">{st.error || fullscreenStatus || (st.loading ? "Loading…" : st.engine === "external" && t ? "Playing in your default app" : t ? `${isStream(t) ? "Streaming · not in Library" : "Saved locally"}${st.preloading ? " · preparing next…" : st.nextReady ? " · next prepared" : ""}` : "m closes this screen")}</Text>
   </Box>;
   return <Box width={width} height={height} flexDirection={layout.split ? "row" : "column"}>
     <Box width={layout.left} height={layout.balanced ? height - 1 : layout.split ? undefined : layout.showcase ? height : 6} alignSelf="flex-start" borderStyle={layout.split ? "round" : undefined} borderColor={RULE} flexDirection="column" paddingX={1} flexShrink={0}>
@@ -136,7 +142,7 @@ export function NowPlaying({ embedded = false, onDownload = () => {} }: { embedd
       {(layout.split || layout.showcase) && height >= 23 ? <Box height={1} /> : null}
       {details}
       {layout.balanced ? <Box flexGrow={1} /> : null}
-      {(layout.split || layout.showcase) && height >= 23 ? <Text color={COLOR.muted} wrap="truncate-end">T {playerThemeLabel(store.config.playerTheme)}{visualizer ? ` · v ${visualizerMode}` : ""} · Art {simpleArtwork() ? "simple" : graphicsPainter ? graphicsProtocol === "iterm" ? "iTerm2" : graphicsProtocol === "sixel" ? "Sixel" : "Kitty" : "blocks"}</Text> : null}
+      {(layout.split || layout.showcase) && height >= 23 ? <Text color={COLOR.muted} wrap="truncate-end">T {playerThemeLabel(store.config.playerTheme)}{visualizer ? ` · v ${visualizerMode}` : ""}{process.platform === "linux" ? " · F fullscreen effects" : ""} · Art {simpleArtwork() ? "simple" : graphicsPainter ? graphicsProtocol === "iterm" ? "iTerm2" : graphicsProtocol === "sixel" ? "Sixel" : "Kitty" : "blocks"}</Text> : null}
     </Box>
     {!layout.showcase ? <Box flexDirection="column" marginLeft={layout.split ? 1 : 0} width={layout.split ? layout.right : width} height={layout.split ? height : Math.max(3, height - 6)}>
       <Box display={lyricsVisible || searchVisible ? "none" : "flex"}>

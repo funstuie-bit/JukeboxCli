@@ -1,5 +1,17 @@
 # Audio-reactive visualiser
 
+## Fullscreen effects prototype
+
+Linux also has an optional, separate projectM/MilkDrop graphics window. Install
+`projectM-pulseaudio`, then press uppercase `F` in Now Playing or launch it from
+**Settings → Player appearance**. It opens on the real display in fullscreen
+and captures the active PipeWire/PulseAudio output. Close that graphics window
+to return; playback and the compact terminal visualiser continue independently.
+
+This first prototype hears the whole active system output, so audio from another
+application can affect its animation. JukeboxCLI does not start a second copy of
+the song. The ordinary terminal player has no projectM dependency.
+
 The eight-band visualiser is enabled by default in Now Playing on Mac and Linux.
 Press lowercase `v` to cycle its six styles. Uppercase `V` controls decorative
 animation, not the audio-reactive visualiser. Set `JUKEBOXCLI_VISUALIZER=0 jukeboxcli`

@@ -20,7 +20,7 @@ quitting the app and leaving commands for the shell to execute.
   through yt-dlp's platform handling unless testing shows a specific gap.
 - Track changes in YouTube extraction and the community Radio Browser service.
 
-## Planned prototype — full-screen visualiser
+## Active prototype — full-screen visualiser
 
 Build a separate, Linux-first animated visual-effects mode in the spirit of
 Winamp AVS/MilkDrop. The target is evolving psychedelic imagery, waveform
@@ -40,21 +40,25 @@ there is no terminal-framebuffer version of this new mode. Closing the graphics
 window returns to the unchanged JukeboxCli screen and must not alter playback,
 the queue, position or the saved compact visualiser style.
 
-Start with a disposable [projectM](https://github.com/projectM-visualizer/projectm)
-integration spike. projectM is an open-source, MilkDrop-compatible OpenGL
-renderer whose core accepts PCM and performs its own FFT and beat detection.
-First test its standalone Linux frontend against the
-active PipeWire/PulseAudio output. If system-output capture includes unrelated
-audio, adds unacceptable latency or cannot follow JukeboxCli reliably, feed
-bounded decoded PCM from the existing mpv process into a small projectM frontend
-instead. Do not open a second media stream.
+The first [projectM](https://github.com/projectM-visualizer/projectm) integration
+spike now opens its standalone PulseAudio frontend from Now Playing or Settings.
+On the Arch/Hyprland test host it entered real 5120×2160 fullscreen, rendered
+MilkDrop presets and captured the selected headphone output monitor without
+changing the default microphone. Closing the window returned to the terminal,
+and quitting JukeboxCLI cleans up the companion process.
+
+projectM is an open-source, MilkDrop-compatible OpenGL renderer whose core
+accepts PCM and performs its own FFT and beat detection. The prototype currently
+captures the active system output, so unrelated audio can affect the picture.
+If that proves distracting, adds unacceptable latency or cannot follow
+JukeboxCLI reliably, feed bounded decoded PCM from the existing mpv process into
+a small projectM frontend instead. Do not open a second media stream.
 
 The dependency remains optional: ordinary startup, playback and the terminal
-visualiser must work when the fullscreen engine is absent. The spike must also
-verify fullscreen/window close behavior, process cleanup, track/radio changes,
-pause, CPU/GPU use and frame pacing. Presets must be original or compatibly
-licensed. macOS support follows only after its capture path and performance are
-measured.
+visualiser work when the fullscreen engine is absent. Remaining checks cover
+track/radio changes, pause, unrelated system audio, CPU/GPU use and frame pacing.
+Presets must be original or compatibly licensed. macOS support follows only
+after its capture path and performance are measured.
 
 ## Later
 

@@ -46,6 +46,7 @@ import {
 import { detectSystemYtDlp, ytDlpPath } from "../../bin/ytdlp-fetch";
 import { ytDlpProvider } from "../../bin/ytdlp-policy";
 import { updateYtDlpNow } from "../../bin/ytdlp-update";
+import { launchFullscreenVisualizer } from "../../player/fullscreen-visualizer";
 
 type Mode =
   | "appearance"
@@ -92,6 +93,7 @@ export function Settings() {
   const [cookiesError, setCookiesError] = useState<string | null>(null);
   const [ytdlpStatus, setYtdlpStatus] = useState("");
   const [ytdlpBusy, setYtdlpBusy] = useState(false);
+  const [fullscreenStatus, setFullscreenStatus] = useState("");
   const currentConfig = useRef(config);
   currentConfig.current = config;
   const [importResult, setImportResult] = useState<ImportResult | null>(null);
@@ -455,7 +457,13 @@ export function Settings() {
         { label: `Theme: ${playerThemeLabel(config.playerTheme)} (cycle)`, value: "theme" },
         { label: `Reduced motion: ${config.reducedMotion === false ? "off" : "on"} (toggle)`, value: "motion" },
         { label: `Visualizer: ${spectrumModeLabel(config.visualizerMode ?? "classic")} (cycle)`, value: "visualizer" },
+        ...(process.platform === "linux" ? [{ label: fullscreenStatus || "Fullscreen effects: open projectM prototype", value: "fullscreen" }] : []),
       ]} onSelect={value => {
+        if (value === "fullscreen") {
+          setFullscreenStatus("Opening fullscreen effects…");
+          void launchFullscreenVisualizer().then(result => setFullscreenStatus(result.message));
+          return;
+        }
         setConfig(value === "theme"
           ? { ...config, playerTheme: nextPlayerTheme(config.playerTheme) }
           : value === "visualizer"
