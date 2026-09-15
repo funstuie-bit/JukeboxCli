@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Text, useInput } from "ink";
+import { Text, useInput, usePaste } from "ink";
 
 export interface TextFieldProps {
   isDisabled?: boolean;
@@ -108,6 +108,16 @@ export function TextField({
     if (next.value !== value) onChange?.(next.value);
   }
 
+  const pasteText = (input: string): string => input.replace(/[\r\n]+/g, "");
+
+  usePaste(
+    (input) => {
+      const text = pasteText(input);
+      if (text) apply(insertAt(value, cursor, text));
+    },
+    { isActive: !isDisabled },
+  );
+
   useInput(
     (input, key) => {
       // Leave navigation / app chords to their handlers.
@@ -197,10 +207,8 @@ export function TextField({
       if (!input) return;
       // The app turns on mouse tracking (for wheel scroll), so the terminal
       // emits SGR sequences like "[<0;62;7M" on every click. Ink hands those
-      // to us as input; bracketed-paste terminals also wrap pastes in
-      // \x1b[200~…\x1b[201~ markers, and a multi-line paste carries raw
-      // newlines that would wrap this one-row field and corrupt the layout.
-      // Strip all three; anything left is real typing.
+      // to us as input. Retain the fallback cleanup for terminals without
+      // bracketed-paste support; anything left is real typing.
       const text = input
         .replace(/\x1b?\[<\d+;\d+;\d+[Mm]/g, "") // SGR mouse
         .replace(/\x1b\[20[01]~/g, "") // bracketed-paste markers

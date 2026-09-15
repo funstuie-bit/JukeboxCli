@@ -106,7 +106,9 @@ Before Ink takes stdin, `probeGraphics` requests Kitty direct-image support,
 terminal attributes and CSI 16t cell dimensions (700ms timeout). Kitty needs its
 direct-image response; Sixel needs attribute 4 and cell dimensions. Redirected
 I/O, tmux/screen, missing replies or JUKEBOXCLI_ART=blocks select half-blocks.
-Early keystrokes survive the probe; TERM_PROGRAM never enables graphics by itself.
+Early keystrokes survive the probe. Bracketed paste is enabled before it starts,
+so a large paste remains one event instead of being mistaken for shortcuts or
+left in the shell after exit. TERM_PROGRAM never enables graphics by itself.
 The probe additionally queries iTerm2 Capabilities/ReportCellSize when indicated.
 Feature F advertises inline images; older iTerm2 needs its identity plus a live
 cell-size response. Reply collection uses the same bounded probe window. Inline

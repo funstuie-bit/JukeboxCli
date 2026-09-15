@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Box, Text, useInput } from "ink";
+import { Box, Text, useInput, usePaste } from "ink";
 import { Spinner, Select } from "@inkjs/ui";
 import { useStore } from "../store";
 import { GradientBar } from "../components/GradientBar";
@@ -105,6 +105,17 @@ export function Welcome() {
     return () => setCaptureMode("none");
   }, [capturing, setCaptureMode]);
 
+  const acceptIntroPaste = (input: string): void => {
+    const text = input.replace(/[\r\n]+/g, " ").trim();
+    if (!text) return;
+    setConfig({ ...config, firstRunComplete: true });
+    setPendingAdd(text);
+    setSection("download");
+    setRegion("content");
+  };
+
+  usePaste(acceptIntroPaste, { isActive: step === "intro" });
+
   // Intro: pick a source (or skip with esc). A multi-character chunk can only
   // be a paste (every intro shortcut is a single key), so treat it as a link:
   // finish onboarding and drop into the Download add flow with it prefilled
@@ -117,10 +128,7 @@ export function Welcome() {
           .replace(/[\r\n]+/g, " ")
           .trim();
         if (text.length > 1) {
-          setConfig({ ...config, firstRunComplete: true });
-          setPendingAdd(text);
-          setSection("download");
-          setRegion("content");
+          acceptIntroPaste(text);
           return;
         }
       }

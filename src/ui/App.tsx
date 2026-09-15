@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Box, Text, useApp, useInput, useStdout, useStdin } from "ink";
+import { Box, Text, useApp, useInput, usePaste, useStdout, useStdin } from "ink";
 import { Spinner } from "@inkjs/ui";
 import { ensureBinaries, type Binaries } from "../bin/binaries";
 import { ensureFfmpeg } from "../bin/ffmpeg-fetch";
@@ -92,6 +92,9 @@ function Content({ section }: { section: Section }) {
 
 export function App({ initialAdd, initialOverrides }: { initialAdd?: string; initialOverrides?: Partial<Config> } = {}) {
   useMouseWheel();
+  // Own bracketed paste for the whole session. Specific text fields subscribe
+  // separately; elsewhere a paste must never be interpreted as app shortcuts.
+  usePaste(() => {});
   const { exit } = useApp();
   const { isRawModeSupported } = useStdin();
   const { stdout } = useStdout();

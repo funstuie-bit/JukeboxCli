@@ -6,6 +6,8 @@ import { parseCliArgs, HELP_TEXT } from "./cli/args";
 
 const ALT_ENTER = "\x1b[?1049h\x1b[H"; // enter alternate screen buffer, home cursor
 const ALT_LEAVE = "\x1b[?1049l"; // restore the normal screen
+const PASTE_ENTER = "\x1b[?2004h"; // keep a terminal paste together as one input event
+const PASTE_LEAVE = "\x1b[?2004l";
 
 // Terminal tab title: save the shell's title on the xterm title stack, set
 // ours, and pop the old one back on exit. Terminals without the stack just
@@ -71,7 +73,7 @@ async function main(): Promise<void> {
     restored = true;
     if (useAlt) {
       try {
-        process.stdout.write(ALT_LEAVE + TITLE_POP);
+        process.stdout.write(PASTE_LEAVE + ALT_LEAVE + TITLE_POP);
       } catch {
         // ignore
       }
@@ -79,7 +81,11 @@ async function main(): Promise<void> {
   };
 
   if (useAlt) {
-    process.stdout.write(TITLE_PUSH + TITLE_SET + ALT_ENTER);
+    // Readline disables bracketed paste before launching a command. Turn it
+    // back on before the graphics probe: otherwise a large paste arrives in
+    // arbitrary chunks, one of which can look like a standalone shortcut
+    // (notably q) and return the rest of the paste to the shell after exit.
+    process.stdout.write(TITLE_PUSH + TITLE_SET + ALT_ENTER + PASTE_ENTER);
     process.on("exit", restore);
   }
 

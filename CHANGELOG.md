@@ -5,6 +5,9 @@ remaining limits, see [feature status](FEATURES.md).
 
 ## Unreleased
 
+- Keep large terminal pastes inside JukeboxCli as a single paste event, so a
+  `q` chunk cannot quit the app and leave the remaining text for the shell to
+  execute. Intentional pastes still work in text fields and first-run setup.
 - Fall back to `$HOME/.local` when npm's configured global prefix is not usable
   by the current user, so the documented Arch source install works without
   running the JukeboxCli installer as root.

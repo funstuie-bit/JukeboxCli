@@ -423,6 +423,15 @@ describe("single-page sections render", () => {
     expect(got.at(-1)).toBe("alphabetagamma");
   });
 
+  it("TextField accepts a bracketed paste containing the quit shortcut as text", async () => {
+    const got: string[] = [];
+    const { stdin } = render(<TextField onChange={(v) => got.push(v)} />);
+    await tick();
+    stdin.write(`${ESC}[200~first\nq\nlast${ESC}[201~`);
+    await tick();
+    expect(got.at(-1)).toBe("firstqlast");
+  });
+
   it("TextField jumps words on Ctrl+arrows", async () => {
     const got: string[] = [];
     const { stdin } = render(<TextField onChange={(v) => got.push(v)} />);
