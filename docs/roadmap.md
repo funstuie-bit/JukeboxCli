@@ -22,22 +22,31 @@ quitting the app and leaving commands for the shell to execute.
 
 ## Planned prototype — full-screen visualiser
 
-Build a separate, Linux-first visualiser view while music or radio continues to
-play. It should use the existing audio-analysis connection, occupy the terminal
-instead of sharing the Now Playing layout, and return to the previous screen on
-Escape without changing the queue, playback position or saved compact style.
+Build a separate, Linux-first animated visual-effects mode in the spirit of
+Winamp AVS/MilkDrop. The target is evolving psychedelic imagery, waveform
+geometry, feedback trails, colour fields and preset transitions—not a larger
+arrangement of the compact player's bars or peaks.
 
-The first bounded prototype should turn the existing eight frequency bands into
-a terminal-native display with responsive bars, peaks, mirroring, trails and
-colour movement. It must remain readable at different terminal sizes, stop work
-when hidden or paused, respect reduced-motion and `NO_COLOR`, and measure redraw
-cost and CPU use during local music and live radio.
+This requires a new effects input and renderer. Feed it bounded PCM samples and
+a higher-resolution FFT from the existing playback process, then derive beat
+energy, waveform shapes and spectrum data without opening a second media stream.
+The effects pipeline can combine Cartesian/polar transforms, persistence between
+frames, palettes and parameterised presets. The current eight-band meter remains
+independent and is not the prototype's rendering foundation.
 
-A more fluid Winamp/MilkDrop-like mode is a separate second step. It would need
-more FFT bins or bounded PCM samples for oscilloscope and geometric effects.
-Prototype that richer input only if the eight-band version cannot produce a
-convincing result; keep playback isolated and avoid a second media download.
-macOS support follows only after the capture path and performance pass there.
+Start with a feasibility spike comparing two presentations:
+
+- A terminal-native true-colour or graphics-protocol framebuffer, which stays
+  inside JukeboxCli but has terminal resolution and refresh-rate limits.
+- A Linux GPU window that can enter real fullscreen, which is closer to the
+  original experience but adds a graphics/window-system dependency and leaves
+  the terminal while active.
+
+Both must keep music/radio and the queue untouched, return cleanly to the prior
+screen on Escape, stop rendering when hidden, restore the terminal on failure,
+and measure CPU, frame pacing and audio latency. Presets must be original or
+compatibly licensed. Choose the presentation after seeing both spikes; macOS
+support follows only after its capture path and performance are measured.
 
 ## Later
 
