@@ -2,9 +2,9 @@ class Jukeboxcli < Formula
   desc "Mac-first terminal music player with local and online queues"
   homepage "https://github.com/funstuie-bit/JukeboxCli"
   url "https://github.com/funstuie-bit/JukeboxCli.git",
-      tag: "v1.0.1",
-      revision: "cf44ad161b0033398881f81e9a28d7e41bc59acd"
-  version "1.0.1"
+      tag: "v1.0.2",
+      revision: "35f78564363ca0c46f4c9eaeb1ddccbe464417a1"
+  version "1.0.2"
   license "MIT"
 
   depends_on :macos
