@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="300" viewBox="0 0 1280 300" role="img" aria-labelledby="title desc">
+  <title id="title">JukeboxCli</title>
+  <desc id="desc">Local music, YouTube search and live radio in one queue. macOS and Linux. MIT licensed.</desc>
+  <defs><linearGradient id="accent"><stop stop-color="#b8a5ed"/><stop offset="1" stop-color="#8fb9ed"/></linearGradient></defs>
+  <rect width="1280" height="300" fill="#171b2b"/>
+  <g font-family="ui-monospace, Menlo, Consolas, monospace">
+    <text x="56" y="118" font-size="64" font-weight="700" fill="url(#accent)">jukeboxcli</text>
+    <path d="M455 69h20v49h-20z" fill="#b8a5ed"/>
+    <text x="56" y="170" font-size="20" fill="#e3e7f2">Local music, YouTube search and live radio in one queue.</text>
+    <text x="56" y="220" font-size="18" fill="#86d6a2">macOS · Linux</text>
+    <text x="220" y="220" font-size="18" fill="#aab4ce">· MIT</text>
+    <g transform="translate(314 214)">
+      <circle r="7" fill="#b8a5ed"/><circle cx="24" r="7" fill="#bdcbd5"/>
+      <circle cx="48" r="7" fill="#ff9b62"/><circle cx="72" r="7" fill="#65c7d0"/>
+      <circle cx="96" r="7" fill="#8dcc85"/>
+    </g>
+    <g fill="#8fb9ed" font-size="15" xml:space="preserve" style="white-space:pre">
+      <text x="980" y="55">&#160;&#160;&#160;&#160;.-----------.</text>
+      <text x="980" y="75">&#160;&#160;.'&#160;&#160;&#160;JUKEBOX&#160;&#160;&#160;'.</text>
+      <text x="980" y="95">&#160;/&#160;&#160;&#160;.---------.&#160;&#160;&#160;\</text>
+      <text x="980" y="115">|&#160;&#160;&#160;/&#160;&#160;*&#160;&#160;&#160;&#160;&#160;*&#160;&#160;\&#160;&#160;&#160;|</text>
+      <text x="980" y="135">|&#160;&#160;|&#160;&#160;&#160;-------&#160;&#160;&#160;|&#160;&#160;|</text>
+      <text x="980" y="155">|&#160;&#160;'-------------'&#160;&#160;|</text>
+      <text x="980" y="175">|&#160;&#160;&#160;&#160;&#160;[&#160;C&#160;L&#160;I&#160;]&#160;&#160;&#160;&#160;&#160;|</text>
+      <text x="980" y="195">|&#160;&#160;&#160;&#160;&#160;:::::::::&#160;&#160;&#160;&#160;&#160;|</text>
+      <text x="980" y="215">|&#160;&#160;&#160;&#160;&#160;:::::::::&#160;&#160;&#160;&#160;&#160;|</text>
+      <text x="980" y="235">'-------------------'</text>
+    </g>
+  </g>
+</svg>
