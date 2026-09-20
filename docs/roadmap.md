@@ -1,6 +1,8 @@
 # Roadmap
 
-## Current release — 1.1.0
+## Current release — 1.1.1
+
+Version 1.1.1 stops background mpv playback when the app exits unexpectedly.
 
 The current production line includes local and online playback, an editable
 mixed queue, Radio Browser, lyrics, terminal artwork, six compact live

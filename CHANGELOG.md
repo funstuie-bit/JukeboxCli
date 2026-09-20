@@ -5,6 +5,11 @@ remaining limits, see [feature status](FEATURES.md).
 
 ## Unreleased
 
+## 1.1.1 — Stop orphaned background playback
+
+- Tie mpv's lifetime to JukeboxCli on macOS and Linux, so a crash, closed
+  terminal or forced app exit cannot leave an invisible radio player running.
+
 ## 1.1.0 — Fullscreen MilkDrop effects on Linux
 
 - Add an optional projectM graphics window with evolving MilkDrop-style effects

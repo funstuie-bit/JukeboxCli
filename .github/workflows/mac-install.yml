@@ -17,6 +17,8 @@ jobs:
         with:
           node-version: 22
           cache: npm
+      - name: Install mpv for real player lifetime tests
+        run: brew install mpv
       - run: npm ci
       - run: npm test
       - run: npm run typecheck

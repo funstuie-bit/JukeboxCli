@@ -2,7 +2,8 @@
 
 A music player that lives in the terminal, for macOS and Linux.
 
-**Current release: 1.1.0.** It adds optional fullscreen MilkDrop-style effects
+**Current release: 1.1.1.** It fixes background playback surviving an app exit.
+Version 1.1.0 added optional fullscreen MilkDrop-style effects
 on Linux while keeping the compact visualiser in the terminal. It also includes
 the accepted artwork, visualisers, radio and Chromium-cookie work, quick radio
 channels, yt-dlp release channels and five player themes.
@@ -27,6 +28,10 @@ I started this as a boredom project and it got slightly out of hand. JukeboxCli 
 - Handles shuffle, repeat, queue editing and listening history. mpv supplies playback and macOS media-key support.
 
 Playing or browsing online music does not add it to your library. Downloads only start when you ask for one.
+
+Playback stops if JukeboxCli crashes or is force-closed on
+macOS or Linux. The background player is tied to the app's lifetime, so it cannot
+keep a radio stream running after the app disappears. This fix is included in 1.1.1.
 
 On Linux, Chromium-family cookie selections use GNOME Keyring when its Secret
 Service is present, so yt-dlp can decrypt the signed-in browser session instead
@@ -213,7 +218,7 @@ Run `jukeboxcli --help` for the full list. Spotify support imports music from su
 
 ## Current status
 
-The current production release is [1.1.0](https://github.com/funstuie-bit/JukeboxCli/releases/tag/v1.1.0). Automated install checks run on Apple Silicon and x64 Linux. Intel Macs and other Linux architectures aren't part of those checks. Known limits below still apply.
+The current production release is [1.1.1](https://github.com/funstuie-bit/JukeboxCli/releases/tag/v1.1.1). Automated install checks run on Apple Silicon and x64 Linux. Intel Macs and other Linux architectures aren't part of those checks. Known limits below still apply.
 
 A few limits are worth knowing:
 

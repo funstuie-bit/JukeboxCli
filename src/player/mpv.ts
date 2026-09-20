@@ -128,6 +128,10 @@ export class MpvPlayer extends EventEmitter {
     this.quitting = false;
     this.ready = new Promise<void>((resolve, reject) => {
       let settled = false;
+      // mpv quits on EOF of this inherited IPC pipe, including when Node is
+      // killed and cannot run React cleanup or signal/exit handlers. Keep it
+      // separate from the reconnectable command socket and spectrum pipes.
+      const lifetimeFd = 3 + (this.spectrumEnabled ? BANDS.length : 0);
       const proc = spawn(
         this.mpvPath,
         [
@@ -135,6 +139,7 @@ export class MpvPlayer extends EventEmitter {
           "--no-video",
           "--no-terminal",
           "--really-quiet",
+          ...(process.platform !== "win32" ? [`--input-ipc-client=fd://${lifetimeFd}`] : []),
           ...(this.spectrumEnabled ? [`--af=lavfi=[${spectrumGraph()}]`] : []),
           ...(process.platform === "darwin" && process.env.JUKEBOXCLI_MEDIA_KEYS === "0" ? ["--input-media-keys=no"] : []),
           "--prefetch-playlist=yes",
@@ -144,9 +149,13 @@ export class MpvPlayer extends EventEmitter {
           `--volume=${this.initialVolume}`,
           `--input-ipc-server=${this.ipcPath}`,
         ],
-        { stdio: this.spectrumEnabled ? ["ignore", "ignore", "ignore", ...BANDS.map(() => "pipe" as const)] : "ignore" },
+        { stdio: ["ignore", "ignore", "ignore",
+          ...(this.spectrumEnabled ? BANDS.map(() => "pipe" as const) : []),
+          ...(process.platform !== "win32" ? ["pipe" as const] : [])] },
       );
       this.proc = proc;
+      // Drain unsolicited IPC events so the lifetime channel cannot fill up.
+      if (process.platform !== "win32") proc.stdio[lifetimeFd]?.on("data", () => {});
       if (this.spectrumEnabled) BANDS.forEach((_, i) => {
         proc.stdio[i + 3]?.on("data", (chunk: Buffer) => {
           this.meters[i]!.push(chunk.toString());
