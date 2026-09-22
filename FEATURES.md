@@ -28,6 +28,10 @@ or online service will cooperate. The limits are listed below.
   with six persistent styles. A static local waveform is available.
 - Optional Linux fullscreen projectM/MilkDrop effects, launched with uppercase
   `F` or from Player appearance; the terminal visualiser continues independently.
+- Current main: Classic / Cream of the Crop / combined fullscreen collections,
+  with extra presets and textures downloaded only on request. Arch source
+  installer includes native dependencies and the basic pack by default, with
+  opt-outs and optional browser-cookie dependencies. Not yet in a tagged release.
 - Local whole-track waveform; optional local/cached/online lyrics with supplied
   line/word timing, manual matching and a plain-text alternate provider.
 - Browser/file cookies for playback and downloads, including detected GNOME

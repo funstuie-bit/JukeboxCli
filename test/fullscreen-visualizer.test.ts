@@ -1,7 +1,13 @@
 import { describe, expect, it, vi } from "vitest";
-import { randomPresetCommand, setIniValue, skipProjectMIntro } from "../src/player/fullscreen-visualizer";
+import { randomPresetCommand, setIniValue, setPresetPath, skipProjectMIntro } from "../src/player/fullscreen-visualizer";
 
 describe("projectM settings", () => {
+  it("sets the core texture search path without joining CRLF comments or losing preferences", () => {
+    const text = "Aspect Correction = true # keep\r\n\r\nPreset Path = /old # old\r\nFPS = 35\r\n";
+    expect(setPresetPath(text, "/new pack/presets")).toBe("Aspect Correction = true # keep\n\nPreset Path = /new pack/presets\nFPS = 35\n");
+    expect(setPresetPath("FPS = 35\n", "/presets")).toContain("\nPreset Path = /presets\n");
+    expect(() => setPresetPath(text, "/bad\nsetting")).toThrow();
+  });
   const hyprTools = { hyprctl: "/usr/bin/hyprctl", wtype: null, xdotool: null };
 
   it("skips the intro through Lua without also sending the legacy shortcut", async () => {

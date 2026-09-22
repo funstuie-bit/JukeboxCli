@@ -26,7 +26,7 @@ Authenticate to Gitea interactively so a token does not enter shell history or
 a remote URL. The canonical checkout is `~/projects/JukeboxCli`.
 
 ```sh
-sudo pacman -S --needed git nodejs npm mpv ffmpeg chromium gnome-keyring libsecret projectm-pulseaudio
+sudo pacman -S --needed git # bootstrap cloning only
 git config --global credential.helper store
 mkdir -p ~/projects
 git clone http://192.168.1.207:3000/admin/soundcli-fork.git ~/projects/JukeboxCli
@@ -39,6 +39,12 @@ test "$(git rev-parse origin/main)" = "$(git rev-parse github/main)"
 Use Gitea username `admin` and the token as the password when prompted. Never
 write the token into this repository, documentation, notes or a remote URL.
 
+Current main automates Arch native dependencies in `install.sh`: core tools plus
+projectM/Classic by default. Chromium/keyring and Cream of the Crop are optional
+flags. Use `--no-visualizer` for core only or `--no-system-deps` for externally
+managed system packages. Other Linux distributions still need manual native
+dependencies. See [preset-pack details](linux-preset-packs.md).
+
 ## Build and install
 
 ```sh
@@ -47,7 +53,7 @@ npm ci
 npm test
 npm run typecheck
 npm run build
-./install.sh --prefix "$HOME/.local"
+./install.sh --prefix "$HOME/.local" --with-browser-cookies --with-cream-of-the-crop
 export PATH="$HOME/.local/bin:$PATH"
 jukeboxcli --doctor
 ```
@@ -107,6 +113,22 @@ mpv process, while an unrelated active player remained untouched. Validation:
 709 tests passed, 5 skipped; typecheck, build and distribution guard passed.
 Older Hyprland fallback has automated coverage; live desktop acceptance was on
 the Lua-based compositor. Long-session memory soak remains outstanding.
+
+## Optional packs acceptance — 2026-09-22
+
+Current main includes the optional Cream of the Crop installer and pack selector.
+Real download verified both pinned archives; 9,795 presets and 67 textures were
+installed in user data. Cream and Combined both rendered at true 2560×1080
+fullscreen, skipped the intro, and closed with Alt+F4. The combined collection
+on the test installation contained 13,984 presets. Core texture-path persistence
+was checked, including a regression for CRLF configuration files.
+
+Final suite: 725 passed, 5 skipped, 76 files. Typecheck/build/import guard and
+independent packaged install/reinstall passed. Arch dependency installation is
+covered with fake pacman/sudo fixtures; the real machine already had its native
+packages, so the installer correctly skipped sudo. A second pack install reused
+the healthy download. No new release tag; additional user-pack imports and
+long-duration memory/GPU soak remain open.
 
 ## Git and documentation rules
 

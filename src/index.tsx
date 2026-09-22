@@ -36,6 +36,23 @@ process.on("uncaughtException", (err) => {
 async function main(): Promise<void> {
   const command = parseCliArgs(process.argv.slice(2));
 
+  if (command.kind === "install-preset-pack" || command.kind === "preset-pack") {
+    try {
+      if (process.platform !== "linux") throw Error("These preset-pack commands currently support Linux only.");
+      const { installCreamPack, creamInstalled, presetPackLabel } = await import("./player/linux-preset-packs");
+      const { loadConfig, saveConfig } = await import("./config/config");
+      const pack = command.kind === "install-preset-pack" ? "cream-of-the-crop" : command.pack;
+      if (command.kind === "install-preset-pack") await installCreamPack(console.log);
+      if (pack !== "classic" && !await creamInstalled()) throw Error("Download Cream of the Crop first: jukeboxcli --install-preset-pack cream-of-the-crop");
+      await saveConfig({ ...await loadConfig(), fullscreenPresetPack: pack });
+      console.log(`${presetPackLabel(pack)} selected. Close any open fullscreen window, then press F in Now Playing.`);
+    } catch (error) {
+      console.error(error instanceof Error ? error.message : String(error));
+      process.exitCode = 1;
+    }
+    return;
+  }
+
   if (command.kind === "doctor") {
     const { installationReport } = await import("./cli/doctor");
     const report = await installationReport();

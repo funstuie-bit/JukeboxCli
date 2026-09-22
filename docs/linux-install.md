@@ -6,31 +6,27 @@ not keep the installed command linked to the repository.
 
 ## Arch Linux
 
-Install the required packages:
+Install Git if it is missing, then clone and run the installer:
 
 ```sh
-sudo pacman -S --needed nodejs npm mpv ffmpeg
-```
-
-Check that Node.js is new enough:
-
-```sh
-node --version
-```
-
-The first number must be 22 or higher. If the distribution package is older,
-install a current Node.js release with [mise](https://mise.jdx.dev/) or another
-version manager before continuing.
-
-Clone and install JukeboxCli:
-
-```sh
+sudo pacman -S --needed git
 git clone https://github.com/funstuie-bit/JukeboxCli.git
 cd JukeboxCli
 ./install.sh
 jukeboxcli --doctor
 jukeboxcli
 ```
+
+Current main's installer installs missing Arch dependencies before building:
+Node.js, npm, mpv, ffmpeg, tar, projectM/Classic presets and pactl. Only missing
+system packages require sudo; pacman displays its normal confirmation. Do not
+run the whole installer as root. Version-manager Node must still be 22 or newer.
+
+Use `--no-visualizer` for the core player without the fullscreen engine;
+`--with-cream-of-the-crop` to download/select extra presets and textures;
+`--with-browser-cookies` for Chromium/GNOME Keyring dependencies; or
+`--no-system-deps` to manage native dependencies yourself. Extras are never
+silently downloaded on startup. These installer changes are not yet tagged.
 
 The installer uses npm's configured global prefix when the current user can
 write there. Distribution npm packages commonly configure a system-owned
@@ -110,10 +106,10 @@ macOS media-key bridging is not available on Linux; playback controls
 inside JukeboxCli work normally.
 
 The optional fullscreen effects mode uses projectM's PulseAudio frontend.
-On Arch Linux, install it with:
+The current Arch installer includes it by default. For an older/minimal install:
 
 ```sh
-sudo pacman -S projectm-pulseaudio
+sudo pacman -S --needed projectm-pulseaudio libpulse
 ```
 
 Then press uppercase `F` in Now Playing, or open it from **Settings → Player
@@ -121,6 +117,10 @@ appearance**. JukeboxCLI points projectM at the current PipeWire/PulseAudio
 output monitor and asks it to start fullscreen. Closing the projectM window
 leaves playback and the terminal visualiser running. It starts with a shuffled
 community preset instead of projectM's branded introduction.
+
+Settings → Player appearance → MilkDrop packs offers Classic, an optional Cream
+of the Crop download (with textures), and Combined/shuffled after installation.
+See [pack downloads, storage and provenance](linux-preset-packs.md).
 
 ## Updating
 

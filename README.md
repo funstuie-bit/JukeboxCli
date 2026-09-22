@@ -28,7 +28,7 @@ start when you ask for one.
 **Linux (Arch):**
 
 ```sh
-sudo pacman -S --needed nodejs npm mpv ffmpeg
+sudo pacman -S --needed git # only needed if git is missing
 git clone https://github.com/funstuie-bit/JukeboxCli.git
 cd JukeboxCli && ./install.sh
 jukeboxcli
@@ -42,7 +42,9 @@ brew install funstuie-bit/jukeboxcli/jukeboxcli
 jukeboxcli
 ```
 
-Homebrew installs the required tools. Source installs need Node.js 22+, npm, mpv and ffmpeg.
+Homebrew installs the required tools. On Arch, the source installer installs missing
+system dependencies, including projectM and its basic Classic presets, before building.
+Other source installs need Node.js 22+, npm, mpv and ffmpeg already available.
 On Linux, a system-owned npm prefix makes the installer use `$HOME/.local`;
 ensure `$HOME/.local/bin` is on your `PATH`. Don't run the app installer with sudo.
 
@@ -196,11 +198,12 @@ the static waveform.
 
 <br>
 
-For a separate, old-school Winamp/MilkDrop-style fullscreen window, install the
-optional projectM frontend:
+For a separate, old-school Winamp/MilkDrop-style fullscreen window, the Arch
+installer includes projectM and its basic Classic presets. To add it to an older
+or minimal installation:
 
 ```sh
-sudo pacman -S --needed projectm-pulseaudio
+sudo pacman -S --needed projectm-pulseaudio libpulse
 ```
 
 Then press uppercase `F` in Now Playing, or choose **Settings → Player appearance →
@@ -211,6 +214,27 @@ Source installs from current main support both Lua-based and legacy Hyprland
 when skipping the branded intro; this compatibility fix is not yet in a tagged release.
 Because this first implementation listens to the active system output, audio from
 other applications can also affect the animation.
+
+**Extra packs are optional downloads.** Open **Settings → Player appearance →
+MilkDrop packs** to download **Cream of the Crop** (9,795 presets plus 67 textures;
+~14 MB download, ~140 MB installed), then choose Classic, Cream of the Crop or
+Combined/shuffled. Close an open fullscreen window and press `F` again to apply.
+No pack is downloaded during ordinary startup or playback. A missing extra pack
+falls back to Classic with a message. Some presets render differently on projectM
+3; use `Ctrl+R` in its window to skip a preset, or switch back to Classic.
+
+From the command line:
+
+```sh
+jukeboxcli --install-preset-pack cream-of-the-crop
+jukeboxcli --preset-pack classic # switch back without deleting the extra pack
+```
+
+Installer choices: `--with-cream-of-the-crop` downloads/selects the extra pack;
+`--no-visualizer` omits the native fullscreen package; `--with-browser-cookies`
+adds Chromium/GNOME Keyring support; `--no-system-deps` leaves system packages to
+you. These changes are on current main, not yet in a tagged release.
+See [pack details and provenance](docs/linux-preset-packs.md).
 
 </details>
 

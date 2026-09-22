@@ -47,8 +47,10 @@ import { detectSystemYtDlp, ytDlpPath } from "../../bin/ytdlp-fetch";
 import { ytDlpProvider } from "../../bin/ytdlp-policy";
 import { updateYtDlpNow } from "../../bin/ytdlp-update";
 import { launchFullscreenVisualizer } from "../../player/fullscreen-visualizer";
+import { PresetPacks } from "../components/PresetPacks";
 
 type Mode =
+  | "preset-packs"
   | "appearance"
   | "menu"
   | "youtube"
@@ -299,7 +301,7 @@ export function Settings() {
     },
     // While a conversion runs, esc belongs to the run page (stop), not to
     // navigating away from the summary that is about to appear.
-    { isActive: inSubPage && mode !== "moving" && !(mode === "convert-run" && convertRunning) },
+    { isActive: inSubPage && mode !== "preset-packs" && mode !== "moving" && !(mode === "convert-run" && convertRunning) },
   );
 
   // Hooks must run on every render, including the menu and other sub-pages.
@@ -451,6 +453,11 @@ export function Settings() {
     })();
   }
 
+  if (mode === "preset-packs") {
+    return frame("MilkDrop packs", <PresetPacks selected={config.fullscreenPresetPack ?? "classic"} focused={focused}
+      onSelect={pack => setConfig({ ...currentConfig.current, fullscreenPresetPack: pack })} onBack={() => setMode("appearance")} />);
+  }
+
   if (mode === "appearance") {
     return frame("Player appearance", <SelectField title="Colours, fallback motion and live visualizer style."
       focused={focused} options={[
@@ -458,7 +465,9 @@ export function Settings() {
         { label: `Reduced motion: ${config.reducedMotion === false ? "off" : "on"} (toggle)`, value: "motion" },
         { label: `Visualizer: ${spectrumModeLabel(config.visualizerMode ?? "classic")} (cycle)`, value: "visualizer" },
         ...(process.platform === "linux" ? [{ label: fullscreenStatus || "Fullscreen effects: open projectM", value: "fullscreen" }] : []),
+        ...(process.platform === "linux" ? [{ label: "MilkDrop packs: choose or download", value: "preset-packs" }] : []),
       ]} onSelect={value => {
+        if (value === "preset-packs") { setMode("preset-packs"); return; }
         if (value === "fullscreen") {
           setFullscreenStatus("Opening fullscreen effects…");
           void launchFullscreenVisualizer().then(result => setFullscreenStatus(result.message));

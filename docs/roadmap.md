@@ -55,6 +55,17 @@ still cover track/radio changes, pause, unrelated system audio, CPU/GPU use and
 frame pacing. macOS support follows only after its capture path and performance
 are measured.
 
+## Optional Linux packs — current main (unreleased)
+
+Implemented: Classic / Cream of the Crop / Combined selection, confirmed optional
+downloads with textures, pinned archive verification, flattened collision-safe
+preset paths, retained notices and missing-pack fallback. Arch installer handles
+core native dependencies and basic projectM presets; optional browser support and
+extra-pack flags keep larger downloads explicit. See [pack guide](linux-preset-packs.md).
+
+Still open: user archive imports, more curated pack choices, newer native renderers
+and long-session memory/GPU soak. No full-collection shader compatibility claim.
+
 ## Later
 
 - Try colours taken from cover artwork.

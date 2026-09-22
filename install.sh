@@ -7,16 +7,40 @@ set -eu
 cd "$(dirname "$0")"
 install_prefix=""
 install_check=0
+install_system_deps=1
+install_visualizer=1
+install_browser_cookies=0
+install_cream=0
 while [ "$#" -gt 0 ]; do
   case "$1" in
     --prefix) [ "$#" -ge 2 ] || { echo "--prefix needs a directory" >&2; exit 2; }; install_prefix=$2; shift 2 ;;
     --check) install_check=1; shift ;;
-    --help) echo "Usage: ./install.sh [--prefix /absolute/directory] [--check]"; exit 0 ;;
+    --no-system-deps) install_system_deps=0; shift ;;
+    --no-visualizer) install_visualizer=0; shift ;;
+    --with-browser-cookies) install_browser_cookies=1; shift ;;
+    --with-cream-of-the-crop) install_cream=1; shift ;;
+    --help)
+      echo "Usage: ./install.sh [--prefix /absolute/directory] [--check]"
+      echo "Arch: installs core dependencies + projectM/Classic by default (uses sudo only for missing packages)."
+      echo "  --no-visualizer            omit optional fullscreen engine/Classic"
+      echo "  --with-cream-of-the-crop   download/select extra presets + textures (~14 MB; Linux only)"
+      echo "  --with-browser-cookies    install Chromium/GNOME Keyring support on Arch"
+      echo "  --no-system-deps          manage system packages yourself"
+      exit 0 ;;
     *) echo "Unknown option: $1" >&2; exit 2 ;;
   esac
 done
+if [ "$install_cream" -eq 1 ] && { [ "$install_visualizer" -eq 0 ] || [ "$(uname -s)" != Linux ]; }; then
+  echo "--with-cream-of-the-crop requires Linux and cannot be combined with --no-visualizer." >&2
+  exit 2
+fi
 if [ -n "$install_prefix" ]; then
   case "$install_prefix" in /*) ;; *) echo "--prefix must be an absolute directory" >&2; exit 2 ;; esac
+fi
+
+if [ "$install_check" -eq 0 ] && [ "$install_system_deps" -eq 1 ]; then
+  . ./scripts/install-linux-deps.sh
+  ensure_linux_dependencies
 fi
 
 # Node version check (needs >= 22)
@@ -55,6 +79,11 @@ node dist/index.js --version
 if [ "$install_check" -eq 1 ]; then
   echo "Build verified; no global installation or profile changes made."
   exit 0
+fi
+
+# Finish optional downloads before replacing an existing global app.
+if [ "$install_cream" -eq 1 ]; then
+  node dist/index.js --install-preset-pack cream-of-the-crop
 fi
 
 if [ -z "$install_prefix" ]; then

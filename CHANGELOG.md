@@ -5,6 +5,15 @@ remaining limits, see [feature status](FEATURES.md).
 
 ## Unreleased
 
+- Add optional Linux Cream of the Crop downloads with verified archives, required
+  textures and retained upstream notices; choose Classic, Cream or a combined
+  shuffled collection in Settings → Player appearance → MilkDrop packs.
+- Add `--install-preset-pack cream-of-the-crop` and `--preset-pack` commands.
+  Missing extra packs fall back to Classic; normal startup never downloads packs.
+- Make the Arch installer install missing core tools plus projectM/Classic by
+  default. Add `--no-visualizer`, `--with-cream-of-the-crop`,
+  `--with-browser-cookies` and `--no-system-deps` options.
+
 - Fix projectM intro skipping on Lua-based Hyprland, retaining the legacy
   dispatcher for older installations. Send explicit key-down/key-up events so
   the injected shortcut does not leave a key held.

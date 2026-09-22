@@ -4,6 +4,8 @@ import os from "node:os";
 import path from "node:path";
 import { execa } from "execa";
 import { findOnPath } from "../util/exec";
+import { loadConfig } from "../config/config";
+import { preparePresetPack } from "./linux-preset-packs";
 
 export type FullscreenVisualizerResult =
   | { ok: true; message: string }
@@ -88,6 +90,21 @@ function projectMConfigDir(env: NodeJS.ProcessEnv = process.env): string {
   return path.join(env.XDG_CONFIG_HOME || path.join(os.homedir(), ".config"), "projectM");
 }
 
+export function setPresetPath(source: string, directory: string): string {
+  if (/[\r\n#]/.test(directory)) throw Error("Preset directory contains unsupported characters.");
+  // Work by lines: JS multiline \s also consumes CRLF boundaries, which can
+  // accidentally attach Preset Path to the preceding comment and hide it.
+  const lines = source.replace(/\r\n?/g, "\n").split("\n");
+  let found = false;
+  const updated = lines.map(line => {
+    if (!/^[\t ]*Preset Path[\t ]*=/.test(line)) return line;
+    found = true;
+    return `Preset Path = ${directory}`;
+  });
+  if (!found) updated.push(`Preset Path = ${directory}`);
+  return updated.join("\n").trimEnd() + "\n";
+}
+
 /**
  * Open the optional Linux projectM companion window. projectM captures the
  * active output monitor, so playback remains owned by the existing mpv process.
@@ -123,20 +140,31 @@ export async function launchFullscreenVisualizer(): Promise<FullscreenVisualizer
   }
   if (!sink) return { ok: false, message: "No active Linux audio output was found." };
 
+  let packWarning: string | undefined;
   try {
     const configDir = projectMConfigDir();
+    const pack = await preparePresetPack((await loadConfig()).fullscreenPresetPack ?? "classic");
+    packWarning = pack.warning;
+    await fs.mkdir(configDir, { recursive: true });
+    // PlaylistFile controls the Qt playlist; the core also needs Preset Path
+    // so it discovers textures beside the selected presets.
+    const coreFile = path.join(configDir, "config.inp");
+    let core = await fs.readFile(coreFile, "utf8").catch(() => "");
+    if (!core) core = await fs.readFile("/usr/share/projectM/config.inp", "utf8").catch(() => "");
+    await fs.writeFile(coreFile, setPresetPath(core, pack.directory));
     await Promise.all([
       writeIniValues(path.join(configDir, "qprojectM.conf"), {
         FullscreenOnStartup: "true",
         ShuffleOnStartup: "true",
+        PlaylistFile: pack.directory,
       }),
       writeIniValues(path.join(configDir, "qprojectM-pulseaudio.conf"), {
         pulseAudioDeviceName: `${sink}.monitor`,
         tryFirstAvailablePlaybackMonitor: "false",
       }),
     ]);
-  } catch {
-    return { ok: false, message: "Could not save projectM's fullscreen audio settings." };
+  } catch (error) {
+    return { ok: false, message: `Could not prepare fullscreen effects: ${error instanceof Error ? error.message : "settings unavailable"}` };
   }
 
   return await new Promise(resolve => {
@@ -152,7 +180,7 @@ export async function launchFullscreenVisualizer(): Promise<FullscreenVisualizer
         void skipProjectMIntro({ hyprctl, wtype, xdotool }, child.pid ?? 0).catch(() => {});
       }, 1800);
       introTimer.unref();
-      resolve({ ok: true, message: "Fullscreen effects opened · close the window to return." });
+      resolve({ ok: true, message: packWarning ?? "Fullscreen effects opened · close the window to return." });
     });
     child.once("error", () => {
       if (visualizerProcess === child) visualizerProcess = null;

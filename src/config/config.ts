@@ -6,11 +6,14 @@ import { configFile, defaultLibraryDir } from "./paths";
 import { resolveDefaultLibraryDir } from "./music-dir";
 import { SPECTRUM_MODES, type SpectrumMode } from "../player/spectrum";
 import { withDetectedLinuxKeyring } from "./cookies";
+import type { PresetPack } from "../player/linux-preset-packs";
 import { PLAYER_THEMES, type PlayerTheme } from "../ui/theme";
 import type { YtDlpChannel } from "../bin/ytdlp-fetch";
 import type { YtDlpProvider } from "../bin/ytdlp-policy";
 
 export interface Config {
+  /** Optional Linux fullscreen preset collection; extra packs download only on request. */
+  fullscreenPresetPack?: PresetPack;
   /** Explicit opt-in to LRCLIB metadata queries while the lyrics panel is open. */
   lyricsOnline?: boolean;
   /** Player/queue and navigation chrome palette. */
@@ -109,6 +112,7 @@ export async function loadConfig(): Promise<Config> {
   try {
     const parsed = JSON.parse(raw) as Partial<Config>;
     const cfg = { ...defaultConfig, ...parsed };
+    cfg.fullscreenPresetPack = parsed.fullscreenPresetPack === "cream-of-the-crop" || parsed.fullscreenPresetPack === "combined" ? parsed.fullscreenPresetPack : "classic";
     cfg.lyricsOnline = parsed.lyricsOnline === true;
     cfg.playerTheme = PLAYER_THEMES.includes(parsed.playerTheme as PlayerTheme) ? parsed.playerTheme as PlayerTheme : "lavender";
     cfg.reducedMotion = typeof parsed.reducedMotion === "boolean" ? parsed.reducedMotion : true;

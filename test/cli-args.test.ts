@@ -2,6 +2,14 @@ import { describe, it, expect } from "vitest";
 import { parseCliArgs, HELP_TEXT } from "../src/cli/args";
 
 describe("parseCliArgs", () => {
+  it("requires an explicit known pack for downloads or selection", () => {
+    expect(parseCliArgs(["--install-preset-pack", "cream-of-the-crop"])).toEqual({ kind: "install-preset-pack" });
+    expect(parseCliArgs(["--preset-pack", "classic"])).toEqual({ kind: "preset-pack", pack: "classic" });
+    expect(parseCliArgs(["--preset-pack", "combined"])).toEqual({ kind: "preset-pack", pack: "combined" });
+    for (const args of [["--install-preset-pack"], ["--install-preset-pack", "unknown"], ["--preset-pack", "../other"], ["--preset-pack", "classic", "extra"]]) {
+      expect(parseCliArgs(args).kind).toBe("invalid");
+    }
+  });
   it("runs the dashboard with no args", () => {
     expect(parseCliArgs([])).toEqual({ kind: "run" });
   });

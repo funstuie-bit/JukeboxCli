@@ -4,6 +4,8 @@
 import type { Config } from "../config/config";
 
 export type CliCommand =
+  | { kind: "install-preset-pack" }
+  | { kind: "preset-pack"; pack: "classic" | "cream-of-the-crop" | "combined" }
   | { kind: "doctor" }
   | { kind: "version" }
   | { kind: "help" }
@@ -71,6 +73,16 @@ export function parseCliArgs(argv: string[]): CliCommand {
   const args = argv.filter((a) => a.trim() !== "");
   if (args.length === 0) return { kind: "run" };
 
+  if (args[0] === "--install-preset-pack") {
+    return args.length === 2 && args[1] === "cream-of-the-crop"
+      ? { kind: "install-preset-pack" } : { kind: "invalid", arg: "--install-preset-pack (expected cream-of-the-crop)" };
+  }
+  if (args[0] === "--preset-pack") {
+    const pack = args[1];
+    return args.length === 2 && (pack === "classic" || pack === "cream-of-the-crop" || pack === "combined")
+      ? { kind: "preset-pack", pack } : { kind: "invalid", arg: "--preset-pack (expected classic, cream-of-the-crop or combined)" };
+  }
+
   // Check for version/help first
   if (args.length === 1) {
     const a = args[0]!;
@@ -123,6 +135,10 @@ usage
   jukeboxcli <link>         download that song on launch
   jukeboxcli --version      print the version
   jukeboxcli --doctor       read-only installation/tool diagnostics
+  jukeboxcli --install-preset-pack cream-of-the-crop
+                           download Linux presets + textures (~14 MB), then select
+  jukeboxcli --preset-pack classic|cream-of-the-crop|combined
+                           select installed Linux presets for the next F launch
 
 player keys
   m / 6                    Now Playing
