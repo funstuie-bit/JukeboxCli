@@ -48,10 +48,12 @@ import { ytDlpProvider } from "../../bin/ytdlp-policy";
 import { updateYtDlpNow } from "../../bin/ytdlp-update";
 import { launchFullscreenVisualizer } from "../../player/fullscreen-visualizer";
 import { PresetPacks } from "../components/PresetPacks";
+import { installMacVisualizer, macVisualizerSupported } from "../../player/macos-visualizer-install";
 
 type Mode =
   | "preset-packs"
   | "appearance"
+  | "visualizer-install"
   | "menu"
   | "youtube"
   | "soundcloud"
@@ -96,6 +98,9 @@ export function Settings() {
   const [ytdlpStatus, setYtdlpStatus] = useState("");
   const [ytdlpBusy, setYtdlpBusy] = useState(false);
   const [fullscreenStatus, setFullscreenStatus] = useState("");
+  const [visualizerBusy, setVisualizerBusy] = useState(false);
+  const visualizerInstallActive = useRef(false);
+  const [visualizerInstallAttempt, setVisualizerInstallAttempt] = useState(0);
   const currentConfig = useRef(config);
   currentConfig.current = config;
   const [importResult, setImportResult] = useState<ImportResult | null>(null);
@@ -289,7 +294,7 @@ export function Settings() {
     mode === "spotify" ||
     mode === "folder" ||
     mode === "moving" ||
-    mode === "pacing";
+    mode === "pacing" || (mode === "visualizer-install" && visualizerBusy);
   useEffect(() => {
     setCaptureMode(!inSubPage ? "none" : isTextPage ? "text" : "picker");
     return () => setCaptureMode("none");
@@ -301,7 +306,7 @@ export function Settings() {
     },
     // While a conversion runs, esc belongs to the run page (stop), not to
     // navigating away from the summary that is about to appear.
-    { isActive: inSubPage && mode !== "preset-packs" && mode !== "moving" && !(mode === "convert-run" && convertRunning) },
+    { isActive: inSubPage && mode !== "preset-packs" && mode !== "moving" && mode !== "visualizer-install" && !(mode === "convert-run" && convertRunning) },
   );
 
   // Hooks must run on every render, including the menu and other sub-pages.
@@ -458,19 +463,50 @@ export function Settings() {
       onSelect={pack => setConfig({ ...currentConfig.current, fullscreenPresetPack: pack })} onBack={() => setMode("appearance")} />);
   }
 
+  if (mode === "visualizer-install") {
+    return frame("Optional Mac fullscreen effects", <Box flexDirection="column">
+      <Text>projectM 4 + Cream of the Crop presets + MilkDrop textures.</Text>
+      <Text>About 61 MB to download, plus CMake via Homebrew if missing. Builds locally.</Text>
+      <Text>Needs macOS 14.4+, Apple Command Line Tools and audio-recording permission.</Text>
+      <Text>Captures only JukeboxCli's mpv audio. No virtual driver, microphone or recording.</Text>
+      {visualizerBusy ? <Text>Installing. Keep JukeboxCli open until it finishes.</Text> : <SelectField key={visualizerInstallAttempt} title="Download and install this optional pack?"
+        focused={focused} options={[
+          { label: "Back", value: "back" },
+          { label: "Install / repair the complete pack", value: "install" },
+        ]} onSelect={value => {
+          if (visualizerInstallActive.current) return;
+          if (value === "back") { setMode("appearance"); return; }
+          setVisualizerBusy(true);
+          visualizerInstallActive.current = true;
+          void installMacVisualizer(setFullscreenStatus)
+            .catch(error => setFullscreenStatus(error instanceof Error ? error.message : "Visualiser installation failed."))
+            .finally(() => {
+              // Reset Select's remembered choice: its onChange effect can
+              // replay an old selection when an async status update renders.
+              setVisualizerInstallAttempt(attempt => attempt + 1);
+              visualizerInstallActive.current = false;
+              setVisualizerBusy(false);
+            });
+        }} onCancel={() => setMode("appearance")} />}
+      {fullscreenStatus ? <Text color={COLOR.alt}>{fullscreenStatus}</Text> : null}
+    </Box>);
+  }
+
   if (mode === "appearance") {
     return frame("Player appearance", <SelectField title="Colours, fallback motion and live visualizer style."
       focused={focused} options={[
         { label: `Theme: ${playerThemeLabel(config.playerTheme)} (cycle)`, value: "theme" },
         { label: `Reduced motion: ${config.reducedMotion === false ? "off" : "on"} (toggle)`, value: "motion" },
         { label: `Visualizer: ${spectrumModeLabel(config.visualizerMode ?? "classic")} (cycle)`, value: "visualizer" },
-        ...(process.platform === "linux" ? [{ label: fullscreenStatus || "Fullscreen effects: open projectM", value: "fullscreen" }] : []),
+        ...(["linux", "darwin"].includes(process.platform) ? [{ label: fullscreenStatus || "Fullscreen effects: open projectM", value: "fullscreen" }] : []),
         ...(process.platform === "linux" ? [{ label: "MilkDrop packs: choose or download", value: "preset-packs" }] : []),
+        ...(macVisualizerSupported() ? [{ label: "Install Mac fullscreen pack: Cream of the Crop…", value: "visualizer-install" }] : []),
       ]} onSelect={value => {
         if (value === "preset-packs") { setMode("preset-packs"); return; }
+        if (value === "visualizer-install") { setMode("visualizer-install"); return; }
         if (value === "fullscreen") {
           setFullscreenStatus("Opening fullscreen effects…");
-          void launchFullscreenVisualizer().then(result => setFullscreenStatus(result.message));
+          void launchFullscreenVisualizer(playback.mpvProcessId).then(result => setFullscreenStatus(result.message));
           return;
         }
         setConfig(value === "theme"

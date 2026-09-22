@@ -136,6 +136,8 @@ export class Playback extends EventEmitter {
     };
   }
 
+  get mpvProcessId(): number | undefined { return this.mpv?.processId; }
+
   getState(): PlaybackState {
     return this.state;
   }

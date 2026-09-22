@@ -1,4 +1,5 @@
 import { defineConfig } from "tsup";
+import { cp } from "node:fs/promises";
 
 export default defineConfig({
   entry: ["src/index.tsx"],
@@ -19,6 +20,9 @@ export default defineConfig({
   splitting: false,
   shims: false,
   minify: true,
+  async onSuccess() {
+    await cp("native/macos-visualizer", "dist/native/macos-visualizer", { recursive: true });
+  },
   esbuildOptions(options) {
     options.jsx = "automatic";
     options.jsxImportSource = "react";

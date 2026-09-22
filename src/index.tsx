@@ -64,6 +64,12 @@ async function main(): Promise<void> {
     return;
   }
 
+  if (command.kind === "install-visualizer") {
+    const { installMacVisualizer } = await import("./player/macos-visualizer-install");
+    await installMacVisualizer(console.log);
+    return;
+  }
+
   if (command.kind === "doctor") {
     const { installationReport } = await import("./cli/doctor");
     const report = await installationReport();

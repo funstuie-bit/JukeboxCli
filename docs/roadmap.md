@@ -17,6 +17,12 @@ The dependency is optional.
 
 ## Next — hands-on coverage
 
+- The next Mac build adds an opt-in projectM 4 companion with Cream of the Crop
+  and MilkDrop textures. Local build and hidden-window preset rendering are
+  checked; accept the macOS audio permission prompt and test live reaction,
+  track changes and Esc/Q on a physical Mac before release. See
+  [the Mac visualiser guide](mac-visualizer.md).
+
 - Check iTerm2 artwork repainting, physical media keys and Control Centre on
   macOS, plus a clean Intel Mac installation.
 - Exercise more Linux terminals, browsers and keyrings. KWallet continues

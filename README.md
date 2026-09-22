@@ -62,7 +62,7 @@ in the [Linux install guide](docs/linux-install.md) and the
 - Searches songs, videos, albums, artists and playlists without a YouTube login.
 - Shows sharp cover artwork in Ghostty, Kitty-compatible, iTerm2 and Sixel terminals, with text and block fallbacks elsewhere.
 - Runs a live visualiser by default on Mac and Linux, with six styles you can cycle using `v`.
-- Offers optional Linux fullscreen effects powered by projectM/MilkDrop presets.
+- Offers optional Mac and Linux fullscreen effects powered by projectM/MilkDrop presets.
 - Supports local LRC files and optional online lyrics.
 - Downloads from YouTube and SoundCloud, and imports music from supported Spotify links.
 - Handles shuffle, repeat, queue editing and listening history. mpv supplies playback and macOS media-key support.
@@ -194,13 +194,40 @@ the static waveform.
 </details>
 
 <details>
-<summary><strong>Linux · fullscreen MilkDrop-style effects</strong></summary>
+<summary><strong>Mac and Linux · optional fullscreen MilkDrop-style effects</strong></summary>
 
 <br>
 
-For a separate, old-school Winamp/MilkDrop-style fullscreen window, the Arch
-installer includes projectM and its basic Classic presets. To add it to an older
-or minimal installation:
+For a separate, old-school Winamp/MilkDrop-style fullscreen window:
+
+**Mac (macOS 14.4 or newer)**
+
+```sh
+jukeboxcli --install-visualizer
+```
+
+Or choose **Settings → Player appearance → Install Mac fullscreen pack**.
+This is a separate opt-in install, not part of a normal JukeboxCli install. It
+builds projectM 4 and includes the **Cream of the Crop** pack (9,795 presets)
+and MilkDrop textures. Expect about 61 MB of downloads and 135 MB installed,
+plus CMake if it needs installing through Homebrew. Apple Command Line Tools
+are required; the first build can take a few minutes.
+
+Start music, then press uppercase `F` in Now Playing. Allow audio-recording
+permission if macOS asks. The companion taps only JukeboxCli's existing mpv
+player, not your microphone or other apps. It doesn't save or upload audio,
+start a second stream, or need a virtual audio driver.
+
+A real shuffled preset is loaded before the window appears, with no projectM
+M/headphones intro. `N` or `Space` moves to the next preset; `Esc` or `Q` closes
+the window without stopping the music. Presets change roughly every 30 seconds.
+
+[Mac setup, permissions and removal](docs/mac-visualizer.md)
+
+**Linux**
+
+The Arch installer includes projectM and its basic Classic presets. To add it
+to an older or minimal installation:
 
 ```sh
 sudo pacman -S --needed projectm-pulseaudio libpulse gcc make pkgconf qt5-base
@@ -394,8 +421,12 @@ JukeboxCli's own TypeScript/Ink/mpv stack; no source code or assets were copied 
 those projects.
 
 [projectM](https://github.com/projectM-visualizer/projectm) supplies the optional
-Linux fullscreen renderer and MilkDrop-compatible effects. It runs separately
-and retains its own licence. [Radio Browser](https://www.radio-browser.info/)
+fullscreen renderer and MilkDrop-compatible effects. The Mac companion links
+its LGPL-licensed renderer separately and downloads the
+[Cream of the Crop presets](https://github.com/projectM-visualizer/presets-cream-of-the-crop)
+and [MilkDrop textures](https://github.com/projectM-visualizer/presets-milkdrop-texture-pack)
+on request, retaining their upstream notices. The Linux frontend is a separate
+package. [Radio Browser](https://www.radio-browser.info/)
 supplies the community station directory.
 
 Released under the [MIT License](LICENSE).

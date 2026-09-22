@@ -26,8 +26,10 @@ or online service will cooperate. The limits are listed below.
   the panel so selection and time stay aligned with its right edge.
 - Live eight-band visualiser for music and radio by default on Linux and macOS,
   with six persistent styles. A static local waveform is available.
-- Optional Linux fullscreen projectM/MilkDrop effects, launched with uppercase
-  `F` or from Player appearance; the terminal visualiser continues independently.
+- Optional Mac and Linux fullscreen projectM/MilkDrop effects, launched with
+  uppercase `F` or from Player appearance; the terminal visualiser continues
+  independently. The Mac opt-in installer includes Cream of the Crop presets
+  and MilkDrop textures and skips the projectM logo screen.
 - Current main's Linux companion selects a real preset before rendering any
   frame, eliminating the brief branded intro. Private Qt 5 frontend build against
   system libprojectM 3.1.12; no compositor shortcut dependency.
@@ -52,6 +54,9 @@ or proxy cliamp feeds.
 
 ## Experimental and limited
 
+- Mac fullscreen effects need macOS 14.4+, a local optional build and system
+  audio-recording permission. They capture only JukeboxCli's mpv audio. Community
+  presets vary in GPU cost and compatibility with Apple's OpenGL implementation.
 - Linux fullscreen effects capture the active system output, so unrelated audio
   can affect the animation; projectM remains an optional external package.
 - [Audio-reactive visualiser](docs/visualiser-prototype.md): accepted on Intel

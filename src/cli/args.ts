@@ -8,6 +8,7 @@ export type CliCommand =
   | { kind: "install-preset-pack" }
   | { kind: "preset-pack"; pack: "classic" | "cream-of-the-crop" | "combined" }
   | { kind: "doctor" }
+  | { kind: "install-visualizer" }
   | { kind: "version" }
   | { kind: "help" }
   | { kind: "run"; initialAdd?: string; overrides?: Partial<Config> }
@@ -89,6 +90,7 @@ export function parseCliArgs(argv: string[]): CliCommand {
   if (args.length === 1) {
     const a = args[0]!;
     if (a === "--doctor") return { kind: "doctor" };
+    if (a === "--install-visualizer") return { kind: "install-visualizer" };
     if (a === "--version" || a === "-v") return { kind: "version" };
     if (a === "--help" || a === "-h") return { kind: "help" };
   }
@@ -137,6 +139,7 @@ usage
   jukeboxcli <link>         download that song on launch
   jukeboxcli --version      print the version
   jukeboxcli --doctor       read-only installation/tool diagnostics
+  jukeboxcli --install-visualizer  optional Mac projectM + Cream of the Crop install
   jukeboxcli --install-linux-visualizer
                            build the Linux fullscreen companion without the logo intro
   jukeboxcli --install-preset-pack cream-of-the-crop

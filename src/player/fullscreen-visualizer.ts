@@ -7,12 +7,54 @@ import { findOnPath } from "../util/exec";
 import { loadConfig } from "../config/config";
 import { linuxVisualizerExecutable } from "./linux-visualizer-install";
 import { preparePresetPack } from "./linux-preset-packs";
+import { macVisualizerInstalled, macVisualizerPaths, macVisualizerSupported } from "./macos-visualizer-install";
 
 export type FullscreenVisualizerResult =
   | { ok: true; message: string }
   | { ok: false; message: string };
 
 let visualizerProcess: ChildProcess | null = null;
+let openingMac: Promise<FullscreenVisualizerResult> | null = null;
+
+async function launchMacVisualizer(playerPid?: number): Promise<FullscreenVisualizerResult> {
+  if (!macVisualizerSupported()) return { ok: false, message: "Fullscreen effects need macOS 14.4 or newer." };
+  if (!await macVisualizerInstalled()) return { ok: false, message: "Optional pack not installed. Run jukeboxcli --install-visualizer, or use Settings > Player appearance." };
+  if (!playerPid) return { ok: false, message: "Play music in JukeboxCli before opening fullscreen effects." };
+  const p = macVisualizerPaths();
+  return new Promise(resolve => {
+    // The helper owns no playback. Its stdin pipe is also its parent-lifetime
+    // signal, including abrupt parent death while a permission prompt is open.
+    const child = spawn(p.executable, [String(playerPid), p.presets, p.textures], { stdio: ["pipe", "pipe", "pipe"] });
+    visualizerProcess = child;
+    let settled = false;
+    let output = "";
+    let error = "";
+    const finish = (result: FullscreenVisualizerResult) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      resolve(result);
+    };
+    const timer = setTimeout(() => {
+      child.kill("SIGKILL");
+      finish({ ok: false, message: "Opening effects timed out. Allow JukeboxCli Visualizer in macOS Screen & System Audio Recording settings, then press F again." });
+    }, 120_000);
+    child.stdin.on("error", () => {});
+    child.stdout.on("data", chunk => {
+      output = (output + String(chunk)).slice(-4096);
+      if (/(^|\n)READY\r?\n/.test(output)) finish({ ok: true, message: "Fullscreen effects open · Esc/Q closes · N/Space next preset." });
+    });
+    child.stderr.on("data", chunk => { error = (error + String(chunk)).slice(-2048); });
+    child.once("error", () => {
+      if (visualizerProcess === child) visualizerProcess = null;
+      finish({ ok: false, message: "Could not start the Mac visualiser. Reinstall it from Player appearance." });
+    });
+    child.once("exit", () => {
+      if (visualizerProcess === child) visualizerProcess = null;
+      finish({ ok: false, message: error.trim().split("\n").at(-1) || "The Mac visualiser closed before it was ready. Check audio-recording permission." });
+    });
+  });
+}
 
 /** Update one QSettings-style INI key without discarding unrelated settings. */
 export function setIniValue(source: string, section: string, key: string, value: string): string {
@@ -65,12 +107,17 @@ export function setPresetPath(source: string, directory: string): string {
  * Open the optional Linux projectM companion window. projectM captures the
  * active output monitor, so playback remains owned by the existing mpv process.
  */
-export async function launchFullscreenVisualizer(): Promise<FullscreenVisualizerResult> {
-  if (process.platform !== "linux") {
-    return { ok: false, message: "Fullscreen effects are currently available on Linux." };
-  }
+export async function launchFullscreenVisualizer(playerPid?: number): Promise<FullscreenVisualizerResult> {
+  if (openingMac) return openingMac;
   if (visualizerProcess && visualizerProcess.exitCode === null && !visualizerProcess.killed) {
     return { ok: true, message: "Fullscreen effects are already open." };
+  }
+  if (process.platform === "darwin") {
+    openingMac = launchMacVisualizer(playerPid);
+    try { return await openingMac; } finally { openingMac = null; }
+  }
+  if (process.platform !== "linux") {
+    return { ok: false, message: "Fullscreen effects are available on macOS and Linux." };
   }
 
   const [projectM, pactl] = await Promise.all([

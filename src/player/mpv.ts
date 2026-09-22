@@ -31,6 +31,9 @@ const CONNECT_RETRY_MS = 100;
  */
 export class MpvPlayer extends EventEmitter {
   private proc: ChildProcess | null = null;
+  get processId(): number | undefined {
+    return this.proc?.exitCode === null && !this.proc.killed ? this.proc.pid : undefined;
+  }
   private sock: net.Socket | null = null;
   private readonly mpvPath: string;
   private ipcPath: string;

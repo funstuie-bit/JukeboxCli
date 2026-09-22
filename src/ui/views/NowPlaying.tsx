@@ -85,9 +85,9 @@ export function NowPlaying({ embedded = false, onDownload = () => {} }: { embedd
     if (input === "T") store.setConfig({ ...store.config, playerTheme: nextPlayerTheme(store.config.playerTheme) });
     if (input === "V") store.setConfig({ ...store.config, reducedMotion: !(store.config.reducedMotion ?? true) });
     if (input === "v" && visualizer) store.setConfig({ ...store.config, visualizerMode: nextSpectrumMode(visualizerMode) });
-    if (input === "F" && process.platform === "linux") {
+    if (input === "F" && ["linux", "darwin"].includes(process.platform)) {
       setFullscreenStatus("Opening fullscreen effects…");
-      void launchFullscreenVisualizer().then(result => setFullscreenStatus(result.message));
+      void launchFullscreenVisualizer(store.playback.mpvProcessId).then(result => setFullscreenStatus(result.message));
     }
   }, { isActive: active });
   useEffect(() => {
@@ -142,7 +142,7 @@ export function NowPlaying({ embedded = false, onDownload = () => {} }: { embedd
       {(layout.split || layout.showcase) && height >= 23 ? <Box height={1} /> : null}
       {details}
       {layout.balanced ? <Box flexGrow={1} /> : null}
-      {(layout.split || layout.showcase) && height >= 23 ? <Text color={COLOR.muted} wrap="truncate-end">T {playerThemeLabel(store.config.playerTheme)}{visualizer ? ` · v ${visualizerMode}` : ""}{process.platform === "linux" ? " · F fullscreen effects" : ""} · Art {simpleArtwork() ? "simple" : graphicsPainter ? graphicsProtocol === "iterm" ? "iTerm2" : graphicsProtocol === "sixel" ? "Sixel" : "Kitty" : "blocks"}</Text> : null}
+      {(layout.split || layout.showcase) && height >= 23 ? <Text color={COLOR.muted} wrap="truncate-end">T {playerThemeLabel(store.config.playerTheme)}{visualizer ? ` · v ${visualizerMode}` : ""}{["linux", "darwin"].includes(process.platform) ? " · F fullscreen effects" : ""} · Art {simpleArtwork() ? "simple" : graphicsPainter ? graphicsProtocol === "iterm" ? "iTerm2" : graphicsProtocol === "sixel" ? "Sixel" : "Kitty" : "blocks"}</Text> : null}
     </Box>
     {!layout.showcase ? <Box flexDirection="column" marginLeft={layout.split ? 1 : 0} width={layout.split ? layout.right : width} height={layout.split ? height : Math.max(3, height - 6)}>
       <Box display={lyricsVisible || searchVisible ? "none" : "flex"}>

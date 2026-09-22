@@ -1,5 +1,12 @@
 # Audio-reactive visualiser
 
+## Fullscreen effects on Mac
+
+An opt-in Mac companion uses projectM 4 with the Cream of the Crop pack and
+MilkDrop textures. It captures only the existing mpv process through a private
+CoreAudio tap (macOS 14.4+), with no loopback driver or second playback stream.
+See [Mac installation and architecture](mac-visualizer.md).
+
 ## Fullscreen effects on Linux
 
 Linux also has an optional, separate projectM/MilkDrop graphics window. Install

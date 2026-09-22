@@ -10,7 +10,7 @@
  *    npm 12 skips dependency install scripts by default, so a package that
  *    needs one to run would install fine and then die at startup.
  */
-import { readFileSync } from "node:fs";
+import { readFileSync, existsSync } from "node:fs";
 import { builtinModules } from "node:module";
 import { importedSpecifiers } from "./dist-imports";
 
@@ -27,6 +27,9 @@ const declared = new Set(Object.keys(pkg.dependencies ?? {}));
 const builtins = new Set(builtinModules);
 
 const dist = readFileSync("dist/index.js", "utf8");
+for (const asset of ["main.mm", "Info.plist"]) {
+  if (!existsSync(`dist/native/macos-visualizer/${asset}`)) fail(`optional Mac visualiser source missing from dist: ${asset}`);
+}
 const specifiers = importedSpecifiers(dist);
 
 for (const spec of specifiers) {

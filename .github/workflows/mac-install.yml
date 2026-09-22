@@ -2,7 +2,7 @@ name: Mac install checks
 on:
   push:
     branches: [main]
-    paths: ["src/**", "test/**", "scripts/**", "Formula/**", "package*.json", "install.sh", "update.sh", "vitest.config.ts", ".github/workflows/mac-install.yml"]
+    paths: ["src/**", "native/**", "test/**", "scripts/**", "Formula/**", "package*.json", "install.sh", "update.sh", "tsup.config.ts", "vitest.config.ts", ".github/workflows/mac-install.yml"]
   workflow_dispatch:
 permissions:
   contents: read

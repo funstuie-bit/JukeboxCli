@@ -2,9 +2,9 @@ name: Linux install checks
 on:
   push:
     branches: [main]
-    paths: ["src/**", "test/**", "scripts/**", "docs/linux-install.md", "package*.json", "install.sh", "update.sh", "vitest.config.ts", ".github/workflows/linux-install.yml"]
+    paths: ["src/**", "native/**", "test/**", "scripts/**", "docs/linux-install.md", "package*.json", "install.sh", "update.sh", "tsup.config.ts", "vitest.config.ts", ".github/workflows/linux-install.yml"]
   pull_request:
-    paths: ["src/**", "test/**", "scripts/**", "docs/linux-install.md", "package*.json", "install.sh", "update.sh", "vitest.config.ts", ".github/workflows/linux-install.yml"]
+    paths: ["src/**", "native/**", "test/**", "scripts/**", "docs/linux-install.md", "package*.json", "install.sh", "update.sh", "tsup.config.ts", "vitest.config.ts", ".github/workflows/linux-install.yml"]
   workflow_dispatch:
 permissions:
   contents: read
