@@ -3,13 +3,14 @@
 Release notes describe what changed in each build. For what works now and the
 remaining limits, see [feature status](FEATURES.md).
 
-## Unreleased
+## 1.2.0 — MilkDrop on Mac and Linux
 
 - Add optional Mac fullscreen projectM 4 effects for macOS 14.4+, with a verified
   Cream of the Crop preset/texture installer in Settings or `--install-visualizer`.
   Capture only the existing mpv process, load a real preset before showing the
   window, and close the companion if its parent exits. No M/headphones intro.
 - Update the project description and README for macOS and Linux support.
+- Make preset-pack UI tests wait for rendered states instead of fixed delays.
 
 - Remove the brief M/headphones startup animation completely: a private Linux
   frontend selects a valid preset before the first draw, replacing the delayed
@@ -26,9 +27,7 @@ remaining limits, see [feature status](FEATURES.md).
   default. Add `--no-visualizer`, `--with-cream-of-the-crop`,
   `--with-browser-cookies` and `--no-system-deps` options.
 
-- Fix projectM intro skipping on Lua-based Hyprland, retaining the legacy
-  dispatcher for older installations. Send explicit key-down/key-up events so
-  the injected shortcut does not leave a key held.
+- Remove the need for compositor-specific intro-skipping shortcuts on Linux.
 
 ## 1.1.1 — Stop orphaned background playback
 

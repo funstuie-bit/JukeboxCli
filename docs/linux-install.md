@@ -17,7 +17,7 @@ jukeboxcli --doctor
 jukeboxcli
 ```
 
-Current main's installer installs missing Arch dependencies before building:
+The installer installs missing Arch dependencies before building:
 Node.js, npm, mpv, ffmpeg, tar, projectM/Classic presets, pactl and the Qt 5/C++
 build tools for the private fullscreen companion. First fullscreen setup fetches
 ~53 MB of verified source and builds the logo-free frontend. Only missing
@@ -28,7 +28,7 @@ Use `--no-visualizer` for the core player without the fullscreen engine;
 `--with-cream-of-the-crop` to download/select extra presets and textures;
 `--with-browser-cookies` for Chromium/GNOME Keyring dependencies; or
 `--no-system-deps` to manage native dependencies yourself. Extras are never
-silently downloaded on startup. These installer changes are not yet tagged.
+silently downloaded on startup. These installer options are included in 1.2.0.
 
 The installer uses npm's configured global prefix when the current user can
 write there. Distribution npm packages commonly configure a system-owned
@@ -120,7 +120,7 @@ appearance**. JukeboxCLI points projectM at the current PipeWire/PulseAudio
 output monitor and asks it to start fullscreen. Closing the projectM window
 leaves playback and the terminal visualiser running. It starts with a shuffled
 community preset before the first rendered frame, so the branded introduction
-never appears. Current main uses a private patched frontend against system
+never appears. Version 1.2.0 uses a private patched frontend against system
 libprojectM 3.1.12 and Qt 5; the distro binary is not modified.
 
 Settings → Player appearance → MilkDrop packs offers Classic, an optional Cream

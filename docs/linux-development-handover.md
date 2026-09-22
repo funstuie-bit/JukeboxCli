@@ -1,20 +1,17 @@
 # Linux development handover
 
-This is the rebuild-safe starting point for the `soundstu` Linux instance on
-`maclinux`. Linux and macOS use one source history and release process.
+This is the rebuild-safe starting point for Linux development.
+Linux and macOS use one source history and release process.
 
 ## Current state
 
-- Production release: `v1.1.1` (`d2df5c9`)
-- Homebrew/main release commit: `6161cfc`
-- Last shared main before this handover: `ee0280f`
-- Private primary: `http://192.168.1.207:3000/admin/soundcli-fork.git`
-- Public mirror: `https://github.com/funstuie-bit/JukeboxCli.git`
+- Production release: `v1.2.0`
+- Public source: `https://github.com/funstuie-bit/JukeboxCli.git`
+- Private mirror connection details belong in private maintainer notes, not here
 - Branch: `main`; both remotes must contain the same commits
 
-Version 1.1.1 makes mpv stop when its parent app disappears, including terminal
-closure and forced Node termination. Version 1.1.0 added the optional Linux
-projectM fullscreen visualiser and skips projectM's branded introduction.
+Version 1.2.0 includes Mac fullscreen effects, Linux preset packs and native
+first-frame logo removal. It retains 1.1.1's mpv lifetime protection.
 
 The private repository's pre-1.0 history was replaced during reconciliation.
 Always make a fresh clone after a machine rebuild. Never merge, rebase or copy
@@ -22,24 +19,20 @@ history from an old Linux checkout into `main`.
 
 ## Fresh clone after an Arch Linux rebuild
 
-Authenticate to Gitea interactively so a token does not enter shell history or
-a remote URL. The canonical checkout is `~/projects/JukeboxCli`.
+Clone the public source. Maintainers can add their private mirror separately
+using their own connection details and credential manager.
 
 ```sh
 sudo pacman -S --needed git # bootstrap cloning only
-git config --global credential.helper store
 mkdir -p ~/projects
-git clone http://192.168.1.207:3000/admin/soundcli-fork.git ~/projects/JukeboxCli
+git clone https://github.com/funstuie-bit/JukeboxCli.git ~/projects/JukeboxCli
 cd ~/projects/JukeboxCli
-git remote add github https://github.com/funstuie-bit/JukeboxCli.git
 git fetch --all --tags
-test "$(git rev-parse origin/main)" = "$(git rev-parse github/main)"
 ```
 
-Use Gitea username `admin` and the token as the password when prompted. Never
-write the token into this repository, documentation, notes or a remote URL.
+Never put credentials into the repository, documentation or a remote URL.
 
-Current main automates Arch native dependencies in `install.sh`: core tools plus
+Version 1.2.0 automates Arch native dependencies in `install.sh`: core tools plus
 projectM/Classic by default. Chromium/keyring and Cream of the Crop are optional
 flags. Use `--no-visualizer` for core only or `--no-system-deps` for externally
 managed system packages. Other Linux distributions still need manual native
@@ -103,10 +96,9 @@ cookies. projectM entered true fullscreen at 2560×1080 on the active output;
 playback continued and Alt+F4 closed the companion.
 
 Acceptance exposed the legacy Hyprland shortcut command failing on the new
-Lua-based compositor. Current main now tries Lua with explicit key-down/key-up
-and falls back to the old dispatcher when Lua is unavailable. The corrected
-installed build automatically selected a real preset. This is an unreleased
-compatibility fix on top of 1.1.1, not a new published version.
+Lua-based compositor. An intermediate fix used Lua with explicit key-down/key-up
+and a legacy fallback. Version 1.2.0 supersedes both with the native first-frame
+fix described below; it no longer injects compositor shortcuts.
 
 Normal quit, Ctrl-C and closing the dedicated test terminal each removed its
 mpv process, while an unrelated active player remained untouched. Validation:
@@ -116,7 +108,7 @@ the Lua-based compositor. Long-session memory soak remains outstanding.
 
 ## Optional packs acceptance — 2026-09-22
 
-Current main includes the optional Cream of the Crop installer and pack selector.
+Version 1.2.0 includes the optional Cream of the Crop installer and pack selector.
 Real download verified both pinned archives; 9,795 presets and 67 textures were
 installed in user data. Cream and Combined both rendered at true 2560×1080
 fullscreen, skipped the intro, and closed with Alt+F4. The combined collection
@@ -127,13 +119,13 @@ Final suite: 725 passed, 5 skipped, 76 files. Typecheck/build/import guard and
 independent packaged install/reinstall passed. Arch dependency installation is
 covered with fake pacman/sudo fixtures; the real machine already had its native
 packages, so the installer correctly skipped sudo. A second pack install reused
-the healthy download. No new release tag; additional user-pack imports and
+the healthy download. Additional user-pack imports and
 long-duration memory/GPU soak remain open.
 
 ## Startup-logo correction — 2026-09-22
 
 The earlier acceptance verified eventual preset selection but missed the first
-1.8 seconds of visible branding. Current main removes delayed shortcut injection.
+1.8 seconds of visible branding. Version 1.2.0 removes delayed shortcut injection.
 The private Qt/PulseAudio frontend selects a valid preset before any render call;
 empty or unsuccessful selection never draws the idle logo. The launcher waits
 for readiness and reports errors/timeouts. No Hyprland/X11 shortcut helper is

@@ -1,14 +1,15 @@
 # Roadmap
 
-## Current release — 1.1.1
+## Current release — 1.2.0
 
-Version 1.1.1 stops background mpv playback when the app exits unexpectedly.
+Version 1.2.0 adds Mac fullscreen MilkDrop, Linux preset packs and logo-free
+startup on both platforms. It retains the 1.1.1 fix for orphaned mpv playback.
 
 The current production line includes local and online playback, an editable
 mixed queue, Radio Browser, lyrics, terminal artwork, six compact live
 visualiser styles, app-managed yt-dlp channels, Linux browser-keyring support,
 macOS media controls, source installers, a pinned Homebrew formula and optional
-Linux fullscreen MilkDrop effects.
+Mac and Linux fullscreen MilkDrop effects.
 
 Version 1.1.0 adds a separate projectM graphics window on Linux. It captures the
 active PipeWire/PulseAudio output monitor, starts a shuffled community preset in
@@ -17,11 +18,11 @@ The dependency is optional.
 
 ## Next — hands-on coverage
 
-- Current main adds an opt-in Mac projectM 4 companion with Cream of the Crop
+- Version 1.2.0 adds an opt-in Mac projectM 4 companion with Cream of the Crop
   and MilkDrop textures. Build, preset rendering and process-lifetime checks
   pass; a user test over screen sharing reports it working, with some visual
   artefacts attributed to the remote connection. Direct-display and longer
-  playback checks remain useful before release. See
+  playback checks remain useful. See
   [the Mac visualiser guide](mac-visualizer.md).
 
 - Check iTerm2 artwork repainting, physical media keys and Control Centre on
@@ -44,12 +45,11 @@ MilkDrop presets and captured the selected headphone output monitor without
 changing the default microphone. Closing the window returned to the terminal,
 and quitting JukeboxCLI cleaned up the companion process. The launcher skips
 projectM's branded introduction and selects a shuffled community preset.
-The earlier shortcut-based skip still showed the logo briefly. Current main
+The earlier shortcut-based skip still showed the logo briefly. Version 1.2.0
 replaces it with a private frontend that selects a valid preset before the first
 render. A native readiness handshake replaces the fixed 1.8-second shortcut.
 Arch installation builds the companion against system libprojectM 3.1.12/Qt 5;
-source and licences are retained. It is awaiting a tagged release. Longer
-memory-soak testing remains open.
+source and licences are retained. Longer memory-soak testing remains open.
 
 projectM is an open-source, MilkDrop-compatible OpenGL renderer whose core
 accepts PCM and performs its own FFT and beat detection. This version currently
@@ -61,10 +61,10 @@ a small projectM frontend instead. Do not open a second media stream.
 The dependency remains optional: ordinary startup, playback and the terminal
 visualiser work when the fullscreen engine is absent. Longer hands-on checks
 still cover track/radio changes, pause, unrelated system audio, CPU/GPU use and
-frame pacing. The Mac companion on current main uses a process-specific
+frame pacing. The Mac companion uses a process-specific
 CoreAudio tap instead; see the Mac guide above.
 
-## Optional Linux packs — current main (unreleased)
+## Optional Linux packs — shipped in 1.2.0
 
 Implemented: Classic / Cream of the Crop / Combined selection, confirmed optional
 downloads with textures, pinned archive verification, flattened collision-safe

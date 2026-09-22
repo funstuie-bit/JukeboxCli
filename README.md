@@ -150,9 +150,9 @@ results stay temporary until you explicitly save one with **f**.
 
 ## Status and limits
 
-**Current release: [1.1.1](https://github.com/funstuie-bit/JukeboxCli/releases/tag/v1.1.1).**
-This fixes background mpv playback surviving a crash or force-close on Mac/Linux.
-Restart after updating. Older orphaned players are not automatically stopped.
+**Current release: [1.2.0](https://github.com/funstuie-bit/JukeboxCli/releases/tag/v1.2.0).**
+Adds optional Mac fullscreen MilkDrop, Linux preset packs and logo-free startup
+on both platforms. Restart after updating; music and settings are kept.
 [Changelog](CHANGELOG.md).
 
 Automated install checks run on Apple Silicon and x64 Linux. Intel Macs and other
@@ -203,7 +203,7 @@ For a separate, old-school Winamp/MilkDrop-style fullscreen window:
 
 **Mac (macOS 14.4 or newer)**
 
-Available on current `main`; not yet included in the tagged 1.1.1/Homebrew release.
+Available in 1.2.0, including Homebrew installs.
 
 ```sh
 jukeboxcli --install-visualizer
@@ -241,12 +241,12 @@ Then press uppercase `F` in Now Playing, or choose **Settings → Player appeara
 Fullscreen effects**. JukeboxCli selects the active PipeWire/PulseAudio output
 monitor, opens a shuffled preset fullscreen and leaves the terminal player and
 compact visualiser running. Close the graphics window with `Alt+F4` to return.
-Current main builds a private Qt/PulseAudio frontend that selects a valid preset
+JukeboxCli builds a private Qt/PulseAudio frontend that selects a valid preset
 before its first frame. There is no delayed shortcut and no M/headphones intro.
 First setup downloads ~53 MB of verified upstream source and keeps the patched
 source/licences alongside the companion (~112 MiB). The system projectM binary
 is unchanged. This requires libprojectM 3.1.12 and Qt 5; the Arch installer handles
-the build automatically. These changes are not yet in a tagged release.
+the build automatically.
 Because this first implementation listens to the active system output, audio from
 other applications can also affect the animation.
 
@@ -268,7 +268,7 @@ jukeboxcli --preset-pack classic # switch back without deleting the extra pack
 Installer choices: `--with-cream-of-the-crop` downloads/selects the extra pack;
 `--no-visualizer` omits the native fullscreen package; `--with-browser-cookies`
 adds Chromium/GNOME Keyring support; `--no-system-deps` leaves system packages to
-you. These changes are on current main, not yet in a tagged release.
+you.
 See [pack details and provenance](docs/linux-preset-packs.md).
 
 </details>

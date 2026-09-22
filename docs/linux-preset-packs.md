@@ -1,7 +1,7 @@
 # Linux MilkDrop preset packs
 
-Current main adds optional packs; the latest tagged release is still 1.1.1.
-Use `./install.sh` from an updated checkout to get this feature.
+Version 1.2.0 includes optional packs. Use `./install.sh` from an updated checkout
+to install, or `./update.sh` to update an existing source installation.
 
 ## Basic install and optional downloads
 
@@ -31,7 +31,7 @@ profile in Settings → Cookies after browser login and keyring setup.
 ## No branded startup frames
 
 The old stock-frontend launcher displayed the M/headphones animation for about
-1.8 seconds before sending a random-preset shortcut. Current main removes that
+1.8 seconds before sending a random-preset shortcut. Version 1.2.0 removes that
 approach: its private Qt/PulseAudio frontend selects a valid preset with a hard
 cut before rendering the first frame. Empty/failed preset loading never renders
 the idle logo. The launcher waits for a native readiness marker, times out a

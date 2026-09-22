@@ -30,13 +30,13 @@ or online service will cooperate. The limits are listed below.
   uppercase `F` or from Player appearance; the terminal visualiser continues
   independently. The Mac opt-in installer includes Cream of the Crop presets
   and MilkDrop textures and skips the projectM logo screen.
-- Current main's Linux companion selects a real preset before rendering any
+- The Linux companion selects a real preset before rendering any
   frame, eliminating the brief branded intro. Private Qt 5 frontend build against
   system libprojectM 3.1.12; no compositor shortcut dependency.
-- Current main: Classic / Cream of the Crop / combined fullscreen collections,
+- On Linux: Classic / Cream of the Crop / combined fullscreen collections,
   with extra presets and textures downloaded only on request. Arch source
   installer includes native dependencies and the basic pack by default, with
-  opt-outs and optional browser-cookie dependencies. Not yet in a tagged release.
+  opt-outs and optional browser-cookie dependencies.
 - Local whole-track waveform; optional local/cached/online lyrics with supplied
   line/word timing, manual matching and a plain-text alternate provider.
 - Browser/file cookies for playback and downloads, including detected GNOME
