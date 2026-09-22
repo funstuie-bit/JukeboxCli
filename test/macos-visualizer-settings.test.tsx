@@ -9,24 +9,32 @@ vi.mock("../src/player/macos-visualizer-install", () => ({
   installMacVisualizer: vi.fn(), macVisualizerSupported: () => true,
 }));
 afterEach(() => { cleanup(); vi.resetAllMocks(); vi.restoreAllMocks(); });
-const wait = () => new Promise(resolve => setTimeout(resolve, 40));
+const waitForFrame = async (view: ReturnType<typeof render>, text: string) => {
+  await vi.waitFor(() => expect(view.lastFrame()).toContain(text), { timeout: 3000 });
+};
 
 it("requires confirmation and keeps hooks stable across the Mac installer page", async () => {
   vi.spyOn(process, "platform", "get").mockReturnValue("darwin");
   vi.mocked(installMacVisualizer).mockImplementation(async progress => { progress?.("Pack installed."); });
   const view = render(<StoreContext.Provider value={makeStore({ region: "content", listRows: 30 })}><Settings /></StoreContext.Provider>);
-  await wait();
-  view.stdin.write("\u001b[F"); await wait();
-  view.stdin.write("\r"); await wait();
-  expect(view.lastFrame()).toContain("Install Mac fullscreen pack");
-  for (let i = 0; i < 4; i++) { view.stdin.write("\u001b[B"); await wait(); }
-  view.stdin.write("\r"); await wait();
-  expect(view.lastFrame()).toContain("Download and install this optional pack?");
+  await waitForFrame(view, "❯ YouTube handle");
+  view.stdin.write("\u001b[F");
+  await waitForFrame(view, "❯ Player appearance");
+  view.stdin.write("\r");
+  await waitForFrame(view, "❯ Theme:");
+  for (const label of ["Reduced motion:", "Visualizer:", "Fullscreen effects:", "Install Mac fullscreen pack"]) {
+    view.stdin.write("\u001b[B");
+    await waitForFrame(view, `❯ ${label}`);
+  }
+  view.stdin.write("\r");
+  await waitForFrame(view, "Download and install this optional pack?");
   expect(installMacVisualizer).not.toHaveBeenCalled();
-  view.stdin.write("\u001b[B"); await wait();
+  view.stdin.write("\u001b[B");
+  await waitForFrame(view, "❯ Install / repair");
   view.stdin.write("\r");
   await vi.waitFor(() => expect(installMacVisualizer).toHaveBeenCalledTimes(1));
   await vi.waitFor(() => expect(view.lastFrame()).toContain("Pack installed."));
-  view.stdin.write("\u001b"); await wait();
-  expect(view.lastFrame()).toContain("Player appearance");
+  await waitForFrame(view, "❯ Back");
+  view.stdin.write("\u001b");
+  await waitForFrame(view, "Player appearance");
 });
