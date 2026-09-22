@@ -5,6 +5,12 @@ remaining limits, see [feature status](FEATURES.md).
 
 ## Unreleased
 
+- Add optional Mac fullscreen projectM 4 effects for macOS 14.4+, with a verified
+  Cream of the Crop preset/texture installer in Settings or `--install-visualizer`.
+  Capture only the existing mpv process, load a real preset before showing the
+  window, and close the companion if its parent exits. No M/headphones intro.
+- Update the project description and README for macOS and Linux support.
+
 - Remove the brief M/headphones startup animation completely: a private Linux
   frontend selects a valid preset before the first draw, replacing the delayed
   keyboard shortcut. Wait for native readiness and report startup failures.

@@ -1,5 +1,5 @@
 class Jukeboxcli < Formula
-  desc "Mac-first terminal music player with local and online queues"
+  desc "Terminal music player with local music, online search and live radio"
   homepage "https://github.com/funstuie-bit/JukeboxCli"
   url "https://github.com/funstuie-bit/JukeboxCli.git",
       tag: "v1.1.1",

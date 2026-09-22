@@ -17,10 +17,11 @@ The dependency is optional.
 
 ## Next — hands-on coverage
 
-- The next Mac build adds an opt-in projectM 4 companion with Cream of the Crop
-  and MilkDrop textures. Local build and hidden-window preset rendering are
-  checked; accept the macOS audio permission prompt and test live reaction,
-  track changes and Esc/Q on a physical Mac before release. See
+- Current main adds an opt-in Mac projectM 4 companion with Cream of the Crop
+  and MilkDrop textures. Build, preset rendering and process-lifetime checks
+  pass; a user test over screen sharing reports it working, with some visual
+  artefacts attributed to the remote connection. Direct-display and longer
+  playback checks remain useful before release. See
   [the Mac visualiser guide](mac-visualizer.md).
 
 - Check iTerm2 artwork repainting, physical media keys and Control Centre on
@@ -60,8 +61,8 @@ a small projectM frontend instead. Do not open a second media stream.
 The dependency remains optional: ordinary startup, playback and the terminal
 visualiser work when the fullscreen engine is absent. Longer hands-on checks
 still cover track/radio changes, pause, unrelated system audio, CPU/GPU use and
-frame pacing. macOS support follows only after its capture path and performance
-are measured.
+frame pacing. The Mac companion on current main uses a process-specific
+CoreAudio tap instead; see the Mac guide above.
 
 ## Optional Linux packs — current main (unreleased)
 

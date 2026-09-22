@@ -2,7 +2,7 @@
 
 <img src="docs/assets/hero.svg" alt="JukeboxCli: local music, YouTube search and live radio. For macOS and Linux." width="820">
 
-**A music player that lives in the terminal.** Local files, YouTube search and live radio in one editable queue.
+**A terminal music player for macOS and Linux.** Local files, YouTube search and live radio in one editable queue.
 
 [![Release](https://img.shields.io/github/v/release/funstuie-bit/JukeboxCli?label=stable&color=b8a5ed)](https://github.com/funstuie-bit/JukeboxCli/releases/latest)
 [![Mac install checks](https://github.com/funstuie-bit/JukeboxCli/actions/workflows/mac-install.yml/badge.svg?branch=main)](https://github.com/funstuie-bit/JukeboxCli/actions/workflows/mac-install.yml)
@@ -18,7 +18,8 @@
 I started this as a boredom project and it got slightly out of hand. JukeboxCli now
 plays local music, searches YouTube Music without an account, handles live radio and
 keeps the lot in one editable queue. Streams stay streams unless you choose to save
-them.
+them. There are lyrics, cover artwork and live visualisers too, with optional
+fullscreen MilkDrop effects on Mac and Linux.
 
 Playing or browsing online music does not add it to your library. Downloads only
 start when you ask for one.
@@ -201,6 +202,8 @@ the static waveform.
 For a separate, old-school Winamp/MilkDrop-style fullscreen window:
 
 **Mac (macOS 14.4 or newer)**
+
+Available on current `main`; not yet included in the tagged 1.1.1/Homebrew release.
 
 ```sh
 jukeboxcli --install-visualizer
