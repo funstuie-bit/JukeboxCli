@@ -18,7 +18,9 @@ jukeboxcli
 ```
 
 Current main's installer installs missing Arch dependencies before building:
-Node.js, npm, mpv, ffmpeg, tar, projectM/Classic presets and pactl. Only missing
+Node.js, npm, mpv, ffmpeg, tar, projectM/Classic presets, pactl and the Qt 5/C++
+build tools for the private fullscreen companion. First fullscreen setup fetches
+~53 MB of verified source and builds the logo-free frontend. Only missing
 system packages require sudo; pacman displays its normal confirmation. Do not
 run the whole installer as root. Version-manager Node must still be 22 or newer.
 
@@ -109,14 +111,17 @@ The optional fullscreen effects mode uses projectM's PulseAudio frontend.
 The current Arch installer includes it by default. For an older/minimal install:
 
 ```sh
-sudo pacman -S --needed projectm-pulseaudio libpulse
+sudo pacman -S --needed projectm-pulseaudio libpulse gcc make pkgconf qt5-base
+jukeboxcli --install-linux-visualizer
 ```
 
 Then press uppercase `F` in Now Playing, or open it from **Settings → Player
 appearance**. JukeboxCLI points projectM at the current PipeWire/PulseAudio
 output monitor and asks it to start fullscreen. Closing the projectM window
 leaves playback and the terminal visualiser running. It starts with a shuffled
-community preset instead of projectM's branded introduction.
+community preset before the first rendered frame, so the branded introduction
+never appears. Current main uses a private patched frontend against system
+libprojectM 3.1.12 and Qt 5; the distro binary is not modified.
 
 Settings → Player appearance → MilkDrop packs offers Classic, an optional Cream
 of the Crop download (with textures), and Combined/shuffled after installation.

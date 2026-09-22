@@ -21,7 +21,7 @@ ${mode === "fail" ? "exit 1" : 'touch "$FIXTURE_BIN/installed"'}`);
 it("installs Arch core plus basic fullscreen pack, without forcing a browser", async () => {
   const r = await fixture();
   expect(r.exitCode).toBe(0);
-  expect(r.calls).toContain("sudo pacman -S --needed git nodejs npm mpv ffmpeg tar projectm-pulseaudio libpulse");
+  expect(r.calls).toContain("sudo pacman -S --needed git nodejs npm mpv ffmpeg tar projectm-pulseaudio libpulse gcc make pkgconf qt5-base\n");
   expect(r.calls).not.toContain("chromium");
 });
 it("supports minimal install and optional browser/keyring dependencies", async () => {

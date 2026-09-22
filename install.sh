@@ -26,6 +26,7 @@ while [ "$#" -gt 0 ]; do
       echo "  --with-cream-of-the-crop   download/select extra presets + textures (~14 MB; Linux only)"
       echo "  --with-browser-cookies    install Chromium/GNOME Keyring support on Arch"
       echo "  --no-system-deps          manage system packages yourself"
+      echo "Fullscreen setup builds a private logo-free frontend (first setup: ~53 MB source download)."
       exit 0 ;;
     *) echo "Unknown option: $1" >&2; exit 2 ;;
   esac
@@ -82,6 +83,9 @@ if [ "$install_check" -eq 1 ]; then
 fi
 
 # Finish optional downloads before replacing an existing global app.
+if [ "$install_visualizer" -eq 1 ] && [ "$(uname -s)" = Linux ] && command -v pacman >/dev/null 2>&1; then
+  node dist/index.js --install-linux-visualizer
+fi
 if [ "$install_cream" -eq 1 ]; then
   node dist/index.js --install-preset-pack cream-of-the-crop
 fi

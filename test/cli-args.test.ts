@@ -2,6 +2,9 @@ import { describe, it, expect } from "vitest";
 import { parseCliArgs, HELP_TEXT } from "../src/cli/args";
 
 describe("parseCliArgs", () => {
+  it("installs the Linux companion without opening the player", () => {
+    expect(parseCliArgs(["--install-linux-visualizer"])).toEqual({ kind: "install-linux-visualizer" });
+  });
   it("requires an explicit known pack for downloads or selection", () => {
     expect(parseCliArgs(["--install-preset-pack", "cream-of-the-crop"])).toEqual({ kind: "install-preset-pack" });
     expect(parseCliArgs(["--preset-pack", "classic"])).toEqual({ kind: "preset-pack", pack: "classic" });

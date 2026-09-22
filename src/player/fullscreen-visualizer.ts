@@ -5,6 +5,7 @@ import path from "node:path";
 import { execa } from "execa";
 import { findOnPath } from "../util/exec";
 import { loadConfig } from "../config/config";
+import { linuxVisualizerExecutable } from "./linux-visualizer-install";
 import { preparePresetPack } from "./linux-preset-packs";
 
 export type FullscreenVisualizerResult =
@@ -12,51 +13,6 @@ export type FullscreenVisualizerResult =
   | { ok: false; message: string };
 
 let visualizerProcess: ChildProcess | null = null;
-
-type ShortcutTools = { hyprctl: string | null; wtype: string | null; xdotool: string | null };
-type ShortcutRunner = (command: string, args: string[]) => Promise<string>;
-
-/** New Hyprland uses Lua; retain the legacy dispatcher for older desktops. */
-export async function skipProjectMIntro(
-  tools: ShortcutTools,
-  pid: number,
-  run: ShortcutRunner = async (command, args) => (await execa(command, args, { timeout: 3000 })).stdout,
-): Promise<void> {
-  if (tools.hyprctl) {
-    try {
-      const reply = await run(tools.hyprctl, ["eval",
-        'hl.dispatch(hl.dsp.send_key_state({mods="CTRL",key="r",state="down",window="class:projectM-pulseaudio"})); ' +
-        'hl.timer(function() hl.dispatch(hl.dsp.send_key_state({mods="CTRL",key="r",state="up",window="class:projectM-pulseaudio"})) end, {timeout=50,type="oneshot"})',
-      ]);
-      // hyprctl can return status zero with an error in its response text.
-      if (reply.trim() === "ok") return;
-    } catch { /* Older Hyprland has no eval command. */ }
-  }
-  const action = randomPresetCommand(tools, pid);
-  if (action) await run(action.command, action.args);
-}
-
-export function randomPresetCommand(
-  tools: ShortcutTools,
-  pid: number,
-): { command: string; args: string[] } | null {
-  if (tools.hyprctl) {
-    return {
-      command: tools.hyprctl,
-      args: ["dispatch", "sendshortcut", "CTRL,", "R,", "class:projectM-pulseaudio"],
-    };
-  }
-  if (tools.wtype) {
-    return { command: tools.wtype, args: ["-M", "ctrl", "r", "-m", "ctrl"] };
-  }
-  if (tools.xdotool) {
-    return {
-      command: tools.xdotool,
-      args: ["search", "--sync", "--onlyvisible", "--pid", String(pid), "windowactivate", "--sync", "key", "--clearmodifiers", "ctrl+r"],
-    };
-  }
-  return null;
-}
 
 /** Update one QSettings-style INI key without discarding unrelated settings. */
 export function setIniValue(source: string, section: string, key: string, value: string): string {
@@ -117,15 +73,11 @@ export async function launchFullscreenVisualizer(): Promise<FullscreenVisualizer
     return { ok: true, message: "Fullscreen effects are already open." };
   }
 
-  const [projectM, pactl, hyprctl, wtype, xdotool] = await Promise.all([
-    findOnPath("projectM-pulseaudio"),
-    findOnPath("pactl"),
-    process.env.HYPRLAND_INSTANCE_SIGNATURE ? findOnPath("hyprctl") : Promise.resolve(null),
-    findOnPath("wtype"),
-    findOnPath("xdotool"),
+  const [projectM, pactl] = await Promise.all([
+    linuxVisualizerExecutable(), findOnPath("pactl"),
   ]);
   if (!projectM) {
-    return { ok: false, message: "Install projectM-pulseaudio to use fullscreen effects." };
+    return { ok: false, message: "Install the logo-free fullscreen companion: jukeboxcli --install-linux-visualizer (or rerun ./install.sh on Arch)." };
   }
   if (!pactl) {
     return { ok: false, message: "Fullscreen effects need PipeWire/PulseAudio pactl." };
@@ -167,28 +119,37 @@ export async function launchFullscreenVisualizer(): Promise<FullscreenVisualizer
     return { ok: false, message: `Could not prepare fullscreen effects: ${error instanceof Error ? error.message : "settings unavailable"}` };
   }
 
-  return await new Promise(resolve => {
-    const child = spawn(projectM, [], { stdio: "ignore" });
-    visualizerProcess = child;
-    let settled = false;
-    child.once("spawn", () => {
-      settled = true;
-      // projectM opens with a built-in M/headphones branding preset. Once its
-      // fullscreen window has focus, select a real playlist preset immediately.
-      const introTimer = setTimeout(() => {
-        if (visualizerProcess !== child || child.exitCode !== null) return;
-        void skipProjectMIntro({ hyprctl, wtype, xdotool }, child.pid ?? 0).catch(() => {});
-      }, 1800);
-      introTimer.unref();
-      resolve({ ok: true, message: packWarning ?? "Fullscreen effects opened · close the window to return." });
+  const child = spawn(projectM, [], { stdio: ["ignore", "ignore", "pipe"] });
+  visualizerProcess = child;
+  child.once("exit", () => { if (visualizerProcess === child) visualizerProcess = null; });
+  child.once("error", () => { if (visualizerProcess === child) visualizerProcess = null; });
+  return await waitForVisualizerReady(child, packWarning);
+}
+
+/** A spawn event is not proof that a real preset is ready to draw. */
+export function waitForVisualizerReady(child: ChildProcess, warning?: string, timeoutMs = 15000): Promise<FullscreenVisualizerResult> {
+  return new Promise(resolve => {
+    let settled = false, output = "";
+    const finish = (result: FullscreenVisualizerResult) => {
+      if (settled) return;
+      settled = true; clearTimeout(timeout); resolve(result);
+    };
+    const timeout = setTimeout(() => {
+      child.kill("SIGKILL");
+      finish({ ok: false, message: "Fullscreen effects could not prepare a preset. Try Built-in Classic in MilkDrop packs." });
+    }, timeoutMs);
+    child.stderr?.on("data", chunk => {
+      const incoming = output + chunk.toString();
+      output = incoming.slice(-4096);
+      if (incoming.includes("JUKEBOXCLI_PROJECTM_READY")) {
+        finish({ ok: true, message: warning ?? "Fullscreen effects opened · close the window to return." });
+      } else if (incoming.includes("JUKEBOXCLI_PROJECTM_ERROR")) {
+        child.kill("SIGKILL");
+        finish({ ok: false, message: "No playable fullscreen startup preset. Try Built-in Classic in MilkDrop packs." });
+      }
     });
-    child.once("error", () => {
-      if (visualizerProcess === child) visualizerProcess = null;
-      if (!settled) resolve({ ok: false, message: "projectM could not open its graphics window." });
-    });
-    child.once("exit", () => {
-      if (visualizerProcess === child) visualizerProcess = null;
-    });
+    child.once("error", () => finish({ ok: false, message: "Fullscreen companion could not start. Run jukeboxcli --install-linux-visualizer to rebuild it." }));
+    child.once("exit", () => finish({ ok: false, message: "Fullscreen companion closed before a preset was ready." }));
   });
 }
 

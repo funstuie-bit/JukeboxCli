@@ -5,6 +5,12 @@ remaining limits, see [feature status](FEATURES.md).
 
 ## Unreleased
 
+- Remove the brief M/headphones startup animation completely: a private Linux
+  frontend selects a valid preset before the first draw, replacing the delayed
+  keyboard shortcut. Wait for native readiness and report startup failures.
+- Build the patched frontend during Arch fullscreen setup, retaining upstream
+  source/licences; add `--install-linux-visualizer` for explicit setup/rebuild.
+
 - Add optional Linux Cream of the Crop downloads with verified archives, required
   textures and retained upstream notices; choose Classic, Cream or a combined
   shuffled collection in Settings → Player appearance → MilkDrop packs.

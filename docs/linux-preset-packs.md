@@ -9,7 +9,9 @@ The Arch installer installs missing Node/npm, mpv, ffmpeg and projectM dependenc
 projectM supplies its Classic presets through the distro package. Native libraries
 and the basic pack are not copied into the npm archive: pacman manages their
 dependencies and updates. No separate long pacman command is needed after cloning.
-Only missing packages require sudo, with pacman's normal transaction confirmation.
+The default fullscreen setup also installs GCC, make, pkgconf and Qt 5 build
+tools and builds a private frontend against system libprojectM 3.1.12. Only
+missing packages require sudo, with pacman's normal transaction confirmation.
 Git itself must already be available to clone the source.
 
 | Installer option | Effect |
@@ -25,6 +27,35 @@ Other Linux distributions still need their native packages installed separately.
 Chromium is useful for authenticated downloads, but is not required for local
 playback or signed-out discovery. Installing it does not sign you in: choose a
 profile in Settings → Cookies after browser login and keyring setup.
+
+## No branded startup frames
+
+The old stock-frontend launcher displayed the M/headphones animation for about
+1.8 seconds before sending a random-preset shortcut. Current main removes that
+approach: its private Qt/PulseAudio frontend selects a valid preset with a hard
+cut before rendering the first frame. Empty/failed preset loading never renders
+the idle logo. The launcher waits for a native readiness marker, times out a
+failed startup and displays an error instead of reporting success at spawn.
+
+Arch's installer builds this companion automatically unless `--no-visualizer`
+is specified. Existing installs can run `jukeboxcli --install-linux-visualizer`.
+On other distributions, first install the Qt 5, libprojectM 3.1.12 and PulseAudio
+development packages, GCC, make and pkg-config. Other core versions are not yet
+supported by this pinned frontend build. Ordinary playback works without it.
+
+First setup fetches ~53 MB of upstream source, SHA-256 verifies it, patches only
+the frontend and builds against the existing shared core. Allow ~300 MB during
+build and ~112 MiB installed. Source, upstream GPL/LGPL notices, qmake recipe and
+manifest remain under the profile's `projectM/frontend/` directory alongside the
+executable. No system binaries or libraries are modified. A healthy cached build
+is reused; changed core headers invalidate it so it can be rebuilt explicitly.
+The normal F launch never downloads or compiles anything.
+
+Source: [projectM v3.1.12](https://github.com/projectM-visualizer/projectm/tree/v3.1.12),
+archive SHA-256 `62b5b1b543b25cb8ad392d879378cfdc5c129165cf4d4f33fb159e364d42f135`.
+The source remains under its upstream licences; JukeboxCli's MIT licence does not
+replace them. The additional compatibility edits name the Qt resource correctly
+and match the installed core's preset-switch callback signature.
 
 ## Download, select and switch back
 

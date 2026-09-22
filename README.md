@@ -203,15 +203,20 @@ installer includes projectM and its basic Classic presets. To add it to an older
 or minimal installation:
 
 ```sh
-sudo pacman -S --needed projectm-pulseaudio libpulse
+sudo pacman -S --needed projectm-pulseaudio libpulse gcc make pkgconf qt5-base
+jukeboxcli --install-linux-visualizer
 ```
 
 Then press uppercase `F` in Now Playing, or choose **Settings → Player appearance →
 Fullscreen effects**. JukeboxCli selects the active PipeWire/PulseAudio output
 monitor, opens a shuffled preset fullscreen and leaves the terminal player and
 compact visualiser running. Close the graphics window with `Alt+F4` to return.
-Source installs from current main support both Lua-based and legacy Hyprland
-when skipping the branded intro; this compatibility fix is not yet in a tagged release.
+Current main builds a private Qt/PulseAudio frontend that selects a valid preset
+before its first frame. There is no delayed shortcut and no M/headphones intro.
+First setup downloads ~53 MB of verified upstream source and keeps the patched
+source/licences alongside the companion (~112 MiB). The system projectM binary
+is unchanged. This requires libprojectM 3.1.12 and Qt 5; the Arch installer handles
+the build automatically. These changes are not yet in a tagged release.
 Because this first implementation listens to the active system output, audio from
 other applications can also affect the animation.
 

@@ -12,7 +12,7 @@ await cp(root, source, { recursive: true, filter: file => !path.relative(root, f
 await mkdir(profile); await mkdir(installHome); await writeFile(unusablePrefix, "not a directory");
 await writeFile(path.join(profile, "keep.json"), '{"fixture":"must survive"}');
 const env = { ...process.env, HOME: installHome, npm_config_prefix: unusablePrefix, JUKEBOXCLI_HOME: profile, JUKEBOXCLI_SYSTEM_TOOLS: "1", JUKEBOXCLI_MEDIA_KEYS: "0" };
-const initialInstall = await execa("sh", ["./install.sh", "--no-system-deps"], { cwd: source, env, timeout: 180000, stdout: "pipe", stderr: "inherit" });
+const initialInstall = await execa("sh", ["./install.sh", "--no-system-deps", "--no-visualizer"], { cwd: source, env, timeout: 180000, stdout: "pipe", stderr: "inherit" });
 process.stdout.write(`${initialInstall.stdout}\n`);
 assert.match(initialInstall.stdout, /Installing JukeboxCli under .*\.local instead\./);
 const command = path.join(prefix, "bin", "jukeboxcli");
@@ -29,7 +29,7 @@ const doctor = await execa(command, ["--doctor"], { env, reject: false });
 assert.equal(JSON.parse(doctor.stdout).toolsMode, "system-managed tools (no app downloads/updates)");
 assert.equal(await readFile(path.join(profile, "keep.json"), "utf8"), '{"fixture":"must survive"}');
 // Reinstall into the same prefix from the moved checkout to exercise replacement.
-await execa("sh", ["./install.sh", "--no-system-deps", "--prefix", prefix], { cwd: path.join(temp, "moved source"), env, timeout: 180000, stdout: "inherit", stderr: "inherit" });
+await execa("sh", ["./install.sh", "--no-system-deps", "--no-visualizer", "--prefix", prefix], { cwd: path.join(temp, "moved source"), env, timeout: 180000, stdout: "inherit", stderr: "inherit" });
 assert.equal((await execa(command, ["--version"], { env })).stdout.trim(), pkg.version);
 assert.equal(await readFile(path.join(profile, "keep.json"), "utf8"), '{"fixture":"must survive"}');
 console.log(`PASS: user-prefix fallback, independent package, path spaces, source relocation, reinstall, profile preservation. Fixtures: ${temp}`);

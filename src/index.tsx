@@ -36,6 +36,17 @@ process.on("uncaughtException", (err) => {
 async function main(): Promise<void> {
   const command = parseCliArgs(process.argv.slice(2));
 
+  if (command.kind === "install-linux-visualizer") {
+    try {
+      const { installLinuxVisualizer } = await import("./player/linux-visualizer-install");
+      await installLinuxVisualizer(console.log);
+    } catch (error) {
+      console.error(error instanceof Error ? error.message : String(error));
+      process.exitCode = 1;
+    }
+    return;
+  }
+
   if (command.kind === "install-preset-pack" || command.kind === "preset-pack") {
     try {
       if (process.platform !== "linux") throw Error("These preset-pack commands currently support Linux only.");

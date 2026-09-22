@@ -28,6 +28,9 @@ or online service will cooperate. The limits are listed below.
   with six persistent styles. A static local waveform is available.
 - Optional Linux fullscreen projectM/MilkDrop effects, launched with uppercase
   `F` or from Player appearance; the terminal visualiser continues independently.
+- Current main's Linux companion selects a real preset before rendering any
+  frame, eliminating the brief branded intro. Private Qt 5 frontend build against
+  system libprojectM 3.1.12; no compositor shortcut dependency.
 - Current main: Classic / Cream of the Crop / combined fullscreen collections,
   with extra presets and textures downloaded only on request. Arch source
   installer includes native dependencies and the basic pack by default, with

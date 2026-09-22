@@ -130,6 +130,16 @@ packages, so the installer correctly skipped sudo. A second pack install reused
 the healthy download. No new release tag; additional user-pack imports and
 long-duration memory/GPU soak remain open.
 
+## Startup-logo correction — 2026-09-22
+
+The earlier acceptance verified eventual preset selection but missed the first
+1.8 seconds of visible branding. Current main removes delayed shortcut injection.
+The private Qt/PulseAudio frontend selects a valid preset before any render call;
+empty or unsuccessful selection never draws the idle logo. The launcher waits
+for readiness and reports errors/timeouts. No Hyprland/X11 shortcut helper is
+needed. Arch installer builds it automatically; explicit rebuild command is
+`jukeboxcli --install-linux-visualizer`. See [native build details](linux-preset-packs.md).
+
 ## Git and documentation rules
 
 Public commits use the verified repository identity:

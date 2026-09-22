@@ -9,7 +9,7 @@ ensure_linux_dependencies() {
     return 0
   fi
   set -- git nodejs npm mpv ffmpeg tar
-  if [ "${install_visualizer:-1}" -eq 1 ]; then set -- "$@" projectm-pulseaudio libpulse; fi
+  if [ "${install_visualizer:-1}" -eq 1 ]; then set -- "$@" projectm-pulseaudio libpulse gcc make pkgconf qt5-base; fi
   if [ "${install_browser_cookies:-0}" -eq 1 ]; then set -- "$@" chromium gnome-keyring libsecret; fi
   install_missing=""
   for install_package in "$@"; do

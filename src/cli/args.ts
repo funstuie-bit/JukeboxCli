@@ -4,6 +4,7 @@
 import type { Config } from "../config/config";
 
 export type CliCommand =
+  | { kind: "install-linux-visualizer" }
   | { kind: "install-preset-pack" }
   | { kind: "preset-pack"; pack: "classic" | "cream-of-the-crop" | "combined" }
   | { kind: "doctor" }
@@ -72,6 +73,7 @@ function flagToConfig(name: string, value: string): Partial<Config> {
 export function parseCliArgs(argv: string[]): CliCommand {
   const args = argv.filter((a) => a.trim() !== "");
   if (args.length === 0) return { kind: "run" };
+  if (args.length === 1 && args[0] === "--install-linux-visualizer") return { kind: "install-linux-visualizer" };
 
   if (args[0] === "--install-preset-pack") {
     return args.length === 2 && args[1] === "cream-of-the-crop"
@@ -135,6 +137,8 @@ usage
   jukeboxcli <link>         download that song on launch
   jukeboxcli --version      print the version
   jukeboxcli --doctor       read-only installation/tool diagnostics
+  jukeboxcli --install-linux-visualizer
+                           build the Linux fullscreen companion without the logo intro
   jukeboxcli --install-preset-pack cream-of-the-crop
                            download Linux presets + textures (~14 MB), then select
   jukeboxcli --preset-pack classic|cream-of-the-crop|combined
