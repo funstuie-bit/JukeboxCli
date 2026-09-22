@@ -207,6 +207,8 @@ Then press uppercase `F` in Now Playing, or choose **Settings → Player appeara
 Fullscreen effects**. JukeboxCli selects the active PipeWire/PulseAudio output
 monitor, opens a shuffled preset fullscreen and leaves the terminal player and
 compact visualiser running. Close the graphics window with `Alt+F4` to return.
+Source installs from current main support both Lua-based and legacy Hyprland
+when skipping the branded intro; this compatibility fix is not yet in a tagged release.
 Because this first implementation listens to the active system output, audio from
 other applications can also affect the animation.
 

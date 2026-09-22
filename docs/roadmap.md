@@ -37,6 +37,10 @@ MilkDrop presets and captured the selected headphone output monitor without
 changing the default microphone. Closing the window returned to the terminal,
 and quitting JukeboxCLI cleaned up the companion process. The launcher skips
 projectM's branded introduction and selects a shuffled community preset.
+Current main additionally supports Lua-based Hyprland shortcut injection, with
+legacy fallback. Rebuilt Arch acceptance confirmed 2560×1080 fullscreen,
+intro skipping, six terminal modes, Alt+F4 and mpv cleanup; this compatibility
+fix is awaiting a tagged release. Longer memory-soak testing remains open.
 
 projectM is an open-source, MilkDrop-compatible OpenGL renderer whose core
 accepts PCM and performs its own FFT and beat detection. This version currently

@@ -11,8 +11,31 @@ export type FullscreenVisualizerResult =
 
 let visualizerProcess: ChildProcess | null = null;
 
+type ShortcutTools = { hyprctl: string | null; wtype: string | null; xdotool: string | null };
+type ShortcutRunner = (command: string, args: string[]) => Promise<string>;
+
+/** New Hyprland uses Lua; retain the legacy dispatcher for older desktops. */
+export async function skipProjectMIntro(
+  tools: ShortcutTools,
+  pid: number,
+  run: ShortcutRunner = async (command, args) => (await execa(command, args, { timeout: 3000 })).stdout,
+): Promise<void> {
+  if (tools.hyprctl) {
+    try {
+      const reply = await run(tools.hyprctl, ["eval",
+        'hl.dispatch(hl.dsp.send_key_state({mods="CTRL",key="r",state="down",window="class:projectM-pulseaudio"})); ' +
+        'hl.timer(function() hl.dispatch(hl.dsp.send_key_state({mods="CTRL",key="r",state="up",window="class:projectM-pulseaudio"})) end, {timeout=50,type="oneshot"})',
+      ]);
+      // hyprctl can return status zero with an error in its response text.
+      if (reply.trim() === "ok") return;
+    } catch { /* Older Hyprland has no eval command. */ }
+  }
+  const action = randomPresetCommand(tools, pid);
+  if (action) await run(action.command, action.args);
+}
+
 export function randomPresetCommand(
-  tools: { hyprctl: string | null; wtype: string | null; xdotool: string | null },
+  tools: ShortcutTools,
   pid: number,
 ): { command: string; args: string[] } | null {
   if (tools.hyprctl) {
@@ -126,8 +149,7 @@ export async function launchFullscreenVisualizer(): Promise<FullscreenVisualizer
       // fullscreen window has focus, select a real playlist preset immediately.
       const introTimer = setTimeout(() => {
         if (visualizerProcess !== child || child.exitCode !== null) return;
-        const action = randomPresetCommand({ hyprctl, wtype, xdotool }, child.pid ?? 0);
-        if (action) spawn(action.command, action.args, { stdio: "ignore" }).unref();
+        void skipProjectMIntro({ hyprctl, wtype, xdotool }, child.pid ?? 0).catch(() => {});
       }, 1800);
       introTimer.unref();
       resolve({ ok: true, message: "Fullscreen effects opened · close the window to return." });

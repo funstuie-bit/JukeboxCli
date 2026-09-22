@@ -89,6 +89,25 @@ projectM captures the existing system monitor source; it must not open a second
 media stream. Its absence is optional and must not break playback or the terminal
 visualiser.
 
+## Rebuilt Arch acceptance — 2026-09-22
+
+Fresh source install passed doctor, local playback, all six terminal visualiser
+modes, Radio Browser lookup and a small download using Chromium/GNOME Keyring
+cookies. projectM entered true fullscreen at 2560×1080 on the active output;
+playback continued and Alt+F4 closed the companion.
+
+Acceptance exposed the legacy Hyprland shortcut command failing on the new
+Lua-based compositor. Current main now tries Lua with explicit key-down/key-up
+and falls back to the old dispatcher when Lua is unavailable. The corrected
+installed build automatically selected a real preset. This is an unreleased
+compatibility fix on top of 1.1.1, not a new published version.
+
+Normal quit, Ctrl-C and closing the dedicated test terminal each removed its
+mpv process, while an unrelated active player remained untouched. Validation:
+709 tests passed, 5 skipped; typecheck, build and distribution guard passed.
+Older Hyprland fallback has automated coverage; live desktop acceptance was on
+the Lua-based compositor. Long-session memory soak remains outstanding.
+
 ## Git and documentation rules
 
 Public commits use the verified repository identity:
