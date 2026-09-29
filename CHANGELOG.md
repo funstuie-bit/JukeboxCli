@@ -3,6 +3,16 @@
 Release notes describe what changed in each build. For what works now and the
 remaining limits, see [feature status](FEATURES.md).
 
+## 1.3.0 — Library browsing and multi-track queueing
+
+- Browse the library by songs, artists or albums with `B`, retaining search and
+  source filters. Enter opens collections; Escape goes back.
+- Mark library tracks with `x`, clear marks with `X`, then append with `A` or
+  queue next with `P`. Batch insertion preserves displayed order and current
+  playback, including shuffle. No bulk delete or automatic downloads.
+- Preview highlighted-track metadata with `i`; responsive text details work
+  without terminal image support. Inspired by FurqanHun/mpv-music.
+
 ## 1.2.0 — MilkDrop on Mac and Linux
 
 - Add optional Mac fullscreen projectM 4 effects for macOS 14.4+, with a verified

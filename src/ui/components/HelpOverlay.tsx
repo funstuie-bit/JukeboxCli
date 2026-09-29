@@ -7,7 +7,13 @@ import { COLOR, RULE } from "../theme";
 /** Bounded, keyboard-paged help: adding a feature must not push its keys offscreen. */
 export function HelpOverlay() {
   const { cols, rows, compact, section } = useStore();
-  const [page, setPage] = useState(section === "listen" ? 4 : section === "discover" ? 3 : section === "player" ? 1 : section === "queue" ? 2 : 0);
+  // Resolve by title so adding a help group cannot shift unrelated sections.
+  const [page, setPage] = useState(() => {
+    const title = section === "listen" ? "Radio / URL (9)" : section === "discover" ? "Discover (YouTube Music)"
+      : section === "player" ? "Player" : section === "queue" ? "Listening queue"
+      : section === "library" ? "Library" : "Navigate";
+    return Math.max(0, HELP_GROUPS.findIndex(group => group.title === title));
+  });
   const [offset, setOffset] = useState(0);
   const width = Math.max(20, Math.min(cols - 2, 78));
   const height = Math.max(8, rows - 4);

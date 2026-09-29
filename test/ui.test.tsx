@@ -5,6 +5,7 @@ import os from "node:os";
 import path from "node:path";
 import type { ReactNode } from "react";
 import { Box } from "ink";
+import stringWidth from "string-width";
 import { StoreContext, type Store } from "../src/ui/store";
 import { defaultConfig } from "../src/config/config";
 import { Library } from "../src/library/library";
@@ -77,6 +78,129 @@ const ESC = "\u001b";
 
 const HOME = `${ESC}[H`;
 const END = `${ESC}[F`;
+
+describe("library collection browsing and selection", () => {
+  const tracks: Track[] = [
+    { id: "one", source: "local", sourceTrackId: "one", title: "First track", artist: "Alpha", album: "First album", filePath: "/music/one.mp3", addedAt: "2026-01-01" },
+    { id: "two", source: "local", sourceTrackId: "two", title: "Second track", artist: "Alpha", album: "Second album", filePath: "/music/two.flac", addedAt: "2026-01-01" },
+    { id: "three", source: "local", sourceTrackId: "three", title: "Third track", artist: "Beta", album: "First album", filePath: "/music/three.mp3", addedAt: "2026-01-01" },
+  ];
+  it("opens artists/albums, plays only their tracks and returns with Escape", async () => {
+    const playTrack = vi.fn();
+    const store = makeStore({ library: makeFakeLibrary(tracks), playTrack });
+    const ui = render(wrap(<LibrarySection />, store));
+    await tick();
+    ui.stdin.write("B");
+    await vi.waitFor(() => expect(ui.lastFrame()).toContain("Browse: artists"));
+    ui.stdin.write("\r");
+    await vi.waitFor(() => expect(ui.lastFrame()).toContain("artists / Alpha"));
+    ui.stdin.write(DOWN); // past Shuffle to first track
+    await tick();
+    ui.stdin.write("\r");
+    await vi.waitFor(() => expect(playTrack).toHaveBeenCalledWith(tracks[0], tracks.slice(0, 2)));
+    ui.stdin.write(ESC);
+    await vi.waitFor(() => expect(ui.lastFrame()).not.toContain("artists / Alpha"));
+    ui.stdin.write("B");
+    await vi.waitFor(() => expect(ui.lastFrame()).toContain("Browse: albums"));
+    expect(ui.lastFrame()).toContain("3 albums");
+    ui.unmount();
+  });
+  it("marks multiple tracks, queues them in display order and clears marks", async () => {
+    const store = makeStore({ library: makeFakeLibrary(tracks) });
+    const ui = render(wrap(<LibrarySection />, store));
+    await tick();
+    ui.stdin.write("x"); // Shuffle is not markable.
+    await tick();
+    expect(ui.lastFrame()).toContain("0 marked");
+    ui.stdin.write(DOWN);
+    await tick();
+    ui.stdin.write("x");
+    await vi.waitFor(() => expect(ui.lastFrame()).toContain("1 marked"));
+    ui.stdin.write(DOWN);
+    await tick();
+    ui.stdin.write("x");
+    await vi.waitFor(() => expect(ui.lastFrame()).toContain("2 marked"));
+    ui.stdin.write("P");
+    await vi.waitFor(() => expect(ui.lastFrame()).toContain("2 tracks queued next"));
+    expect(store.playback.getState().list.map(t => t.id)).toEqual(["one", "two"]);
+    expect(store.playback.getState().track).toBeNull();
+    expect(ui.lastFrame()).toContain("0 marked");
+    ui.unmount();
+  });
+  it("clears hidden marks when the browse mode changes", async () => {
+    const store = makeStore({ library: makeFakeLibrary(tracks) });
+    const ui = render(wrap(<LibrarySection />, store));
+    await tick();
+    ui.stdin.write(DOWN);
+    await tick();
+    ui.stdin.write("x");
+    await vi.waitFor(() => expect(ui.lastFrame()).toContain("1 marked"));
+    ui.stdin.write("B");
+    await vi.waitFor(() => expect(ui.lastFrame()).toContain("Browse: artists"));
+    ui.stdin.write("\r");
+    await vi.waitFor(() => expect(ui.lastFrame()).toContain("artists / Alpha"));
+    expect(ui.lastFrame()).toContain("0 marked");
+    ui.unmount();
+  });
+  it("lets X clear marks without deleting or clearing the queue", async () => {
+    const store = makeStore({ library: makeFakeLibrary(tracks) });
+    store.playback.enqueue(tracks[2]!);
+    const ui = render(wrap(<LibrarySection />, store));
+    await tick();
+    ui.stdin.write(DOWN);
+    await tick();
+    ui.stdin.write("x");
+    await vi.waitFor(() => expect(ui.lastFrame()).toContain("1 marked"));
+    ui.stdin.write("X");
+    await vi.waitFor(() => expect(ui.lastFrame()).toContain("0 marked"));
+    expect(store.playback.getState().list).toEqual([tracks[2]]);
+    expect(store.library.all()).toHaveLength(3);
+    ui.unmount();
+  });
+  it.each([60, 110])("shows cursor details at width %s without starting playback", async width => {
+    const playTrack = vi.fn();
+    const store = makeStore({ library: makeFakeLibrary(tracks), playTrack, contentWidth: width, listRows: 20 });
+    const ui = render(wrap(<Box width={width}><LibrarySection /></Box>, store));
+    await tick();
+    ui.stdin.write(DOWN);
+    await vi.waitFor(() => expect(ui.lastFrame()).toContain("one.mp3"));
+    ui.stdin.write(DOWN);
+    await vi.waitFor(() => expect(ui.lastFrame()).toContain("two.flac"));
+    const lines = ui.lastFrame()!.split("\n");
+    expect(Math.max(...lines.map(line => stringWidth(line)))).toBeLessThanOrEqual(width);
+    expect(lines.length).toBeLessThanOrEqual(store.listRows + 2);
+    expect(playTrack).not.toHaveBeenCalled();
+    ui.stdin.write("i");
+    await vi.waitFor(() => expect(ui.lastFrame()).not.toContain("two.flac"));
+    expect(ui.lastFrame()).toContain("Details off");
+    ui.unmount();
+  });
+  it("keeps text capture during rename inside a collection", async () => {
+    const setCaptureMode = vi.fn();
+    const store = makeStore({ library: makeFakeLibrary(tracks), setCaptureMode });
+    const ui = render(wrap(<LibrarySection />, store));
+    await tick();
+    ui.stdin.write("B");
+    await vi.waitFor(() => expect(ui.lastFrame()).toContain("Browse: artists"));
+    ui.stdin.write("\r");
+    await vi.waitFor(() => expect(ui.lastFrame()).toContain("artists / Alpha"));
+    ui.stdin.write(DOWN);
+    await tick();
+    ui.stdin.write("t");
+    await vi.waitFor(() => expect(setCaptureMode).toHaveBeenLastCalledWith("text"));
+    ui.stdin.write(ESC);
+    await vi.waitFor(() => expect(setCaptureMode).toHaveBeenLastCalledWith("esc"));
+    expect(ui.lastFrame()).toContain("artists / Alpha");
+    ui.unmount();
+  });
+  it.each([3, 6])("hides details on short terminals and keeps %s list rows bounded", listRows => {
+    const store = makeStore({ library: makeFakeLibrary(tracks), compact: true, listRows });
+    const ui = render(wrap(<Box width={48}><LibrarySection /></Box>, store));
+    expect(ui.lastFrame()).not.toContain("one.mp3");
+    expect(ui.lastFrame()!.split("\n").length).toBeLessThanOrEqual(listRows + 2);
+    ui.unmount();
+  });
+});
 
 describe("single-page sections render", () => {
   it("library shows the empty state", () => {
@@ -713,7 +837,7 @@ describe("queue copy, banner, overlay, welcome paste", () => {
 
   it("help overlay pages through keys without growing beyond the terminal", async () => {
     const { lastFrame, stdin } = render(
-      wrap(<HelpOverlay />, makeStore({ cols: 100 })),
+      wrap(<HelpOverlay />, makeStore({ cols: 100, section: "home" })),
     );
     const lines = (lastFrame() ?? "").split("\n");
     // The longest chord and labels sit intact on one row each; a wrapped
@@ -729,7 +853,7 @@ describe("queue copy, banner, overlay, welcome paste", () => {
 
   it("help overlay keeps a complete bordered box when compact", () => {
     const { lastFrame } = render(
-      wrap(<HelpOverlay />, makeStore({ cols: 100, compact: true })),
+      wrap(<HelpOverlay />, makeStore({ cols: 100, compact: true, section: "home" })),
     );
     const lines = (lastFrame() ?? "").split("\n").filter((l) => l.trim() !== "");
     // The card must stay a closed box: a top corner on the first row and a
@@ -750,6 +874,15 @@ describe("queue copy, banner, overlay, welcome paste", () => {
       wrap(<HelpOverlay />, makeStore({ cols: 100, compact: false })),
     );
     expect(lastFrame() ?? "").toContain("Press ? or esc to close");
+  });
+
+  it.each([
+    ["library", "Library"], ["queue", "Listening queue"], ["player", "Player"],
+    ["listen", "Radio / URL (9)"], ["discover", "Discover (YouTube Music)"],
+  ] as const)("opens the correct help group from %s", (section, title) => {
+    const ui = render(wrap(<HelpOverlay />, makeStore({ section })));
+    expect(ui.lastFrame()).toContain(title);
+    ui.unmount();
   });
 
   it("playlists / opens local filter instead of jumping to library", async () => {

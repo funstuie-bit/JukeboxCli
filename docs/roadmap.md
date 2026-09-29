@@ -1,6 +1,10 @@
 # Roadmap
 
-## Current release — 1.2.0
+## Current release — 1.3.0
+
+Version 1.3.0 adds artist/album browsing, multi-track queue actions and responsive
+text details in the library. Genre metadata, portable playlist import/export and
+a session-log viewer remain separate follow-ups.
 
 Version 1.2.0 adds Mac fullscreen MilkDrop, Linux preset packs and logo-free
 startup on both platforms. It retains the 1.1.1 fix for orphaned mpv playback.
@@ -17,6 +21,12 @@ real fullscreen and leaves playback and the compact terminal visualiser running.
 The dependency is optional.
 
 ## Next — hands-on coverage
+
+- Library improvements inspired by mpv-music: songs/artist/album
+  browsing, multi-track queue actions and responsive text details. Test `B`,
+  Enter/Escape, `x`/`X`, `A`/`P` and `i` on your own collections and terminals.
+  Genre metadata, portable playlist import/export and a session-log viewer
+  remain separate follow-ups; they are not part of this first pass.
 
 - Version 1.2.0 adds an opt-in Mac projectM 4 companion with Cream of the Crop
   and MilkDrop textures. Build, preset rendering and process-lifetime checks

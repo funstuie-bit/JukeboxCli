@@ -81,6 +81,17 @@ export const HELP_GROUPS: HelpGroup[] = [
     ],
   },
   {
+    title: "Library",
+    hints: [
+      { keys: "B", label: "Browse songs / artists / albums" },
+      { keys: "↵ / esc", label: "Open collection / back" },
+      { keys: "x / X", label: "Mark track / clear marks (not delete)" },
+      { keys: "A / P", label: "Append marked tracks / queue next" },
+      { keys: "i", label: "Show / hide track details" },
+      { keys: "[ ]", label: "Filter source" },
+    ],
+  },
+  {
     title: "Listening queue",
     hints: [
       { keys: "A", label: "Append selected song" },
@@ -231,7 +242,8 @@ export function footerHints(
       ];
     case "library":
       return [
-        { keys: "↵", label: "Play" },
+        { keys: "↵", label: "Open/play" },
+        { keys: "B", label: "Browse" },
         { keys: "/", label: "Search" },
         { keys: "[ ]", label: "Source" },
         { keys: "d", label: "Delete" },

@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import { Box, Text, useInput } from "ink";
 import { useStore } from "../store";
 import { wrapStep } from "../move";
@@ -43,6 +43,12 @@ interface SongListProps {
   /** When set, `t` on an item row (never the action row) asks to rename it. */
   onRename?: (value: string) => void;
   onQueue?: (value: string, next: boolean) => void;
+  /** Enables x/X marking. A/P applies to marked rows, in display order. */
+  onQueueMany?: (values: string[], next: boolean) => void;
+  preview?: (value: string | undefined) => ReactNode;
+  /** A positive width puts details alongside the list; otherwise below it. */
+  previewWidth?: number;
+  previewRows?: number;
 }
 
 type Row =
@@ -86,10 +92,15 @@ export function SongList({
   numbered,
   onRename,
   onQueue,
+  onQueueMany,
+  preview,
+  previewWidth = 0,
+  previewRows = 3,
 }: SongListProps) {
   const { listRows, playback } = useStore();
   const [cursor, setCursor] = useState(0);
   const [notice, setNotice] = useState("");
+  const [marked, setMarked] = useState<Set<string>>(() => new Set());
 
   // Flatten to display rows, numbering only the selectable ones. Memoized on
   // the data itself: a cursor move or playback tick must only pay for the
@@ -128,9 +139,14 @@ export function SongList({
 
   // Keep the cursor in range if the list shrank between renders.
   const clamped = Math.min(cursor, Math.max(0, selectableCount - 1));
+  const selected = useMemo(() => values.filter(v => v !== action?.value && marked.has(v)), [values, marked, action]);
+  const availableRows = Math.max(1, listRows - reserveRows);
+  const showMarks = !!onQueueMany && availableRows >= 2;
+  const showNotice = !!notice && availableRows - (showMarks ? 1 : 0) >= 2;
+  const extraRows = (showMarks ? 1 : 0) + (preview && !previewWidth ? previewRows : 0);
 
   // A page-jump moves by roughly a visible screenful.
-  const page = Math.max(1, listRows - reserveRows - 1);
+  const page = Math.max(1, listRows - reserveRows - extraRows - 1);
 
   useInput(
     (input, key) => {
@@ -146,6 +162,24 @@ export function SongList({
       else if (key.return) {
         const v = values[clamped];
         if (v) onSelect(v);
+      } else if (input === "x" && onQueueMany) {
+        const row = rows[rowOfIdx[clamped] ?? -1];
+        if (row?.kind === "item") {
+          setMarked(previous => {
+            const result = new Set(previous);
+            if (result.has(row.item.value)) result.delete(row.item.value);
+            else result.add(row.item.value);
+            return result;
+          });
+          setNotice("");
+        }
+      } else if (input === "X" && onQueueMany) {
+        setMarked(new Set());
+        setNotice("");
+      } else if ((input === "A" || input === "P") && onQueueMany && selected.length > 0) {
+        onQueueMany(selected, input === "P");
+        setNotice(`${selected.length} tracks ${input === "P" ? "queued next" : "added to queue"} · 7 Queue`);
+        setMarked(new Set());
       } else if ((input === "A" || input === "P") && onQueue) {
         const row = rows[rowOfIdx[clamped] ?? -1];
         if (row?.kind === "item") {
@@ -173,14 +207,17 @@ export function SongList({
   // Scroll window: keep the cursor row visible, centred when possible. The
   // window must fit within the lines the section left us, or the body overflows
   // the terminal and Ink's incremental redraw mangles rows (merged / dropped).
-  const height = Math.max(1, listRows - reserveRows - (notice ? 1 : 0));
+  const height = Math.max(1, availableRows - extraRows - (showNotice ? 1 : 0));
   const cursorRow = rowOfIdx[clamped] ?? -1;
   const start = scrollStart(rows, cursorRow, height);
   const visible = rows.slice(start, start + height);
 
   return (
     <Box flexDirection="column">
-      {notice ? <Text color={COLOR.good} wrap="truncate-end">{notice}</Text> : null}
+      {showMarks ? <Text color={COLOR.muted} wrap="truncate-end">{selected.length} marked · x Mark · X Clear · A Append · P Next</Text> : null}
+      {showNotice ? <Text color={COLOR.good} wrap="truncate-end">{notice}</Text> : null}
+      <Box flexDirection={previewWidth ? "row" : "column"}>
+      <Box flexDirection="column" flexGrow={1} flexBasis={previewWidth ? 0 : undefined} minWidth={0}>
       {visible.map((r, i) => {
         if (r.kind === "header") {
           return (
@@ -202,6 +239,7 @@ export function SongList({
           <Box key={value}>
             <Text color={COLOR.accent}>{here ? `${ICON.pointer} ` : "  "}</Text>
             <Text color={COLOR.good}>{playing ? `${ICON.play} ` : "  "}</Text>
+            {onQueueMany && r.kind === "item" ? <Text color={COLOR.accent}>{marked.has(value) ? "[x] " : "[ ] "}</Text> : null}
             {numbered && r.kind === "item" ? (
               <Box flexShrink={0} marginRight={1}>
                 <Text dimColor>{String(r.no).padStart(numWidth)}</Text>
@@ -236,6 +274,12 @@ export function SongList({
           </Box>
         );
       })}
+      </Box>
+      {preview ? <Box flexDirection="column" flexShrink={0} width={previewWidth || undefined}
+        height={previewWidth ? height : previewRows} overflow="hidden" paddingLeft={previewWidth ? 2 : 0}>
+        {preview(values[clamped] === action?.value ? undefined : values[clamped])}
+      </Box> : null}
+      </Box>
     </Box>
   );
 }

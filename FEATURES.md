@@ -7,6 +7,8 @@ or online service will cooperate. The limits are listed below.
 
 - Home with recent local/online plays and saved stations. No library required.
 - Local library, playlists, downloads, conversion and custom output folders.
+- Artist/album browsing (`B`), multi-track queue
+  selection (`x`, `X`, `A`, `P`) and responsive text details (`i`) in Library.
 - Signed-out YouTube Music search for songs, videos, albums, artists and playlists.
 - Local/online search inside Now Playing: `S`, then `l:`, `s:` or `v:`.
 - Mixed local, online and live queue: append, play next, reorder, remove,

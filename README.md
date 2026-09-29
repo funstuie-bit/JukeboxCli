@@ -77,6 +77,27 @@ features ended up.
 JukeboxCli opens on Home. Search online, browse internet radio or open your local
 music. You don't need a library or a sign-in to get started.
 
+### Library browsing
+
+Version 1.3.0 adds artist and album browsing alongside the usual song list,
+including Homebrew installs.
+
+In Library (`1`), press `B` to cycle **songs → artists → albums**. Enter opens a
+collection; Escape returns to the collection list. Search and source filters still
+work. Missing tags appear under Unknown artist/album; browsing never moves files.
+
+On a track, `x` toggles a mark and `X` clears marks. `A` appends the marked tracks;
+`P` puts them next, in displayed order, without interrupting playback. With no
+marks, A/P acts on the highlighted track as before. Marks clear after queueing or
+changing the search, source or browse view, so hidden selections aren't queued by
+accident. Enter still plays the highlighted track; Space still pauses/resumes.
+
+Press `i` to show/hide details for the highlighted track. Details sit beside the
+list in wide windows, below it in narrower windows, and hide in short windows.
+This is a text preview, so it also works in terminals without image support.
+
+### Main controls
+
 | Key | Action |
 | --- | --- |
 | `8`, then `/` | Search online |
@@ -150,7 +171,7 @@ results stay temporary until you explicitly save one with **f**.
 
 ## Status and limits
 
-**Current release: [1.2.0](https://github.com/funstuie-bit/JukeboxCli/releases/tag/v1.2.0).**
+**Current release: [1.3.0](https://github.com/funstuie-bit/JukeboxCli/releases/tag/v1.3.0).**
 Adds optional Mac fullscreen MilkDrop, Linux preset packs and logo-free startup
 on both platforms. Restart after updating; music and settings are kept.
 [Changelog](CHANGELOG.md).
@@ -417,6 +438,9 @@ notice is retained.
 [dtDhruv/ytkew](https://github.com/dtDhruv/ytkew) and
 [itzender5820/mousiki](https://github.com/itzender5820/mousiki) influenced the
 artwork-led player and queue presentation.
+[FurqanHun/mpv-music](https://github.com/FurqanHun/mpv-music) inspired the new
+artist/album browser, multi-track selection and browsing details. These are
+implemented in JukeboxCli's existing stack, not a port of its Rust code.
 [bjarneo/cliamp](https://github.com/bjarneo/cliamp) inspired the classic peak meter,
 the wider family of visualiser styles and the idea of searching the community Radio
 Browser directory. Those features and the terminal drawings were implemented for

@@ -177,15 +177,21 @@ export class Playback extends EventEmitter {
 
   /** Enqueue is non-interrupting, including when the player is idle. */
   enqueue(track: Track, next = false): void {
+    this.enqueueMany([track], next);
+  }
+
+  /** Insert a selection in display order, notifying/persisting only once. */
+  enqueueMany(tracks: readonly Track[], next = false): void {
+    if (tracks.length === 0) return;
     const at = next && this.state.index >= 0 ? this.state.index + 1 : this.state.list.length;
     const list = [...this.state.list];
-    list.splice(at, 0, track);
-    const shift = (i: number) => i >= at ? i + 1 : i;
+    list.splice(at, 0, ...tracks);
+    const shift = (i: number) => i >= at ? i + tracks.length : i;
     this.order = this.order.map(shift);
     this.backStack = this.backStack.map(shift);
     const index = this.state.index >= 0 ? shift(this.state.index) : -1;
     const pos = next && index >= 0 ? this.order.indexOf(index) + 1 : this.order.length;
-    this.order.splice(pos, 0, at);
+    this.order.splice(pos, 0, ...tracks.map((_, i) => at + i));
     this.update({ list, index });
   }
 

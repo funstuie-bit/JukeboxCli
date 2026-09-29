@@ -17,6 +17,8 @@ import { deleteTracks } from "../../library/delete";
 import { displaySource } from "../../library/drift";
 import { renameTrack } from "../../library/rename";
 import { SOURCE_LABELS, type SourceId, type Track } from "../../library/types";
+import { libraryCollections, type BrowseMode } from "../../library/browse";
+import path from "node:path";
 
 const SOURCE_ORDER: SourceId[] = [
   "youtube",
@@ -36,10 +38,7 @@ function shuffle<T>(arr: T[]): T[] {
   return out;
 }
 
-/**
- * Every downloaded song in one place: a flat newest-first list with source
- * tabs and text search. Browsing by set lives in the Playlists section.
- */
+/** Source/search filters shared by song, artist and album browsing. */
 export function Library() {
   const {
     library,
@@ -53,6 +52,8 @@ export function Library() {
     pendingSearch,
     setPendingSearch,
     compact,
+    contentWidth,
+    listRows,
   } = useStore();
   const doneCount = useQueueDoneCount(queue);
   const libVersion = useLibrary(library);
@@ -63,6 +64,9 @@ export function Library() {
   const [q, setQ] = useState("");
   const [editing, setEditing] = useState(false);
   const [filter, setFilter] = useState<SourceFilter>("all");
+  const [browseMode, setBrowseMode] = useState<BrowseMode>("songs");
+  const [collectionId, setCollectionId] = useState<string | null>(null);
+  const [details, setDetails] = useState(true);
   const searching = q.trim().length > 0;
   // Pending one-song delete, shown as a y/esc confirm in the search row.
   const [confirm, setConfirm] = useState<{ id: string; title: string } | null>(
@@ -124,7 +128,7 @@ export function Library() {
 
   // Memoized: fuzzy search over the whole library must run on query/tab/data
   // changes only, never on playback-tick or cursor re-renders.
-  const visible = useMemo(
+  const matching = useMemo(
     () =>
       searching
         ? library
@@ -135,17 +139,23 @@ export function Library() {
     [searching, q, filter, inSource, srcOf],
   );
 
+  const collections = useMemo(() => browseMode === "songs" ? [] : libraryCollections(matching, browseMode), [matching, browseMode]);
+  const collection = collections.find(c => c.id === collectionId);
+  const browsingCollections = browseMode !== "songs" && collectionId === null;
+  const visible = collectionId === null ? matching : collection?.tracks ?? [];
+
   // Memoized: the per-track item arrays must rebuild on data/tab/query changes
   // only, never on playback-tick or cursor re-renders. Independent of playback
   // and cursor state by design (playingId reaches SongList separately).
   const groups = useMemo<SongGroup[]>(() => {
+    if (browsingCollections) return [{ items: collections.map(c => ({ value: c.id, title: c.title, artist: c.artist, meta: `${c.tracks.length} tracks` })) }];
     const toItem = (t: Track) => ({
       value: t.id,
       title: t.title,
       artist: t.artist,
       meta: formatDuration(t.durationSec),
     });
-    if (searching) return [{ items: visible.map(toItem) }];
+    if (searching || collectionId !== null) return [{ items: visible.map(toItem) }];
     if (filter === "all" && presentSources.length > 1) {
       return presentSources
         .map((src) => {
@@ -158,21 +168,21 @@ export function Library() {
         .filter((g) => g.items.length > 0);
     }
     return [{ items: visible.map(toItem) }];
-  }, [searching, visible, filter, presentSources, inSource, srcOf]);
+  }, [searching, visible, filter, presentSources, inSource, srcOf, browsingCollections, collections, collectionId]);
 
   // Shuffle action for the browse view only; search results play in order.
   // Memoized so its identity holds across unrelated re-renders.
   const action = useMemo(
     () =>
-      !searching && visible.length > 1
+      !browsingCollections && !searching && visible.length > 1
         ? {
             value: "__shuffle__",
             label: `${ICON.shuffle} Shuffle ${
-              filter === "all" ? "all" : SOURCE_LABELS[filter]
+              collection ? cleanText(collection.title) : filter === "all" ? "all" : SOURCE_LABELS[filter]
             } (${visible.length})`,
           }
         : undefined,
-    [searching, visible, filter],
+    [searching, visible, filter, browsingCollections, collection],
   );
 
   // Take over the keyboard only while typing in the search box; a pending
@@ -180,16 +190,14 @@ export function Library() {
   const renaming = focused && renamingTrackId !== null;
   useEffect(() => {
     setCaptureMode(
-      focused && editing
+      focused && (editing || renaming)
         ? "text"
-        : focused && confirm
+        : focused && (confirm || collectionId !== null)
           ? "esc"
-          : renaming
-            ? "text"
-            : "none",
+          : "none",
     );
     return () => setCaptureMode("none");
-  }, [focused, editing, confirm, renaming, setCaptureMode]);
+  }, [focused, editing, confirm, renaming, collectionId, setCaptureMode]);
 
   // Consume the global "/" intent: arrive with the search box already open.
   useEffect(() => {
@@ -203,7 +211,14 @@ export function Library() {
   //   "/" opens search
   //   "[" / "]" step the source tabs
   useInput(
-    (input) => {
+    (input, key) => {
+      if (input === "B") {
+        setBrowseMode(browseMode === "songs" ? "artists" : browseMode === "artists" ? "albums" : "songs");
+        setCollectionId(null);
+        return;
+      }
+      if (input === "i") { setDetails(v => !v); return; }
+      if (key.escape && collectionId !== null) { setCollectionId(null); return; }
       if (input === "/") {
         setEditing(true);
         return;
@@ -212,6 +227,7 @@ export function Library() {
         const dir = input === "]" ? 1 : -1;
         const i = tabs.indexOf(filter);
         setFilter(tabs[(i + dir + tabs.length) % tabs.length]!);
+        setCollectionId(null);
       }
     },
     { isActive: focused && !editing && !confirm && !renaming },
@@ -278,6 +294,7 @@ export function Library() {
   );
   const handleSelect = useCallback(
     (value: string) => {
+      if (browsingCollections) { setCollectionId(value); return; }
       if (value === "__shuffle__") {
         const shuffled = shuffle(visible);
         if (shuffled.length > 0) playTrack(shuffled[0]!, shuffled);
@@ -286,7 +303,7 @@ export function Library() {
       const t = library.get(value);
       if (t) playTrack(t, visible);
     },
-    [library, playTrack, visible],
+    [library, playTrack, visible, browsingCollections],
   );
   const handleRename = useCallback(
     (value: string) => {
@@ -315,22 +332,40 @@ export function Library() {
     );
   }
 
-  const subtitle = `${visible.length.toLocaleString()} song${visible.length === 1 ? "" : "s"}`;
+  const subtitle = browsingCollections ? `${collections.length} ${browseMode}` : `${visible.length.toLocaleString()} song${visible.length === 1 ? "" : "s"}`;
 
   // The search/hint row carries content only while typing, confirming a
   // delete, or showing an active query; when compact and idle, drop it so the
   // list gets the row back.
   const showSearchRow =
     !compact || editing || confirm !== null || searching || renaming;
-  // Rows above the list beyond the standard header (which listRows already
-  // accounts for): tabs (1) + the search row when shown (2 normally, 1 compact
-  // since its margin goes too).
-  const reserveRows = 1 + (showSearchRow ? (compact ? 1 : 2) : 0);
+  // In the smallest windows, search/confirmation replaces the browse hint.
+  const showBrowseRow = !compact || !showSearchRow;
+  const reserveRows = 1 + (showBrowseRow ? 1 : 0) + (showSearchRow ? (compact ? 1 : 2) : 0);
+  // Keep at least three song rows; hide details in short terminals.
+  const showDetails = details && !compact && listRows - reserveRows >= 7;
+  const preview = showDetails ? (id: string | undefined) => {
+    if (browsingCollections) {
+      const c = collections.find(item => item.id === id);
+      return <>
+        <Text color={COLOR.accent} wrap="truncate-end">{cleanText(c?.title ?? "Details")}</Text>
+        <Text wrap="truncate-end">{c ? `${c.tracks.length} tracks${c.artist ? ` · ${cleanText(c.artist)}` : ""}` : "Choose a collection"}</Text>
+        <Text color={COLOR.muted} wrap="truncate-end">{c?.tracks.slice(0, 3).map(t => cleanText(t.title)).join(" · ")}</Text>
+      </>;
+    }
+    const t = id ? library.get(id) : undefined;
+    return <>
+      <Text color={COLOR.accent} wrap="truncate-end">{cleanText(t?.title ?? "Track details")}</Text>
+      <Text wrap="truncate-end">{t ? `${cleanText(t.artist || "Unknown artist")} · ${cleanText(t.album || "Unknown album")}` : "Highlight a track to inspect it"}</Text>
+      <Text color={COLOR.muted} wrap="truncate-end">{t ? `${path.extname(t.filePath).slice(1).toUpperCase()} · ${formatDuration(t.durationSec)} · ${cleanText(path.basename(t.filePath))}` : "Enter plays · A appends · P queues next"}</Text>
+    </>;
+  } : undefined;
 
   return (
     <Box flexDirection="column">
       <Header title="Library" subtitle={subtitle} focused={focused} />
       <SourceTabs tabs={tabs} active={filter} count={tabCount} />
+      {showBrowseRow ? <Text color={COLOR.accent} wrap="truncate-end">B Browse: {browseMode}{collectionId !== null ? ` / ${cleanText(collection?.title ?? "No matches")} · esc Back` : ""} · i Details {details ? showDetails ? "on" : "auto-hidden" : "off"}</Text> : null}
       {/* The search row doubles as the delete confirm: same single row, so
           the list's height budget never moves. Hidden when compact + idle. */}
       {showSearchRow ? (
@@ -370,16 +405,23 @@ export function Library() {
         <Text dimColor>No matches.</Text>
       ) : (
         <SongList
+          key={JSON.stringify([browseMode, collectionId, filter, q])}
           groups={groups}
           action={action}
           playingId={playingId}
           focused={focused && !editing && !confirm && !renaming}
           reserveRows={reserveRows}
           deleteTargetsPlaying
-          onDelete={handleDelete}
+          onDelete={browsingCollections ? undefined : handleDelete}
           onSelect={handleSelect}
-          onQueue={(id, next) => { const t = library.get(id); if (t) playback.enqueue(t, next); }}
-          onRename={handleRename}
+          onQueue={browsingCollections ? undefined : (id, next) => { const t = library.get(id); if (t) playback.enqueue(t, next); }}
+          onQueueMany={browsingCollections ? undefined : (ids, next) => {
+            const tracks = ids.map(id => library.get(id)).filter((t): t is Track => !!t);
+            playback.enqueueMany(tracks, next);
+          }}
+          onRename={browsingCollections ? undefined : handleRename}
+          preview={preview}
+          previewWidth={contentWidth >= 100 ? 36 : 0}
         />
       )}
     </Box>
