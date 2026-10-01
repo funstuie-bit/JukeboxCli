@@ -121,6 +121,7 @@ export const HELP_GROUPS: HelpGroup[] = [
       { keys: "/", label: "Search Radio Browser directory" },
       { keys: "B / g / c", label: "Popular / genres / countries" },
       { keys: "M", label: "Quick radio channels" },
+      { keys: "S", label: "Studay FM: five live AI radio stations" },
       { keys: "o", label: "YouTube / website / audio URL" },
       { keys: "R", label: "Detect radio website / feed / playlist" },
       { keys: "↵", label: "Accept link, then play selected" },

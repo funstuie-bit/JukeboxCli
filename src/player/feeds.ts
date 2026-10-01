@@ -1,6 +1,7 @@
 import { trackFromUrl, playbackUrl } from "./url";
 import type { StreamTrack } from "./media";
 import { cleanText } from "../util/format";
+import { studayFmFeeds } from "./studayfm";
 
 const MAX_BYTES = 1024 * 1024;
 const MAX_FEEDS = 12;
@@ -129,6 +130,8 @@ function knownStation(url: URL): StreamTrack | undefined {
 export async function discoverFeeds(input: string, radio: boolean, signal: AbortSignal, fetcher: Fetcher = fetch): Promise<FeedResult> {
   const parsed = playbackUrl(input);
   signal.throwIfAborted();
+  const studay = studayFmFeeds(parsed);
+  if (studay) return { tracks: studay, note: `${studay.length} Studay FM feed${studay.length === 1 ? "" : "s"} · choose one to play or save · availability checked when played` };
   const known = knownStation(parsed);
   if (known) return { tracks: [known], note: "Known station feed · selected from the built-in compatibility list" };
   if (parsed.hostname.replace(/^www\./, "") === "radio.garden")

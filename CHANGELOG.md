@@ -3,6 +3,14 @@
 Release notes describe what changed in each build. For what works now and the
 remaining limits, see [feature status](FEATURES.md).
 
+## 1.3.1 — Studay FM stations
+
+- Add `S` in Radio / URL for Studay FM, StuLoFiDay, Yacht Zone, Tokyo Jazz and
+  C'est Magnifistu, with public station artwork. Pasting the Studay FM website
+  also reveals all five; a direct mount resolves to its named station.
+- Browsing presets makes no audio connection or download. Enter plays, A/P
+  queues, and f saves a favourite using the existing radio controls.
+
 ## 1.3.0 — Library browsing and multi-track queueing
 
 - Browse the library by songs, artists or albums with `B`, retaining search and

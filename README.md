@@ -98,12 +98,20 @@ This is a text preview, so it also works in terminals without image support.
 
 ### Main controls
 
+Listen to [Studay FM](https://www.studayfm.com/): press
+`9`, then `S` for Studay FM, StuLoFiDay, Yacht Zone, Tokyo Jazz and C'est Magnifistu.
+You can also paste the website with `R` to find all five feeds. Enter plays;
+`A`/`P` queues; `f` saves the highlighted station. Nothing plays or becomes a
+favourite automatically. These are public live streams with static station artwork;
+track metadata uses the existing radio player, not the site's programme schedule.
+
 | Key | Action |
 | --- | --- |
 | `8`, then `/` | Search online |
 | `o` | Play a YouTube or direct audio URL |
 | `9` | Open radio and saved stations |
 | `9`, then `M` | Browse quick radio genre channels |
+| `9`, then `S` | Browse the five Studay FM stations |
 | `9`, then `B`, `g` or `c` | Browse popular radio, genres or countries |
 | `9`, then `/` | Search for a station by name |
 | `1` | Open the local library |
@@ -171,9 +179,9 @@ results stay temporary until you explicitly save one with **f**.
 
 ## Status and limits
 
-**Current release: [1.3.0](https://github.com/funstuie-bit/JukeboxCli/releases/tag/v1.3.0).**
-Adds optional Mac fullscreen MilkDrop, Linux preset packs and logo-free startup
-on both platforms. Restart after updating; music and settings are kept.
+**Current release: [1.3.1](https://github.com/funstuie-bit/JukeboxCli/releases/tag/v1.3.1).**
+Adds five Studay FM station presets, website feed discovery and station artwork
+on Mac and Linux. Restart after updating; music and settings are kept.
 [Changelog](CHANGELOG.md).
 
 Automated install checks run on Apple Silicon and x64 Linux. Intel Macs and other

@@ -8,6 +8,7 @@ import { discoverFeeds } from "../../player/feeds";
 import { listRadioFacets, QUICK_RADIO_CHANNELS, searchRadioDirectory, type RadioFacet, type RadioFacetKind } from "../../player/radio-browser";
 import { readStations, removeStation, saveStation, refreshStations, stationTrack, type Station } from "../../player/stations";
 import type { StreamTrack } from "../../player/media";
+import { STUDAYFM_WEBSITE } from "../../player/studayfm";
 
 type DraftTrack = StreamTrack & { directoryResult?: boolean };
 
@@ -112,6 +113,7 @@ export function Listen() {
       }
       return;
     }
+    if (input === "S") { void submitUrl(STUDAYFM_WEBSITE); return; }
     if (input === "B") { void submitDirectory(""); return; }
     if (input === "M") { setFacetKind("quick"); setFacets([...QUICK_RADIO_CHANNELS]); setFacetFilter(""); setFacetCursor(0); setMode("browse"); setNotice("Quick channels · choose a mood, then pick a station"); return; }
     if (input === "g") { void browseDirectory("tags"); return; }
@@ -146,7 +148,7 @@ export function Listen() {
   return <Box flexDirection="column" width={contentWidth}>
     <Text bold color={COLOR.alt}>Radio / URL · Saved stations & found feeds</Text>
     <Text color={COLOR.muted} wrap="truncate-end">M quick channels · B popular · g genres · c countries · / search</Text>
-    <Text color={COLOR.muted} wrap="truncate-end">Streams play without importing or downloading music.</Text>
+    <Text color={COLOR.muted} wrap="truncate-end">S Studay FM · five AI radio stations · streams only, no downloads.</Text>
     {mode === "url" || mode === "radio" ? <>
       <Text color={COLOR.accent} wrap="truncate-end">{mode === "radio" ? "Paste radio website, playlist or audio URL:" : "Paste YouTube / website / audio URL:"}</Text>
       {focused ? <TextField key={mode} defaultValue={urlText} onChange={setUrlText} width={contentWidth - 1} placeholder="https://…" onSubmit={submitUrl} /> : null}

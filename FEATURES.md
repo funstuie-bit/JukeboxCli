@@ -18,6 +18,8 @@ or online service will cooperate. The limits are listed below.
   genre/tag, country or station-name search. Save, rename and remove favourites;
   find feeds from websites or PLS/M3U playlists, and refresh station artwork.
   Live pause disconnects; play reconnects.
+- Five Studay FM presets in Radio / URL (`S`), with station artwork and website
+  feed discovery. Play, queue or save individually; nothing starts automatically.
 - Stream/radio listening history and replay from Home.
 - Ghostty/Kitty-compatible, iTerm2 and Sixel artwork, including sharp stable
   covers in Foot; a text drawing in Apple's Terminal and blocks elsewhere.

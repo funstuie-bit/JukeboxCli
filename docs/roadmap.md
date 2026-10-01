@@ -1,6 +1,9 @@
 # Roadmap
 
-## Current release — 1.3.0
+## Current release — 1.3.1
+
+Version 1.3.1 adds five Studay FM radio presets, website feed discovery and
+station artwork on Mac and Linux. In Radio / URL (`9`), press `S` to browse.
 
 Version 1.3.0 adds artist/album browsing, multi-track queue actions and responsive
 text details in the library. Genre metadata, portable playlist import/export and
