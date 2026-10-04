@@ -3,6 +3,20 @@
 Release notes describe what changed in each build. For what works now and the
 remaining limits, see [feature status](FEATURES.md).
 
+## Unreleased — 1.4
+
+- Add Settings → Session diagnostics: bounded player/download error logs,
+  refresh/scroll and an explicit sanitised report export. No automatic uploads.
+- Add Playlists `I`/`E`: preview/import and export JSON or extended M3U files.
+  Keep mixed queue order, local music-relative paths and stable stream URLs.
+  Skip missing/unsupported entries; never download, autoplay or overwrite exports.
+- Add genre browsing to Library `B`, genre search/details, downloaded genre
+  metadata and an explicit cancellable read-only local-tag scan in Settings.
+- Add opt-in artwork-derived player colours, j/k vertical navigation and mouse
+  selection for song lists/queue/sidebar. Existing controls remain the default.
+- Add opt-in near-end Discover pagination, bounded to 10,000 results and stopped
+  on an empty continuation. Playback and downloads remain explicit.
+
 ## 1.3.1 — Studay FM stations
 
 - Add `S` in Radio / URL for Studay FM, StuLoFiDay, Yacht Zone, Tokyo Jazz and

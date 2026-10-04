@@ -3,15 +3,18 @@ import { Box, Text, useInput } from "ink";
 import { useStore, usePlayback } from "../store";
 import { cleanText, formatDuration, trackDisplayTitle } from "../../util/format";
 import stringWidth from "string-width";
-import { playerPalette, RULE } from "../theme";
+import { RULE } from "../theme";
 import { isLive, isStream } from "../../player/media";
+import { useArtworkPalette } from "../hooks/useArtworkPalette";
+import { MouseRow } from "../components/MouseRow";
 
 export function ListeningQueue({ height, width, active, framed = false, controlsOutside = false }: {
   height?: number; width?: number; active?: boolean; framed?: boolean; controlsOutside?: boolean;
 }) {
   const store = useStore();
-  const COLOR = playerPalette(store.config.playerTheme);
   const state = usePlayback(store.playback);
+  const COLOR = useArtworkPalette(store.config.playerTheme, store.config.artworkColours,
+    state.track && isStream(state.track) ? state.track.thumbnailUrl : state.track?.filePath);
   const entries = store.playback.queueEntries();
   const [cursor, setCursor] = useState(() => Math.max(0, entries.findIndex(e => e.index === state.index)));
   const [error, setError] = useState("");
@@ -64,9 +67,9 @@ export function ListeningQueue({ height, width, active, framed = false, controls
       // The engine knows the current recording's duration better than saved tags.
       // Keep the other rows' metadata and the library itself unchanged.
       const duration = row.index === state.index && state.duration > 0 ? state.duration : row.track.durationSec;
-      return <Text key={row.index} color={here && focused ? COLOR.selectedText : row.index === state.index ? COLOR.accent : COLOR.text} backgroundColor={here && focused ? COLOR.selection : undefined} wrap="truncate-end">
+      return <MouseRow key={row.index} active={focused && !confirmClear} onClick={() => setCursor(start + offset)}><Text color={here && focused ? COLOR.selectedText : row.index === state.index ? COLOR.accent : COLOR.text} backgroundColor={here && focused ? COLOR.selection : undefined} wrap="truncate-end">
         {columns ? queueRow(artist, title, isLive(row.track) ? "LIVE" : formatDuration(duration), contentCols, marker, source) : fitRow(marker + source.padEnd(4) + " " + title + " · " + artist, cols)}
-      </Text>;
+      </Text></MouseRow>;
     })}
     {!dense ? <><Box flexGrow={1} />
     {!controlsOutside ? <Text color={COLOR.muted} wrap="truncate-end">{entries.length ? `› selected · ▶ playing / Ⅱ paused · 9 saved stations` : "7 Queue · 8 Discover"}</Text> : null}</> : null}

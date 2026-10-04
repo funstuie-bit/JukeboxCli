@@ -25,6 +25,7 @@ const META_FIELDS = [
   "playlist_title",
   "ext",
   "filepath",
+  "genre",
 ] as const;
 
 export interface TrackMeta {
@@ -33,6 +34,7 @@ export interface TrackMeta {
   track?: string;
   artist?: string;
   album?: string;
+  genre?: string;
   duration?: number;
   uploader?: string;
   webpage_url?: string;
@@ -58,6 +60,7 @@ function parseMeta(line: string): TrackMeta | undefined {
     track: map.track,
     artist: map.artist,
     album: map.album,
+    genre: map.genre,
     duration: map.duration ? Number(map.duration) : undefined,
     uploader: map.uploader,
     webpage_url: map.webpage_url,

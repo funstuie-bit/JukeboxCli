@@ -1,13 +1,15 @@
 import { useEffect } from "react";
+import { mouseEvents, mousePresses } from "../mouse";
 
 /**
  * Enable mouse wheel scrolling in the terminal. Translates SGR mouse wheel
  * events into arrow key sequences so every arrow-driven list (@inkjs/ui
  * Select and our SongList) scrolls naturally with the wheel. Call once in App.
  */
-export function useMouseWheel(): void {
+export function useMouseWheel(mode: "off" | "wheel" | "click" = "wheel"): void {
   useEffect(() => {
     const { stdout, stdin } = process;
+    if (mode === "off" || !stdout.isTTY || !stdin.isTTY) return;
 
     // Enable SGR extended mouse tracking (button events + SGR encoding).
     // This tells the terminal to report mouse button presses (including wheel)
@@ -16,6 +18,7 @@ export function useMouseWheel(): void {
 
     const handler = (data: Buffer): void => {
       const str = data.toString("utf8");
+      if (mode === "click") for (const press of mousePresses(str)) mouseEvents.emit("press", press);
       // SGR mouse wheel up:   \x1b[<64;col;rowM
       // SGR mouse wheel down: \x1b[<65;col;rowM
       const re = /\x1b\[<(64|65);\d+;\d+[Mm]/g;
@@ -44,5 +47,5 @@ export function useMouseWheel(): void {
       stdout.write("\x1b[?1000l\x1b[?1006l");
       stdin.removeListener("data", handler);
     };
-  }, []);
+  }, [mode]);
 }

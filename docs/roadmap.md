@@ -1,5 +1,18 @@
 # Roadmap
 
+## Implemented locally — 1.4 development build
+
+- Session diagnostics viewer and explicit sanitised report export.
+- JSON/M3U playlist import preview and export; missing files skipped, no automatic
+  downloads or playback, music-relative local references across machines.
+- Library genre browsing/search/details; read-only genre-tag scan on request.
+- Optional artwork colours, j/k navigation and mouse row selection.
+- Optional near-end Discover pagination (not automatic playback-queue extension).
+
+See [controls and limitations](library-and-diagnostics.md). These changes are not
+yet in the stable Homebrew release. Direct-display/physical hardware checks below
+still need hands-on acceptance; automated checks cannot establish those results.
+
 ## Current release — 1.3.1
 
 Version 1.3.1 adds five Studay FM radio presets, website feed discovery and
@@ -28,8 +41,8 @@ The dependency is optional.
 - Library improvements inspired by mpv-music: songs/artist/album
   browsing, multi-track queue actions and responsive text details. Test `B`,
   Enter/Escape, `x`/`X`, `A`/`P` and `i` on your own collections and terminals.
-  Genre metadata, portable playlist import/export and a session-log viewer
-  remain separate follow-ups; they are not part of this first pass.
+  Genre metadata, portable playlist import/export and diagnostics are now in the
+  1.4 source build; exercise their controls before release.
 
 - Version 1.2.0 adds an opt-in Mac projectM 4 companion with Cream of the Crop
   and MilkDrop textures. Build, preset rendering and process-lifetime checks
@@ -90,9 +103,9 @@ and long-session memory/GPU soak. No full-collection shader compatibility claim.
 
 ## Later
 
-- Try colours taken from cover artwork.
-- Consider optional mouse controls, a Vim key preset and automatic pagination
-  while playing very large online collections.
+- Extend mouse coverage beyond row selection if hands-on use warrants it.
+- Consider extending the playback queue across online continuation pages;
+  1.4's optional pagination only loads visible Discover results.
 - Consider other platforms once installation and playback tests exist.
 
 ## Not planned

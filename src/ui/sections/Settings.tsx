@@ -48,9 +48,14 @@ import { ytDlpProvider } from "../../bin/ytdlp-policy";
 import { updateYtDlpNow } from "../../bin/ytdlp-update";
 import { launchFullscreenVisualizer } from "../../player/fullscreen-visualizer";
 import { PresetPacks } from "../components/PresetPacks";
+import { Diagnostics } from "../components/Diagnostics";
+import { GenreScan } from "../components/GenreScan";
 import { installMacVisualizer, macVisualizerSupported } from "../../player/macos-visualizer-install";
 
 type Mode =
+  | "diagnostics"
+  | "genres"
+  | "controls"
   | "preset-packs"
   | "appearance"
   | "visualizer-install"
@@ -222,6 +227,9 @@ export function Settings() {
       danger: true,
     },
     { value: "appearance", name: "Player appearance", detail: `${playerThemeLabel(config.playerTheme)} · visualizer ${config.visualizerMode ?? "classic"}` },
+    { value: "diagnostics", name: "Session diagnostics", detail: "Read errors · export a sanitised report" },
+    { value: "genres", name: "Scan genre tags", detail: "Read local tags without changing audio" },
+    { value: "controls", name: "Keyboard and mouse", detail: "Optional j/k navigation and mouse controls" },
   ];
 
   function openSetting(v: Mode | "open-folder"): void {
@@ -492,16 +500,31 @@ export function Settings() {
     </Box>);
   }
 
+  if (mode === "diagnostics") return frame("Session diagnostics", <Diagnostics focused={focused} />);
+  if (mode === "genres") return frame("Scan genre tags", <GenreScan focused={focused} />);
+  if (mode === "controls") return frame("Keyboard and mouse", <SelectField focused={focused}
+    title="Mouse clicks select rows; Enter plays. Shift-drag selects terminal text."
+    options={[
+      { value: "vim", label: `Vim-style j/k navigation: ${config.vimNavigation ? "on" : "off"} · Space pauses` },
+      { value: "mouse", label: `Mouse: ${config.mouseMode ?? "wheel"} (off / wheel / click)` },
+      { value: "more", label: `Discover: load more near list end: ${config.autoLoadMore ? "on" : "off"}` },
+    ]} onSelect={value => setConfig(value === "more" ? { ...config, autoLoadMore: !config.autoLoadMore }
+      : value === "vim" ? { ...config, vimNavigation: !config.vimNavigation }
+      : { ...config, mouseMode: config.mouseMode === "off" ? "wheel" : config.mouseMode === "click" ? "off" : "click" })}
+    onCancel={() => setMode("menu")} />);
+
   if (mode === "appearance") {
     return frame("Player appearance", <SelectField title="Colours, fallback motion and live visualizer style."
       focused={focused} options={[
         { label: `Theme: ${playerThemeLabel(config.playerTheme)} (cycle)`, value: "theme" },
+        { label: `Artwork colours: ${config.artworkColours ? "on" : "off"} (toggle)`, value: "artwork-colours" },
         { label: `Reduced motion: ${config.reducedMotion === false ? "off" : "on"} (toggle)`, value: "motion" },
         { label: `Visualizer: ${spectrumModeLabel(config.visualizerMode ?? "classic")} (cycle)`, value: "visualizer" },
         ...(["linux", "darwin"].includes(process.platform) ? [{ label: fullscreenStatus || "Fullscreen effects: open projectM", value: "fullscreen" }] : []),
         ...(process.platform === "linux" ? [{ label: "MilkDrop packs: choose or download", value: "preset-packs" }] : []),
         ...(macVisualizerSupported() ? [{ label: "Install Mac fullscreen pack: Cream of the Crop…", value: "visualizer-install" }] : []),
       ]} onSelect={value => {
+        if (value === "artwork-colours") { setConfig({ ...config, artworkColours: !config.artworkColours }); return; }
         if (value === "preset-packs") { setMode("preset-packs"); return; }
         if (value === "visualizer-install") { setMode("visualizer-install"); return; }
         if (value === "fullscreen") {

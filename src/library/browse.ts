@@ -1,6 +1,6 @@
 import type { Track } from "./types";
 
-export type BrowseMode = "songs" | "artists" | "albums";
+export type BrowseMode = "songs" | "artists" | "albums" | "genres";
 export interface LibraryCollection {
   id: string;
   title: string;
@@ -14,11 +14,12 @@ export function libraryCollections(tracks: readonly Track[], mode: Exclude<Brows
   for (const track of tracks) {
     const artist = track.artist?.trim() || "Unknown artist";
     const album = track.album?.trim() || "Unknown album";
+    const genre = track.genre?.trim() || "Unknown genre";
     // Album names alone are not unique (e.g. Greatest Hits).
-    const id = JSON.stringify(mode === "artists" ? [artist] : [artist, album]);
+    const id = JSON.stringify(mode === "genres" ? [genre.toLocaleLowerCase()] : mode === "artists" ? [artist] : [artist, album]);
     let group = groups.get(id);
     if (!group) {
-      group = { id, title: mode === "artists" ? artist : album,
+      group = { id, title: mode === "genres" ? genre : mode === "artists" ? artist : album,
         artist: mode === "albums" ? artist : undefined, tracks: [] };
       groups.set(id, group);
     }

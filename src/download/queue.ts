@@ -1,4 +1,5 @@
 import { EventEmitter } from "node:events";
+import { logEvent, redactLog } from "../diagnostics/log";
 import { basename, dirname, join, relative, resolve } from "node:path";
 import { constants as fsConstants, promises as fs } from "node:fs";
 import type { Config } from "../config/config";
@@ -1064,6 +1065,7 @@ export class DownloadQueue extends EventEmitter {
    * Fire-and-forget: logging must never slow or break the run.
    */
   private logFailure(item: QueueItem, detail: string): void {
+    void logEvent("download", detail);
     if (process.env.VITEST) return;
     void (async () => {
       try {
@@ -1076,8 +1078,8 @@ export class DownloadQueue extends EventEmitter {
           }
         }
         await fs.mkdir(dirname(downloadLogFile), { recursive: true });
-        const line = `${new Date().toISOString()} [${item.sourceLabel}] ${item.track.title} | ${item.track.downloadUrl} | ${detail}\n`;
-        await fs.appendFile(downloadLogFile, line);
+        const line = `${new Date().toISOString()} [${item.sourceLabel}] ${redactLog(detail)}\n`;
+        await fs.appendFile(downloadLogFile, line, { mode: 0o600 });
       } catch {
         // Never let logging affect downloads.
       }
@@ -1152,6 +1154,7 @@ export class DownloadQueue extends EventEmitter {
 
     const controller = new AbortController();
     this.controllers.set(item.id, controller);
+    const downloadStarted = Date.now();
     const isSpotify = item.source === "spotify";
     let lastEmit = 0;
 
@@ -1266,6 +1269,7 @@ export class DownloadQueue extends EventEmitter {
                 title: item.track.title,
                 artist: item.track.artist,
                 album: item.track.album,
+                genre: m.genre,
                 durationSec: item.track.duration ?? m.duration,
                 filePath: m.filepath,
                 webpageUrl: m.webpage_url,
@@ -1289,6 +1293,7 @@ export class DownloadQueue extends EventEmitter {
                   m.title,
                 artist: m.artist ?? m.uploader ?? item.track.artist,
                 album: m.album,
+                genre: m.genre,
                 durationSec: m.duration,
                 filePath: m.filepath,
                 webpageUrl: m.webpage_url,
@@ -1343,6 +1348,7 @@ export class DownloadQueue extends EventEmitter {
         this.notePermanentFailure(item.sourceLabel);
       }
     } finally {
+      void logEvent("download", `${item.source}: ${item.status}; elapsed ${Math.round((Date.now() - downloadStarted) / 1000)}s; last speed ${Math.round(item.speed ?? 0)} B/s; phase ${item.phase ?? "unknown"}; pacing ${this.config.sleepInterval ?? 1}–${this.config.maxSleepInterval ?? 3}s`);
       this.controllers.delete(item.id);
       this.pausing.delete(item.id);
       this.active--;

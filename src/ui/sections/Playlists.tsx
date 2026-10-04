@@ -19,6 +19,7 @@ import { displaySource, setFolderKey } from "../../library/drift";
 import { renamePlaylist, renameTrack } from "../../library/rename";
 import { SOURCE_LABELS, type SourceId, type Track } from "../../library/types";
 import { shuffledOrder } from "../../player/order";
+import { PortablePlaylist } from "../components/PortablePlaylist";
 
 const SOURCE_ORDER: SourceId[] = [
   "youtube",
@@ -75,7 +76,8 @@ export function Playlists() {
   const doneCount = useQueueDoneCount(queue);
   const libVersion = useLibrary(library);
   const playingId = usePlaybackSelector(playback, (s) => s.track?.id);
-  const focused = region === "content";
+  const [transfer, setTransfer] = useState<"import" | "export" | null>(null);
+  const focused = region === "content" && !transfer;
   const [view, setView] = useState<View>({ kind: "sets" });
   const [confirm, setConfirm] = useState<Confirm | null>(null);
   const [q, setQ] = useState("");
@@ -202,7 +204,7 @@ export function Playlists() {
     // search boxes (text) and the songs drill-down / delete confirm (esc, each
     // with its own handler) capture keys. ("picker" would swallow esc here.)
     setCaptureMode(
-      confirming
+      transfer && region === "content" ? "text" : confirming
         ? "esc"
         : filteringSets || filteringSongs
           ? "text"
@@ -215,7 +217,12 @@ export function Playlists() {
                 : "none",
     );
     return () => setCaptureMode("none");
-  }, [confirming, filteringSets, filteringSongs, inSongs, renamingSet, renamingTrack, setCaptureMode]);
+  }, [transfer, region, confirming, filteringSets, filteringSongs, inSongs, renamingSet, renamingTrack, setCaptureMode]);
+
+  useInput(input => {
+    if (input === "I") setTransfer("import");
+    if (input === "E") setTransfer("export");
+  }, { isActive: focused && !confirm && !filtering && !songFiltering && !renamingSet && !renamingTrack });
 
   function stepSourceTab(dir: -1 | 1): void {
     const i = tabs.indexOf(filter);
@@ -454,11 +461,15 @@ export function Playlists() {
     [sets],
   );
 
+  if (transfer) return <PortablePlaylist mode={transfer} tracks={active?.tracks}
+    focused={region === "content"} onBack={() => setTransfer(null)} />;
+
   if (sets.length === 0) {
     return (
       <Box flexDirection="column">
         <Header title="Playlists" focused={focused} />
         <Text color={COLOR.muted}>No playlists yet.</Text>
+        <Text color={COLOR.alt}>I Import playlist · E Export playback queue</Text>
         <Box marginTop={1}>
           <Select
             isDisabled={!focused}
@@ -518,7 +529,7 @@ export function Playlists() {
             ) : (
               <Box flexGrow={1} minWidth={0}>
                 <Text dimColor wrap="truncate-end">
-                  {songQ || "Press / to search…"}
+                    {songQ || "Press / to search… · I Import · E Export this playlist"}
                 </Text>
               </Box>
             )}
@@ -594,7 +605,7 @@ export function Playlists() {
               ) : (
                 <Box flexGrow={1} minWidth={0}>
                   <Text dimColor wrap="truncate-end">
-                    {q || "Press / to search…"}
+                    {q || "Press / to search… · I Import · E Export queue"}
                   </Text>
                 </Box>
               )}

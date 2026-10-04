@@ -8,7 +8,7 @@ import { COLOR } from "../theme";
 
 const filters: MusicFilter[] = ["song", "video", "album", "artist", "playlist"];
 export function Discover() {
-  const { region, setCaptureMode, playback, setPendingAdd, setSection, listRows, contentWidth, pendingSearch, setPendingSearch } = useStore();
+  const { config, region, setCaptureMode, playback, setPendingAdd, setSection, listRows, contentWidth, pendingSearch, setPendingSearch } = useStore();
   const focused = region === "content";
   const [query, setQuery] = useState("");
   const [kind, setKind] = useState<MusicFilter>("song");
@@ -20,6 +20,7 @@ export function Discover() {
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState("");
   const request = useRef(0);
+  const autoAttempt = useRef<MusicPage | null>(null);
   useEffect(() => () => { request.current++; }, []);
   useEffect(() => {
     setCaptureMode(focused && editing ? "text" : focused && (parents.length > 0 || busy) ? "esc" : "none");
@@ -33,7 +34,8 @@ export function Discover() {
       if (token !== request.current) return;
       if (mode === "browse") setParents(p => [...p, { page, cursor }]);
       if (mode === "search") setParents([]);
-      setPage(mode === "more" ? { ...next, items: [...page.items, ...next.items] } : next);
+      const items = (mode === "more" ? [...page.items, ...next.items] : next.items).slice(0, 10000);
+      setPage({ ...next, items, more: items.length >= 10000 || !next.items.length ? undefined : next.more });
       if (mode !== "more") setCursor(0);
     } catch {
       if (token === request.current) setNotice("Could not load YouTube Music. Check your connection; / searches again.");
@@ -41,6 +43,11 @@ export function Discover() {
   };
   const rows = Math.max(1, listRows - 4);
   const selected = Math.min(cursor, Math.max(0, page.items.length - 1));
+  useEffect(() => {
+    if (!config.autoLoadMore || !focused || editing || busy || !page.more || !page.items.length || page.items.length >= 10000 || selected < page.items.length - 3 || autoAttempt.current === page) return;
+    autoAttempt.current = page;
+    void load(page.more, "more");
+  }, [config.autoLoadMore, focused, editing, busy, page, selected]);
   useInput((input, key) => {
     if (editing) { if (key.escape) setEditing(false); return; }
     if (key.escape) {

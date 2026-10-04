@@ -40,6 +40,7 @@ export const HELP_GROUPS: HelpGroup[] = [
     title: "Navigate",
     hints: [
       { keys: "↑ ↓", label: "Move" },
+      { keys: "j k", label: "Move when Vim-style navigation is enabled in Settings" },
       { keys: "PgUp PgDn", label: "Jump a page" },
       { keys: "↵", label: "Open / play" },
       { keys: "1-9", label: "Jump section" },
@@ -66,7 +67,7 @@ export const HELP_GROUPS: HelpGroup[] = [
       { keys: "+ -", label: "Volume" },
       { keys: "m", label: "Now Playing screen" },
       { keys: "b", label: "Player: show / hide artwork" },
-      { keys: "T", label: "Player: lavender / calm theme" },
+      { keys: "T", label: "Player: cycle colour theme; artwork colours in Settings" },
       { keys: "V", label: "Player: decorative motion on / off" },
       { keys: "F", label: "Player: open optional fullscreen effects (Mac/Linux)" },
       { keys: "l", label: "Player: lyrics / queue panel" },
@@ -83,12 +84,14 @@ export const HELP_GROUPS: HelpGroup[] = [
   {
     title: "Library",
     hints: [
-      { keys: "B", label: "Browse songs / artists / albums" },
+      { keys: "B", label: "Browse songs / artists / albums / genres" },
       { keys: "↵ / esc", label: "Open collection / back" },
       { keys: "x / X", label: "Mark track / clear marks (not delete)" },
       { keys: "A / P", label: "Append marked tracks / queue next" },
       { keys: "i", label: "Show / hide track details" },
       { keys: "[ ]", label: "Filter source" },
+      { keys: "2 I / E", label: "Playlists: import / export (open playlist or queue)" },
+      { keys: "5", label: "Settings: scan genre tags; session diagnostics/export" },
     ],
   },
   {

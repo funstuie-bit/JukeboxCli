@@ -1,6 +1,6 @@
 {
   "name": "jukeboxcli",
-  "version": "1.3.1",
+  "version": "1.4.0-dev.1",
   "private": true,
   "description": "Terminal music player for macOS and Linux with YouTube Music discovery, streaming, an offline library, editable queues and sharp artwork. Based on soundcli.",
   "type": "module",

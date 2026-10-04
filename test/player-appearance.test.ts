@@ -6,6 +6,13 @@ import { defaultConfig, loadConfig, saveConfig } from "../src/config/config";
 import { nextPlayerTheme, playerPalette, COLOR } from "../src/ui/theme";
 
 describe("player appearance persistence", () => {
+  it("keeps optional controls opt-in and validates persisted choices", async () => {
+    await fs.mkdir(path.dirname(configFile), { recursive: true });
+    await fs.writeFile(configFile, JSON.stringify({ artworkColours: "true", vimNavigation: 1, mouseMode: "bad", autoLoadMore: "yes" }));
+    expect(await loadConfig()).toMatchObject({ artworkColours: false, vimNavigation: false, mouseMode: "wheel", autoLoadMore: false });
+    await saveConfig({ ...defaultConfig, artworkColours: true, vimNavigation: true, mouseMode: "click", autoLoadMore: true });
+    expect(await loadConfig()).toMatchObject({ artworkColours: true, vimNavigation: true, mouseMode: "click", autoLoadMore: true });
+  });
   it("requires an explicit persisted boolean to enable online lyrics", async () => {
     await fs.mkdir(path.dirname(configFile), { recursive: true });
     for (const lyricsOnline of [undefined, "true", 1, false]) {

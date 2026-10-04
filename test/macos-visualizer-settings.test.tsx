@@ -20,10 +20,11 @@ it("requires confirmation and keeps hooks stable across the Mac installer page",
   const view = await renderReady(<StoreContext.Provider value={makeStore({ region: "content", listRows: 30 })}><Settings /></StoreContext.Provider>);
   await waitForFrame(view, "❯ YouTube handle");
   await press(view, "\u001b[F");
+  for (let i = 0; i < 20 && !view.lastFrame()?.includes("❯ Player appearance"); i++) await press(view, "\u001b[A");
   await waitForFrame(view, "❯ Player appearance");
   await press(view, "\r");
   await waitForFrame(view, "❯ Theme:");
-  for (const label of ["Reduced motion:", "Visualizer:", "Fullscreen effects:", "Install Mac fullscreen pack"]) {
+  for (const label of ["Artwork colours:", "Reduced motion:", "Visualizer:", "Fullscreen effects:", "Install Mac fullscreen pack"]) {
     await press(view, "\u001b[B");
     await waitForFrame(view, `❯ ${label}`);
   }

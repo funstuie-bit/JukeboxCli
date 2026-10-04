@@ -12,6 +12,10 @@ import type { YtDlpChannel } from "../bin/ytdlp-fetch";
 import type { YtDlpProvider } from "../bin/ytdlp-policy";
 
 export interface Config {
+  artworkColours?: boolean;
+  vimNavigation?: boolean;
+  mouseMode?: "off" | "wheel" | "click";
+  autoLoadMore?: boolean;
   /** Optional Linux fullscreen preset collection; extra packs download only on request. */
   fullscreenPresetPack?: PresetPack;
   /** Explicit opt-in to LRCLIB metadata queries while the lyrics panel is open. */
@@ -73,6 +77,10 @@ export function stripDeprecatedConfig(config: Config): Config {
 }
 
 export const defaultConfig: Config = {
+  artworkColours: false,
+  vimNavigation: false,
+  mouseMode: "wheel",
+  autoLoadMore: false,
   lyricsOnline: false,
   playerTheme: "lavender",
   reducedMotion: true,
@@ -112,6 +120,10 @@ export async function loadConfig(): Promise<Config> {
   try {
     const parsed = JSON.parse(raw) as Partial<Config>;
     const cfg = { ...defaultConfig, ...parsed };
+    cfg.artworkColours = parsed.artworkColours === true;
+    cfg.vimNavigation = parsed.vimNavigation === true;
+    cfg.mouseMode = parsed.mouseMode === "off" || parsed.mouseMode === "click" ? parsed.mouseMode : "wheel";
+    cfg.autoLoadMore = parsed.autoLoadMore === true;
     cfg.fullscreenPresetPack = parsed.fullscreenPresetPack === "cream-of-the-crop" || parsed.fullscreenPresetPack === "combined" ? parsed.fullscreenPresetPack : "classic";
     cfg.lyricsOnline = parsed.lyricsOnline === true;
     cfg.playerTheme = PLAYER_THEMES.includes(parsed.playerTheme as PlayerTheme) ? parsed.playerTheme as PlayerTheme : "lavender";

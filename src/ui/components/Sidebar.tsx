@@ -2,6 +2,7 @@ import { Box, Text, useInput } from "ink";
 import { useStore, type Section } from "../store";
 import { wrapStep } from "../move";
 import { playerPalette, ICON } from "../theme";
+import { MouseRow } from "./MouseRow";
 
 interface NavItem {
   key: Section;
@@ -45,7 +46,8 @@ export function Sidebar() {
         // Settings is a utility, so set it off from the content sections.
         const pinned = item.key === "settings";
         return (
-          <Box key={item.key} marginTop={pinned ? 1 : 0}>
+          <MouseRow key={item.key} marginTop={pinned ? 1 : 0} active={region !== "help"}
+            onClick={() => { setSection(item.key); setRegion("content"); }}>
             {selected ? (
               // The lit edge: the marker takes the ramp's sunlit end while the
               // label stays brand flame, a subtle two-tone glow.
@@ -62,7 +64,7 @@ export function Sidebar() {
             {item.key === "download" && active > 0 ? (
               <Text color={COLOR.muted}>{` (${active})`}</Text>
             ) : null}
-          </Box>
+          </MouseRow>
         );
       })}
     </Box>

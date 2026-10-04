@@ -213,7 +213,7 @@ export function Library() {
   useInput(
     (input, key) => {
       if (input === "B") {
-        setBrowseMode(browseMode === "songs" ? "artists" : browseMode === "artists" ? "albums" : "songs");
+        setBrowseMode(browseMode === "songs" ? "artists" : browseMode === "artists" ? "albums" : browseMode === "albums" ? "genres" : "songs");
         setCollectionId(null);
         return;
       }
@@ -357,7 +357,7 @@ export function Library() {
     return <>
       <Text color={COLOR.accent} wrap="truncate-end">{cleanText(t?.title ?? "Track details")}</Text>
       <Text wrap="truncate-end">{t ? `${cleanText(t.artist || "Unknown artist")} · ${cleanText(t.album || "Unknown album")}` : "Highlight a track to inspect it"}</Text>
-      <Text color={COLOR.muted} wrap="truncate-end">{t ? `${path.extname(t.filePath).slice(1).toUpperCase()} · ${formatDuration(t.durationSec)} · ${cleanText(path.basename(t.filePath))}` : "Enter plays · A appends · P queues next"}</Text>
+      <Text color={COLOR.muted} wrap="truncate-end">{t ? `${cleanText(t.genre || "Unknown genre")} · ${path.extname(t.filePath).slice(1).toUpperCase()} · ${formatDuration(t.durationSec)} · ${cleanText(path.basename(t.filePath))}` : "Enter plays · A appends · P queues next"}</Text>
     </>;
   } : undefined;
 

@@ -33,6 +33,8 @@ export interface Track {
   title: string;
   artist?: string;
   album?: string;
+  /** Read from existing audio tags; never guessed from the artist. */
+  genre?: string;
   durationSec?: number;
   /** Absolute path to the downloaded audio file. */
   filePath: string;

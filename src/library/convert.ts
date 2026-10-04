@@ -3,6 +3,7 @@ import path from "node:path";
 import { execa } from "execa";
 import { ffmpegPath, toolEnv } from "../bin/binaries";
 import { downloadLogFile } from "../config/paths";
+import { logEvent, redactLog } from "../diagnostics/log";
 import type { Track } from "./types";
 
 /**
@@ -124,12 +125,14 @@ async function defaultExec(
 
 /** One line per failure so "2 failed" has somewhere to lead. */
 async function logFailure(filePath: string, detail: string): Promise<void> {
+  void logEvent("download", `Conversion failed: ${detail}`);
   if (process.env.VITEST) return;
   try {
     await fs.mkdir(path.dirname(downloadLogFile), { recursive: true });
     await fs.appendFile(
       downloadLogFile,
-      `${new Date().toISOString()} [convert] ${filePath} | ${detail}\n`,
+      `${new Date().toISOString()} [convert] ${redactLog(detail)}\n`,
+      { mode: 0o600 },
     );
   } catch {
     // Never let logging affect the conversion.

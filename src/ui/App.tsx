@@ -57,6 +57,7 @@ import { NowPlaying as NowPlayingView, playerLayout } from "./views/NowPlaying";
 import { ListeningQueue } from "./views/ListeningQueue";
 import { Home } from "./sections/Home";
 import { useMouseWheel } from "./hooks/useMouseWheel";
+import { logEvent } from "../diagnostics/log";
 
 interface Boot {
   library: LibraryStore;
@@ -92,12 +93,11 @@ function Content({ section }: { section: Section }) {
 }
 
 export function App({ initialAdd, initialOverrides }: { initialAdd?: string; initialOverrides?: Partial<Config> } = {}) {
-  useMouseWheel();
   // Own bracketed paste for the whole session. Specific text fields subscribe
   // separately; elsewhere a paste must never be interpreted as app shortcuts.
   usePaste(() => {});
   const { exit } = useApp();
-  const { isRawModeSupported } = useStdin();
+  const { isRawModeSupported, stdin } = useStdin();
   const { stdout } = useStdout();
   const [size, setSize] = useState({
     rows: stdout?.rows ?? 24,
@@ -182,6 +182,7 @@ export function App({ initialAdd, initialOverrides }: { initialAdd?: string; ini
   // Home's listening choices own the arrows/Enter on launch; Tab opens the map.
   const [region, setRegion] = useState<Region>("content");
   const [captureMode, setCaptureMode] = useState<CaptureMode>("none");
+  useMouseWheel(captureMode === "text" ? "off" : config?.mouseMode ?? "off");
   const [showHelp, setShowHelp] = useState(false);
   // Full-screen Now Playing view, toggled with `m` from any section. The
   // body stays mounted (display none) behind it so section state survives.
@@ -326,6 +327,7 @@ export function App({ initialAdd, initialOverrides }: { initialAdd?: string; ini
       await sessionConfig.save(cfg);
       setConfigState(cfg);
       setBoot({ library, binaries, queue, playback, history, session: persistListeningSession(playback) });
+      void logEvent("app", "Session ready");
       // Silent drift hygiene (drop dead entries + dupes) runs behind the
       // first paint: a full music-dir walk on a big library kept the user on
       // the boot spinner, and every heal bumps the library version so the UI
@@ -433,6 +435,15 @@ export function App({ initialAdd, initialOverrides }: { initialAdd?: string; ini
       }
       // A TextField owns the whole keyboard while the user is typing.
       if (captureMode === "text") return;
+      // Optional Vim-style vertical navigation applies to all arrow-driven
+      // widgets, including third-party pickers. Space still pauses; j/k no
+      // longer seek/pause in this mode. Text fields retain literal letters.
+      if (config?.vimNavigation && !key.ctrl && !key.meta && (input === "j" || input === "k")) {
+        const arrow = Buffer.from(input === "j" ? "\x1b[B" : "\x1b[A");
+        if (typeof stdin.unshift === "function") stdin.unshift(arrow);
+        else (stdin as NodeJS.ReadStream & { write?: (data: string) => void }).write?.(arrow.toString());
+        return;
+      }
       // Help owns its page/scroll keys; other keys dismiss without playing underneath.
       if (showHelp) {
         if (input === "[" || input === "]" || key.upArrow || key.downArrow || key.leftArrow || key.rightArrow || key.pageUp || key.pageDown) return;

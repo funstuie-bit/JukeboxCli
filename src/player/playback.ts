@@ -1,4 +1,5 @@
 import { EventEmitter } from "node:events";
+import { logEvent } from "../diagnostics/log";
 import { existsSync } from "node:fs";
 import type { Track as LibraryTrack } from "../library/types";
 import { isLive, isStream, isHttpUrl, streamMetadata, type StreamTrack, type PlayableTrack as Track, type MediaResolver, type ResolvedMedia } from "./media";
@@ -271,6 +272,7 @@ export class Playback extends EventEmitter {
   }
 
   private update(patch: Partial<PlaybackState>): void {
+    if (patch.error && patch.error !== this.state.error) void logEvent("player", patch.error);
     this.state = { ...this.state, ...patch };
     if (patch.track !== undefined || patch.broadcastTitle !== undefined || patch.loading === false) {
       const track = this.state.track;

@@ -72,6 +72,13 @@ in the [Linux install guide](docs/linux-install.md) and the
 ideas borrowed from ytkew and Mousiki, and where the radio, search and lyrics
 features ended up.
 
+## In development — 1.4
+
+The source build adds [portable playlists, genre browsing and session diagnostics](docs/library-and-diagnostics.md),
+plus optional artwork colours, j/k navigation, mouse row selection and automatic
+Discover pagination. These additions are not in Homebrew 1.3.1 yet. Existing
+controls stay the default; the new appearance/navigation options are opt-in.
+
 ## First run
 
 JukeboxCli opens on Home. Search online, browse internet radio or open your local

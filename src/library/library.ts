@@ -83,6 +83,7 @@ export class Library {
       t.title,
       t.artist,
       t.album,
+      t.genre,
       t.playlist,
     ]);
   }

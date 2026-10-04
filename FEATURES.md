@@ -5,6 +5,11 @@ or online service will cooperate. The limits are listed below.
 
 ## Supported
 
+Source builds labelled `1.4.0-dev.1` also include the
+[1.4 additions](docs/library-and-diagnostics.md): diagnostics/report export,
+portable playlist files, genre scanning/browsing and optional interface controls.
+Homebrew's current stable release is still 1.3.1 until these are promoted.
+
 - Home with recent local/online plays and saved stations. No library required.
 - Local library, playlists, downloads, conversion and custom output folders.
 - Artist/album browsing (`B`), multi-track queue

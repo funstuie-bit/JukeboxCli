@@ -3,7 +3,7 @@ import { Box, Text, useInput } from "ink";
 import { usePlayback, useStore } from "../store";
 import { loadWaveform, type Waveform } from "../../player/art";
 import { cleanText, formatDuration, trackDisplayTitle } from "../../util/format";
-import { RULE, nextPlayerTheme, playerPalette, playerThemeLabel, type PlayerPalette } from "../theme";
+import { RULE, nextPlayerTheme, playerThemeLabel, type PlayerPalette } from "../theme";
 import { ListeningQueue } from "./ListeningQueue";
 import { isLive, isStream } from "../../player/media";
 import { Cover } from "../components/Cover";
@@ -13,6 +13,7 @@ import { LyricsPanel } from "../components/LyricsPanel";
 import { PlayerSearch } from "../components/PlayerSearch";
 import { BANDS, SpectrumDynamics, nextSpectrumMode, spectrumModeLabel, spectrumRows, visualizerEnabled, type SpectrumMode } from "../../player/spectrum";
 import { launchFullscreenVisualizer } from "../../player/fullscreen-visualizer";
+import { useArtworkPalette } from "../hooks/useArtworkPalette";
 
 export function playerLayout(width: number, height: number, live = false, waveform = false) {
   const split = width >= 86 && height >= 16;
@@ -59,7 +60,6 @@ const SpectrumPanel = memo(function SpectrumPanel({ levels, width, height, pause
 
 export function NowPlaying({ embedded = false, onDownload = () => {} }: { embedded?: boolean; onDownload?: () => void }) {
   const store = useStore();
-  const COLOR = playerPalette(store.config.playerTheme);
   const st = usePlayback(store.playback);
   const width = Math.max(10, embedded ? store.contentWidth : store.cols - 2);
   const height = store.listRows + 2;
@@ -67,6 +67,7 @@ export function NowPlaying({ embedded = false, onDownload = () => {} }: { embedd
   const inner = layout.left - 4;
   const file = st.track?.filePath;
   const source = st.track && isStream(st.track) ? st.track.thumbnailUrl : file;
+  const COLOR = useArtworkPalette(store.config.playerTheme, store.config.artworkColours, source);
   const [artVisible, setArtVisible] = useState(true);
   const [lyricsVisible, setLyricsVisible] = useState(false);
   const [searchVisible, setSearchVisible] = useState(false);

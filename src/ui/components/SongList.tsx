@@ -4,6 +4,7 @@ import { useStore } from "../store";
 import { wrapStep } from "../move";
 import { cleanText } from "../../util/format";
 import { COLOR, ICON } from "../theme";
+import { MouseRow } from "./MouseRow";
 
 export interface SongItem {
   /** Stable id used for selection + the now-playing match. */
@@ -236,7 +237,7 @@ export function SongList({
         // contrast gives each row an anchor instead of one flat grey blur.
         const titleColor = here || playing ? COLOR.accent : COLOR.text;
         return (
-          <Box key={value}>
+          <MouseRow key={value} active={focused} onClick={() => setCursor(r.idx)}>
             <Text color={COLOR.accent}>{here ? `${ICON.pointer} ` : "  "}</Text>
             <Text color={COLOR.good}>{playing ? `${ICON.play} ` : "  "}</Text>
             {onQueueMany && r.kind === "item" ? <Text color={COLOR.accent}>{marked.has(value) ? "[x] " : "[ ] "}</Text> : null}
@@ -271,7 +272,7 @@ export function SongList({
                 <Text dimColor>{meta}</Text>
               </Box>
             ) : null}
-          </Box>
+          </MouseRow>
         );
       })}
       </Box>

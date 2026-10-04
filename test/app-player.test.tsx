@@ -112,6 +112,17 @@ async function press(view: ReturnType<typeof app>, key: string) {
 afterEach(() => { startup.fresh = false; startup.writes = []; startup.readEffective = undefined; vi.unstubAllEnvs(); cleanup(); rmSync(sessionFile, { force: true }); rmSync(stationsFile, { force: true }); rmSync(path.join(paths.cache, "lyrics-v1.json"), { force: true }); });
 
 describe("App player workflow", () => {
+  it("uses optional j/k for navigation without seeking/pausing, and preserves typing", async () => {
+    const view = app({ initialOverrides: { vimNavigation: true } }); await tick(); await tick();
+    await press(view, "1"); await press(view, "j"); await press(view, "A");
+    await press(view, "7"); expect(view.lastFrame()).toContain("Playback queue · 1 tracks");
+    await press(view, "\r"); await press(view, "m");
+    await press(view, "k"); await press(view, "j");
+    expect(view.lastFrame()).toContain("Playing · shuffle off");
+    await press(view, "S"); await press(view, "j"); await press(view, "k");
+    expect(view.lastFrame()).toContain("jk");
+    view.unmount(); await tick(); expect(readSession()?.position).toBe(0);
+  });
   it("keeps launch flags temporary through onboarding and player preference saves", async () => {
     const queueUpdate = vi.spyOn(DownloadQueue.prototype, "updateConfig");
     startup.fresh = true;
@@ -275,11 +286,13 @@ describe("App player workflow", () => {
     expect(view.lastFrame()).toContain("LIVE");
     expect(view.lastFrame()).not.toContain("No cover art");
     await press(view, "T"); await press(view, "V");
-    await press(view, "\u001b"); await press(view, "5"); await press(view, "\u001b[F"); await press(view, "\r");
+    await press(view, "\u001b"); await press(view, "5"); await press(view, "\u001b[F");
+    for (let i = 0; i < 3; i++) await press(view, "\u001b[A");
+    await press(view, "\r");
     expect(view.lastFrame()).toContain("Theme: Calm");
     expect(view.lastFrame()).toContain("Reduced motion: off");
     await press(view, "\r"); expect(view.lastFrame()).toContain("Theme: Ember");
-    await press(view, "\u001b[B"); await press(view, "\r");
+    await press(view, "\u001b[B"); await press(view, "\u001b[B"); await press(view, "\r");
     expect(view.lastFrame()).toContain("Reduced motion: on");
   });
   it("cancels website detection and accepts a new link without saving anything", async () => {
