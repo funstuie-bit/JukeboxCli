@@ -3,6 +3,7 @@ import { playerPalette, RULE } from "../theme";
 import type { Hint } from "../keymap";
 import { useStore, usePlayback } from "../store";
 import { isLive } from "../../player/media";
+import { shortcutLabel } from "../shortcuts";
 
 /**
  * The quiet hint line. Keys take the secondary accent (the same "this is a
@@ -41,7 +42,7 @@ function HintLine({ hints }: { hints: Hint[] }) {
   const COLOR = playerPalette(config.playerTheme);
   return <Text wrap="truncate-end">{hints.map((h, i) => <Text key={h.keys + h.label}>
     {i > 0 ? <Text color={COLOR.muted}>{"   "}</Text> : null}
-    <Text color={COLOR.alt}>{h.keys}</Text>
+    <Text color={COLOR.alt}>{shortcutLabel(h.keys, config.keybindings)}</Text>
     <Text color={COLOR.muted}>{` ${h.label}`}</Text>
   </Text>)}</Text>;
 }

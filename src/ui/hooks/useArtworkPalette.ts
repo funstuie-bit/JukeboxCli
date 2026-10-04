@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { loadCoverArt, type CoverArt } from "../../player/art";
-import { lerpHex, playerPalette } from "../theme";
+import { lerpHex } from "../theme";
+import { appearancePalette, type Appearance } from "../appearance";
 
 /** Pick a common colourful pixel, then lift it for readable dark-terminal accents. */
 export function artworkAccent(art: CoverArt): string | undefined {
@@ -25,7 +26,7 @@ function accentFor(source: string) {
   }
   return value;
 }
-export function useArtworkPalette(theme: string | undefined, enabled: boolean | undefined, source?: string) {
+export function useArtworkPalette(theme: string | undefined, enabled: boolean | undefined, source?: string, appearance?: Appearance) {
   const [result, setResult] = useState<{ source: string; accent?: string }>();
   useEffect(() => {
     if (!enabled || !source) return;
@@ -33,7 +34,6 @@ export function useArtworkPalette(theme: string | undefined, enabled: boolean | 
     void accentFor(source).then(accent => { if (!cancelled) setResult({ source, accent }); });
     return () => { cancelled = true; };
   }, [enabled, source]);
-  const palette = playerPalette(theme);
   const accent = enabled && result?.source === source ? result?.accent : undefined;
-  return accent ? { ...palette, accent, selection: accent, selectedText: "#171b2b", alt: lerpHex(accent, "#ffffff", 0.25) } : palette;
+  return appearancePalette(theme, appearance, accent);
 }

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Box, Text, useInput } from "ink";
+import { Box, Text } from "ink";
 import { useStore, usePlayback } from "../store";
 import { cleanText, formatDuration, trackDisplayTitle } from "../../util/format";
 import stringWidth from "string-width";
@@ -7,15 +7,19 @@ import { RULE } from "../theme";
 import { isLive, isStream } from "../../player/media";
 import { useArtworkPalette } from "../hooks/useArtworkPalette";
 import { MouseRow } from "../components/MouseRow";
+import { playerBackground, playerBorder } from "../appearance";
+import { useShortcutInput } from "../hooks/useShortcutInput";
+import { shortcutLabel } from "../shortcuts";
 
-export function ListeningQueue({ height, width, active, framed = false, controlsOutside = false }: {
-  height?: number; width?: number; active?: boolean; framed?: boolean; controlsOutside?: boolean;
+export function ListeningQueue({ height, width, active, framed = false, controlsOutside = false, upcoming = false }: {
+  height?: number; width?: number; active?: boolean; framed?: boolean; controlsOutside?: boolean; upcoming?: boolean;
 }) {
   const store = useStore();
   const state = usePlayback(store.playback);
   const COLOR = useArtworkPalette(store.config.playerTheme, store.config.artworkColours,
-    state.track && isStream(state.track) ? state.track.thumbnailUrl : state.track?.filePath);
-  const entries = store.playback.queueEntries();
+    state.track && isStream(state.track) ? state.track.thumbnailUrl : state.track?.filePath, store.config.appearance);
+  const allEntries = store.playback.queueEntries();
+  const entries = upcoming ? allEntries.slice(Math.max(0, allEntries.findIndex(e => e.index === state.index) + 1)) : allEntries;
   const [cursor, setCursor] = useState(() => Math.max(0, entries.findIndex(e => e.index === state.index)));
   const [error, setError] = useState("");
   const [confirmClear, setConfirmClear] = useState(false);
@@ -25,11 +29,12 @@ export function ListeningQueue({ height, width, active, framed = false, controls
   const contentCols = queueContentWidth(cols);
   const dense = (height ?? store.listRows) < 10;
   const columns = cols >= 48 && !dense;
-  const rows = Math.max(1, (height ?? store.listRows) - (framed ? dense ? 3 : 5 : dense ? 1 : 3) - (columns ? 1 : 0));
+  const rows = Math.max(1, (height ?? store.listRows) - (framed ? dense ? 3 : 5 : dense ? 1 : 3) - (columns ? 1 : 0) - (!dense && state.continuationStatus ? 1 : 0));
   const selected = Math.min(cursor, Math.max(0, entries.length - 1));
   const focused = active ?? store.region === "content";
   const run = (action: Promise<void>) => { void action.catch(e => setError(String(e))); };
-  useInput((input, key) => {
+  useShortcutInput((input, key) => {
+    if (input === "C") { run(store.playback.retryContinuation()); return; }
     if (confirmClear) {
       if (input === "y") { setConfirmClear(false); run(store.playback.stop()); }
       else if (key.escape || input === "N") setConfirmClear(false);
@@ -52,11 +57,11 @@ export function ListeningQueue({ height, width, active, framed = false, controls
         setCursor(Math.max(0, Math.min(entries.length - 1, selected + delta)));
       }
     }
-  }, { isActive: focused && entries.length > 0 });
+  }, "queue", focused);
   const start = Math.max(0, Math.min(selected - Math.floor(rows / 2), entries.length - rows));
-  return <Box flexDirection="column" width={width ?? store.contentWidth} height={height} borderStyle={framed ? "round" : undefined} borderColor={RULE} paddingX={framed ? 1 : 0}>
-    <Text bold color={COLOR.alt} wrap="truncate-end">Playback queue · {entries.length} tracks · {state.shuffle ? "shuffled" : "in order"}</Text>
-    {confirmClear || error || !entries.length || (!controlsOutside && !dense) ? <Text color={COLOR.muted} wrap="truncate-end">{confirmClear ? "Clear queue and stop? y clear · esc cancel (files stay)" : error || (entries.length ? "↑↓ select  enter play  u/D move  x remove  X clear" : "Empty · select a song in Library, then A append or P play next")}</Text> : null}
+  return <Box flexDirection="column" width={width ?? store.contentWidth} height={height} borderStyle={framed ? playerBorder(store.config.appearance) : undefined} borderColor={RULE} backgroundColor={playerBackground(store.config.appearance)} paddingX={framed ? 1 : 0}>
+    <Text bold color={COLOR.alt} wrap="truncate-end">{upcoming ? "Up Next" : "Playback queue"} · {entries.length} tracks · {state.shuffle ? "shuffled" : "in order"}</Text>
+    {confirmClear || error || !entries.length || (!controlsOutside && !dense) ? <Text color={COLOR.muted} wrap="truncate-end">{confirmClear ? "Clear queue and stop? y clear · esc cancel (files stay)" : error || (entries.length ? shortcutLabel("↑↓ select  enter play  u/D move  x remove  X clear", store.config.keybindings, "queue") : "Empty · select a song in Library, then A append or P play next")}</Text> : null}
     {columns ? <Text color={COLOR.muted}>{queueRow("ARTIST", "TITLE", "TIME", contentCols, "  ", "TYPE")}</Text> : null}
     {entries.slice(start, start + rows).map((row, offset) => {
       const here = start + offset === selected;
@@ -72,7 +77,8 @@ export function ListeningQueue({ height, width, active, framed = false, controls
       </Text></MouseRow>;
     })}
     {!dense ? <><Box flexGrow={1} />
-    {!controlsOutside ? <Text color={COLOR.muted} wrap="truncate-end">{entries.length ? `› selected · ▶ playing / Ⅱ paused · 9 saved stations` : "7 Queue · 8 Discover"}</Text> : null}</> : null}
+    {state.continuationStatus ? <Text color={COLOR.muted} wrap="truncate-end">{state.continuationStatus}</Text> : null}
+    {!controlsOutside ? <Text color={COLOR.muted} wrap="truncate-end">{upcoming ? "7 full queue · selected rows remain editable" : entries.length ? `› selected · ▶ playing / Ⅱ paused · 9 saved stations` : "7 Queue · 8 Discover"}</Text> : null}</> : null}
   </Box>;
 }
 

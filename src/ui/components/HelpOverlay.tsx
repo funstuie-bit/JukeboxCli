@@ -1,12 +1,14 @@
 import { useState } from "react";
-import { Box, Text, useInput } from "ink";
+import { Box, Text } from "ink";
+import { useActionInput as useInput } from "../hooks/useActionInput";
 import { HELP_GROUPS } from "../keymap";
 import { useStore } from "../store";
 import { COLOR, RULE } from "../theme";
+import { shortcutLabel } from "../shortcuts";
 
 /** Bounded, keyboard-paged help: adding a feature must not push its keys offscreen. */
 export function HelpOverlay() {
-  const { cols, rows, compact, section } = useStore();
+  const { cols, rows, compact, section, config } = useStore();
   // Resolve by title so adding a help group cannot shift unrelated sections.
   const [page, setPage] = useState(() => {
     const title = section === "listen" ? "Radio / URL (9)" : section === "discover" ? "Discover (YouTube Music)"
@@ -31,11 +33,11 @@ export function HelpOverlay() {
     <Text bold color={COLOR.accent} wrap="truncate-end">Keyboard · {page + 1}/{HELP_GROUPS.length}{compact ? " · ? esc to close" : ""}</Text>
     <Text bold wrap="truncate-end">{group.title}</Text>
     {group.hints.slice(start, start + visibleRows).map(h => <Box key={h.keys + h.label}>
-      <Box width={12} flexShrink={0}><Text color={COLOR.alt}>{h.keys}</Text></Box>
+      <Box width={16} flexShrink={0}><Text color={COLOR.alt}>{shortcutLabel(h.keys, config.keybindings, group.title === "Listening queue" ? "queue" : group.title === "Player" ? "player" : "global")}</Text></Box>
       <Text dimColor wrap="truncate-end">{h.label}</Text>
     </Box>)}
     <Box flexGrow={1} />
     <Text color={COLOR.muted} wrap="truncate-end">[ ] group · ↑↓ scroll{group.hints.length > visibleRows ? ` · ${start + 1}–${Math.min(group.hints.length, start + visibleRows)}/${group.hints.length}` : ""}</Text>
-    <Text color={COLOR.muted} wrap="truncate-end">Press ? or esc to close</Text>
+    <Text color={COLOR.muted} wrap="truncate-end">Press {shortcutLabel("?", config.keybindings)} or esc to close</Text>
   </Box>;
 }

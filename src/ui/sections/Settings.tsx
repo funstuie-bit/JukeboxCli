@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { promises as fs } from "node:fs";
 import path from "node:path";
-import { Box, Text, useInput } from "ink";
+import { Box, Text } from "ink";
+import { useActionInput as useInput } from "../hooks/useActionInput";
 import { Select, Spinner } from "@inkjs/ui";
 import { useQueueItems, useStore } from "../store";
 import { TextField } from "../components/TextField";
@@ -50,9 +51,13 @@ import { launchFullscreenVisualizer } from "../../player/fullscreen-visualizer";
 import { PresetPacks } from "../components/PresetPacks";
 import { Diagnostics } from "../components/Diagnostics";
 import { GenreScan } from "../components/GenreScan";
+import { ThemeEditor } from "../components/ThemeEditor";
+import { ShortcutEditor } from "../components/ShortcutEditor";
 import { installMacVisualizer, macVisualizerSupported } from "../../player/macos-visualizer-install";
 
 type Mode =
+  | "theme-editor"
+  | "shortcuts"
   | "diagnostics"
   | "genres"
   | "controls"
@@ -302,7 +307,7 @@ export function Settings() {
     mode === "spotify" ||
     mode === "folder" ||
     mode === "moving" ||
-    mode === "pacing" || (mode === "visualizer-install" && visualizerBusy);
+    mode === "pacing" || mode === "theme-editor" || mode === "shortcuts" || (mode === "visualizer-install" && visualizerBusy);
   useEffect(() => {
     setCaptureMode(!inSubPage ? "none" : isTextPage ? "text" : "picker");
     return () => setCaptureMode("none");
@@ -314,7 +319,7 @@ export function Settings() {
     },
     // While a conversion runs, esc belongs to the run page (stop), not to
     // navigating away from the summary that is about to appear.
-    { isActive: inSubPage && mode !== "preset-packs" && mode !== "moving" && mode !== "visualizer-install" && !(mode === "convert-run" && convertRunning) },
+    { isActive: inSubPage && mode !== "theme-editor" && mode !== "shortcuts" && mode !== "preset-packs" && mode !== "moving" && mode !== "visualizer-install" && !(mode === "convert-run" && convertRunning) },
   );
 
   // Hooks must run on every render, including the menu and other sub-pages.
@@ -502,15 +507,19 @@ export function Settings() {
 
   if (mode === "diagnostics") return frame("Session diagnostics", <Diagnostics focused={focused} />);
   if (mode === "genres") return frame("Scan genre tags", <GenreScan focused={focused} />);
+  if (mode === "theme-editor") return <ThemeEditor focused={focused} onBack={() => setMode("appearance")} />;
+  if (mode === "shortcuts") return <ShortcutEditor focused={focused} onBack={() => setMode("controls")} />;
   if (mode === "controls") return frame("Keyboard and mouse", <SelectField focused={focused}
     title="Mouse clicks select rows; Enter plays. Shift-drag selects terminal text."
     options={[
       { value: "vim", label: `Vim-style j/k navigation: ${config.vimNavigation ? "on" : "off"} · Space pauses` },
       { value: "mouse", label: `Mouse: ${config.mouseMode ?? "wheel"} (off / wheel / click)` },
       { value: "more", label: `Discover: load more near list end: ${config.autoLoadMore ? "on" : "off"}` },
-    ]} onSelect={value => setConfig(value === "more" ? { ...config, autoLoadMore: !config.autoLoadMore }
+      { value: "continuation", label: `Online playlist queue continuation: ${config.queueContinuation ? "on" : "off"}` },
+      { value: "shortcuts", label: "Custom shortcuts: edit / reset…" },
+    ]} onSelect={value => { if (value === "shortcuts") { setMode("shortcuts"); return; } setConfig(value === "continuation" ? { ...config, queueContinuation: !config.queueContinuation } : value === "more" ? { ...config, autoLoadMore: !config.autoLoadMore }
       : value === "vim" ? { ...config, vimNavigation: !config.vimNavigation }
-      : { ...config, mouseMode: config.mouseMode === "off" ? "wheel" : config.mouseMode === "click" ? "off" : "click" })}
+      : { ...config, mouseMode: config.mouseMode === "off" ? "wheel" : config.mouseMode === "click" ? "off" : "click" }); }}
     onCancel={() => setMode("menu")} />);
 
   if (mode === "appearance") {
@@ -523,7 +532,13 @@ export function Settings() {
         ...(["linux", "darwin"].includes(process.platform) ? [{ label: fullscreenStatus || "Fullscreen effects: open projectM", value: "fullscreen" }] : []),
         ...(process.platform === "linux" ? [{ label: "MilkDrop packs: choose or download", value: "preset-packs" }] : []),
         ...(macVisualizerSupported() ? [{ label: "Install Mac fullscreen pack: Cream of the Crop…", value: "visualizer-install" }] : []),
+        { label: `Player layout: ${config.playerLayout ?? "classic"} (cycle)`, value: "layout" },
+        { label: `Browsing artwork previews: ${config.browseArtwork ? "on" : "off"}`, value: "browse-artwork" },
+        { label: "Theme editor: preview / save…", value: "theme-editor" },
       ]} onSelect={value => {
+        if (value === "theme-editor") { setMode("theme-editor"); return; }
+        if (value === "layout") { setConfig({ ...config, playerLayout: config.playerLayout === "clean" ? "classic" : "clean" }); return; }
+        if (value === "browse-artwork") { setConfig({ ...config, browseArtwork: !config.browseArtwork }); return; }
         if (value === "artwork-colours") { setConfig({ ...config, artworkColours: !config.artworkColours }); return; }
         if (value === "preset-packs") { setMode("preset-packs"); return; }
         if (value === "visualizer-install") { setMode("visualizer-install"); return; }

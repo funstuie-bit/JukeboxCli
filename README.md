@@ -79,6 +79,13 @@ plus optional artwork colours, j/k navigation, mouse row selection and automatic
 Discover pagination. Available on Mac and Linux, including Homebrew. Existing
 controls stay the default; the new appearance/navigation options are opt-in.
 
+## In development — 1.5
+
+The source build adds optional artwork previews while browsing, a Clean player
+layout with Up Next, a preview-and-save theme editor, custom shortcuts and online
+playlist queue continuation. Existing defaults stay unchanged. These additions
+are not in Homebrew 1.4.0 yet. See [controls and limits](docs/player-polish.md).
+
 ## First run
 
 JukeboxCli opens on Home. Search online, browse internet radio or open your local
@@ -457,6 +464,10 @@ artwork-led player and queue presentation.
 [FurqanHun/mpv-music](https://github.com/FurqanHun/mpv-music) inspired the new
 artist/album browser, multi-track selection and browsing details. These are
 implemented in JukeboxCli's existing stack, not a port of its Rust code.
+[Cabritto-Corps/Orpheus](https://github.com/Cabritto-Corps/orpheus) inspired the
+1.5 browsing previews, cleaner layout, editable themes/shortcuts and playlist
+continuation. These are independent TypeScript implementations; no Orpheus
+source code or assets are included.
 [bjarneo/cliamp](https://github.com/bjarneo/cliamp) inspired the classic peak meter,
 the wider family of visualiser styles and the idea of searching the community Radio
 Browser directory. Those features and the terminal drawings were implemented for

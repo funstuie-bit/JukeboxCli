@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Box, Text, useInput } from "ink";
+import { Box, Text } from "ink";
+import { useActionInput as useInput } from "../hooks/useActionInput";
 import { Select } from "@inkjs/ui";
 import {
   useStore,

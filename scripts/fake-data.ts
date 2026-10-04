@@ -158,6 +158,9 @@ export function makeFakePlayback(
     playQueueIndex: async () => {},
     removeQueue: async () => {},
     moveQueue: () => {},
+    setContinuationEnabled: () => {},
+    setContinuation: () => {},
+    retryContinuation: async () => {},
   } as unknown as Playback;
 }
 

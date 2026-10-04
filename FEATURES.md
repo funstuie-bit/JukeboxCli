@@ -5,6 +5,9 @@ or online service will cooperate. The limits are listed below.
 
 ## Supported
 
+Development 1.5 source builds also include the optional
+[player polish features](docs/player-polish.md). Stable Homebrew remains 1.4.0.
+
 Version 1.4.0 includes the
 [1.4 additions](docs/library-and-diagnostics.md): diagnostics/report export,
 portable playlist files, genre scanning/browsing and optional interface controls.

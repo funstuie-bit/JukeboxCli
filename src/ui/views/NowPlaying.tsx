@@ -1,5 +1,5 @@
 import { memo, useEffect, useRef, useState } from "react";
-import { Box, Text, useInput } from "ink";
+import { Box, Text } from "ink";
 import { usePlayback, useStore } from "../store";
 import { loadWaveform, type Waveform } from "../../player/art";
 import { cleanText, formatDuration, trackDisplayTitle } from "../../util/format";
@@ -14,6 +14,9 @@ import { PlayerSearch } from "../components/PlayerSearch";
 import { BANDS, SpectrumDynamics, nextSpectrumMode, spectrumModeLabel, spectrumRows, visualizerEnabled, type SpectrumMode } from "../../player/spectrum";
 import { launchFullscreenVisualizer } from "../../player/fullscreen-visualizer";
 import { useArtworkPalette } from "../hooks/useArtworkPalette";
+import { playerBackground, playerBorder } from "../appearance";
+import { useShortcutInput } from "../hooks/useShortcutInput";
+import { shortcutLabel } from "../shortcuts";
 
 export function playerLayout(width: number, height: number, live = false, waveform = false) {
   const split = width >= 86 && height >= 16;
@@ -63,11 +66,12 @@ export function NowPlaying({ embedded = false, onDownload = () => {} }: { embedd
   const st = usePlayback(store.playback);
   const width = Math.max(10, embedded ? store.contentWidth : store.cols - 2);
   const height = store.listRows + 2;
+  const clean = store.config.playerLayout === "clean";
   const layout = playerLayout(width, height);
   const inner = layout.left - 4;
   const file = st.track?.filePath;
   const source = st.track && isStream(st.track) ? st.track.thumbnailUrl : file;
-  const COLOR = useArtworkPalette(store.config.playerTheme, store.config.artworkColours, source);
+  const COLOR = useArtworkPalette(store.config.playerTheme, store.config.artworkColours, source, store.config.appearance);
   const [artVisible, setArtVisible] = useState(true);
   const [lyricsVisible, setLyricsVisible] = useState(false);
   const [searchVisible, setSearchVisible] = useState(false);
@@ -78,7 +82,7 @@ export function NowPlaying({ embedded = false, onDownload = () => {} }: { embedd
   const visualizerMode = store.config.visualizerMode ?? "classic";
   // App unmounts expanded player for help; hidden embedded views get region=help.
   const active = !embedded || store.region === "content";
-  useInput(input => {
+  useShortcutInput(input => {
     if (store.captureMode === "text") return;
     if (input === "S" || (input === "/" && !lyricsVisible)) { setSearchVisible(true); return; }
     if (input === "b") setArtVisible(v => !v);
@@ -90,7 +94,7 @@ export function NowPlaying({ embedded = false, onDownload = () => {} }: { embedd
       setFullscreenStatus("Opening fullscreen effects…");
       void launchFullscreenVisualizer(store.playback.mpvProcessId).then(result => setFullscreenStatus(result.message));
     }
-  }, { isActive: active });
+  }, "player", active);
   useEffect(() => {
     if (!file) return;
     let cancelled = false;
@@ -110,7 +114,8 @@ export function NowPlaying({ embedded = false, onDownload = () => {} }: { embedd
   const at = Math.min(progressWidth - 1, Math.floor(fraction * progressWidth));
   const t = st.track;
   const live = isLive(t);
-  const artRows = playerLayout(width, height, live, visualizer || !!samples).artRows;
+  const artRows = clean && layout.split ? Math.max(2, height - 11 - (visualizer ? layout.waveRows : 0))
+    : playerLayout(width, height, live, visualizer || !!samples).artRows;
   const heading = <Box flexDirection="column" width={inner}>
     <Text color={COLOR.accent} bold wrap="truncate-end">{t ? cleanText(trackDisplayTitle(t)) : "Nothing playing"}</Text>
     <Box height={layout.split && live && height >= 26 ? 3 : 1} overflow="hidden"><Text color={COLOR.alt} wrap={layout.split && live && height >= 26 ? "wrap" : "truncate-end"}>{live ? cleanText(st.broadcastTitle || "Waiting for station song information") : t?.artist ? cleanText(t.artist) : t ? "Online audio" : "Library · 8 Discover · o Play URL"}</Text></Box>
@@ -118,39 +123,44 @@ export function NowPlaying({ embedded = false, onDownload = () => {} }: { embedd
   </Box>;
   const details = <Box flexDirection="column" width={inner}>
     {(layout.split || layout.showcase) && (visualizer || (!live && samples)) ? <Box flexDirection="column">
-      <Text color={COLOR.muted}>{visualizer ? `LIVE SPECTRUM · ${spectrumModeLabel(visualizerMode).toUpperCase()} · v` : "TRACK WAVEFORM"}</Text>
+      {!clean ? <Text color={COLOR.muted}>{visualizer ? `LIVE SPECTRUM · ${spectrumModeLabel(visualizerMode).toUpperCase()} · ${shortcutLabel("v", store.config.keybindings, "player")}` : "TRACK WAVEFORM"}</Text> : null}
       {visualizer ? <SpectrumPanel levels={spectrum} width={inner} height={layout.waveRows} paused={st.paused || Boolean(st.loading)} palette={COLOR} mode={visualizerMode} />
         : <WaveformPanel samples={samples} width={inner} height={layout.waveRows} fraction={fraction} palette={COLOR} />}
     </Box> : null}
     {live ? <Text color={COLOR.accent} wrap="truncate-end">LIVE · no seeking or restart</Text> : <Text color={RULE}>{"─".repeat(at)}<Text color={COLOR.accent}>●</Text>{"─".repeat(progressWidth - at - 1)}</Text>}
     <Box justifyContent="space-between">
-      <Text color={COLOR.text} wrap="truncate-end">{live ? st.loading ? "Connecting…" : st.paused ? "Disconnected · space reconnects" : "On air · space disconnects" : st.engine === "mpv" ? `${formatDuration(st.position)} / ${st.duration > 0 ? formatDuration(st.duration) : "—"}` : "Progress needs mpv"}</Text>
+      <Text color={COLOR.text} wrap="truncate-end">{live ? st.loading ? "Connecting…" : st.paused ? `Disconnected · ${shortcutLabel("space", store.config.keybindings)} reconnects` : `On air · ${shortcutLabel("space", store.config.keybindings)} disconnects` : st.engine === "mpv" ? `${formatDuration(st.position)} / ${st.duration > 0 ? formatDuration(st.duration) : "—"}` : "Progress needs mpv"}</Text>
       <Text color={COLOR.alt}>{st.engine === "mpv" ? `${st.volume}%` : ""}</Text>
     </Box>
-    <Text color={COLOR.muted} wrap="truncate-end">{`${!t ? "Stopped" : st.loading ? "Loading" : st.paused ? "Paused" : "Playing"} · shuffle ${st.shuffle ? "on" : "off"} · repeat ${st.repeat}`}</Text>
-    <Text color={st.error ? COLOR.warn : COLOR.muted} wrap="truncate-end">{st.error || fullscreenStatus || (st.loading ? "Loading…" : st.engine === "external" && t ? "Playing in your default app" : t ? `${isStream(t) ? "Streaming · not in Library" : "Saved locally"}${st.preloading ? " · preparing next…" : st.nextReady ? " · next prepared" : ""}` : "m closes this screen")}</Text>
+    <Text color={COLOR.muted} wrap="truncate-end">{`${!t ? "Stopped" : st.loading ? "Loading" : st.paused ? "Paused" : "Playing"}${clean ? `${st.shuffle ? " · shuffled" : ""}${st.repeat !== "off" ? ` · repeat ${st.repeat}` : ""}` : ` · shuffle ${st.shuffle ? "on" : "off"} · repeat ${st.repeat}`}`}</Text>
+    <Text color={st.error ? COLOR.warn : COLOR.muted} wrap="truncate-end">{st.error || fullscreenStatus || (st.loading ? "Loading…" : st.engine === "external" && t ? "Playing in your default app" : t ? `${isStream(t) ? "Streaming · not in Library" : "Saved locally"}${st.preloading ? " · preparing next…" : st.nextReady ? " · next prepared" : ""}` : `${shortcutLabel("m", store.config.keybindings)} closes this screen`)}</Text>
   </Box>;
-  return <Box width={width} height={height} flexDirection={layout.split ? "row" : "column"}>
-    <Box width={layout.left} height={layout.balanced ? height - 1 : layout.split ? undefined : layout.showcase ? height : 6} alignSelf="flex-start" borderStyle={layout.split ? "round" : undefined} borderColor={RULE} flexDirection="column" paddingX={1} flexShrink={0}>
-      {layout.split ? <Box justifyContent="space-between"><Text bold color={COLOR.alt}>NOW PLAYING</Text><Text color={COLOR.muted}>{st.index >= 0 ? `${store.playback.queueEntries().findIndex(e => e.index === st.index) + 1}/${st.list.length}` : ""}</Text></Box> : null}
+  if (layout.showcase && (lyricsVisible || searchVisible)) return <Box width={width} height={height}>
+    {searchVisible ? <PlayerSearch height={height} width={width} active={active} onClose={() => setSearchVisible(false)} onDownload={onDownload} />
+      : <LyricsPanel height={height} width={width} active={active} />}
+  </Box>;
+  return <Box width={width} height={height} backgroundColor={playerBackground(store.config.appearance)} flexDirection={layout.split ? "row" : "column"}>
+    <Box width={layout.left} height={layout.balanced ? height - 1 : layout.split ? undefined : layout.showcase ? height : 6} alignSelf="flex-start" borderStyle={layout.split && !clean ? playerBorder(store.config.appearance) : undefined} borderColor={RULE} flexDirection="column" paddingX={1} flexShrink={0}>
+      {layout.split && !clean ? <Box justifyContent="space-between"><Text bold color={COLOR.alt}>NOW PLAYING</Text><Text color={COLOR.muted}>{st.index >= 0 ? `${store.playback.queueEntries().findIndex(e => e.index === st.index) + 1}/${st.list.length}` : ""}</Text></Box> : null}
       {heading}
       {layout.split || layout.showcase ? <Box alignItems="center" justifyContent="center" flexShrink={0}>
-        <Cover source={source} cols={Math.min(inner, layout.balanced ? 56 : layout.split ? 40 : 28)} rows={artRows} visible={artVisible}
+        <Cover source={source} cols={clean ? inner : Math.min(inner, layout.balanced ? 56 : layout.split ? 40 : 28)} rows={artRows} visible={artVisible}
+          toggleHint={shortcutLabel("b", store.config.keybindings, "player")}
           repaintKey={live ? `${Boolean(st.loading)}:${st.paused}:${st.broadcastTitle ?? ""}` : undefined}
           fallback={<RadioFallback live={live} rows={artRows} palette={COLOR} simple={simpleArtwork()}
             animate={active && !st.paused && !st.loading && !!t && store.config.reducedMotion === false} />} />
       </Box> : null}
-      {(layout.split || layout.showcase) && height >= 23 ? <Box height={1} /> : null}
+      {!clean && (layout.split || layout.showcase) && height >= 23 ? <Box height={1} /> : null}
       {details}
       {layout.balanced ? <Box flexGrow={1} /> : null}
-      {(layout.split || layout.showcase) && height >= 23 ? <Text color={COLOR.muted} wrap="truncate-end">T {playerThemeLabel(store.config.playerTheme)}{visualizer ? ` · v ${visualizerMode}` : ""}{["linux", "darwin"].includes(process.platform) ? " · F fullscreen effects" : ""} · Art {simpleArtwork() ? "simple" : graphicsPainter ? graphicsProtocol === "iterm" ? "iTerm2" : graphicsProtocol === "sixel" ? "Sixel" : "Kitty" : "blocks"}</Text> : null}
+      {!clean && (layout.split || layout.showcase) && height >= 23 ? <Text color={COLOR.muted} wrap="truncate-end">T {playerThemeLabel(store.config.playerTheme)}{visualizer ? ` · v ${visualizerMode}` : ""}{["linux", "darwin"].includes(process.platform) ? " · F fullscreen effects" : ""} · Art {simpleArtwork() ? "simple" : graphicsPainter ? graphicsProtocol === "iterm" ? "iTerm2" : graphicsProtocol === "sixel" ? "Sixel" : "Kitty" : "blocks"}</Text> : null}
     </Box>
     {!layout.showcase ? <Box flexDirection="column" marginLeft={layout.split ? 1 : 0} width={layout.split ? layout.right : width} height={layout.split ? height : Math.max(3, height - 6)}>
       <Box display={lyricsVisible || searchVisible ? "none" : "flex"}>
-        <ListeningQueue height={(layout.split ? height : Math.max(3, height - 6)) - 1} width={layout.split ? layout.right : width} active={active && !lyricsVisible && !searchVisible} framed controlsOutside={layout.balanced} />
+        <ListeningQueue height={(layout.split ? height : Math.max(3, height - 6)) - 1} width={layout.split ? layout.right : width} active={active && !lyricsVisible && !searchVisible} framed={!clean} upcoming={clean} controlsOutside={layout.balanced} />
       </Box>
       {lyricsVisible ? <Box display={searchVisible ? "none" : "flex"}><LyricsPanel height={(layout.split ? height : Math.max(3, height - 6)) - 1} width={layout.split ? layout.right : width} active={active && !searchVisible} /></Box> : null}
-      {!searchVisible && !layout.balanced ? <Text color={COLOR.alt} wrap="truncate-end">S Search · l: local / s: songs / v: videos</Text> : null}
+      {!searchVisible && !layout.balanced ? <Text color={COLOR.alt} wrap="truncate-end">{shortcutLabel("S", store.config.keybindings, "player")} Search · l: local / s: songs / v: videos</Text> : null}
       {searchVisible ? <PlayerSearch height={layout.split ? height : Math.max(3, height - 6)} width={layout.split ? layout.right : width}
         active={active} onClose={() => setSearchVisible(false)} onDownload={onDownload} /> : null}
     </Box> : null}

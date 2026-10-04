@@ -1,5 +1,6 @@
-import { useMemo, useState, type ReactNode } from "react";
-import { Box, Text, useInput } from "ink";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { Box, Text } from "ink";
+import { useActionInput as useInput } from "../hooks/useActionInput";
 import { useStore } from "../store";
 import { wrapStep } from "../move";
 import { cleanText } from "../../util/format";
@@ -50,6 +51,8 @@ interface SongListProps {
   /** A positive width puts details alongside the list; otherwise below it. */
   previewWidth?: number;
   previewRows?: number;
+  freezePreview?: boolean;
+  selectionKey?: string;
 }
 
 type Row =
@@ -97,11 +100,14 @@ export function SongList({
   preview,
   previewWidth = 0,
   previewRows = 3,
+  freezePreview = false,
+  selectionKey,
 }: SongListProps) {
   const { listRows, playback } = useStore();
   const [cursor, setCursor] = useState(0);
   const [notice, setNotice] = useState("");
   const [marked, setMarked] = useState<Set<string>>(() => new Set());
+  useEffect(() => { setCursor(0); setMarked(new Set()); setNotice(""); }, [selectionKey]);
 
   // Flatten to display rows, numbering only the selectable ones. Memoized on
   // the data itself: a cursor move or playback tick must only pay for the
@@ -140,6 +146,8 @@ export function SongList({
 
   // Keep the cursor in range if the list shrank between renders.
   const clamped = Math.min(cursor, Math.max(0, selectableCount - 1));
+  const stablePreview = useRef<ReactNode>(null);
+  if (!freezePreview) stablePreview.current = preview?.(values[clamped] === action?.value ? undefined : values[clamped]);
   const selected = useMemo(() => values.filter(v => v !== action?.value && marked.has(v)), [values, marked, action]);
   const availableRows = Math.max(1, listRows - reserveRows);
   const showMarks = !!onQueueMany && availableRows >= 2;
@@ -278,7 +286,7 @@ export function SongList({
       </Box>
       {preview ? <Box flexDirection="column" flexShrink={0} width={previewWidth || undefined}
         height={previewWidth ? height : previewRows} overflow="hidden" paddingLeft={previewWidth ? 2 : 0}>
-        {preview(values[clamped] === action?.value ? undefined : values[clamped])}
+        {stablePreview.current}
       </Box> : null}
       </Box>
     </Box>

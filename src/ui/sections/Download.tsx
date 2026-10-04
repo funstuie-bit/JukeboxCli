@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { Box, Text, useInput } from "ink";
+import { Box, Text } from "ink";
+import { useActionInput as useInput } from "../hooks/useActionInput";
 import { Select, Spinner, StatusMessage } from "@inkjs/ui";
 import { useStore, useQueueItems, type CaptureMode } from "../store";
 import { wrapStep } from "../move";

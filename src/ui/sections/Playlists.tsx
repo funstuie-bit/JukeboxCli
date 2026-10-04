@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Box, Text, useInput } from "ink";
+import { Box, Text } from "ink";
+import { useActionInput as useInput } from "../hooks/useActionInput";
 import { Select } from "@inkjs/ui";
 import {
   useStore,
@@ -11,6 +12,7 @@ import { Header } from "../components/Header";
 import { SourceTabs, type SourceFilter } from "../components/SourceTabs";
 import { TextField } from "../components/TextField";
 import { SongList, type SongGroup } from "../components/SongList";
+import { BrowsePreview } from "../components/BrowsePreview";
 import { COLOR, ICON } from "../theme";
 import { cleanText, formatDuration, formatRuntime } from "../../util/format";
 import { fuzzyFilter } from "../../util/fuzzy";
@@ -72,6 +74,8 @@ export function Playlists() {
     queue,
     playback,
     compact,
+    contentWidth,
+    listRows,
   } = useStore();
   const doneCount = useQueueDoneCount(queue);
   const libVersion = useLibrary(library);
@@ -557,6 +561,12 @@ export function Playlists() {
             onSelect={handleSongSelect}
             onQueue={(id, next) => { const t = library.get(id); if (t) playback.enqueue(t, next); }}
             onRename={handleSongRename}
+            preview={config.browseArtwork && !compact && contentWidth >= 100 && listRows >= 14 ? id => {
+              const t = id ? library.get(id) : undefined;
+              return <BrowsePreview source={t?.filePath} title={t?.title} subtitle={t?.artist} rows={listRows - 4} visible={focused} />;
+            } : undefined}
+            previewWidth={36}
+            freezePreview={songFiltering}
           />
         )}
       </Box>
@@ -624,6 +634,13 @@ export function Playlists() {
           onDelete={handleSetDelete}
           onSelect={handleSetSelect}
           onRename={handleSetRename}
+          preview={config.browseArtwork && !compact && contentWidth >= 100 && listRows >= 14 ? id => {
+            const set = sets.find(s => s.key === id);
+            return <BrowsePreview source={set?.tracks[0]?.filePath} title={set?.name}
+              subtitle={set ? `${set.tracks.length} tracks` : undefined} rows={listRows - reserveRows} visible={focused} />;
+          } : undefined}
+          previewWidth={36}
+          freezePreview={filtering}
         />
       )}
     </Box>

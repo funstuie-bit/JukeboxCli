@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { Box, Text, useInput } from "ink";
+import { Box, Text } from "ink";
+import { useActionInput as useInput } from "../hooks/useActionInput";
 import { scanGenres, type GenreProgress } from "../../library/genre";
 import { useStore } from "../store";
 import { COLOR } from "../theme";

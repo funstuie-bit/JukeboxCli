@@ -58,6 +58,7 @@ import { ListeningQueue } from "./views/ListeningQueue";
 import { Home } from "./sections/Home";
 import { useMouseWheel } from "./hooks/useMouseWheel";
 import { logEvent } from "../diagnostics/log";
+import { shortcutInput, shortcutLabel } from "./shortcuts";
 
 interface Boot {
   library: LibraryStore;
@@ -435,6 +436,10 @@ export function App({ initialAdd, initialOverrides }: { initialAdd?: string; ini
       }
       // A TextField owns the whole keyboard while the user is typing.
       if (captureMode === "text") return;
+      const translated = shortcutInput(input, key, config?.keybindings, "global");
+      if (!translated) return;
+      [input, key] = translated;
+      if (key.ctrl || key.meta) return;
       // Optional Vim-style vertical navigation applies to all arrow-driven
       // widgets, including third-party pickers. Space still pauses; j/k no
       // longer seek/pause in this mode. Text fields retain literal letters.
@@ -592,6 +597,7 @@ export function App({ initialAdd, initialOverrides }: { initialAdd?: string; ini
     (c: Config) => {
       setConfigState(c);
       boot?.queue.updateConfig(c);
+      boot?.playback.setContinuationEnabled(c.queueContinuation === true);
       void configSession.current?.save(c).catch(() => setMpvStatus("Could not save settings; changes apply to this launch only."));
     },
     [boot],
@@ -701,7 +707,7 @@ export function App({ initialAdd, initialOverrides }: { initialAdd?: string; ini
       <Box flexDirection="column" paddingX={1}>
         <Box justifyContent="space-between">
           {showLogo ? <Logo /> : null}
-          {!welcome ? <Text color={playerPalette(config?.playerTheme).muted}>H Home · m Player · ? Keys</Text> : null}
+          {!welcome ? <Text color={playerPalette(config?.playerTheme).muted}>{shortcutLabel("H", config?.keybindings)} Home · {shortcutLabel("m", config?.keybindings)} Player · {shortcutLabel("?", config?.keybindings)} Keys</Text> : null}
           {mpvStatus ? <Text dimColor>{mpvStatus}</Text> : null}
         </Box>
         {showTopRule ? <Rule width={ruleWidth} /> : null}
@@ -754,14 +760,14 @@ export function App({ initialAdd, initialOverrides }: { initialAdd?: string; ini
             >
             {showDivider ? <Rule width={ruleWidth} /> : null}
             {!nowPlayingView && section !== "player" ? <NowPlayingBar /> : null}
-            {showFooter && nowPlayingView && expandedPlayerLayout.balanced ? (
+            {showFooter && nowPlayingView && expandedPlayerLayout.balanced && config?.playerLayout !== "clean" ? (
               <SplitFooter left={expandedPlayerLayout.left} right={expandedPlayerLayout.right}
                 leftHints={WIDE_PLAYER_HINTS} rightHints={WIDE_QUEUE_HINTS} />
             ) : showFooter ? (
               <Footer
                 hints={
                   nowPlayingView
-                    ? PLAYER_HINTS
+                    ? config?.playerLayout === "clean" ? PLAYER_HINTS.filter(h => ["Back", "Pause", "Lyrics", "Queue", "Keys"].includes(h.label)) : PLAYER_HINTS
                     : footerHints(region, section, playlistsDepth)
                 }
               />

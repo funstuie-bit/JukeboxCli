@@ -10,8 +10,15 @@ import type { PresetPack } from "../player/linux-preset-packs";
 import { PLAYER_THEMES, type PlayerTheme } from "../ui/theme";
 import type { YtDlpChannel } from "../bin/ytdlp-fetch";
 import type { YtDlpProvider } from "../bin/ytdlp-policy";
+import { validAppearance, type Appearance } from "../ui/appearance";
+import { validBindings, type Bindings } from "../ui/shortcuts";
 
 export interface Config {
+  keybindings?: Bindings;
+  browseArtwork?: boolean;
+  playerLayout?: "classic" | "clean";
+  appearance?: Appearance;
+  queueContinuation?: boolean;
   artworkColours?: boolean;
   vimNavigation?: boolean;
   mouseMode?: "off" | "wheel" | "click";
@@ -77,6 +84,11 @@ export function stripDeprecatedConfig(config: Config): Config {
 }
 
 export const defaultConfig: Config = {
+  keybindings: {},
+  browseArtwork: false,
+  playerLayout: "classic",
+  appearance: validAppearance({}),
+  queueContinuation: false,
   artworkColours: false,
   vimNavigation: false,
   mouseMode: "wheel",
@@ -120,6 +132,11 @@ export async function loadConfig(): Promise<Config> {
   try {
     const parsed = JSON.parse(raw) as Partial<Config>;
     const cfg = { ...defaultConfig, ...parsed };
+    cfg.browseArtwork = parsed.browseArtwork === true;
+    cfg.playerLayout = parsed.playerLayout === "clean" ? "clean" : "classic";
+    cfg.appearance = validAppearance(parsed.appearance);
+    cfg.queueContinuation = parsed.queueContinuation === true;
+    cfg.keybindings = validBindings(parsed.keybindings);
     cfg.artworkColours = parsed.artworkColours === true;
     cfg.vimNavigation = parsed.vimNavigation === true;
     cfg.mouseMode = parsed.mouseMode === "off" || parsed.mouseMode === "click" ? parsed.mouseMode : "wheel";

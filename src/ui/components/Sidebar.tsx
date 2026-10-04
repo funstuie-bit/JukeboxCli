@@ -1,4 +1,5 @@
-import { Box, Text, useInput } from "ink";
+import { Box, Text } from "ink";
+import { useActionInput as useInput } from "../hooks/useActionInput";
 import { useStore, type Section } from "../store";
 import { wrapStep } from "../move";
 import { playerPalette, ICON } from "../theme";

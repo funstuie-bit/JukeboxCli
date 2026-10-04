@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
-import { Box, Text, useInput } from "ink";
-import { browseMusic, searchMusic, type MusicFilter, type MusicPage } from "../../sources/music";
+import { Box, Text } from "ink";
+import { useActionInput as useInput } from "../hooks/useActionInput";
+import { browseMusic, searchMusic, queueLoader, type MusicFilter, type MusicPage } from "../../sources/music";
 import { cleanText, truncate } from "../../util/format";
 import { useStore } from "../store";
 import { TextField } from "../components/TextField";
@@ -74,6 +75,8 @@ export function Discover() {
           // Search is a one-off selection; a browsed collection supplies context.
           const tracks = parents.length ? page.items.flatMap(i => i.track ? [i.track] : []) : [item.track];
           void playback.selectTrack(item.track, tracks).catch(() => setNotice("Could not start playback. Try again in Queue."));
+          playback.setContinuationEnabled(config.queueContinuation === true);
+          playback.setContinuation(config.queueContinuation && parents.length ? queueLoader(page) : undefined);
         } else void load(() => browseMusic(item), "browse");
       } else if (item.track && (input === "A" || input === "P")) {
         const already = playback.getState().list.some(t => t.id === item.track!.id);

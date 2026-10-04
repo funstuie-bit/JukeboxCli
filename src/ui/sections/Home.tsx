@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Box, Text, useInput } from "ink";
+import { Box, Text } from "ink";
+import { useActionInput as useInput } from "../hooks/useActionInput";
 import { useStore, useHistory, usePlaybackSelector, type Section } from "../store";
 import { JukeboxMark } from "../components/JukeboxMark";
 import { playerPalette } from "../theme";

@@ -10,6 +10,16 @@ const baseline = (): Config => stripDeprecatedConfig({ ...defaultConfig, firstRu
   libraryDir: path.join(paths.data, "saved-music"), audioFormat: "best" });
 
 describe("launch-only config", () => {
+  it("persists polish preferences and rejects malformed hand-edited values", async () => {
+    await saveConfig({ ...baseline(), browseArtwork: true, playerLayout: "clean", queueContinuation: true,
+      appearance: { background: "solid", accent: "#65c7d0", border: "double", highContrast: true }, keybindings: { pause: "ctrl+e" } });
+    expect(await loadConfig()).toMatchObject({ browseArtwork: true, playerLayout: "clean", queueContinuation: true,
+      appearance: { background: "solid", accent: "#65c7d0", border: "double", highContrast: true }, keybindings: { pause: "ctrl+e" } });
+    await fs.writeFile(configFile, JSON.stringify({ ...baseline(), browseArtwork: "yes", playerLayout: "bad", queueContinuation: "yes",
+      appearance: { accent: "invalid", highContrast: "false" }, keybindings: { pause: "n" } }));
+    expect(await loadConfig()).toMatchObject({ browseArtwork: false, playerLayout: "classic", queueContinuation: false,
+      appearance: { highContrast: false }, keybindings: {} });
+  });
   it("uses every CLI override without changing the saved file or the next launch", async () => {
     const saved = baseline();
     await saveConfig(saved);

@@ -112,6 +112,16 @@ async function press(view: ReturnType<typeof app>, key: string) {
 afterEach(() => { startup.fresh = false; startup.writes = []; startup.readEffective = undefined; vi.unstubAllEnvs(); cleanup(); rmSync(sessionFile, { force: true }); rmSync(stationsFile, { force: true }); rmSync(path.join(paths.cache, "lyrics-v1.json"), { force: true }); });
 
 describe("App player workflow", () => {
+  it("uses rebound player controls without interpreting text as shortcuts", async () => {
+    const view = app({ initialOverrides: { keybindings: { player: "!", pause: "ctrl+e", artwork: "ctrl+b" } } });
+    await tick(); await tick(); await press(view, "1"); await press(view, "\r");
+    await press(view, "m"); expect(view.lastFrame()).not.toContain("NOW PLAYING");
+    await press(view, "!"); expect(view.lastFrame()).toContain("NOW PLAYING");
+    await press(view, "\x05"); expect(view.lastFrame()).toContain("Paused · shuffle");
+    await press(view, "\x02"); expect(view.lastFrame()).toContain("Artwork hidden");
+    await press(view, "S"); await press(view, "!"); expect(view.lastFrame()).toContain("!");
+    view.unmount();
+  });
   it("uses optional j/k for navigation without seeking/pausing, and preserves typing", async () => {
     const view = app({ initialOverrides: { vimNavigation: true } }); await tick(); await tick();
     await press(view, "1"); await press(view, "j"); await press(view, "A");

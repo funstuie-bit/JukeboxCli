@@ -8,6 +8,7 @@ import { dispatchMediaAction } from "./media-keys";
 import { onEndedDecision, shuffledOrder, stepIndex } from "./order";
 import { openPath } from "../util/open-path";
 import type { ListeningSession } from "./session";
+import { QueueContinuation, type QueueLoader } from "./continuation";
 
 export type Engine = "mpv" | "external";
 /**
@@ -17,6 +18,7 @@ export type Engine = "mpv" | "external";
 export type RepeatMode = "off" | "all" | "one";
 
 export interface PlaybackState {
+  continuationStatus?: string;
   track: Track | null;
   list: Track[];
   index: number;
@@ -91,6 +93,30 @@ export function mpvInstallHint(): string {
  * IPC); falls back to opening the file in the OS default audio app.
  */
 export class Playback extends EventEmitter {
+  private continuation?: QueueContinuation;
+  private continuationEnabled = false;
+  setContinuationEnabled(enabled: boolean): void {
+    this.continuationEnabled = enabled;
+    if (!enabled) this.clearContinuation();
+  }
+  clearContinuation(): void {
+    this.continuation?.cancel(); this.continuation = undefined;
+    if (this.state.continuationStatus) this.update({ continuationStatus: undefined });
+  }
+  /** Called only after explicitly starting a browsed online collection. */
+  setContinuation(loader: QueueLoader | undefined): void {
+    this.clearContinuation();
+    if (!this.continuationEnabled || !loader) return;
+    this.continuation = new QueueContinuation(loader, this.state.list,
+      tracks => this.enqueueMany(tracks), message => this.update({ continuationStatus: message }));
+    this.update({ continuationStatus: "Playlist continuation ready" });
+    this.maybeContinue();
+  }
+  retryContinuation(): Promise<void> { return this.continuation?.load(true) ?? Promise.resolve(); }
+  private maybeContinue(): void {
+    if (this.continuation?.available && this.state.repeat !== "one" && !isLive(this.state.track) &&
+      this.state.index >= 0 && this.order.length - this.order.indexOf(this.state.index) <= 4) void this.continuation.load();
+  }
   private mpvPath: string | null;
   private readonly opener: Opener;
   private mpv: MpvPlayer | null = null;
@@ -279,6 +305,7 @@ export class Playback extends EventEmitter {
       this.mpv?.setMediaTitle?.(track ? [track.artist, track.title, this.state.broadcastTitle].filter(Boolean).join(" · ") : "JukeboxCli");
     }
     this.emit("state", this.state);
+    if (patch.index !== undefined || patch.track !== undefined) this.maybeContinue();
     if (patch.list || patch.repeat !== undefined) this.schedulePrefetch();
   }
 
@@ -411,6 +438,8 @@ export class Playback extends EventEmitter {
       return;
     }
     const request = this.playRequest;
+    if (this.state.repeat !== "one" && this.upNext(1).length === 0) await this.continuation?.load();
+    if (request !== this.playRequest) return;
     await this.prefetchWork;
     if (request !== this.playRequest) return;
     if (this.prepared && this.prepared.media.expiresAt > Date.now() && await this.mpv?.playPrepared(this.prepared.token)) return;
@@ -420,6 +449,7 @@ export class Playback extends EventEmitter {
       this.state.repeat,
     );
     if (decision === "stop") {
+      if (this.continuation?.available) { this.update({ paused: true, loading: false }); return; }
       // Nothing left to play. Clear cleanly so the now-playing bar returns to
       // its idle "pick a song" state. Without this, mpv idles at EOF (it stays
       // up with --idle=yes), the bar freezes at 100%, and every transport key
@@ -464,6 +494,7 @@ export class Playback extends EventEmitter {
     const cur = this.state.track;
     if (!cur || index < 0 || index >= list.length) return;
     if (list[index]!.id !== cur.id) return;
+    this.clearContinuation();
     this.backStack = [];
     this.state = { ...this.state, list, index };
     this.rebuildOrder();
@@ -484,6 +515,7 @@ export class Playback extends EventEmitter {
     const newList = list !== this.state.list || this.order.length !== list.length;
     const fromIndex = this.state.index;
     if (newList) {
+      this.clearContinuation();
       this.backStack = [];
     } else if (!this.popping && fromIndex >= 0 && safeIdx !== fromIndex) {
       this.backStack.push(fromIndex);
@@ -654,6 +686,7 @@ export class Playback extends EventEmitter {
    * later play() resumes normally; for mpv this unloads the file too.
    */
   async stop(): Promise<void> {
+    this.clearContinuation();
     this.resolving?.abort(); this.cancelPrefetch();
     const request = ++this.playRequest;
     if (this.mpv) {
@@ -681,6 +714,9 @@ export class Playback extends EventEmitter {
 
   async next(): Promise<void> {
     if (!this.state.list.length) return;
+    const request = this.playRequest;
+    if (this.upNext(1).length === 0) await this.continuation?.load();
+    if (request !== this.playRequest) return;
     const ni = stepIndex(this.order, this.state.index, this.state.repeat, 1);
     if (ni === null) return; // end of the list
     const prepared = this.prepared;
@@ -741,6 +777,7 @@ export class Playback extends EventEmitter {
   }
 
   quit(): void {
+    this.clearContinuation();
     this.resolving?.abort(); this.cancelPrefetch();
     this.playRequest++;
     this.mpv?.quit();

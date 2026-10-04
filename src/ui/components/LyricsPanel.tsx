@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { Box, Text, useInput } from "ink";
+import { Box, Text } from "ink";
+import { useActionInput as useInput } from "../hooks/useActionInput";
 import stringWidth from "string-width";
 import { usePlayback, useStore } from "../store";
 import { playerPalette, RULE } from "../theme";

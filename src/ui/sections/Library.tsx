@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Box, Text, useInput } from "ink";
+import { Box, Text } from "ink";
+import { useActionInput as useInput } from "../hooks/useActionInput";
 import { Select } from "@inkjs/ui";
 import {
   useStore,
@@ -12,6 +13,7 @@ import { SourceTabs, type SourceFilter } from "../components/SourceTabs";
 import { TextField } from "../components/TextField";
 import { SongList, type SongGroup } from "../components/SongList";
 import { COLOR, ICON } from "../theme";
+import { BrowsePreview } from "../components/BrowsePreview";
 import { cleanText, formatDuration } from "../../util/format";
 import { deleteTracks } from "../../library/delete";
 import { displaySource } from "../../library/drift";
@@ -343,10 +345,13 @@ export function Library() {
   const showBrowseRow = !compact || !showSearchRow;
   const reserveRows = 1 + (showBrowseRow ? 1 : 0) + (showSearchRow ? (compact ? 1 : 2) : 0);
   // Keep at least three song rows; hide details in short terminals.
-  const showDetails = details && !compact && listRows - reserveRows >= 7;
+  const artworkPreview = config.browseArtwork && contentWidth >= 100 && !compact && listRows - reserveRows >= 10;
+  const showDetails = (details || artworkPreview) && !compact && listRows - reserveRows >= 7;
   const preview = showDetails ? (id: string | undefined) => {
     if (browsingCollections) {
       const c = collections.find(item => item.id === id);
+      if (artworkPreview) return <BrowsePreview source={c?.tracks[0]?.filePath} title={c?.title}
+        subtitle={c ? `${c.tracks.length} tracks · ${c.artist ?? browseMode}` : undefined} rows={listRows - reserveRows} visible={focused} />;
       return <>
         <Text color={COLOR.accent} wrap="truncate-end">{cleanText(c?.title ?? "Details")}</Text>
         <Text wrap="truncate-end">{c ? `${c.tracks.length} tracks${c.artist ? ` · ${cleanText(c.artist)}` : ""}` : "Choose a collection"}</Text>
@@ -354,6 +359,7 @@ export function Library() {
       </>;
     }
     const t = id ? library.get(id) : undefined;
+    if (artworkPreview) return <BrowsePreview source={t?.filePath} title={t?.title} subtitle={t?.artist} rows={listRows - reserveRows} visible={focused} />;
     return <>
       <Text color={COLOR.accent} wrap="truncate-end">{cleanText(t?.title ?? "Track details")}</Text>
       <Text wrap="truncate-end">{t ? `${cleanText(t.artist || "Unknown artist")} · ${cleanText(t.album || "Unknown album")}` : "Highlight a track to inspect it"}</Text>
@@ -405,7 +411,7 @@ export function Library() {
         <Text dimColor>No matches.</Text>
       ) : (
         <SongList
-          key={JSON.stringify([browseMode, collectionId, filter, q])}
+          key={JSON.stringify([browseMode, collectionId, filter])}
           groups={groups}
           action={action}
           playingId={playingId}
@@ -421,6 +427,8 @@ export function Library() {
           }}
           onRename={browsingCollections ? undefined : handleRename}
           preview={preview}
+          freezePreview={editing}
+          selectionKey={q}
           previewWidth={contentWidth >= 100 ? 36 : 0}
         />
       )}

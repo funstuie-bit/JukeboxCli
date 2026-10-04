@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { Box, Text, useInput } from "ink";
+import { Box, Text } from "ink";
+import { useActionInput as useInput } from "../hooks/useActionInput";
 import { searchMusic, type MusicPage } from "../../sources/music";
 import type { PlayableTrack } from "../../player/media";
 import { isStream } from "../../player/media";

@@ -1,5 +1,6 @@
 import { isHttpUrl, type StreamTrack } from "../player/media";
 import { AsyncLocalStorage } from "node:async_hooks";
+import type { QueueLoader } from "../player/continuation";
 
 // Per-request cancellation without a shared mutable signal across UI consumers.
 const requestSignal = new AsyncLocalStorage<AbortSignal>();
@@ -20,6 +21,22 @@ export interface MusicPage {
   title: string;
   items: MusicResult[];
   more?: (signal?: AbortSignal) => Promise<MusicPage>;
+}
+export function queueLoader(page: MusicPage): QueueLoader | undefined {
+  const more = page.more;
+  return more ? async signal => {
+    const next = await more(signal);
+    return { tracks: next.items.flatMap(item => item.track ? [item.track] : []), more: queueLoader(next) };
+  } : undefined;
+}
+/** Share one provider continuation result between browsing and queue consumers. */
+function sharedMore(task: () => Promise<MusicPage>): MusicPage["more"] {
+  let cached: Promise<MusicPage> | undefined;
+  return signal => {
+    signal?.throwIfAborted();
+    cached ??= task().catch(error => { cached = undefined; throw error; });
+    return cached;
+  };
 }
 
 /** Thin data boundary, independent of YouTube.js parser classes in UI/tests. */
@@ -77,7 +94,7 @@ export async function searchMusic(query: string, kind: MusicFilter, signal?: Abo
 }
 function playlistPage(page: any, title: string): MusicPage {
   return { title, items: rows(page.items ?? page.contents, "song"),
-    more: page.has_continuation ? async () => playlistPage(await page.getContinuation(), title) : undefined };
+    more: page.has_continuation ? sharedMore(async () => playlistPage(await page.getContinuation(), title)) : undefined };
 }
 export async function browseMusic(item: MusicResult): Promise<MusicPage> {
   const music = await musicClient();

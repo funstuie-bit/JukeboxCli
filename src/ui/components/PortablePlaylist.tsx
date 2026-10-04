@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Box, Text, useInput } from "ink";
+import { Box, Text } from "ink";
+import { useActionInput as useInput } from "../hooks/useActionInput";
 import { useStore } from "../store";
 import { TextField } from "./TextField";
 import { readPlaylist, writePlaylist, type PlaylistPreview } from "../../library/portable-playlist";

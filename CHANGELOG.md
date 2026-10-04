@@ -3,6 +3,20 @@
 Release notes describe what changed in each build. For what works now and the
 remaining limits, see [feature status](FEATURES.md).
 
+## Unreleased — 1.5
+
+- Optional artwork previews for library tracks/collections and downloaded
+  playlists, with settled selection and a frozen preview while filtering.
+- Optional Clean player layout with larger art, quieter controls and an editable
+  Up Next subset; the full queue remains available at 7.
+- Player theme editor: live sample, transparent/solid background, border style,
+  high contrast and accent overrides, explicit Save and Escape to discard.
+- Custom player/transport/queue shortcuts with collision checks, dynamic help
+  and a reset option. Text input, navigation and Ctrl+C remain protected.
+- Opt-in online playlist queue continuation with bounded requests, cancellation,
+  stale-result rejection and manual retry. No automatic music downloads.
+- Allow lyrics/search panels to open in narrow, artwork-focused player layouts.
+
 ## 1.4.0 — Portable playlists, genres and diagnostics
 
 - Add Settings → Session diagnostics: bounded player/download error logs,

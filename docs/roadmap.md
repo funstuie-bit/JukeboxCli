@@ -1,5 +1,17 @@
 # Roadmap
 
+## Implemented locally — 1.5 development build
+
+- Browsing artwork previews for local songs, collections and downloaded playlists.
+- Optional Clean player layout and editable Up Next view; 7 retains the full queue.
+- Draft theme editor with explicit save/cancel, background/border/contrast/accent.
+- Custom transport/player/queue shortcuts with conflict checks and dynamic help.
+- Opt-in queue continuation for explicitly started online collections, bounded
+  and cancelled on stop/context replacement. No playback on import or downloads.
+
+Independent implementations inspired by Orpheus; no source/assets copied.
+See [controls and limitations](player-polish.md). Not yet a Homebrew release.
+
 ## Current release — 1.4.0
 
 - Session diagnostics viewer and explicit sanitised report export.
@@ -104,8 +116,8 @@ and long-session memory/GPU soak. No full-collection shader compatibility claim.
 ## Later
 
 - Extend mouse coverage beyond row selection if hands-on use warrants it.
-- Consider extending the playback queue across online continuation pages;
-  1.4's optional pagination only loads visible Discover results.
+- Exercise 1.5's queue continuation with long online playlists; 1.4's optional
+  pagination only loads visible Discover results.
 - Consider other platforms once installation and playback tests exist.
 
 ## Not planned

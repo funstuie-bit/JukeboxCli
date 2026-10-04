@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { Box, Text, useInput } from "ink";
+import { Box, Text } from "ink";
+import { useActionInput as useInput } from "../hooks/useActionInput";
 import { diagnosticReport, exportDiagnostics, redactLog } from "../../diagnostics/log";
 import { useStore } from "../store";
 import { COLOR } from "../theme";
