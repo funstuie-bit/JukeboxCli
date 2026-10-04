@@ -1,6 +1,6 @@
 # Roadmap
 
-## Implemented locally — 1.4 development build
+## Current release — 1.4.0
 
 - Session diagnostics viewer and explicit sanitised report export.
 - JSON/M3U playlist import preview and export; missing files skipped, no automatic
@@ -9,18 +9,18 @@
 - Optional artwork colours, j/k navigation and mouse row selection.
 - Optional near-end Discover pagination (not automatic playback-queue extension).
 
-See [controls and limitations](library-and-diagnostics.md). These changes are not
-yet in the stable Homebrew release. Direct-display/physical hardware checks below
+See [controls and limitations](library-and-diagnostics.md). These changes are
+included in Homebrew. Direct-display/physical hardware checks below
 still need hands-on acceptance; automated checks cannot establish those results.
 
-## Current release — 1.3.1
+## Previous releases
 
 Version 1.3.1 adds five Studay FM radio presets, website feed discovery and
 station artwork on Mac and Linux. In Radio / URL (`9`), press `S` to browse.
 
 Version 1.3.0 adds artist/album browsing, multi-track queue actions and responsive
-text details in the library. Genre metadata, portable playlist import/export and
-a session-log viewer remain separate follow-ups.
+text details in the library. Version 1.4.0 adds genre metadata, portable playlist
+import/export and a session-log viewer.
 
 Version 1.2.0 adds Mac fullscreen MilkDrop, Linux preset packs and logo-free
 startup on both platforms. It retains the 1.1.1 fix for orphaned mpv playback.
@@ -42,7 +42,7 @@ The dependency is optional.
   browsing, multi-track queue actions and responsive text details. Test `B`,
   Enter/Escape, `x`/`X`, `A`/`P` and `i` on your own collections and terminals.
   Genre metadata, portable playlist import/export and diagnostics are now in the
-  1.4 source build; exercise their controls before release.
+  1.4 release; exercise their controls with your own collection.
 
 - Version 1.2.0 adds an opt-in Mac projectM 4 companion with Cream of the Crop
   and MilkDrop textures. Build, preset rendering and process-lifetime checks

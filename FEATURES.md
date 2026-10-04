@@ -5,14 +5,14 @@ or online service will cooperate. The limits are listed below.
 
 ## Supported
 
-Source builds labelled `1.4.0-dev.1` also include the
+Version 1.4.0 includes the
 [1.4 additions](docs/library-and-diagnostics.md): diagnostics/report export,
 portable playlist files, genre scanning/browsing and optional interface controls.
-Homebrew's current stable release is still 1.3.1 until these are promoted.
+Available on Mac and Linux, including the Homebrew release.
 
 - Home with recent local/online plays and saved stations. No library required.
 - Local library, playlists, downloads, conversion and custom output folders.
-- Artist/album browsing (`B`), multi-track queue
+- Artist/album/genre browsing (`B`), multi-track queue
   selection (`x`, `X`, `A`, `P`) and responsive text details (`i`) in Library.
 - Signed-out YouTube Music search for songs, videos, albums, artists and playlists.
 - Local/online search inside Now Playing: `S`, then `l:`, `s:` or `v:`.

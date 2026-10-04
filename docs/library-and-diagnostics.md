@@ -1,6 +1,6 @@
-# Library tools and diagnostics — 1.4 development build
+# Library tools and diagnostics — 1.4
 
-These features are in the local/source development build, not Homebrew 1.3.1.
+These features are included in JukeboxCli 1.4.0 on Mac and Linux, including Homebrew.
 
 ## Portable playlist files
 

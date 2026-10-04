@@ -3,7 +3,7 @@
 Release notes describe what changed in each build. For what works now and the
 remaining limits, see [feature status](FEATURES.md).
 
-## Unreleased — 1.4
+## 1.4.0 — Portable playlists, genres and diagnostics
 
 - Add Settings → Session diagnostics: bounded player/download error logs,
   refresh/scroll and an explicit sanitised report export. No automatic uploads.

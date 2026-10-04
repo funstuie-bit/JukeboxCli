@@ -72,11 +72,11 @@ in the [Linux install guide](docs/linux-install.md) and the
 ideas borrowed from ytkew and Mousiki, and where the radio, search and lyrics
 features ended up.
 
-## In development — 1.4
+## New in 1.4
 
-The source build adds [portable playlists, genre browsing and session diagnostics](docs/library-and-diagnostics.md),
+Version 1.4 adds [portable playlists, genre browsing and session diagnostics](docs/library-and-diagnostics.md),
 plus optional artwork colours, j/k navigation, mouse row selection and automatic
-Discover pagination. These additions are not in Homebrew 1.3.1 yet. Existing
+Discover pagination. Available on Mac and Linux, including Homebrew. Existing
 controls stay the default; the new appearance/navigation options are opt-in.
 
 ## First run
@@ -86,12 +86,12 @@ music. You don't need a library or a sign-in to get started.
 
 ### Library browsing
 
-Version 1.3.0 adds artist and album browsing alongside the usual song list,
-including Homebrew installs.
+Browse by song, artist, album or genre, including Homebrew installs.
 
-In Library (`1`), press `B` to cycle **songs → artists → albums**. Enter opens a
+In Library (`1`), press `B` to cycle **songs → artists → albums → genres**. Enter opens a
 collection; Escape returns to the collection list. Search and source filters still
-work. Missing tags appear under Unknown artist/album; browsing never moves files.
+work. Missing tags appear under Unknown artist/album/genre; browsing never moves files.
+Use Settings → Scan genre tags to read genres from existing local files.
 
 On a track, `x` toggles a mark and `X` clears marks. `A` appends the marked tracks;
 `P` puts them next, in displayed order, without interrupting playback. With no
@@ -186,9 +186,10 @@ results stay temporary until you explicitly save one with **f**.
 
 ## Status and limits
 
-**Current release: [1.3.1](https://github.com/funstuie-bit/JukeboxCli/releases/tag/v1.3.1).**
-Adds five Studay FM station presets, website feed discovery and station artwork
-on Mac and Linux. Restart after updating; music and settings are kept.
+**Current release: [1.4.0](https://github.com/funstuie-bit/JukeboxCli/releases/tag/v1.4.0).**
+Adds portable playlists, genre browsing, session diagnostics and optional artwork
+colours, keyboard and mouse controls on Mac and Linux. Restart after updating;
+music and settings are kept.
 [Changelog](CHANGELOG.md).
 
 Automated install checks run on Apple Silicon and x64 Linux. Intel Macs and other
