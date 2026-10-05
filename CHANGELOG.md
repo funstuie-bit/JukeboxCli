@@ -5,6 +5,8 @@ remaining limits, see [feature status](FEATURES.md).
 
 ## Unreleased — 1.5
 
+- Show all appearance/keyboard settings when space allows, and retain selection
+  after toggles or returning from editors. Add position hints for short windows.
 - Optional artwork previews for library tracks/collections and downloaded
   playlists, with settled selection and a frozen preview while filtering.
 - Optional Clean player layout with larger art, quieter controls and an editable

@@ -86,6 +86,9 @@ layout with Up Next, a preview-and-save theme editor, custom shortcuts and onlin
 playlist queue continuation. Existing defaults stay unchanged. These additions
 are not in Homebrew 1.4.0 yet. See [controls and limits](docs/player-polish.md).
 
+The appearance and keyboard menus show all options when the window has room.
+Toggles keep your selection in place; smaller windows show a scroll position.
+
 ## First run
 
 JukeboxCli opens on Home. Search online, browse internet radio or open your local

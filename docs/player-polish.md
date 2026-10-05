@@ -4,6 +4,11 @@ These additions are in source builds labelled 1.5.0-dev.1. Homebrew stable is
 still 1.4.0. They use JukeboxCli's existing TypeScript/Ink/mpv stack; Orpheus was
 interaction inspiration, not a source-code or asset dependency.
 
+The Player appearance and Keyboard and mouse menus use the available height,
+showing every option when it fits. Changing a setting keeps that row selected,
+as does returning from its editor. Smaller windows show position/range hints;
+arrows, Page Up/Down and Home/End navigate the remaining options.
+
 ## Browsing artwork
 
 Settings (`5`) → Player appearance → Browsing artwork previews enables covers

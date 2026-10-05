@@ -52,6 +52,7 @@ import { PresetPacks } from "../components/PresetPacks";
 import { Diagnostics } from "../components/Diagnostics";
 import { GenreScan } from "../components/GenreScan";
 import { ThemeEditor } from "../components/ThemeEditor";
+import { SettingsChoices } from "../components/SettingsChoices";
 import { ShortcutEditor } from "../components/ShortcutEditor";
 import { installMacVisualizer, macVisualizerSupported } from "../../player/macos-visualizer-install";
 
@@ -92,6 +93,7 @@ function HintLine({ children }: { children: string }) {
 }
 
 export function Settings() {
+  const [choiceFocus, setChoiceFocus] = useState<{ appearance?: string; controls?: string }>({});
   const { config, setConfig, library, queue, playback, binaries, region, setCaptureMode, listRows } =
     useStore();
   const focused = region === "content";
@@ -509,7 +511,9 @@ export function Settings() {
   if (mode === "genres") return frame("Scan genre tags", <GenreScan focused={focused} />);
   if (mode === "theme-editor") return <ThemeEditor focused={focused} onBack={() => setMode("appearance")} />;
   if (mode === "shortcuts") return <ShortcutEditor focused={focused} onBack={() => setMode("controls")} />;
-  if (mode === "controls") return frame("Keyboard and mouse", <SelectField focused={focused}
+  if (mode === "controls") return frame("Keyboard and mouse", <SettingsChoices focused={focused}
+    height={Math.max(3, listRows - 4)} value={choiceFocus.controls}
+    onFocus={value => setChoiceFocus(previous => ({ ...previous, controls: value }))}
     title="Mouse clicks select rows; Enter plays. Shift-drag selects terminal text."
     options={[
       { value: "vim", label: `Vim-style j/k navigation: ${config.vimNavigation ? "on" : "off"} · Space pauses` },
@@ -520,10 +524,12 @@ export function Settings() {
     ]} onSelect={value => { if (value === "shortcuts") { setMode("shortcuts"); return; } setConfig(value === "continuation" ? { ...config, queueContinuation: !config.queueContinuation } : value === "more" ? { ...config, autoLoadMore: !config.autoLoadMore }
       : value === "vim" ? { ...config, vimNavigation: !config.vimNavigation }
       : { ...config, mouseMode: config.mouseMode === "off" ? "wheel" : config.mouseMode === "click" ? "off" : "click" }); }}
-    onCancel={() => setMode("menu")} />);
+    />);
 
   if (mode === "appearance") {
-    return frame("Player appearance", <SelectField title="Colours, fallback motion and live visualizer style."
+    return frame("Player appearance", <SettingsChoices title="Colours, layout, artwork and visualisers."
+      height={Math.max(3, listRows - 4)} value={choiceFocus.appearance}
+      onFocus={value => setChoiceFocus(previous => ({ ...previous, appearance: value }))}
       focused={focused} options={[
         { label: `Theme: ${playerThemeLabel(config.playerTheme)} (cycle)`, value: "theme" },
         { label: `Artwork colours: ${config.artworkColours ? "on" : "off"} (toggle)`, value: "artwork-colours" },
@@ -552,7 +558,7 @@ export function Settings() {
           : value === "visualizer"
             ? { ...config, visualizerMode: nextSpectrumMode(config.visualizerMode) }
             : { ...config, reducedMotion: !(config.reducedMotion ?? true) });
-      }} onCancel={() => setMode("menu")} />);
+      }} />);
   }
 
   if (mode === "ytdlp") {
