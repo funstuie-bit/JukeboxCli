@@ -5,10 +5,11 @@ or online service will cooperate. The limits are listed below.
 
 ## Supported
 
-Development 1.5 source builds also include the optional
-[player polish features](docs/player-polish.md). Stable Homebrew remains 1.4.0.
+Version 1.5.0 includes the optional [player polish features](docs/player-polish.md):
+browsing artwork, Clean/Up Next, theme and shortcut editors, and online playlist
+queue continuation. Available on Mac and Linux, including Homebrew.
 
-Version 1.4.0 includes the
+It also retains the
 [1.4 additions](docs/library-and-diagnostics.md): diagnostics/report export,
 portable playlist files, genre scanning/browsing and optional interface controls.
 Available on Mac and Linux, including the Homebrew release.

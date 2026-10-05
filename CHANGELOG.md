@@ -3,7 +3,7 @@
 Release notes describe what changed in each build. For what works now and the
 remaining limits, see [feature status](FEATURES.md).
 
-## Unreleased — 1.5
+## 1.5.0 — Player polish and playlist continuation
 
 - Show all appearance/keyboard settings when space allows, and retain selection
   after toggles or returning from editors. Add position hints for short windows.

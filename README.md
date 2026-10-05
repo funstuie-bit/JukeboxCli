@@ -72,22 +72,20 @@ in the [Linux install guide](docs/linux-install.md) and the
 ideas borrowed from ytkew and Mousiki, and where the radio, search and lyrics
 features ended up.
 
-## New in 1.4
+## New in 1.5
 
-Version 1.4 adds [portable playlists, genre browsing and session diagnostics](docs/library-and-diagnostics.md),
-plus optional artwork colours, j/k navigation, mouse row selection and automatic
-Discover pagination. Available on Mac and Linux, including Homebrew. Existing
-controls stay the default; the new appearance/navigation options are opt-in.
-
-## In development — 1.5
-
-The source build adds optional artwork previews while browsing, a Clean player
+Version 1.5 adds optional artwork previews while browsing, a Clean player
 layout with Up Next, a preview-and-save theme editor, custom shortcuts and online
-playlist queue continuation. Existing defaults stay unchanged. These additions
-are not in Homebrew 1.4.0 yet. See [controls and limits](docs/player-polish.md).
+playlist queue continuation. Available on Mac and Linux, including Homebrew.
+Existing defaults stay unchanged. Enable the visuals in Settings → Player
+appearance; shortcuts and continuation live under Keyboard and mouse.
+See [controls and limits](docs/player-polish.md).
 
 The appearance and keyboard menus show all options when the window has room.
 Toggles keep your selection in place; smaller windows show a scroll position.
+
+Also includes 1.4's [portable playlists, genre browsing and diagnostics](docs/library-and-diagnostics.md),
+artwork colours, j/k navigation, mouse row selection and Discover pagination.
 
 ## First run
 
@@ -196,7 +194,7 @@ results stay temporary until you explicitly save one with **f**.
 
 ## Status and limits
 
-**Current release: [1.4.0](https://github.com/funstuie-bit/JukeboxCli/releases/tag/v1.4.0).**
+**Current release: [1.5.0](https://github.com/funstuie-bit/JukeboxCli/releases/tag/v1.5.0).**
 Adds portable playlists, genre browsing, session diagnostics and optional artwork
 colours, keyboard and mouse controls on Mac and Linux. Restart after updating;
 music and settings are kept.

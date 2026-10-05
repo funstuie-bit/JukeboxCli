@@ -1,18 +1,19 @@
 # Roadmap
 
-## Implemented locally — 1.5 development build
+## Current release — 1.5.0
 
 - Browsing artwork previews for local songs, collections and downloaded playlists.
 - Optional Clean player layout and editable Up Next view; 7 retains the full queue.
 - Draft theme editor with explicit save/cancel, background/border/contrast/accent.
 - Custom transport/player/queue shortcuts with conflict checks and dynamic help.
+- Height-aware settings menus that keep selection after toggles and editor visits.
 - Opt-in queue continuation for explicitly started online collections, bounded
   and cancelled on stop/context replacement. No playback on import or downloads.
 
 Independent implementations inspired by Orpheus; no source/assets copied.
-See [controls and limitations](player-polish.md). Not yet a Homebrew release.
+See [controls and limitations](player-polish.md). Included in Homebrew.
 
-## Current release — 1.4.0
+## Also included from 1.4.0
 
 - Session diagnostics viewer and explicit sanitised report export.
 - JSON/M3U playlist import preview and export; missing files skipped, no automatic

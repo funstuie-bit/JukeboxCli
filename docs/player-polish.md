@@ -1,7 +1,7 @@
-# Player polish — 1.5 development build
+# Player polish — 1.5
 
-These additions are in source builds labelled 1.5.0-dev.1. Homebrew stable is
-still 1.4.0. They use JukeboxCli's existing TypeScript/Ink/mpv stack; Orpheus was
+These additions are in JukeboxCli 1.5.0 for Mac and Linux, including Homebrew.
+They use JukeboxCli's existing TypeScript/Ink/mpv stack; Orpheus was
 interaction inspiration, not a source-code or asset dependency.
 
 The Player appearance and Keyboard and mouse menus use the available height,
