@@ -1,5 +1,11 @@
 # Roadmap
 
+## Implemented in source preview — 1.6.0-dev.5
+
+- Now Playing right-click / c actions for transport, volume, audio/video and
+  fullscreen effects, with isolated menu input and keyboard fallback.
+- Search result menus retained in both Music Discover and YouTube Videos.
+
 ## Implemented in source preview — 1.6.0-dev.4
 
 - Separate YouTube Videos sidebar section (Y), first-visit search field and

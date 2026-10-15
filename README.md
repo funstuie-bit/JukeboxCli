@@ -21,11 +21,14 @@ keeps the lot in one editable queue. Streams stay streams unless you choose to s
 them. There are lyrics, cover artwork and live visualisers too, with optional
 fullscreen MilkDrop effects on Mac and Linux.
 
-Source preview **1.6.0-dev.4** gives **YouTube Videos its own sidebar section**.
+Source preview **1.6.0-dev.5** gives **YouTube Videos its own sidebar section**.
 Press **Y** (Shift+y) to open it, type a search and press Enter. On the results,
 **Enter plays video** in its own window; **a plays audio only**. Music Discover
 stays on **8** and keeps Enter for audio. Press **c** or right-click a result in
-click mouse mode for queue, download and details actions.
+click mouse mode for queue, download and details actions. In Now Playing,
+**c or right-click** opens pause/resume, previous/next, volume, audio/video and
+fullscreen effects actions. Enable **Settings → Keyboard and mouse → Mouse: click**
+for right-click menus; **c** works in every mouse mode.
 
 Video results show title, channel, duration and small video/live/queued symbols.
 Each section remembers its query, results and selection while JukeboxCli stays
@@ -500,7 +503,7 @@ supplies the community station directory.
 
 Released under the [MIT License](LICENSE).
 
-## Source preview: 1.6.0-dev.4
+## Source preview: 1.6.0-dev.5
 
 Linux now supports confirmed ZIP/folder MilkDrop imports and optional MilkDrop
 Original / En D downloads, plus fullscreen audio isolated to JukeboxCli by default.

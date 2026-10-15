@@ -33,9 +33,9 @@ export type Region = "sidebar" | "content" | "help";
  * space/esc semantics owns those two keys, but the global player keys, tab,
  * and `?` stay live. "esc" = a drill-down view owns esc only (one level back)
  * while space and every other player key stay live. "none" = all global keys
- * are live.
+ * are live. "menu" reserves keyboard input for an action menu (Ctrl-C still quits).
  */
-export type CaptureMode = "none" | "text" | "picker" | "esc";
+export type CaptureMode = "none" | "text" | "picker" | "esc" | "menu";
 
 /** Playlists section: browsing sets vs songs inside one set. */
 export type PlaylistsDepth = "sets" | "songs";

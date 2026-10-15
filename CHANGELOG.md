@@ -3,6 +3,14 @@
 Release notes describe what changed in each build. For what works now and the
 remaining limits, see [feature status](FEATURES.md).
 
+## 1.6.0-dev.5 — Unreleased
+
+- Add right-click and c actions to Now Playing: pause/resume, previous/next,
+  volume, audio/video switching and fullscreen effects.
+- Reserve keyboard input while the menu is open; closing it restores player
+  controls. Unavailable actions are dimmed. Result menus remain available in
+  Music Discover and YouTube Videos; right-click requires click mouse mode.
+
 ## 1.6.0-dev.4 — Unreleased
 
 - Give YouTube Videos its own sidebar section and direct Y shortcut, opening a

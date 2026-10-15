@@ -123,6 +123,20 @@ describe("App player workflow", () => {
     await press(view, "S"); await press(view, "!"); expect(view.lastFrame()).toContain("!");
     view.unmount();
   });
+  it("isolates player menu keys from transport and restores normal controls on Escape", async () => {
+    const view = app(); await tick(); await tick();
+    await press(view, "1"); await press(view, "\r"); await press(view, "m");
+    await press(view, "c"); expect(view.lastFrame()).toContain("Now Playing actions");
+    await press(view, " "); await press(view, "Y"); await press(view, "S");
+    expect(view.lastFrame()).toContain("Pause playback");
+    expect(view.lastFrame()).toContain("Now Playing actions");
+    await press(view, "\r"); expect(view.lastFrame()).toContain("Paused · shuffle");
+    await press(view, "c"); expect(view.lastFrame()).toContain("Resume playback");
+    await press(view, "\x1b");
+    await vi.waitFor(() => expect(view.lastFrame()).not.toContain("Now Playing actions"));
+    await press(view, " "); expect(view.lastFrame()).toContain("Playing · shuffle");
+    view.unmount();
+  });
   it("uses optional j/k for navigation without seeking/pausing, and preserves typing", async () => {
     const view = app({ initialOverrides: { vimNavigation: true } }); await tick(); await tick();
     await press(view, "1"); await press(view, "j"); await press(view, "A");

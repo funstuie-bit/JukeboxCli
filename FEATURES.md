@@ -3,7 +3,9 @@
 These features are in the app now. That doesn't mean every station, terminal
 or online service will cooperate. The limits are listed below.
 
-## Source preview — 1.6.0-dev.4
+## Source preview — 1.6.0-dev.5
+
+- Now Playing right-click / c menu: transport, volume, audio/video and fullscreen effects.
 
 - Separate YouTube Videos section (Y), direct Enter video / a audio playback,
   remembered browsing state, result columns and small icons. Music Discover is 8.

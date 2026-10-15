@@ -1,6 +1,6 @@
 # Audio and video playback
 
-Source preview 1.6.0-dev.4; stable release/Homebrew remain 1.5.0.
+Source preview 1.6.0-dev.5; stable release/Homebrew remain 1.5.0.
 
 Choose **YouTube Videos** in the sidebar or press **Y** (Shift+y) outside a text
 field. On first visit the search field is ready to type into. Submit a query,
@@ -50,3 +50,12 @@ One public YouTube live link could not resolve; broad live-source acceptance
 remains pending. Automated coverage includes mode selection/cache separation,
 queue defaults, window shutdown and keyboard/right-click actions. Physical macOS video-window acceptance remains pending;
 shared source and automated checks do not establish that hardware result.
+
+## Right-click menus
+
+Set Settings → Keyboard and mouse → Mouse to **click**. Right-click a result in
+Music Discover or YouTube Videos to choose its audio/video, queue, download or
+details actions. Right-click Now Playing for pause/resume, previous/next,
+volume, audio/video switching and fullscreen effects. **c** opens either menu
+without mouse support; arrows and Enter choose, Escape closes. Player shortcuts
+are suspended while its menu is open. Unavailable actions are dimmed.

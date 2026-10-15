@@ -5,7 +5,7 @@ Linux and macOS use one source history and release process.
 
 ## Current state
 
-- Source preview: `1.6.0-dev.4`, including general YouTube video search and [audio/video controls](video-playback.md).
+- Source preview: `1.6.0-dev.5`, including general YouTube video search and [audio/video controls](video-playback.md).
 - Production release: `v1.5.0`
 - Public source: `https://github.com/funstuie-bit/JukeboxCli.git`
 - Private mirror connection details belong in private maintainer notes, not here
@@ -178,3 +178,11 @@ bounded memory trends. [Usage and acceptance](visualiser-and-diagnostics.md).
 Native frontend build revision4 adds per-process PulseAudio monitoring and parent
 lifetime cleanup. Reinstall to rebuild it. Stable release/Homebrew remain1.5.0;
 no new release tag is implied by the source preview.
+
+### 15 October 2026 — player context menu
+
+Preview dev.5 adds a Now Playing right-click / c menu alongside existing result
+menus. Stu's saved mouse mode was absent (default wheel); it was explicitly set
+to click for this machine. Restart the app to load the preference and new build.
+Check right-click on both Videos results and Now Playing over VNC; keyboard c
+remains available if the terminal intercepts right-click.

@@ -58,6 +58,7 @@ export const HELP_GROUPS: HelpGroup[] = [
   {
     title: "Player",
     hints: [
+      { keys: "c", label: "Player actions (also right-click in click mouse mode)" },
       { keys: "space", label: "Play / pause" },
       { keys: "← →", label: "Seek 15s" },
       { keys: ", .", label: "Seek 5s" },

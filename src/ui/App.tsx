@@ -437,7 +437,7 @@ export function App({ initialAdd, initialOverrides }: { initialAdd?: string; ini
         return;
       }
       // A TextField owns the whole keyboard while the user is typing.
-      if (captureMode === "text") return;
+      if (captureMode === "text" || captureMode === "menu") return;
       const translated = shortcutInput(input, key, config?.keybindings, "global");
       if (!translated) return;
       [input, key] = translated;

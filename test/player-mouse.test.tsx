@@ -34,3 +34,25 @@ it("does not expose a seek target for live radio", async () => {
   const app = await renderReady(<StoreContext.Provider value={store}><NowPlaying /></StoreContext.Provider>);
   expect(app.lastFrame()).toContain("LIVE · no seeking");
 });
+
+it("opens player actions by right click, switches video by click and restores capture on close", async () => {
+  const store = makeStore({ cols: 140, contentWidth: 138, listRows: 32, region: "content" });
+  store.config.mouseMode = "click";
+  store.setCaptureMode = vi.fn();
+  store.playback.setPlaybackMode = vi.fn(async () => {});
+  store.playback.togglePause = vi.fn(async () => {});
+  const app = await renderReady(<StoreContext.Provider value={store}><NowPlaying embedded /></StoreContext.Provider>);
+  const target = (label: string) => {
+    const rows = app.lastFrame()!.split("\n"), y = rows.findIndex(row => row.includes(label));
+    expect(y).toBeGreaterThanOrEqual(0);
+    return { x: rows[y]!.indexOf(label) + 1, y };
+  };
+  await act(async () => { mouseEvents.emit("press", { ...target("[Pause]"), button: "right" }); });
+  expect(app.lastFrame()).toContain("Now Playing actions");
+  expect(store.setCaptureMode).toHaveBeenLastCalledWith("menu");
+  expect(store.playback.togglePause).not.toHaveBeenCalled();
+  await act(async () => { mouseEvents.emit("press", target("Open video window")); });
+  expect(store.playback.setPlaybackMode).toHaveBeenCalledWith("video");
+  expect(store.setCaptureMode).toHaveBeenLastCalledWith("none");
+  expect(app.lastFrame()).not.toContain("Now Playing actions");
+});
