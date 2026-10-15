@@ -6,6 +6,7 @@ import { browseMusic, searchMusic, searchYouTubeVideos, queueLoader, type MusicF
 import { cleanText, truncate, formatDuration } from "../../util/format";
 import { useStore } from "../store";
 import { TextField } from "../components/TextField";
+import { ContextMenu } from "../components/ContextMenu";
 import { MouseRow } from "../components/MouseRow";
 import { browseIcon } from "../icons";
 import { COLOR } from "../theme";
@@ -31,7 +32,7 @@ export function Discover({ videos: youtube = false }: { videos?: boolean } = {})
   const [busy, setBusy] = useState(false);
   const [details, setDetails] = useState(false);
   const [menu, setMenu] = useState<number | null>(null);
-  const [action, setAction] = useState(0);
+  const [menuAnchor, setMenuAnchor] = useState<{ x: number; y: number }>();
   const actions = ["Play audio", "Play video", "Play next", "Add to queue", "Download", "Details"];
   const [notice, setNotice] = useState("");
   const request = useRef(0);
@@ -45,7 +46,7 @@ export function Discover({ videos: youtube = false }: { videos?: boolean } = {})
   }, [playback, youtube]);
   useEffect(() => () => { request.current++; controller.current?.abort(); }, []);
   useEffect(() => {
-    setCaptureMode(focused && editing ? "text" : focused && (menu !== null || details) ? "picker" : focused && (parents.length > 0 || busy) ? "esc" : "none");
+    setCaptureMode(focused && editing ? "text" : focused && menu !== null ? "menu" : focused && details ? "picker" : focused && (parents.length > 0 || busy) ? "esc" : "none");
     return () => setCaptureMode("none");
   }, [focused, editing, menu, details, parents.length, busy, setCaptureMode]);
   const load = async (task: (signal: AbortSignal) => Promise<MusicPage>, mode: "search" | "browse" | "more") => {
@@ -69,7 +70,7 @@ export function Discover({ videos: youtube = false }: { videos?: boolean } = {})
     setPage({ title: value, items: [] }); setParents([]); setCursor(0);
     void load(signal => videos ? searchYouTubeVideos(value, signal) : searchMusic(value, filter, signal), "search");
   };
-  const rows = Math.max(1, listRows - (youtube ? 5 : 4) - (editing ? 1 : 0) - (menu !== null ? 8 : details ? 6 : 0));
+  const rows = Math.max(1, listRows - (youtube ? 5 : 4) - (editing ? 1 : 0) - (details ? 6 : 0));
   const selected = Math.min(cursor, Math.max(0, page.items.length - 1));
   useEffect(() => {
     if (!config.autoLoadMore || !focused || menu !== null || details || editing || busy || !page.more || !page.items.length || page.items.length >= 10000 || selected < page.items.length - 3 || autoAttempt.current === page) return;
@@ -92,13 +93,7 @@ export function Discover({ videos: youtube = false }: { videos?: boolean } = {})
   };
   useInput((input, key) => {
     if (details) { if (key.escape || key.return) setDetails(false); return; }
-    if (menu !== null) {
-      if (key.escape) setMenu(null);
-      else if (key.upArrow) setAction(a => Math.max(0, a - 1));
-      else if (key.downArrow) setAction(a => Math.min(actions.length - 1, a + 1));
-      else if (key.return) runAction(action);
-      return;
-    }
+    if (menu !== null) return;
     if (editing) { if (key.escape) setEditing(false); return; }
     if (key.escape) {
       request.current++; controller.current?.abort(); setBusy(false);
@@ -119,7 +114,7 @@ export function Discover({ videos: youtube = false }: { videos?: boolean } = {})
     else if (input === "L" && page.more) void load(page.more, "more");
     else {
       const item = page.items[selected]; if (!item) return;
-      if (input === "c" && item.track) { setAction(0); setMenu(selected); return; }
+      if (input === "c" && item.track) { setMenuAnchor(undefined); setMenu(selected); return; }
       if (youtube && item.track && input === "a") { runAction(0); return; }
       if (key.return) {
         if (youtube && item.track) { runAction(1); return; }
@@ -139,7 +134,7 @@ export function Discover({ videos: youtube = false }: { videos?: boolean } = {})
     }
   }, { isActive: focused });
   const start = Math.max(0, Math.min(selected - Math.floor(rows / 2), page.items.length - rows));
-  return <Box flexDirection="column" width={contentWidth}>
+  return <Box position="relative" flexDirection="column" width={contentWidth} height={listRows}>
     <Text bold color={COLOR.alt} wrap="truncate-end">{browseIcon(youtube ? "video" : "music")} {youtube ? "YouTube Videos" : "Music Discover"} · {cleanText(page.title)}</Text>
     {!youtube ? <Text color={COLOR.muted} wrap="truncate-end">{filters.map(f => f === kind ? `[${f}]` : f).join("  ")}</Text> : null}
     {focused && editing ? <TextField defaultValue={query} width={contentWidth} placeholder={youtube ? "Search YouTube videos…" : "Search music…"} onChange={setQuery}
@@ -156,7 +151,7 @@ export function Discover({ videos: youtube = false }: { videos?: boolean } = {})
     </> : null}
     {page.items.length === 0 && !busy ? <Text color={COLOR.muted}>Listen without downloading: / search · o Play URL · 9 radio</Text> : null}
     {page.items.slice(start, start + rows).map((item, i) => <MouseRow key={`${start + i}:${item.id}`} active={focused && !editing && !busy && menu === null && !details} width={contentWidth}
-      onClick={() => setCursor(start + i)} onContextMenu={() => { if (item.track) { setCursor(start + i); setAction(0); setMenu(start + i); } }}>
+      onClick={() => setCursor(start + i)} onContextMenu={point => { if (item.track) { setCursor(start + i); setMenuAnchor({ x: point.x, y: (youtube ? 4 : 3) + i + point.y }); setMenu(start + i); } }}>
       <Text
       color={focused && selected === start + i ? COLOR.accent : undefined} wrap="truncate-end">
       {selected === start + i ? "› " : "  "}{youtube ? videoRow(item, contentWidth - 2, playback.getState().list.some(t => t.id === item.track?.id)) : `${browseIcon("music")} ${truncate(cleanText(`${item.title}${item.subtitle ? ` · ${item.subtitle}` : ""} [${item.kind}]`), contentWidth - 4)}`}
@@ -167,12 +162,9 @@ export function Discover({ videos: youtube = false }: { videos?: boolean } = {})
       <Text wrap="truncate-end">{cleanText(page.items[selected]?.track?.streamUrl ?? "")}</Text>
       <Text dimColor>esc / enter closes details</Text>
     </Box> : null}
-    {menu !== null ? <Box flexDirection="column" borderStyle="round" borderColor={COLOR.accent}>
-      {actions.map((label, i) => <MouseRow key={label} active={focused} onClick={() => runAction(i)} width={contentWidth - 2}>
-        <Text color={i === action ? COLOR.accent : undefined}>{i === action ? "› " : "  "}{label}</Text>
-      </MouseRow>)}
-    </Box> : null}
     <Text dimColor wrap="truncate-end">{page.items.length ? `${selected + 1}/${page.items.length} · ` : ""}{parents.length ? "esc back · " : ""}{page.more ? "L load more · " : ""}8 Music · Y Videos · 7 Queue · m Player</Text>
+    {menu !== null ? <ContextMenu title={youtube ? "Video actions" : "Music actions"} actions={actions.map((label, i) => ({ label, run: () => runAction(i) }))}
+      width={contentWidth} height={listRows} active={focused} anchor={menuAnchor} close={() => setMenu(null)} /> : null}
   </Box>;
 }
 

@@ -21,25 +21,27 @@ const Blocks = memo(function Blocks({ art }: { art: CoverArt }) {
     <Text key={y}>{art.cells.slice(y * art.cols, (y + 1) * art.cols).map((c, x) =>
       <Text key={x} color={hex(c.top)} backgroundColor={hex(c.bottom)}>▀</Text>)}</Text>)}</Box>;
 });
-export function Cover({ source, cols, rows, visible, fallback, repaintKey, toggleHint = "b" }: { source?: string; cols: number; rows: number; visible: boolean; fallback?: ReactNode; repaintKey?: string; toggleHint?: string }) {
+export function Cover({ source, cols, rows, visible, fallback, repaintKey, suppressGraphics = false, toggleHint = "b" }: { source?: string; cols: number; rows: number; visible: boolean; fallback?: ReactNode; repaintKey?: string; suppressGraphics?: boolean; toggleHint?: string }) {
   const ref = useRef<DOMElement>(null);
   const [loaded, setLoaded] = useState<{ key: string; image: CoverImage | null; art: CoverArt | null }>();
   const simple = simpleArtwork();
-  const key = `${source}:${cols}:${rows}:${simple}`;
+  // Native terminal images paint outside Ink; use text blocks under an overlay.
+  const overlayBlocks = Boolean(graphicsPainter && suppressGraphics);
+  const key = `${source}:${cols}:${rows}:${simple}:${overlayBlocks}`;
   useEffect(() => {
     if (!source || !visible || simple) return;
     let cancelled = false;
     void (async () => {
       // 480px RGB stays below the inline protocol's 1MiB escape-sequence cap,
       // even for uncompressible images after base64 encoding.
-      const image = graphicsPainter ? graphicsProtocol === "sixel"
+      const image = graphicsPainter && !overlayBlocks ? graphicsProtocol === "sixel"
         ? await loadSixelImage(source, Math.max(1, cols * cellWidth), Math.max(1, rows * cellHeight))
         : await loadCoverImage(source, graphicsProtocol === "iterm" ? 480 : 1024) : null;
       const art = image ? null : await loadCoverArt(source, cols, rows);
       if (!cancelled) setLoaded({ key, image, art });
     })();
     return () => { cancelled = true; };
-  }, [source, key, cols, rows, visible, simple]);
+  }, [source, key, cols, rows, visible, simple, overlayBlocks]);
   const mine = visible && !simple && loaded?.key === key ? loaded : undefined;
   const image = mine?.image;
   useLayoutEffect(() => {

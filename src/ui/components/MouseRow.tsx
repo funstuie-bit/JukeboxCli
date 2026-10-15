@@ -5,7 +5,7 @@ import { useStore } from "../store";
 import { imageRect } from "./Cover";
 
 export function MouseRow({ children, active, onClick, onContextMenu, marginTop = 0, width, allowDuringText = false }: {
-  children: ReactNode; active: boolean; onClick: (fraction: number) => void; onContextMenu?: () => void; marginTop?: number; width?: number; allowDuringText?: boolean;
+  children: ReactNode; active: boolean; onClick: (fraction: number) => void; onContextMenu?: (point: { x: number; y: number }) => void; marginTop?: number; width?: number; allowDuringText?: boolean;
 }) {
   const { config, captureMode } = useStore();
   const ref = useRef<DOMElement>(null);
@@ -16,7 +16,7 @@ export function MouseRow({ children, active, onClick, onContextMenu, marginTop =
     const handler = ({ x, y, button }: MousePress) => {
       const rect = imageRect(ref.current);
       if (rect && x >= rect.x && x < rect.x + rect.cols && y >= rect.y && y < rect.y + rect.rows) {
-        if (button === "right") contextCallback.current?.();
+        if (button === "right") contextCallback.current?.({ x: x - rect.x, y: y - rect.y });
         else callback.current(rect.cols <= 1 ? 0 : (x - rect.x) / (rect.cols - 1));
       }
     };

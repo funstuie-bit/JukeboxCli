@@ -3,6 +3,16 @@
 Release notes describe what changed in each build. For what works now and the
 remaining limits, see [feature status](FEATURES.md).
 
+## 1.6.0-dev.7 — Unreleased
+
+- Replace the full-screen Now Playing actions view with a compact pop-up over
+  the running player. Keep the track, visualiser and queue visible underneath.
+- Use the same anchored pop-up for Music Discover and YouTube Videos results,
+  keeping rows in place. Clamp menus to the view edges and scroll on short screens.
+- Close menus with Escape, c or an outside click; block controls underneath to
+  prevent click-through and preserve queue selection. Use block artwork while
+  a player pop-up is open so native terminal images cannot cover the menu.
+
 ## 1.6.0-dev.6 — Unreleased
 
 - Fix sidebar clicks becoming unavailable while a search field owns keyboard

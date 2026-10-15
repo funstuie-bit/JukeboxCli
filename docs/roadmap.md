@@ -1,5 +1,11 @@
 # Roadmap
 
+## Implemented in source preview — 1.6.0-dev.7
+
+- Compact anchored context-menu overlays in Now Playing and both Discover sections.
+- Player/results remain visible, without reflow or losing queue selection;
+  click-away dismissal, edge clamping and keyboard access.
+
 ## Implemented in source preview — 1.6.0-dev.6
 
 - Fix the search focus trap: sidebar clicks work while typing in click mode.

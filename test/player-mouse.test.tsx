@@ -1,5 +1,5 @@
 import { expect, it, vi } from "vitest";
-import { renderReady, act } from "./ink-input";
+import { renderReady, act, press } from "./ink-input";
 import { StoreContext } from "../src/ui/store";
 import { makeStore, makeFakePlayback } from "../scripts/fake-data";
 import { NowPlaying } from "../src/ui/views/NowPlaying";
@@ -49,10 +49,35 @@ it("opens player actions by right click, switches video by click and restores ca
   };
   await act(async () => { mouseEvents.emit("press", { ...target("[Pause]"), button: "right" }); });
   expect(app.lastFrame()).toContain("Now Playing actions");
+  expect(app.lastFrame()).toContain("NOW PLAYING");
+  expect(app.lastFrame()).toContain("Playback queue");
   expect(store.setCaptureMode).toHaveBeenLastCalledWith("menu");
   expect(store.playback.togglePause).not.toHaveBeenCalled();
   await act(async () => { mouseEvents.emit("press", target("Open video window")); });
   expect(store.playback.setPlaybackMode).toHaveBeenCalledWith("video");
   expect(store.setCaptureMode).toHaveBeenLastCalledWith("none");
   expect(app.lastFrame()).not.toContain("Now Playing actions");
+});
+
+it("dismisses the popup without activating the visible transport underneath", async () => {
+  const store = makeStore({ cols: 140, contentWidth: 138, listRows: 32, region: "content" });
+  store.config.mouseMode = "click";
+  store.playback.next = vi.fn();
+  const app = await renderReady(<StoreContext.Provider value={store}><NowPlaying embedded /></StoreContext.Provider>);
+  await press(app, "c");
+  const lines = app.lastFrame()!.split("\n"), y = lines.findIndex(row => row.includes("[Next]"));
+  expect(y).toBeGreaterThanOrEqual(0);
+  await act(async () => { mouseEvents.emit("press", { x: lines[y]!.indexOf("[Next]") + 1, y }); });
+  expect(app.lastFrame()).not.toContain("Now Playing actions");
+  expect(store.playback.next).not.toHaveBeenCalled();
+  expect(app.lastFrame()).toContain("Playback queue");
+});
+
+it("keeps the queue selection and player layout when navigating and closing popup actions", async () => {
+  const store = makeStore({ cols: 140, contentWidth: 138, listRows: 32, region: "content" });
+  const app = await renderReady(<StoreContext.Provider value={store}><NowPlaying embedded /></StoreContext.Provider>);
+  const before = app.lastFrame();
+  await press(app, "c"); await press(app, "\x1b[B"); await press(app, "\x1b[B");
+  expect(app.lastFrame()).toContain("Now Playing actions");
+  await press(app, "c"); expect(app.lastFrame()).toBe(before);
 });

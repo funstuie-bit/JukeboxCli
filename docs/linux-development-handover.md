@@ -5,7 +5,7 @@ Linux and macOS use one source history and release process.
 
 ## Current state
 
-- Source preview: `1.6.0-dev.6`, including general YouTube video search and [audio/video controls](video-playback.md).
+- Source preview: `1.6.0-dev.7`, including general YouTube video search and [audio/video controls](video-playback.md).
 - Production release: `v1.5.0`
 - Public source: `https://github.com/funstuie-bit/JukeboxCli.git`
 - Private mirror connection details belong in private maintainer notes, not here
@@ -195,3 +195,13 @@ blocked during typing. Discover now shows an explicit clickable cancel hint;
 Escape exits typing. Reproduce acceptance by clicking Videos, typing q, clicking
 Library without Escape, returning to Videos and using the cancel hint. Searches
 are retained only during the current process, not after restart.
+
+### 15 October 2026 — context-menu overlays
+
+Preview dev.7 replaces the player action screen with a compact overlay. Results
+use the same popup without shrinking/reflowing their list. Right-click anchors
+near the pointer, c uses a default placement, and bounds are clamped on resize.
+Outside click / Escape / c closes; underlying transport and queue input are
+suspended. Pixel artwork temporarily uses blocks under an open player popup.
+Acceptance: keep playback running, right-click the player and result rows near
+edges, choose actions, dismiss outside, and confirm queue selection is retained.

@@ -1,6 +1,6 @@
 # Audio and video playback
 
-Source preview 1.6.0-dev.6; stable release/Homebrew remain 1.5.0.
+Source preview 1.6.0-dev.7; stable release/Homebrew remain 1.5.0.
 
 Choose **YouTube Videos** in the sidebar or press **Y** (Shift+y) outside a text
 field. On first visit the search field is ready to type into. Submit a query,
@@ -59,6 +59,10 @@ details actions. Right-click Now Playing for pause/resume, previous/next,
 volume, audio/video switching and fullscreen effects. **c** opens either menu
 without mouse support; arrows and Enter choose, Escape closes. Player shortcuts
 are suspended while its menu is open. Unavailable actions are dimmed.
+Menus appear over the existing view near the clicked row/location, clamped inside
+the view. Background playback, visualisers and list layout remain intact. Click
+outside, c or Escape closes without activating controls beneath the popup.
+Native terminal artwork temporarily uses block rendering to keep menus on top.
 
 While typing a search, sidebar clicks still navigate in click mode. Enter submits;
 Escape or the clickable cancel hint leaves the field. Letters such as q remain
