@@ -3,6 +3,15 @@
 Release notes describe what changed in each build. For what works now and the
 remaining limits, see [feature status](FEATURES.md).
 
+## 1.6.0-dev.3 — Unreleased
+
+- Add a distinct general YouTube Videos catalogue to Discover. Y or clickable
+  source labels switch between it and the existing YouTube Music catalogue.
+- Show channel, duration/live status, publication and view metadata when supplied;
+  retain pagination, audio/video actions, queue and audio-download controls.
+- Cancel superseded Discover searches and ignore late responses after switching
+  catalogue, editing a new query or leaving the view.
+
 ## 1.6.0-dev.2 — Unreleased
 
 - Add Discover actions via right click or c: Play audio/video, play next, queue,

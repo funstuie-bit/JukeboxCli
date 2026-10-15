@@ -62,7 +62,7 @@ export function musicResult(raw: any, fallback: MusicFilter = "song"): MusicResu
 }
 
 let client: Promise<import("youtubei.js").Innertube> | undefined;
-async function musicClient() {
+async function youtubeClient() {
   client ??= (async () => {
     const { Innertube, Log } = await import("youtubei.js");
     Log.setLevel(Log.Level.ERROR);
@@ -72,8 +72,9 @@ async function musicClient() {
         ...(requestSignal.getStore() ? [requestSignal.getStore()!] : []),
       ]) }) });
   })().catch(e => { client = undefined; throw e; });
-  return (await client).music;
+  return await client;
 }
+async function musicClient() { return (await youtubeClient()).music; }
 function rows(items: readonly unknown[] | undefined, kind: MusicFilter): MusicResult[] {
   return (items ?? []).map(item => musicResult(item, kind)).filter((x): x is MusicResult => x !== null);
 }
@@ -105,4 +106,31 @@ export async function browseMusic(item: MusicResult): Promise<MusicPage> {
     return { title: item.title, items: rows(artist.sections.flatMap(s => s.contents), "song") };
   }
   return { title: item.title, items: [item] };
+}
+
+/** Ordinary YouTube video search, distinct from the YouTube Music catalogue. */
+export function youtubeVideoResult(raw: any): MusicResult | null {
+  if (!raw || typeof raw !== "object" || (raw.type && raw.type !== "Video")) return null;
+  const id = raw.video_id ?? raw.id;
+  if (typeof id !== "string" || !/^[a-zA-Z0-9_-]{11}$/.test(id)) return null;
+  const item = musicResult({ ...raw, id, duration: raw.duration, item_type: "video" }, "video");
+  if (!item?.track) return null;
+  item.track.streamUrl = `https://www.youtube.com/watch?v=${id}`;
+  item.track.isLive = raw.is_live === true;
+  const published = raw.published?.toString();
+  const views = raw.short_view_count?.toString() ?? raw.view_count?.toString();
+  item.subtitle = [item.track.artist, item.track.isLive ? "LIVE" : raw.duration?.text, published, views]
+    .filter(value => typeof value === "string" && value && value !== "[object Object]").join(" · ");
+  return item;
+}
+export function youtubeVideoPage(page: any, title: string): MusicPage {
+  return { title, items: (page.videos ?? []).map(youtubeVideoResult).filter((item: MusicResult | null): item is MusicResult => item !== null),
+    more: page.has_continuation ? signal => cancellable(signal, async () => youtubeVideoPage(await page.getContinuation(), title)) : undefined };
+}
+export async function searchYouTubeVideos(query: string, signal?: AbortSignal): Promise<MusicPage> {
+  const clean = query.trim();
+  if (!clean) return { title: "Search YouTube Videos", items: [] };
+  signal?.throwIfAborted();
+  const youtube = await youtubeClient();
+  return cancellable(signal, async () => youtubeVideoPage(await youtube.search(clean, { type: "video" }), clean));
 }

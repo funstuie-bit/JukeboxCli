@@ -5,7 +5,7 @@ Linux and macOS use one source history and release process.
 
 ## Current state
 
-- Source preview: `1.6.0-dev.2`, including [audio/video controls](video-playback.md).
+- Source preview: `1.6.0-dev.3`, including general YouTube video search and [audio/video controls](video-playback.md).
 - Production release: `v1.5.0`
 - Public source: `https://github.com/funstuie-bit/JukeboxCli.git`
 - Private mirror connection details belong in private maintainer notes, not here

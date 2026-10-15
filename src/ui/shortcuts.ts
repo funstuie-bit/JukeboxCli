@@ -28,7 +28,7 @@ export const ACTIONS = [
 export type ShortcutScope = "global" | "player" | "queue";
 export type Bindings = Partial<Record<typeof ACTIONS[number]["id"], string>>;
 // Reserved editing/navigation and section keys are deliberately not rebindable.
-const fixed = new Set("123456789cojk/[]dtafRLOAPXCEBIyN=_,.".split(""));
+const fixed = new Set("123456789Ycojk/[]dtafRLOAPXCEBIyN=_,.".split(""));
 export function bindingError(bindings: Bindings): string | undefined {
   const used = new Map<string, string>();
   for (const a of ACTIONS) {

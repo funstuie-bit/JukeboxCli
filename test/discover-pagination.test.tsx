@@ -5,11 +5,12 @@ import { makeStore } from "../scripts/fake-data";
 import { mouseEvents, mousePresses } from "../src/ui/mouse";
 import { Discover } from "../src/ui/sections/Discover";
 import { trackFromUrl } from "../src/player/url";
-const fixture = vi.hoisted(() => ({ more: vi.fn(), browse: vi.fn() }));
+const fixture = vi.hoisted(() => ({ more: vi.fn(), browse: vi.fn(), videos: vi.fn() }));
 vi.mock("../src/sources/music", async importOriginal => ({
   ...await importOriginal<typeof import("../src/sources/music")>(),
   searchMusic: async () => ({ title: "Results", items: [{ id: "1", title: "First album", kind: "album" }], more: fixture.more }),
   browseMusic: fixture.browse,
+  searchYouTubeVideos: fixture.videos,
 }));
 it("only auto-fetches with opt-in and stops at an empty continuation", async () => {
   fixture.more.mockResolvedValue({ title: "Results", items: [], more: fixture.more });
@@ -69,4 +70,35 @@ it("opens actions by right click or keyboard without losing results, and plays v
   await press(view, "c"); expect(view.lastFrame()).toContain("Play audio");
   await press(view, "\x1b"); await vi.waitFor(() => expect(view.lastFrame()).not.toContain("Play video"));
   view.unmount();
+});
+
+it("switches catalogue, paginates video results and offers audio/video actions without starting playback on search", async () => {
+  const track = trackFromUrl("https://www.youtube.com/watch?v=abcdefghijk");
+  const more = vi.fn(async () => ({ title: "Video results", items: [{ id: "second", title: "Second video", kind: "video", track }] }));
+  fixture.videos.mockResolvedValue({ title: "Video results", items: [{ id: "first", title: "YouTube video fixture", kind: "video", track }], more });
+  const store = makeStore({ region: "content", contentWidth: 100 });
+  store.playback.selectTrack = vi.fn(async () => {}); store.playback.enqueue = vi.fn();
+  const view = await renderReady(<StoreContext.Provider value={store}><Discover /></StoreContext.Provider>);
+  await press(view, "Y"); expect(view.lastFrame()).toContain("Search YouTube videos");
+  await press(view, "cyberpunk radio"); await press(view, "\r");
+  expect(fixture.videos).toHaveBeenCalledWith("cyberpunk radio", expect.any(AbortSignal));
+  expect(view.lastFrame()).toContain("[YouTube Videos]");
+  expect(view.lastFrame()).toContain("YouTube video fixture");
+  expect(store.playback.selectTrack).not.toHaveBeenCalled();
+  await press(view, "L"); expect(view.lastFrame()).toContain("Second video");
+  await press(view, "c"); await press(view, "\x1b[B"); await press(view, "\r");
+  expect(store.playback.selectTrack).toHaveBeenCalledWith(track, [track], "video");
+  await press(view, "Y"); expect(view.lastFrame()).toContain("[YouTube Music]");
+  expect(view.lastFrame()).toContain("First album"); view.unmount();
+});
+it("cancels a video search when switching source and ignores its late result", async () => {
+  let resolve!: (value: any) => void;
+  fixture.videos.mockImplementation(() => new Promise(r => { resolve = r; }));
+  const store = makeStore({ region: "content", contentWidth: 100 });
+  const view = await renderReady(<StoreContext.Provider value={store}><Discover /></StoreContext.Provider>);
+  await press(view, "Y"); await press(view, "slow"); await press(view, "\r");
+  const signal = fixture.videos.mock.calls.at(-1)![1];
+  await press(view, "Y"); expect(signal.aborted).toBe(true);
+  await act(async () => { resolve({ title: "Stale", items: [{ id: "late", title: "Stale video", kind: "video" }] }); });
+  expect(view.lastFrame()).toContain("First album"); expect(view.lastFrame()).not.toContain("Stale video"); view.unmount();
 });

@@ -1,8 +1,20 @@
 # Audio and video playback
 
-Source preview 1.6.0-dev.2; stable release/Homebrew remain 1.5.0.
+Source preview 1.6.0-dev.3; stable release/Homebrew remain 1.5.0.
 
-In Discover (`8`), search, select a playable result and press `c`. With mouse
+In Discover (`8`), choose **YouTube Music** or **YouTube Videos** with `Y`
+(Shift+y) when not typing, or click a source label in click mouse mode. If the
+search field is focused, Escape leaves typing first. YouTube Music retains its
+song/music-video/album/artist/playlist filters; YouTube Videos searches ordinary
+YouTube videos, including talks, tutorials, documentaries and long music mixes.
+Changing catalogue repeats the current query and clears the old results. Press
+`/` to enter a new search, and `L` for another page. Searching alone does not play
+or download anything. Channel, duration/live status, publication and view details
+appear when supplied. This remains a list with an explicit Details action; a
+persistent preview pane is not part of this build. Player search's existing
+`v:` shortcut still searches music videos; general video search lives in Discover.
+
+In Discover, search, select a playable result and press `c`. With mouse
 mode set to **click** in Settings, right-click the row to open the same menu.
 Choose Play audio, Play video, Play next, Add to queue, Download or Details.
 Arrow keys/Enter or a left click choose an action; Escape dismisses it.

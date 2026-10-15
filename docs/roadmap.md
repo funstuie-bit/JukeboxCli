@@ -1,5 +1,16 @@
 # Roadmap
 
+## Implemented in source preview — 1.6.0-dev.3
+
+- General YouTube Videos search alongside the existing YouTube Music catalogue.
+- Discover Y / clickable source selectors, paginated video results with available
+  channel/duration/live/date/view metadata and existing audio/video actions.
+- Cancelled searches cannot replace results from a newly selected catalogue.
+
+A persistent preview pane and full TubeTUI-style table remain future UI work.
+This change adds the requested search catalogue, not full browsing parity.
+
+
 ## Implemented in source preview — 1.6.0-dev.2 (15 October 2026)
 
 - [x] Explicit Play audio / Play video actions in Discover; audio stays the default.

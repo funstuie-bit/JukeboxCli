@@ -21,7 +21,11 @@ keeps the lot in one editable queue. Streams stay streams unless you choose to s
 them. There are lyrics, cover artwork and live visualisers too, with optional
 fullscreen MilkDrop effects on Mac and Linux.
 
-Source preview **1.6.0-dev.2** adds explicit audio/video playback. In Discover,
+Source preview **1.6.0-dev.3** adds general **YouTube Videos** search alongside
+YouTube Music. Open Discover (**8**) and press **Y** to switch catalogue (or click
+the source label in click mode), then search with **/**. Videos search covers
+ordinary YouTube videos, including talks, documentaries and long music mixes.
+Audio/video playback is explicit. In Discover,
 press **c** (or right-click a result with Settings → mouse mode → click) for
 Play audio, Play video, queue, download and details. In Now Playing (**m**),
 **W** switches the current item between audio and a separate video window.
@@ -493,7 +497,7 @@ supplies the community station directory.
 
 Released under the [MIT License](LICENSE).
 
-## Source preview: 1.6.0-dev.2
+## Source preview: 1.6.0-dev.3
 
 Linux now supports confirmed ZIP/folder MilkDrop imports and optional MilkDrop
 Original / En D downloads, plus fullscreen audio isolated to JukeboxCli by default.

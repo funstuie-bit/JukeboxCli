@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Box, Text } from "ink";
 import { useActionInput as useInput } from "../hooks/useActionInput";
-import { browseMusic, searchMusic, queueLoader, type MusicFilter, type MusicPage } from "../../sources/music";
+import { browseMusic, searchMusic, searchYouTubeVideos, queueLoader, type MusicFilter, type MusicPage } from "../../sources/music";
 import { cleanText, truncate } from "../../util/format";
 import { useStore } from "../store";
 import { TextField } from "../components/TextField";
@@ -12,6 +12,7 @@ const filters: MusicFilter[] = ["song", "video", "album", "artist", "playlist"];
 export function Discover() {
   const { config, region, setCaptureMode, playback, setPendingAdd, setSection, listRows, contentWidth, pendingSearch, setPendingSearch } = useStore();
   const focused = region === "content";
+  const [youtube, setYoutube] = useState(false);
   const [query, setQuery] = useState("");
   const [kind, setKind] = useState<MusicFilter>("song");
   const [editing, setEditing] = useState(false);
@@ -26,17 +27,20 @@ export function Discover() {
   const actions = ["Play audio", "Play video", "Play next", "Add to queue", "Download", "Details"];
   const [notice, setNotice] = useState("");
   const request = useRef(0);
+  const controller = useRef<AbortController | null>(null);
   const autoAttempt = useRef<MusicPage | null>(null);
-  useEffect(() => () => { request.current++; }, []);
+  useEffect(() => () => { request.current++; controller.current?.abort(); }, []);
   useEffect(() => {
     setCaptureMode(focused && editing ? "text" : focused && (menu !== null || details) ? "picker" : focused && (parents.length > 0 || busy) ? "esc" : "none");
     return () => setCaptureMode("none");
   }, [focused, editing, menu, details, parents.length, busy, setCaptureMode]);
-  const load = async (task: () => Promise<MusicPage>, mode: "search" | "browse" | "more") => {
+  const load = async (task: (signal: AbortSignal) => Promise<MusicPage>, mode: "search" | "browse" | "more") => {
     const token = ++request.current;
+    controller.current?.abort();
+    const pending = new AbortController(); controller.current = pending;
     setBusy(true); setNotice(""); setEditing(false);
     try {
-      const next = await task();
+      const next = await task(pending.signal);
       if (token !== request.current) return;
       if (mode === "browse") setParents(p => [...p, { page, cursor }]);
       if (mode === "search") setParents([]);
@@ -44,10 +48,22 @@ export function Discover() {
       setPage({ ...next, items, more: items.length >= 10000 || !next.items.length ? undefined : next.more });
       if (mode !== "more") setCursor(0);
     } catch {
-      if (token === request.current) setNotice("Could not load YouTube Music. Check your connection; / searches again.");
+      if (token === request.current) setNotice("Could not load search results. Check your connection; / searches again.");
     } finally { if (token === request.current) setBusy(false); }
   };
-  const rows = Math.max(1, listRows - 4 - (menu !== null ? 8 : details ? 6 : 0));
+  const search = (value: string, videos = youtube, filter = kind) => {
+    setPage({ title: value, items: [] }); setParents([]); setCursor(0);
+    void load(signal => videos ? searchYouTubeVideos(value, signal) : searchMusic(value, filter, signal), "search");
+  };
+  const changeSource = (videos: boolean) => {
+    if (videos === youtube) return;
+    request.current++; controller.current?.abort(); setBusy(false);
+    setYoutube(videos); setMenu(null); setDetails(false); setParents([]); setCursor(0); setNotice("");
+    setPage({ title: "Search videos, music, talks and more", items: [] });
+    if (query.trim()) search(query, videos);
+    else setEditing(true);
+  };
+  const rows = Math.max(1, listRows - 5 - (menu !== null ? 8 : details ? 6 : 0));
   const selected = Math.min(cursor, Math.max(0, page.items.length - 1));
   useEffect(() => {
     if (!config.autoLoadMore || !focused || menu !== null || details || editing || busy || !page.more || !page.items.length || page.items.length >= 10000 || selected < page.items.length - 3 || autoAttempt.current === page) return;
@@ -79,15 +95,16 @@ export function Discover() {
     }
     if (editing) { if (key.escape) setEditing(false); return; }
     if (key.escape) {
-      request.current++; setBusy(false);
+      request.current++; controller.current?.abort(); setBusy(false);
       const parent = parents.at(-1);
       if (parent) { setPage(parent.page); setCursor(parent.cursor); setParents(p => p.slice(0, -1)); }
       return;
     }
-    if (input === "/") { setEditing(true); return; }
-    if (input === "[" || input === "]") {
+    if (input === "Y") { changeSource(!youtube); return; }
+    if (input === "/") { request.current++; controller.current?.abort(); setBusy(false); setEditing(true); return; }
+    if (!youtube && (input === "[" || input === "]")) {
       const next = filters[(filters.indexOf(kind) + (input === "]" ? 1 : filters.length - 1)) % filters.length]!;
-      setKind(next); if (query.trim()) void load(() => searchMusic(query, next), "search"); return;
+      setKind(next); if (query.trim()) search(query, false, next); return;
     }
     if (busy) return;
     if (key.upArrow) setCursor(Math.max(0, selected - 1));
@@ -116,11 +133,16 @@ export function Discover() {
   }, { isActive: focused });
   const start = Math.max(0, Math.min(selected - Math.floor(rows / 2), page.items.length - rows));
   return <Box flexDirection="column" width={contentWidth}>
+    <Box>
+      <MouseRow active={focused && !editing && menu === null && !details} onClick={() => changeSource(false)}><Text color={!youtube ? COLOR.accent : COLOR.muted}>{!youtube ? "[YouTube Music]" : " YouTube Music "}</Text></MouseRow>
+      <MouseRow active={focused && !editing && menu === null && !details} onClick={() => changeSource(true)}><Text color={youtube ? COLOR.accent : COLOR.muted}>{youtube ? " [YouTube Videos]" : "  YouTube Videos "}</Text></MouseRow>
+      <Text dimColor> · Y switch</Text>
+    </Box>
     <Text bold color={COLOR.alt} wrap="truncate-end">Discover · {cleanText(page.title)}</Text>
-    <Text color={COLOR.muted} wrap="truncate-end">{filters.map(f => f === kind ? `[${f}]` : f).join("  ")}</Text>
-    {focused && editing ? <TextField defaultValue={query} placeholder="Search music…" onChange={setQuery}
-      onSubmit={value => { setQuery(value); void load(() => searchMusic(value, kind), "search"); }} />
-      : <Text color={COLOR.muted} wrap="truncate-end">{busy ? "Loading… esc cancels" : notice || "/ search · [ ] type · enter audio/open · c actions · A/P queue · d download"}</Text>}
+    <Text color={COLOR.muted} wrap="truncate-end">{youtube ? "All YouTube videos · audio or video playback · no sign-in needed" : filters.map(f => f === kind ? `[${f}]` : f).join("  ")}</Text>
+    {focused && editing ? <TextField defaultValue={query} placeholder={youtube ? "Search YouTube videos…" : "Search music…"} onChange={setQuery}
+      onSubmit={value => { setQuery(value); search(value); }} />
+      : <Text color={COLOR.muted} wrap="truncate-end">{busy ? "Loading… esc cancels" : notice || `/ search${youtube ? "" : " · [ ] type"} · enter audio/open · c actions · A/P queue · d download`}</Text>}
     {page.items.length === 0 && !busy ? <Text color={COLOR.muted}>Listen without downloading: / search · o Play URL · 9 radio</Text> : null}
     {page.items.slice(start, start + rows).map((item, i) => <MouseRow key={`${start + i}:${item.id}`} active={focused && !editing && !busy && menu === null && !details} width={contentWidth}
       onClick={() => setCursor(start + i)} onContextMenu={() => { if (item.track) { setCursor(start + i); setAction(0); setMenu(start + i); } }}>
