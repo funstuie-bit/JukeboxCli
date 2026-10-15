@@ -3,6 +3,16 @@
 Release notes describe what changed in each build. For what works now and the
 remaining limits, see [feature status](FEATURES.md).
 
+## 1.6.0-dev.4 — Unreleased
+
+- Give YouTube Videos its own sidebar section and direct Y shortcut, opening a
+  search field on first visit. Music Discover remains on 8.
+- Enter on video results plays video directly; a plays audio only. Music and
+  ordinary queue playback retain their existing audio defaults.
+- Retain each section's query, results and selection while moving around the app.
+- Add title/channel/duration columns, small video/live/queued symbols and plain
+  icon fallbacks. Keep a visible query line with / or click to edit.
+
 ## 1.6.0-dev.3 — Unreleased
 
 - Add a distinct general YouTube Videos catalogue to Discover. Y or clickable

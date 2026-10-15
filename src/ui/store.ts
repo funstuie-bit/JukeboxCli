@@ -17,6 +17,7 @@ export type Section =
   | "settings"
   | "player"
   | "queue"
+  | "videos"
   | "discover"
   | "listen";
 

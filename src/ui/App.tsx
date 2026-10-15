@@ -75,7 +75,9 @@ function Content({ section }: { section: Section }) {
     case "listen":
       return <Listen />;
     case "discover":
-      return <Discover />;
+      return <Discover key="music" />;
+    case "videos":
+      return <Discover key="videos" videos />;
     case "player":
       return <NowPlayingView embedded />;
     case "queue":
@@ -462,6 +464,9 @@ export function App({ initialAdd, initialOverrides }: { initialAdd?: string; ini
       if (input === "H" && captureMode === "none") {
         setNowPlayingView(false); setSection("home"); setRegion("content"); return;
       }
+      if (input === "Y") {
+        setNowPlayingView(false); setSection("videos"); setRegion("content"); return;
+      }
       if (input === "o") {
         setNowPlayingView(false); setSection("listen"); setRegion("content");
         setOpenUrlRequest(n => n + 1);
@@ -564,7 +569,7 @@ export function App({ initialAdd, initialOverrides }: { initialAdd?: string; ini
           if (
             section === "playlists" ||
             section === "download" ||
-            section === "history" || section === "discover" || section === "listen"
+            section === "history" || section === "videos" || section === "discover" || section === "listen"
           )
             return;
           setSection(section === "home" ? "discover" : "library");

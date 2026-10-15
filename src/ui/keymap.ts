@@ -36,6 +36,7 @@ export function sectionForDigit(input: string): Section | null {
 
 /** The full cheatsheet, shown in the `?` overlay, grouped by intent. */
 export const HELP_GROUPS: HelpGroup[] = [
+
   {
     title: "Navigate",
     hints: [
@@ -118,6 +119,15 @@ export const HELP_GROUPS: HelpGroup[] = [
       { keys: "esc", label: "Back / cancel loading" },
     ],
   },
+  { title: "YouTube Videos", hints: [
+    { keys: "Y", label: "Open YouTube Videos" },
+    { keys: "/", label: "Edit search (Escape returns to results)" },
+    { keys: "enter", label: "Play selected video in its own window" },
+    { keys: "a", label: "Play audio only" },
+    { keys: "c", label: "Actions (also right-click in click mode)" },
+    { keys: "A/P", label: "Append / play next (audio queue)" },
+    { keys: "L", label: "Load more results" },
+  ] },
   {
     title: "Radio / URL (9)",
     hints: [
@@ -193,6 +203,8 @@ export function footerHints(
     case "listen":
       return [{ keys: "B/g/c", label: "Browse radio" }, { keys: "/", label: "Find station" },
         { keys: "o/R", label: "Play URL" }, { keys: "f/t", label: "Save/rename" }, ALWAYS];
+    case "videos":
+      return [{ keys: "/", label: "Search" }, { keys: "↵", label: "Video" }, { keys: "a", label: "Audio only" }, { keys: "c", label: "Actions" }, ALWAYS];
     case "discover":
       return [{ keys: "/", label: "Search" }, { keys: "↵", label: "Stream" },
         { keys: "o", label: "Play URL" }, { keys: "A/P", label: "Queue" }, ALWAYS];

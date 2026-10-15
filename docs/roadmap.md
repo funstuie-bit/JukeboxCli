@@ -1,5 +1,15 @@
 # Roadmap
 
+## Implemented in source preview — 1.6.0-dev.4
+
+- Separate YouTube Videos sidebar section (Y), first-visit search field and
+  visible query; Enter plays video and a plays audio only.
+- Independent music/video browsing snapshots while moving between sections.
+- Video title/channel/duration columns and small music/video/live/queued icons,
+  with a compact list on narrow terminals and plain-symbol fallbacks.
+- Persistent preview pane remains deferred until navigation acceptance.
+
+
 ## Implemented in source preview — 1.6.0-dev.3
 
 - General YouTube Videos search alongside the existing YouTube Music catalogue.

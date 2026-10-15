@@ -3,9 +3,10 @@
 These features are in the app now. That doesn't mean every station, terminal
 or online service will cooperate. The limits are listed below.
 
-## Source preview — 1.6.0-dev.3
+## Source preview — 1.6.0-dev.4
 
-- General YouTube Videos search in Discover alongside YouTube Music; Y switches.
+- Separate YouTube Videos section (Y), direct Enter video / a audio playback,
+  remembered browsing state, result columns and small icons. Music Discover is 8.
 
 - Discover keyboard/right-click audio/video actions and per-item video window.
 - Player W switches audio/video; window closure stops the item, retaining the queue.

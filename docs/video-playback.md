@@ -1,25 +1,28 @@
 # Audio and video playback
 
-Source preview 1.6.0-dev.3; stable release/Homebrew remain 1.5.0.
+Source preview 1.6.0-dev.4; stable release/Homebrew remain 1.5.0.
 
-In Discover (`8`), choose **YouTube Music** or **YouTube Videos** with `Y`
-(Shift+y) when not typing, or click a source label in click mouse mode. If the
-search field is focused, Escape leaves typing first. YouTube Music retains its
-song/music-video/album/artist/playlist filters; YouTube Videos searches ordinary
-YouTube videos, including talks, tutorials, documentaries and long music mixes.
-Changing catalogue repeats the current query and clears the old results. Press
-`/` to enter a new search, and `L` for another page. Searching alone does not play
-or download anything. Channel, duration/live status, publication and view details
-appear when supplied. This remains a list with an explicit Details action; a
-persistent preview pane is not part of this build. Player search's existing
-`v:` shortcut still searches music videos; general video search lives in Discover.
+Choose **YouTube Videos** in the sidebar or press **Y** (Shift+y) outside a text
+field. On first visit the search field is ready to type into. Submit a query,
+select a result and press **Enter to play video**, or **a for audio only**.
+The query stays visible; `/` or clicking it in click mouse mode edits it.
+Escape leaves typing. `L` loads more results. Searching does not play anything.
 
-In Discover, search, select a playable result and press `c`. With mouse
-mode set to **click** in Settings, right-click the row to open the same menu.
-Choose Play audio, Play video, Play next, Add to queue, Download or Details.
-Arrow keys/Enter or a left click choose an action; Escape dismisses it.
-The result list and selection remain in place. Enter on a result plays audio;
-Enter on an album/artist/playlist opens it as before.
+**Music Discover** remains on `8`, with YouTube Music's song/music-video/album/
+artist/playlist filters and Enter for audio. Each section retains its own query,
+results and selection when you leave and return during this app session. This
+browsing state is held in memory, not saved across application restarts.
+Player search's existing `v:` shortcut still searches music videos.
+
+Video results have title, channel and duration columns when space permits,
+otherwise a compact list. `▶` means video, `●` plus LIVE means live, and `✓` means
+already queued. Music browsing uses `♫`. No special icon font is required.
+`TERM=dumb` or `JUKEBOXCLI_ICONS=ascii` uses plain symbols instead.
+
+In either section, `c` or right-click in click mouse mode opens Play audio,
+Play video, Play next, Add to queue, Download or Details. Choose using arrows /
+Enter or a left click; Escape dismisses. Downloads use the existing audio flow.
+Details remain an explicit action; a persistent preview pane is deferred.
 
 Video opens a separate mpv window. In Player (`m`), `W` switches the current item
 between audio and video (rebindable in Settings). Existing transport, seeking
@@ -29,7 +32,8 @@ position when seekable. Live and non-seekable sources reconnect without seeking.
 
 Closing the video window stops the current item, keeps the queue, and leaves
 JukeboxCli running. Choose another queue row to play again. Following queue
-entries, session restoration and ordinary Enter playback default to audio.
+entries, session restoration and Enter in Music Discover default to audio; Enter in YouTube Videos explicitly
+requests video.
 No second audio player is started, and existing parent-exit cleanup remains.
 
 Video requires mpv and a source containing a video track. A failed video request

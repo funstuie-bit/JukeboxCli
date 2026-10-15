@@ -11,7 +11,7 @@ export function HelpOverlay() {
   const { cols, rows, compact, section, config } = useStore();
   // Resolve by title so adding a help group cannot shift unrelated sections.
   const [page, setPage] = useState(() => {
-    const title = section === "listen" ? "Radio / URL (9)" : section === "discover" ? "Discover (YouTube Music)"
+    const title = section === "videos" ? "YouTube Videos" : section === "listen" ? "Radio / URL (9)" : section === "discover" ? "Discover (YouTube Music)"
       : section === "player" ? "Player" : section === "queue" ? "Listening queue"
       : section === "library" ? "Library" : "Navigate";
     return Math.max(0, HELP_GROUPS.findIndex(group => group.title === title));

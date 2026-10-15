@@ -3,6 +3,7 @@ import { useActionInput as useInput } from "../hooks/useActionInput";
 import { useStore, type Section } from "../store";
 import { wrapStep } from "../move";
 import { playerPalette, ICON } from "../theme";
+import { browseIcon } from "../icons";
 import { MouseRow } from "./MouseRow";
 
 interface NavItem {
@@ -19,8 +20,9 @@ const NAV: NavItem[] = [
   { key: "settings", label: "Settings" },
   { key: "player", label: "Now Playing" },
   { key: "queue", label: "Queue" },
-  { key: "discover", label: "Discover" },
+  { key: "discover", label: "Music Discover" },
   { key: "listen", label: "Radio / URL" },
+  { key: "videos", label: "YouTube Videos" },
 ];
 
 export function Sidebar() {
@@ -60,7 +62,7 @@ export function Sidebar() {
               color={selected ? COLOR.accent : COLOR.muted}
               bold={selected && focused}
             >
-              {`${i === 0 ? "H" : i} ${item.label}`}
+              {`${item.key === "videos" ? "Y" : i === 0 ? "H" : i} ${item.key === "videos" ? browseIcon("video") + " " : item.key === "discover" ? browseIcon("music") + " " : ""}${item.label}`}
             </Text>
             {item.key === "download" && active > 0 ? (
               <Text color={COLOR.muted}>{` (${active})`}</Text>

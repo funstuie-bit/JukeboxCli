@@ -21,16 +21,17 @@ keeps the lot in one editable queue. Streams stay streams unless you choose to s
 them. There are lyrics, cover artwork and live visualisers too, with optional
 fullscreen MilkDrop effects on Mac and Linux.
 
-Source preview **1.6.0-dev.3** adds general **YouTube Videos** search alongside
-YouTube Music. Open Discover (**8**) and press **Y** to switch catalogue (or click
-the source label in click mode), then search with **/**. Videos search covers
-ordinary YouTube videos, including talks, documentaries and long music mixes.
-Audio/video playback is explicit. In Discover,
-press **c** (or right-click a result with Settings → mouse mode → click) for
-Play audio, Play video, queue, download and details. In Now Playing (**m**),
-**W** switches the current item between audio and a separate video window.
-Closing that window stops the item; the terminal stays open. Audio remains the
-default. See [video controls and limits](docs/video-playback.md).
+Source preview **1.6.0-dev.4** gives **YouTube Videos its own sidebar section**.
+Press **Y** (Shift+y) to open it, type a search and press Enter. On the results,
+**Enter plays video** in its own window; **a plays audio only**. Music Discover
+stays on **8** and keeps Enter for audio. Press **c** or right-click a result in
+click mouse mode for queue, download and details actions.
+
+Video results show title, channel, duration and small video/live/queued symbols.
+Each section remembers its query, results and selection while JukeboxCli stays
+open. **/** edits search; Escape leaves typing. In Now Playing (**m**), **W**
+switches the current item between audio and video. Closing the video window
+stops the item and leaves the CLI open. See [controls and limits](docs/video-playback.md).
 
 Playing or browsing online music does not add it to your library. Downloads only
 start when you ask for one.
@@ -133,7 +134,9 @@ track metadata uses the existing radio player, not the site's programme schedule
 
 | Key | Action |
 | --- | --- |
-| `8`, then `/` | Search online |
+| `8`, then `/` | Search YouTube Music |
+| `Y` | Open YouTube Videos and search |
+| `Enter` / `a` in Videos | Play video / audio only |
 | `o` | Play a YouTube or direct audio URL |
 | `9` | Open radio and saved stations |
 | `9`, then `M` | Browse quick radio genre channels |
@@ -497,7 +500,7 @@ supplies the community station directory.
 
 Released under the [MIT License](LICENSE).
 
-## Source preview: 1.6.0-dev.3
+## Source preview: 1.6.0-dev.4
 
 Linux now supports confirmed ZIP/folder MilkDrop imports and optional MilkDrop
 Original / En D downloads, plus fullscreen audio isolated to JukeboxCli by default.

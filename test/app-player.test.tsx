@@ -77,6 +77,7 @@ vi.mock("../src/sources/music", () => {
     searchMusic: async (_query: string, kind: string) => ({ title: "Fixture results", items: kind === "album"
       ? [{ id: "album", kind: "album", title: "Fixture album" }] : [song],
       more: async () => ({ title: "Fixture results", items: [{ ...song, id: "second", title: "More results" }] }) }),
+    searchYouTubeVideos: async () => ({ title: "Video results", items: [{ ...song, title: "Video fixture" }] }),
     browseMusic: async () => ({ title: "Inside album", items: [song] }),
   };
 });
@@ -167,6 +168,16 @@ describe("App player workflow", () => {
     expect(view.lastFrame()).toContain("Online fixture song");
     await press(view, "\r"); await press(view, "m");
     expect(view.lastFrame()).toContain("Streaming · not in Library");
+  });
+  it("opens Videos directly with Y and retains results after visiting Music", async () => {
+    const view = app(); await tick(); await tick();
+    await press(view, "Y"); expect(view.lastFrame()).toContain("Search YouTube videos");
+    await press(view, "documentary"); await press(view, "\r");
+    expect(view.lastFrame()).toContain("Video fixture");
+    await press(view, "8"); expect(view.lastFrame()).toContain("Music Discover");
+    expect(view.lastFrame()).not.toContain("Video fixture");
+    await press(view, "Y"); expect(view.lastFrame()).toContain("Video fixture");
+    expect(view.lastFrame()).toContain("Search: documentary");
   });
   it("starts at Home and routes search while preserving typing and player navigation", async () => {
     const view = app(); await tick(); await tick();
@@ -371,6 +382,7 @@ describe("App player workflow", () => {
     expect(again.lastFrame()).toContain("Workday FM");
     await press(again, "?"); expect(again.lastFrame()).toContain("Radio / URL (9)");
     expect((again.lastFrame() ?? "").split("\n").length).toBeLessThanOrEqual(24);
+    await press(again, "["); expect(again.lastFrame()).toContain("YouTube Videos");
     await press(again, "["); expect(again.lastFrame()).toContain("Discover (YouTube Music)");
     await press(again, "?");
     await press(again, "x"); await press(again, "y"); expect(readStations()).toEqual([]);
@@ -393,7 +405,7 @@ describe("App player workflow", () => {
   });
   it("searches and browses Discover, queues a stream, plays and restores it paused", async () => {
     const view = app(); await tick(); await tick();
-    expect(view.lastFrame()).toContain("8 Discover");
+    expect(view.lastFrame()).toContain("Music Discover");
     await press(view, "8"); await press(view, "/"); await press(view, "fixture"); await press(view, "\r");
     expect(view.lastFrame()).toContain("Online fixture song");
     await press(view, "L"); expect(view.lastFrame()).toContain("More results");

@@ -1,25 +1,33 @@
+import stringWidth from "string-width";
 import { useEffect, useRef, useState } from "react";
 import { Box, Text } from "ink";
 import { useActionInput as useInput } from "../hooks/useActionInput";
 import { browseMusic, searchMusic, searchYouTubeVideos, queueLoader, type MusicFilter, type MusicPage } from "../../sources/music";
-import { cleanText, truncate } from "../../util/format";
+import { cleanText, truncate, formatDuration } from "../../util/format";
 import { useStore } from "../store";
 import { TextField } from "../components/TextField";
 import { MouseRow } from "../components/MouseRow";
+import { browseIcon } from "../icons";
 import { COLOR } from "../theme";
 
 const filters: MusicFilter[] = ["song", "video", "album", "artist", "playlist"];
-export function Discover() {
+interface BrowseSnapshot {
+  query: string; kind: MusicFilter; page: MusicPage;
+  parents: { page: MusicPage; cursor: number }[]; cursor: number;
+}
+// Two bounded browsing snapshots per player session. No cross-profile/global history.
+const sessions = new WeakMap<object, Map<boolean, BrowseSnapshot>>();
+export function Discover({ videos: youtube = false }: { videos?: boolean } = {}) {
   const { config, region, setCaptureMode, playback, setPendingAdd, setSection, listRows, contentWidth, pendingSearch, setPendingSearch } = useStore();
   const focused = region === "content";
-  const [youtube, setYoutube] = useState(false);
-  const [query, setQuery] = useState("");
-  const [kind, setKind] = useState<MusicFilter>("song");
-  const [editing, setEditing] = useState(false);
-  const [page, setPage] = useState<MusicPage>({ title: "YouTube Music · no sign-in needed", items: [] });
+  const saved = sessions.get(playback)?.get(youtube);
+  const [query, setQuery] = useState(saved?.query ?? "");
+  const [kind, setKind] = useState<MusicFilter>(saved?.kind ?? "song");
+  const [editing, setEditing] = useState(youtube && !saved?.query);
+  const [page, setPage] = useState<MusicPage>(saved?.page ?? { title: youtube ? "Search videos, channels and topics" : "YouTube Music · no sign-in needed", items: [] });
   useEffect(() => { if (pendingSearch) { setMenu(null); setDetails(false); setEditing(true); setPendingSearch(false); } }, [pendingSearch, setPendingSearch]);
-  const [parents, setParents] = useState<{ page: MusicPage; cursor: number }[]>([]);
-  const [cursor, setCursor] = useState(0);
+  const [parents, setParents] = useState<{ page: MusicPage; cursor: number }[]>(saved?.parents ?? []);
+  const [cursor, setCursor] = useState(saved?.cursor ?? 0);
   const [busy, setBusy] = useState(false);
   const [details, setDetails] = useState(false);
   const [menu, setMenu] = useState<number | null>(null);
@@ -29,6 +37,12 @@ export function Discover() {
   const request = useRef(0);
   const controller = useRef<AbortController | null>(null);
   const autoAttempt = useRef<MusicPage | null>(null);
+  const snapshot = useRef<BrowseSnapshot>({ query, kind, page, parents, cursor });
+  snapshot.current = { query, kind, page, parents, cursor };
+  useEffect(() => () => {
+    const cache = sessions.get(playback) ?? new Map<boolean, BrowseSnapshot>();
+    cache.set(youtube, snapshot.current); sessions.set(playback, cache);
+  }, [playback, youtube]);
   useEffect(() => () => { request.current++; controller.current?.abort(); }, []);
   useEffect(() => {
     setCaptureMode(focused && editing ? "text" : focused && (menu !== null || details) ? "picker" : focused && (parents.length > 0 || busy) ? "esc" : "none");
@@ -55,15 +69,7 @@ export function Discover() {
     setPage({ title: value, items: [] }); setParents([]); setCursor(0);
     void load(signal => videos ? searchYouTubeVideos(value, signal) : searchMusic(value, filter, signal), "search");
   };
-  const changeSource = (videos: boolean) => {
-    if (videos === youtube) return;
-    request.current++; controller.current?.abort(); setBusy(false);
-    setYoutube(videos); setMenu(null); setDetails(false); setParents([]); setCursor(0); setNotice("");
-    setPage({ title: "Search videos, music, talks and more", items: [] });
-    if (query.trim()) search(query, videos);
-    else setEditing(true);
-  };
-  const rows = Math.max(1, listRows - 5 - (menu !== null ? 8 : details ? 6 : 0));
+  const rows = Math.max(1, listRows - (youtube ? 5 : 4) - (menu !== null ? 8 : details ? 6 : 0));
   const selected = Math.min(cursor, Math.max(0, page.items.length - 1));
   useEffect(() => {
     if (!config.autoLoadMore || !focused || menu !== null || details || editing || busy || !page.more || !page.items.length || page.items.length >= 10000 || selected < page.items.length - 3 || autoAttempt.current === page) return;
@@ -100,7 +106,6 @@ export function Discover() {
       if (parent) { setPage(parent.page); setCursor(parent.cursor); setParents(p => p.slice(0, -1)); }
       return;
     }
-    if (input === "Y") { changeSource(!youtube); return; }
     if (input === "/") { request.current++; controller.current?.abort(); setBusy(false); setEditing(true); return; }
     if (!youtube && (input === "[" || input === "]")) {
       const next = filters[(filters.indexOf(kind) + (input === "]" ? 1 : filters.length - 1)) % filters.length]!;
@@ -115,7 +120,9 @@ export function Discover() {
     else {
       const item = page.items[selected]; if (!item) return;
       if (input === "c" && item.track) { setAction(0); setMenu(selected); return; }
+      if (youtube && item.track && input === "a") { runAction(0); return; }
       if (key.return) {
+        if (youtube && item.track) { runAction(1); return; }
         if (item.track) {
           // Search is a one-off selection; a browsed collection supplies context.
           const tracks = parents.length ? page.items.flatMap(i => i.track ? [i.track] : []) : [item.track];
@@ -133,22 +140,23 @@ export function Discover() {
   }, { isActive: focused });
   const start = Math.max(0, Math.min(selected - Math.floor(rows / 2), page.items.length - rows));
   return <Box flexDirection="column" width={contentWidth}>
-    <Box>
-      <MouseRow active={focused && !editing && menu === null && !details} onClick={() => changeSource(false)}><Text color={!youtube ? COLOR.accent : COLOR.muted}>{!youtube ? "[YouTube Music]" : " YouTube Music "}</Text></MouseRow>
-      <MouseRow active={focused && !editing && menu === null && !details} onClick={() => changeSource(true)}><Text color={youtube ? COLOR.accent : COLOR.muted}>{youtube ? " [YouTube Videos]" : "  YouTube Videos "}</Text></MouseRow>
-      <Text dimColor> · Y switch</Text>
-    </Box>
-    <Text bold color={COLOR.alt} wrap="truncate-end">Discover · {cleanText(page.title)}</Text>
-    <Text color={COLOR.muted} wrap="truncate-end">{youtube ? "All YouTube videos · audio or video playback · no sign-in needed" : filters.map(f => f === kind ? `[${f}]` : f).join("  ")}</Text>
+    <Text bold color={COLOR.alt} wrap="truncate-end">{browseIcon(youtube ? "video" : "music")} {youtube ? "YouTube Videos" : "Music Discover"} · {cleanText(page.title)}</Text>
+    {!youtube ? <Text color={COLOR.muted} wrap="truncate-end">{filters.map(f => f === kind ? `[${f}]` : f).join("  ")}</Text> : null}
     {focused && editing ? <TextField defaultValue={query} placeholder={youtube ? "Search YouTube videos…" : "Search music…"} onChange={setQuery}
       onSubmit={value => { setQuery(value); search(value); }} />
-      : <Text color={COLOR.muted} wrap="truncate-end">{busy ? "Loading… esc cancels" : notice || `/ search${youtube ? "" : " · [ ] type"} · enter audio/open · c actions · A/P queue · d download`}</Text>}
+      : youtube ? <MouseRow active={focused && menu === null && !details} onClick={() => { setEditing(true); }} width={contentWidth}>
+        <Text color={COLOR.muted} wrap="truncate-end">Search: {query || "type a video, channel or topic"} · / edit</Text>
+      </MouseRow> : <Text color={COLOR.muted} wrap="truncate-end">{busy ? "Loading… esc cancels" : notice || `/ search${youtube ? "" : " · [ ] type"} · enter audio/open · c actions · A/P queue · d download`}</Text>}
+    {youtube ? <>
+      <Text color={COLOR.muted} wrap="truncate-end">{busy ? "Searching… esc cancels" : notice || `Enter ${browseIcon("video")} video · a audio only · c actions · A/P queue · d download`}</Text>
+      <Text color={COLOR.alt} wrap="truncate-end">{contentWidth >= 65 ? "   Title".padEnd(Math.floor(contentWidth * .58)) + "Channel".padEnd(Math.floor(contentWidth * .26)) + "Duration" : "Video · Channel · Duration"}</Text>
+    </> : null}
     {page.items.length === 0 && !busy ? <Text color={COLOR.muted}>Listen without downloading: / search · o Play URL · 9 radio</Text> : null}
     {page.items.slice(start, start + rows).map((item, i) => <MouseRow key={`${start + i}:${item.id}`} active={focused && !editing && !busy && menu === null && !details} width={contentWidth}
       onClick={() => setCursor(start + i)} onContextMenu={() => { if (item.track) { setCursor(start + i); setAction(0); setMenu(start + i); } }}>
       <Text
       color={focused && selected === start + i ? COLOR.accent : undefined} wrap="truncate-end">
-      {selected === start + i ? "› " : "  "}{truncate(cleanText(`${item.title}${item.subtitle ? ` · ${item.subtitle}` : ""} [${item.kind}]`), contentWidth - 2)}
+      {selected === start + i ? "› " : "  "}{youtube ? videoRow(item, contentWidth - 2, playback.getState().list.some(t => t.id === item.track?.id)) : `${browseIcon("music")} ${truncate(cleanText(`${item.title}${item.subtitle ? ` · ${item.subtitle}` : ""} [${item.kind}]`), contentWidth - 4)}`}
     </Text></MouseRow>)}
     {details ? <Box flexDirection="column" borderStyle="round" borderColor={COLOR.accent}>
       <Text>{cleanText(page.items[selected]?.title ?? "")}</Text>
@@ -161,6 +169,22 @@ export function Discover() {
         <Text color={i === action ? COLOR.accent : undefined}>{i === action ? "› " : "  "}{label}</Text>
       </MouseRow>)}
     </Box> : null}
-    <Text dimColor wrap="truncate-end">{page.items.length ? `${selected + 1}/${page.items.length} · ` : ""}{parents.length ? "esc back · " : ""}{page.more ? "L load more · " : ""}8 Discover · 7 Queue · m Player</Text>
+    <Text dimColor wrap="truncate-end">{page.items.length ? `${selected + 1}/${page.items.length} · ` : ""}{parents.length ? "esc back · " : ""}{page.more ? "L load more · " : ""}8 Music · Y Videos · 7 Queue · m Player</Text>
   </Box>;
+}
+
+function videoRow(item: import("../../sources/music").MusicResult, width: number, queued: boolean): string {
+  const icon = browseIcon(item.track?.isLive ? "live" : "video");
+  const title = `${icon}${queued ? browseIcon("queued") : " "} ${cleanText(item.title)}`;
+  const channel = cleanText(item.track?.artist ?? "—");
+  const duration = item.track?.isLive ? "LIVE" : item.track?.durationSec ? formatDuration(item.track.durationSec) : "—";
+  if (width < 63) return truncate(`${title} · ${channel} · ${duration}`, width);
+  const titleWidth = Math.floor((width + 2) * .58) - 2;
+  const channelWidth = Math.floor((width + 2) * .26);
+  return padColumn(title, titleWidth) + padColumn(channel, channelWidth) + truncate(duration, width - titleWidth - channelWidth);
+}
+
+function padColumn(text: string, width: number): string {
+  const value = truncate(text, width - 1);
+  return value + " ".repeat(Math.max(0, width - stringWidth(value)));
 }
