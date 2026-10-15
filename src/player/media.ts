@@ -22,13 +22,16 @@ export function isHttpUrl(value: unknown): value is string {
   if (typeof value !== "string") return false;
   try { const u = new URL(value); return ["http:", "https:"].includes(u.protocol) && !u.username && !u.password && !/[\x00-\x20\x7f]/.test(value); } catch { return false; }
 }
+export type PlaybackMode = "audio" | "video";
 export interface ResolvedMedia {
+  mode?: PlaybackMode;
+  startPosition?: number;
   url: string;
   headers?: Record<string, string>;
   expiresAt: number;
   metadata?: Pick<StreamTrack, "title" | "artist" | "durationSec" | "thumbnailUrl" | "isLive">;
 }
-export type MediaResolver = (track: StreamTrack, signal: AbortSignal, fresh?: boolean) => Promise<ResolvedMedia>;
+export type MediaResolver = (track: StreamTrack, signal: AbortSignal, fresh?: boolean, mode?: PlaybackMode) => Promise<ResolvedMedia>;
 
 /** Deliberate allowlist: no direct stream credentials or arbitrary input fields. */
 export function streamMetadata(t: StreamTrack): StreamTrack {

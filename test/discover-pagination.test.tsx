@@ -1,7 +1,8 @@
 import { expect, it, vi } from "vitest";
-import { press, renderReady } from "./ink-input";
+import { press, renderReady, act } from "./ink-input";
 import { StoreContext } from "../src/ui/store";
 import { makeStore } from "../scripts/fake-data";
+import { mouseEvents, mousePresses } from "../src/ui/mouse";
 import { Discover } from "../src/ui/sections/Discover";
 import { trackFromUrl } from "../src/player/url";
 const fixture = vi.hoisted(() => ({ more: vi.fn(), browse: vi.fn() }));
@@ -48,4 +49,24 @@ it("attaches continuation only on explicit play inside an opted-in collection", 
     expect(store.playback.setContinuation).toHaveBeenCalledWith(enabled ? expect.any(Function) : undefined);
     view.unmount();
   }
+});
+
+it("opens actions by right click or keyboard without losing results, and plays video explicitly", async () => {
+  const song = trackFromUrl("https://example.com/video.mp4", false);
+  fixture.browse.mockResolvedValue({ title: "Inside album", items: [{ id: "song", kind: "video", title: "Video song", track: song }] });
+  const store = makeStore({ region: "content" }); store.config.mouseMode = "click";
+  store.playback.selectTrack = vi.fn(async () => {});
+  const view = await renderReady(<StoreContext.Provider value={store}><Discover /></StoreContext.Provider>);
+  await press(view, "/"); await press(view, "album"); await press(view, "\r"); await press(view, "\r");
+  await vi.waitFor(() => expect(view.lastFrame()).toContain("Video song"));
+  const y = view.lastFrame()!.split("\n").findIndex(row => row.includes("Video song"));
+  await act(async () => { mouseEvents.emit("press", mousePresses(`\x1b[<2;3;${y + 1}M`)[0]); });
+  expect(view.lastFrame()).toContain("Play video");
+  expect(store.playback.selectTrack).not.toHaveBeenCalled();
+  await press(view, "\x1b[B"); await press(view, "\r");
+  expect(store.playback.selectTrack).toHaveBeenCalledWith(song, [song], "video");
+  expect(view.lastFrame()).toContain("Video song");
+  await press(view, "c"); expect(view.lastFrame()).toContain("Play audio");
+  await press(view, "\x1b"); await vi.waitFor(() => expect(view.lastFrame()).not.toContain("Play video"));
+  view.unmount();
 });

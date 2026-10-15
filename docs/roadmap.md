@@ -1,5 +1,16 @@
 # Roadmap
 
+## Implemented in source preview — 1.6.0-dev.2 (15 October 2026)
+
+- [x] Explicit Play audio / Play video actions in Discover; audio stays the default.
+- [x] Separate video window using the existing mpv process, with CLI transport controls.
+- [x] Discover action menu via right click or keyboard: play audio/video, play next, queue, download and details.
+- [x] Switch the current item between audio and video, retaining position, pause and volume where the source supports seeking. Live streams reconnect at the live edge.
+- [x] Closing the video window stops the current item and leaves JukeboxCli open. Subsequent queue entries default to audio.
+- [x] Test stream resolution, switching races, window closure and owned-process cleanup; install the preview and push both remotes.
+
+Inspired by TubeTUI interaction patterns; independently implemented. See [controls and acceptance limits](video-playback.md). Physical macOS acceptance and wider online-source coverage remain pending. Stable release remains 1.5.0 until release acceptance.
+
 ## Implemented in source preview — 1.6.0-dev.1
 
 - Linux ZIP/folder preset imports with preview and explicit installation.

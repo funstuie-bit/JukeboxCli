@@ -3,6 +3,16 @@
 Release notes describe what changed in each build. For what works now and the
 remaining limits, see [feature status](FEATURES.md).
 
+## 1.6.0-dev.2 — Unreleased
+
+- Add Discover actions via right click or c: Play audio/video, play next, queue,
+  download and details, retaining search results and selection.
+- Open video in the existing mpv process; W in Player switches modes, preserving
+  position, pause and volume for seekable sources. Live sources reconnect.
+- Closing the video player stops the item and retains the queue and terminal.
+- Resolve audio/video independently; following queue entries return to audio.
+- Preserve inherited-pipe cleanup and production React runtime protection.
+
 ## 1.6.0-dev.1 — Unreleased
 
 - Add Linux ZIP/folder preset import previews and confirmed installation.

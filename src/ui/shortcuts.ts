@@ -17,6 +17,7 @@ export const ACTIONS = [
   { id: "lyrics", label: "Lyrics / queue", key: "l", scope: "player" },
   { id: "playerSearch", label: "Player search", key: "S", scope: "player" },
   { id: "visualizer", label: "Cycle visualiser", key: "v", scope: "player" },
+  { id: "video", label: "Switch audio / video", key: "W", scope: "player" },
   { id: "fullscreen", label: "Fullscreen effects", key: "F", scope: "player" },
   { id: "theme", label: "Cycle theme", key: "T", scope: "player" },
   { id: "motion", label: "Decorative motion", key: "V", scope: "player" },
@@ -27,7 +28,7 @@ export const ACTIONS = [
 export type ShortcutScope = "global" | "player" | "queue";
 export type Bindings = Partial<Record<typeof ACTIONS[number]["id"], string>>;
 // Reserved editing/navigation and section keys are deliberately not rebindable.
-const fixed = new Set("123456789ojk/[]dtafRLOAPXCEBIyN=_,.".split(""));
+const fixed = new Set("123456789cojk/[]dtafRLOAPXCEBIyN=_,.".split(""));
 export function bindingError(bindings: Bindings): string | undefined {
   const used = new Map<string, string>();
   for (const a of ACTIONS) {

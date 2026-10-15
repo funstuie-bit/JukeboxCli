@@ -21,6 +21,13 @@ keeps the lot in one editable queue. Streams stay streams unless you choose to s
 them. There are lyrics, cover artwork and live visualisers too, with optional
 fullscreen MilkDrop effects on Mac and Linux.
 
+Source preview **1.6.0-dev.2** adds explicit audio/video playback. In Discover,
+press **c** (or right-click a result with Settings → mouse mode → click) for
+Play audio, Play video, queue, download and details. In Now Playing (**m**),
+**W** switches the current item between audio and a separate video window.
+Closing that window stops the item; the terminal stays open. Audio remains the
+default. See [video controls and limits](docs/video-playback.md).
+
 Playing or browsing online music does not add it to your library. Downloads only
 start when you ask for one.
 
@@ -486,7 +493,7 @@ supplies the community station directory.
 
 Released under the [MIT License](LICENSE).
 
-## Source preview: 1.6.0-dev.1
+## Source preview: 1.6.0-dev.2
 
 Linux now supports confirmed ZIP/folder MilkDrop imports and optional MilkDrop
 Original / En D downloads, plus fullscreen audio isolated to JukeboxCli by default.

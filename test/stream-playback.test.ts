@@ -10,12 +10,12 @@ vi.mock("../src/player/mpv", async () => {
   const { EventEmitter } = await import("node:events");
   return { MpvPlayer: class extends EventEmitter {
     static current: any;
-    loads: string[] = []; next: { media: ResolvedMedia; token: number } | null = null;
+    loads: string[] = []; mediaLoads: ResolvedMedia[] = []; next: { media: ResolvedMedia; token: number } | null = null;
     fail = 0; volume = 100;
     constructor() { super(); (this.constructor as any).current = this; }
     setInitialVolume(v: number) { this.volume = v; }
     async getVolume() { return this.volume; }
-    async loadMedia(media: ResolvedMedia) { this.loads.push(media.url); if (this.fail-- > 0) throw Error("signed URL rejected"); }
+    async loadMedia(media: ResolvedMedia) { this.mediaLoads.push(media); this.loads.push(media.url); if (this.fail-- > 0) throw Error("signed URL rejected"); }
     async clearNext() { this.next = null; }
     async preloadNext(media: ResolvedMedia, token: number, signal: AbortSignal) { if (!signal.aborted) this.next = { media, token }; }
     async playPrepared(token: number) {
@@ -23,7 +23,7 @@ vi.mock("../src/player/mpv", async () => {
       this.next = null; this.emit("advanced", token); return true;
     }
     async stop() { this.next = null; }
-    async command() {}
+    async command() { return 1; }
     seekAbsolute = vi.fn(async () => {});
     seekRelative = vi.fn(async () => {});
     quit() {}
@@ -147,7 +147,7 @@ describe("stream playback", () => {
     p.quit();
   });
   it("remote sessions restore offline and persist metadata, not media credentials", async () => {
-    const resolver = vi.fn(async () => media("a"));
+    const resolver = vi.fn(async (..._args: any[]) => media("a"));
     const p = new Playback("fixture", undefined, resolver);
     p.enqueue({ ...a, headers: { Cookie: "private" }, resolvedUrl: media("a").url } as StreamTrack);
     const saver = persistListeningSession(p); saver.close();
@@ -163,5 +163,38 @@ describe("stream playback", () => {
     writeFileSync(sessionFile, JSON.stringify({ ...saved, version: 1, streams: undefined }));
     expect(readSession()?.version).toBe(1);
     p.quit(); q.quit();
+  });
+});
+
+describe("audio/video modes", () => {
+  it("switches in one engine, preserves position/pause/volume, then defaults queued entries to audio", async () => {
+    const resolver = vi.fn(async (..._args: any[]) => media("a"));
+    const p = new Playback("fixture", undefined, resolver);
+    await p.play(a, [a, b], 0, true);
+    const m = engine();
+    m.emit("property", "time-pos", 42); m.emit("property", "volume", 37);
+    m.volume = 37;
+    await p.setPlaybackMode("video");
+    expect(engine()).toBe(m);
+    expect(resolver.mock.calls.some(call => call[3] === "video")).toBe(true);
+    expect(m.mediaLoads.at(-1)).toMatchObject({ mode: "video", startPosition: 42 });
+    expect(p.getState()).toMatchObject({ mode: "video", paused: true, volume: 37 });
+    await p.setPlaybackMode("audio");
+    expect(m.mediaLoads.at(-1)).toMatchObject({ mode: "audio", startPosition: 42 });
+    await p.next(); expect(p.getState().mode).toBe("audio"); p.quit();
+  });
+  it("window closure stops the current item without clearing the queue or advancing", async () => {
+    const p = new Playback("fixture", undefined, async () => media("a"));
+    await p.play(a, [a, b], 0, false, false, "video");
+    engine().emit("quit");
+    expect(p.getState()).toMatchObject({ track: null, paused: true, loading: false });
+    expect(p.getState().list).toHaveLength(2); p.quit();
+  });
+  it("offers audio when the source has no video and never opens an external player", async () => {
+    const opener = vi.fn(); const p = new Playback("fixture", opener, async () => media("a"));
+    await p.play(a); engine().command = async () => false;
+    await p.setPlaybackMode("video");
+    expect(p.getState().error).toContain("try audio"); expect(opener).not.toHaveBeenCalled();
+    await p.setPlaybackMode("audio"); expect(p.getState().error).toBeUndefined(); p.quit();
   });
 });

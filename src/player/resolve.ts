@@ -21,13 +21,14 @@ export function resolvedMedia(info: Record<string, unknown>, now = Date.now()): 
 
 export function createStreamResolver(config: () => Promise<Config>): MediaResolver {
   const cache = new Map<string, ResolvedMedia>();
-  return async (track, signal, fresh = false) => {
+  return async (track, signal, fresh = false, mode = "audio") => {
     if (!isHttpUrl(track.streamUrl)) throw new Error("Only HTTP(S) stream links are supported.");
     signal.throwIfAborted();
     if (track.streamType === "direct" || track.streamType === "radio") {
       return { url: track.streamUrl, expiresAt: Infinity };
     }
-    const cached = cache.get(track.streamUrl);
+    const cacheKey = `${mode}:${track.streamUrl}`;
+    const cached = cache.get(cacheKey);
     if (!fresh && cached && cached.expiresAt > Date.now()) return cached;
     signal.throwIfAborted();
     const cfg = await config();
@@ -35,7 +36,7 @@ export function createStreamResolver(config: () => Promise<Config>): MediaResolv
     try {
       const { stdout } = await execa(resolvedYtDlpPath(), [
         "--ignore-config", "--no-warnings", "--no-playlist", "--skip-download", "--dump-single-json",
-        "--format", "bestaudio/best", "--socket-timeout", "15", "--retries", "1",
+        "--format", mode === "video" ? "best[vcodec!=none][acodec!=none]" : "bestaudio/best", "--socket-timeout", "15", "--retries", "1",
         ...jsRuntimeArgs(), ...cookieArgs(cfg), "--", track.streamUrl,
       ], { env: toolEnv(), cancelSignal: signal, timeout: 45_000, maxBuffer: 8 * 1024 * 1024 });
       signal.throwIfAborted();
@@ -49,7 +50,7 @@ export function createStreamResolver(config: () => Promise<Config>): MediaResolv
         isLive: info.is_live === true || info.live_status === "is_live",
       };
       if (cache.size >= 100) cache.delete(cache.keys().next().value!);
-      cache.set(track.streamUrl, media);
+      cache.set(cacheKey, media);
       return media;
     } catch (error) {
       signal.throwIfAborted();

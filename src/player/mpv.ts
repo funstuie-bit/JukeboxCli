@@ -140,6 +140,7 @@ export class MpvPlayer extends EventEmitter {
         [
           "--idle=yes",
           "--no-video",
+          "--title=JukeboxCli",
           "--no-terminal",
           "--really-quiet",
           ...(process.platform !== "win32" ? [`--input-ipc-client=fd://${lifetimeFd}`] : []),
@@ -337,7 +338,8 @@ export class MpvPlayer extends EventEmitter {
   }
 
   private mediaCommand(media: ResolvedMedia, action: "replace" | "append") {
-    const options: Record<string, string> = { "ytdl": "no", "http-header-fields": "" };
+    const options: Record<string, string> = { "ytdl": "no", "http-header-fields": "", "vid": media.mode === "video" ? "auto" : "no",
+      "start": String(media.startPosition ?? 0) };
     // mpv's string-list escaping uses backslashes for commas and backslashes.
     if (media.headers && Object.keys(media.headers).length) {
       options["http-header-fields"] = Object.entries(media.headers)

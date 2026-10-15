@@ -86,6 +86,7 @@ export function NowPlaying({ embedded = false, onDownload = () => {} }: { embedd
   useShortcutInput(input => {
     if (store.captureMode === "text") return;
     if (input === "S" || (input === "/" && !lyricsVisible)) { setSearchVisible(true); return; }
+    if (input === "W") { void store.playback.setPlaybackMode(st.mode === "video" ? "audio" : "video"); return; }
     if (input === "b") setArtVisible(v => !v);
     if (input === "l") setLyricsVisible(v => !v);
     if (input === "T") store.setConfig({ ...store.config, playerTheme: nextPlayerTheme(store.config.playerTheme) });
@@ -143,7 +144,7 @@ export function NowPlaying({ embedded = false, onDownload = () => {} }: { embedd
       <MouseRow active={clickable && !!t} onClick={() => { void store.playback.togglePause(); }}><Text color={COLOR.alt}>[{st.paused ? "Play" : "Pause"}] </Text></MouseRow>
       <MouseRow active={clickable && !!t} onClick={() => { void store.playback.next(); }}><Text color={COLOR.alt}>[Next]</Text></MouseRow>
     </Box> : <Text color={COLOR.muted} wrap="truncate-end">{`${!t ? "Stopped" : st.loading ? "Loading" : st.paused ? "Paused" : "Playing"}${clean ? `${st.shuffle ? " · shuffled" : ""}${st.repeat !== "off" ? ` · repeat ${st.repeat}` : ""}` : ` · shuffle ${st.shuffle ? "on" : "off"} · repeat ${st.repeat}`}`}</Text>}
-    <Text color={st.error ? COLOR.warn : COLOR.muted} wrap="truncate-end">{st.error || fullscreenStatus || (st.loading ? "Loading…" : st.engine === "external" && t ? "Playing in your default app" : t ? `${isStream(t) ? "Streaming · not in Library" : "Saved locally"}${st.preloading ? " · preparing next…" : st.nextReady ? " · next prepared" : ""}` : `${shortcutLabel("m", store.config.keybindings)} closes this screen`)}</Text>
+    <Text color={st.error ? COLOR.warn : COLOR.muted} wrap="truncate-end">{st.error || fullscreenStatus || (st.loading ? "Loading…" : st.engine === "external" && t ? "Playing in your default app" : t ? `${isStream(t) ? "Streaming · not in Library" : "Saved locally"} · ${shortcutLabel("W", store.config.keybindings, "player")} ${st.mode === "video" ? "audio" : "video"}${st.preloading ? " · preparing next…" : st.nextReady ? " · next prepared" : ""}` : `${shortcutLabel("m", store.config.keybindings)} closes this screen`)}</Text>
   </Box>;
   if (layout.showcase && (lyricsVisible || searchVisible)) return <Box width={width} height={height}>
     {searchVisible ? <PlayerSearch height={height} width={width} active={active} onClose={() => setSearchVisible(false)} onDownload={onDownload} />
