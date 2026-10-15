@@ -1,5 +1,11 @@
 # Roadmap
 
+## Implemented in source preview — 1.6.0-dev.6
+
+- Fix the search focus trap: sidebar clicks work while typing in click mode.
+- Visible search cancel target and bounded text field; result history remains
+  session-only, with cross-restart browsing history deferred.
+
 ## Implemented in source preview — 1.6.0-dev.5
 
 - Now Playing right-click / c actions for transport, volume, audio/video and

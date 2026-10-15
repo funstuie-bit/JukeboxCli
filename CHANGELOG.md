@@ -3,6 +3,14 @@
 Release notes describe what changed in each build. For what works now and the
 remaining limits, see [feature status](FEATURES.md).
 
+## 1.6.0-dev.6 — Unreleased
+
+- Fix sidebar clicks becoming unavailable while a search field owns keyboard
+  input. Click mode now keeps navigation active while typing; wheel navigation
+  and unrelated click targets stay suppressed.
+- Add a visible, clickable search cancel hint and constrain long search text
+  to the content width. Enter searches; Escape cancels text entry.
+
 ## 1.6.0-dev.5 — Unreleased
 
 - Add right-click and c actions to Now Playing: pause/resume, previous/next,

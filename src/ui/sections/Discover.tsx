@@ -69,7 +69,7 @@ export function Discover({ videos: youtube = false }: { videos?: boolean } = {})
     setPage({ title: value, items: [] }); setParents([]); setCursor(0);
     void load(signal => videos ? searchYouTubeVideos(value, signal) : searchMusic(value, filter, signal), "search");
   };
-  const rows = Math.max(1, listRows - (youtube ? 5 : 4) - (menu !== null ? 8 : details ? 6 : 0));
+  const rows = Math.max(1, listRows - (youtube ? 5 : 4) - (editing ? 1 : 0) - (menu !== null ? 8 : details ? 6 : 0));
   const selected = Math.min(cursor, Math.max(0, page.items.length - 1));
   useEffect(() => {
     if (!config.autoLoadMore || !focused || menu !== null || details || editing || busy || !page.more || !page.items.length || page.items.length >= 10000 || selected < page.items.length - 3 || autoAttempt.current === page) return;
@@ -142,13 +142,16 @@ export function Discover({ videos: youtube = false }: { videos?: boolean } = {})
   return <Box flexDirection="column" width={contentWidth}>
     <Text bold color={COLOR.alt} wrap="truncate-end">{browseIcon(youtube ? "video" : "music")} {youtube ? "YouTube Videos" : "Music Discover"} · {cleanText(page.title)}</Text>
     {!youtube ? <Text color={COLOR.muted} wrap="truncate-end">{filters.map(f => f === kind ? `[${f}]` : f).join("  ")}</Text> : null}
-    {focused && editing ? <TextField defaultValue={query} placeholder={youtube ? "Search YouTube videos…" : "Search music…"} onChange={setQuery}
+    {focused && editing ? <TextField defaultValue={query} width={contentWidth} placeholder={youtube ? "Search YouTube videos…" : "Search music…"} onChange={setQuery}
       onSubmit={value => { setQuery(value); search(value); }} />
       : youtube ? <MouseRow active={focused && menu === null && !details} onClick={() => { setEditing(true); }} width={contentWidth}>
         <Text color={COLOR.muted} wrap="truncate-end">Search: {query || "type a video, channel or topic"} · / edit</Text>
       </MouseRow> : <Text color={COLOR.muted} wrap="truncate-end">{busy ? "Loading… esc cancels" : notice || `/ search${youtube ? "" : " · [ ] type"} · enter audio/open · c actions · A/P queue · d download`}</Text>}
+    {focused && editing ? <MouseRow allowDuringText active={focused} width={contentWidth} onClick={() => setEditing(false)}>
+      <Text color={COLOR.alt} wrap="truncate-end">Enter searches · Esc / click here cancels · sidebar stays clickable</Text>
+    </MouseRow> : null}
     {youtube ? <>
-      <Text color={COLOR.muted} wrap="truncate-end">{busy ? "Searching… esc cancels" : notice || `Enter ${browseIcon("video")} video · a audio only · c actions · A/P queue · d download`}</Text>
+      <Text color={COLOR.muted} wrap="truncate-end">{busy ? "Searching… esc cancels" : notice || (editing ? "Editing search" : `Enter ${browseIcon("video")} video · a audio only · c actions · A/P queue · d download`)}</Text>
       <Text color={COLOR.alt} wrap="truncate-end">{contentWidth >= 65 ? "   Title".padEnd(Math.floor(contentWidth * .58)) + "Channel".padEnd(Math.floor(contentWidth * .26)) + "Duration" : "Video · Channel · Duration"}</Text>
     </> : null}
     {page.items.length === 0 && !busy ? <Text color={COLOR.muted}>Listen without downloading: / search · o Play URL · 9 radio</Text> : null}

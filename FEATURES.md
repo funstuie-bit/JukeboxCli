@@ -3,7 +3,9 @@
 These features are in the app now. That doesn't mean every station, terminal
 or online service will cooperate. The limits are listed below.
 
-## Source preview — 1.6.0-dev.5
+## Source preview — 1.6.0-dev.6
+
+- Sidebar navigation stays clickable during text entry; search has a clickable cancel hint.
 
 - Now Playing right-click / c menu: transport, volume, audio/video and fullscreen effects.
 

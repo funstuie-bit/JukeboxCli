@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { render, cleanup } from "ink-testing-library";
 import { ThemeProvider } from "@inkjs/ui";
 import { uiTheme } from "../src/ui/theme";
+import { mouseEvents } from "../src/ui/mouse";
 import { App } from "../src/ui/App";
 import { readSession, sessionFile } from "../src/player/session";
 import { rmSync } from "node:fs";
@@ -135,6 +136,24 @@ describe("App player workflow", () => {
     await press(view, "\x1b");
     await vi.waitFor(() => expect(view.lastFrame()).not.toContain("Now Playing actions"));
     await press(view, " "); expect(view.lastFrame()).toContain("Playing · shuffle");
+    view.unmount();
+  });
+  it("keeps sidebar and cancel clicks available while video search owns the keyboard", async () => {
+    const view = app({ initialOverrides: { mouseMode: "click" } }); await tick(); await tick();
+    const click = async (label: string) => {
+      const rows = view.lastFrame()!.split("\n"), y = rows.findIndex(row => row.includes(label));
+      expect(y).toBeGreaterThanOrEqual(0);
+      mouseEvents.emit("press", { x: rows[y]!.indexOf(label) + 1, y }); await tick();
+    };
+    await click("YouTube Videos");
+    expect(view.lastFrame()).toContain("Search YouTube videos");
+    await press(view, "q"); expect(view.lastFrame()).toContain("Editing search");
+    await click("1 Library"); expect(view.lastFrame()).not.toContain("Editing search");
+    await press(view, "Y"); await press(view, "/");
+    expect(view.lastFrame()).toContain("Esc / click here cancels");
+    await click("Enter searches");
+    expect(view.lastFrame()).not.toContain("Editing search");
+    await click("5 Settings"); expect(view.lastFrame()).toContain("Download pacing");
     view.unmount();
   });
   it("uses optional j/k for navigation without seeking/pausing, and preserves typing", async () => {

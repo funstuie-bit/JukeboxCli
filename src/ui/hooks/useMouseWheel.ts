@@ -6,7 +6,7 @@ import { mouseEvents, mousePresses } from "../mouse";
  * events into arrow key sequences so every arrow-driven list (@inkjs/ui
  * Select and our SongList) scrolls naturally with the wheel. Call once in App.
  */
-export function useMouseWheel(mode: "off" | "wheel" | "click" = "wheel"): void {
+export function useMouseWheel(mode: "off" | "wheel" | "click" = "wheel", suppressWheel = false): void {
   useEffect(() => {
     const { stdout, stdin } = process;
     if (mode === "off" || !stdout.isTTY || !stdin.isTTY) return;
@@ -19,6 +19,7 @@ export function useMouseWheel(mode: "off" | "wheel" | "click" = "wheel"): void {
     const handler = (data: Buffer): void => {
       const str = data.toString("utf8");
       if (mode === "click") for (const press of mousePresses(str)) mouseEvents.emit("press", press);
+      if (suppressWheel) return;
       // SGR mouse wheel up:   \x1b[<64;col;rowM
       // SGR mouse wheel down: \x1b[<65;col;rowM
       const re = /\x1b\[<(64|65);\d+;\d+[Mm]/g;
@@ -47,5 +48,5 @@ export function useMouseWheel(mode: "off" | "wheel" | "click" = "wheel"): void {
       stdout.write("\x1b[?1000l\x1b[?1006l");
       stdin.removeListener("data", handler);
     };
-  }, [mode]);
+  }, [mode, suppressWheel]);
 }

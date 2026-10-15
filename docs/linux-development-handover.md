@@ -5,7 +5,7 @@ Linux and macOS use one source history and release process.
 
 ## Current state
 
-- Source preview: `1.6.0-dev.5`, including general YouTube video search and [audio/video controls](video-playback.md).
+- Source preview: `1.6.0-dev.6`, including general YouTube video search and [audio/video controls](video-playback.md).
 - Production release: `v1.5.0`
 - Public source: `https://github.com/funstuie-bit/JukeboxCli.git`
 - Private mirror connection details belong in private maintainer notes, not here
@@ -186,3 +186,12 @@ menus. Stu's saved mouse mode was absent (default wheel); it was explicitly set
 to click for this machine. Restart the app to load the preference and new build.
 Check right-click on both Videos results and Now Playing over VNC; keyboard c
 remains available if the terminal intercepts right-click.
+
+### 15 October 2026 — search focus fix
+
+Preview dev.6 keeps sidebar navigation available while a TextField owns the
+keyboard in click mode. Other click targets and wheel-to-arrow translation remain
+blocked during typing. Discover now shows an explicit clickable cancel hint;
+Escape exits typing. Reproduce acceptance by clicking Videos, typing q, clicking
+Library without Escape, returning to Videos and using the cancel hint. Searches
+are retained only during the current process, not after restart.

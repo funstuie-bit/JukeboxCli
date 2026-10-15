@@ -185,7 +185,7 @@ export function App({ initialAdd, initialOverrides }: { initialAdd?: string; ini
   // Home's listening choices own the arrows/Enter on launch; Tab opens the map.
   const [region, setRegion] = useState<Region>("content");
   const [captureMode, setCaptureMode] = useState<CaptureMode>("none");
-  useMouseWheel(captureMode === "text" ? "off" : config?.mouseMode ?? "off");
+  useMouseWheel(captureMode === "text" && config?.mouseMode !== "click" ? "off" : config?.mouseMode ?? "off", captureMode === "text");
   const [showHelp, setShowHelp] = useState(false);
   // Full-screen Now Playing view, toggled with `m` from any section. The
   // body stays mounted (display none) behind it so section state survives.

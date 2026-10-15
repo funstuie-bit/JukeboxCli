@@ -49,7 +49,7 @@ export function Sidebar() {
         // Settings is a utility, so set it off from the content sections.
         const pinned = item.key === "settings";
         return (
-          <MouseRow key={item.key} marginTop={pinned ? 1 : 0} active={region !== "help"}
+          <MouseRow allowDuringText key={item.key} marginTop={pinned ? 1 : 0} active={region !== "help"}
             onClick={() => { setSection(item.key); setRegion("content"); }}>
             {selected ? (
               // The lit edge: the marker takes the ramp's sunlit end while the
