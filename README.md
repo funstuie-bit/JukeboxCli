@@ -485,3 +485,7 @@ package. [Radio Browser](https://www.radio-browser.info/)
 supplies the community station directory.
 
 Released under the [MIT License](LICENSE).
+
+Packaged startup uses React production mode to avoid retaining development render
+timing records during long sessions. Linux shares the 1.5.0 source with macOS;
+long-duration memory acceptance remains open (see [Linux handover](docs/linux-development-handover.md)).

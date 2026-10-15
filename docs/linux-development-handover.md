@@ -5,7 +5,7 @@ Linux and macOS use one source history and release process.
 
 ## Current state
 
-- Production release: `v1.2.0`
+- Production release: `v1.5.0`
 - Public source: `https://github.com/funstuie-bit/JukeboxCli.git`
 - Private mirror connection details belong in private maintainer notes, not here
 - Branch: `main`; both remotes must contain the same commits
@@ -149,3 +149,22 @@ the private vault handover, not this public repository.
 Still open: wider Linux terminal/keyring coverage, actual Intel Mac and iTerm2
 artwork/media-key acceptance, cover-derived colours, optional mouse/Vim input,
 and pagination for very large online collections.
+
+## October 2026 Linux update and memory investigation
+
+Linux and macOS share main; Linux can fast-forward directly to 1.5.0.
+Library browsing, portable playlists, diagnostics and player customisation are
+cross-platform. Linux retains its private projectM frontend and optional packs.
+
+A Node 26.8.2 V8 heap exhaustion abort was recorded on September 23. The missing
+core prevents attributing that crash to a specific retained object. A separate
+reproduction found React development performance entries growing with every
+redraw (2,403 entries after 600 minimal redraws). Packaged startup now sets
+production mode in a small launcher before dynamically importing the application,
+so external React/Ink load their production implementations. The same reproduction
+retains zero entries in production. Development commands remain unchanged.
+
+The installer and prepublish check exercise 600 packaged-runtime redraws. This
+fix removes a demonstrated unbounded retention path, but does not certify that
+all causes of long-session memory growth are resolved. Long playback/visualiser
+soaks and Settings → Session diagnostics remain useful follow-up evidence.

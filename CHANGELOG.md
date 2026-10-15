@@ -3,6 +3,14 @@
 Release notes describe what changed in each build. For what works now and the
 remaining limits, see [feature status](FEATURES.md).
 
+## Unreleased
+
+- Start packaged React/Ink in production mode before importing the UI, preventing
+  unbounded development timing records during redraws. Add a packaged-runtime
+  regression check to installation and publishing. Historical OOM attribution
+  remains unconfirmed; long-session acceptance is still required.
+- Refresh the Linux handover to the shared 1.5.0 release.
+
 ## 1.5.0 — Player polish and playlist continuation
 
 - Show all appearance/keyboard settings when space allows, and retain selection

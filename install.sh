@@ -76,6 +76,7 @@ npm ci
 echo "Building..."
 npm run build
 npx --no-install tsx scripts/check-dist-imports.ts
+node scripts/check-production-runtime.mjs
 node dist/index.js --version
 if [ "$install_check" -eq 1 ]; then
   echo "Build verified; no global installation or profile changes made."

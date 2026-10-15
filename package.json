@@ -21,7 +21,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "previews": "tsx scripts/render-previews.ts",
-    "prepublishOnly": "npm run build && tsx scripts/check-dist-imports.ts"
+    "prepublishOnly": "npm run build && tsx scripts/check-dist-imports.ts && node scripts/check-production-runtime.mjs"
   },
   "keywords": [
     "music",

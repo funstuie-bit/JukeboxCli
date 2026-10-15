@@ -1,8 +1,8 @@
 import { defineConfig } from "tsup";
-import { cp } from "node:fs/promises";
+import { cp, writeFile } from "node:fs/promises";
 
 export default defineConfig({
-  entry: ["src/index.tsx"],
+  entry: { app: "src/index.tsx" },
   format: ["esm"],
   target: "node22",
   platform: "node",
@@ -21,6 +21,9 @@ export default defineConfig({
   shims: false,
   minify: true,
   async onSuccess() {
+    // ESM static imports run before a module body: use a separate launcher so
+    // external React/Ink select production before any UI dependency is loaded.
+    await writeFile("dist/index.js", '#!/usr/bin/env node\nprocess.env.NODE_ENV = "production";\nawait import("./app.js");\n');
     await cp("native/macos-visualizer", "dist/native/macos-visualizer", { recursive: true });
   },
   esbuildOptions(options) {

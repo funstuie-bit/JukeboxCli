@@ -26,7 +26,7 @@ const pkg = JSON.parse(readFileSync("package.json", "utf8")) as {
 const declared = new Set(Object.keys(pkg.dependencies ?? {}));
 const builtins = new Set(builtinModules);
 
-const dist = readFileSync("dist/index.js", "utf8");
+const dist = ["dist/index.js", "dist/app.js"].map(file => readFileSync(file, "utf8")).join("\n");
 for (const asset of ["main.mm", "Info.plist"]) {
   if (!existsSync(`dist/native/macos-visualizer/${asset}`)) fail(`optional Mac visualiser source missing from dist: ${asset}`);
 }

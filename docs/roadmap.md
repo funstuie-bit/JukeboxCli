@@ -132,3 +132,7 @@ and long-session memory/GPU soak. No full-collection shader compatibility claim.
 There is no universal gapless guarantee, DRM support, general Radio Garden
 browsing or automatic signed-in Music API access. See
 [feature status](../FEATURES.md) for the current contract and known limits.
+
+Packaged startup uses React production mode to avoid retaining development render
+timing records during long sessions. Linux shares the 1.5.0 source with macOS;
+long-duration memory acceptance remains open (see [Linux handover](linux-development-handover.md)).
