@@ -1,12 +1,13 @@
 // Tiny argv parser for the few things soundcli accepts beyond "just open the
 // dashboard". Kept as a pure function so it's trivially testable.
 
+import { isPresetPack, type PresetPack, type DownloadablePack, DOWNLOADABLE_PACKS } from "../player/linux-preset-packs";
 import type { Config } from "../config/config";
 
 export type CliCommand =
   | { kind: "install-linux-visualizer" }
-  | { kind: "install-preset-pack" }
-  | { kind: "preset-pack"; pack: "classic" | "cream-of-the-crop" | "combined" }
+  | { kind: "install-preset-pack"; pack?: DownloadablePack }
+  | { kind: "preset-pack"; pack: PresetPack }
   | { kind: "doctor" }
   | { kind: "install-visualizer" }
   | { kind: "version" }
@@ -77,13 +78,13 @@ export function parseCliArgs(argv: string[]): CliCommand {
   if (args.length === 1 && args[0] === "--install-linux-visualizer") return { kind: "install-linux-visualizer" };
 
   if (args[0] === "--install-preset-pack") {
-    return args.length === 2 && args[1] === "cream-of-the-crop"
-      ? { kind: "install-preset-pack" } : { kind: "invalid", arg: "--install-preset-pack (expected cream-of-the-crop)" };
+    return args.length === 2 && DOWNLOADABLE_PACKS.includes(args[1] as DownloadablePack)
+      ? args[1] === "cream-of-the-crop" ? { kind: "install-preset-pack" } : { kind: "install-preset-pack", pack: args[1] as DownloadablePack } : { kind: "invalid", arg: "--install-preset-pack (expected cream-of-the-crop, milkdrop-original or en-d)" };
   }
   if (args[0] === "--preset-pack") {
     const pack = args[1];
-    return args.length === 2 && (pack === "classic" || pack === "cream-of-the-crop" || pack === "combined")
-      ? { kind: "preset-pack", pack } : { kind: "invalid", arg: "--preset-pack (expected classic, cream-of-the-crop or combined)" };
+    return args.length === 2 && isPresetPack(pack)
+      ? { kind: "preset-pack", pack } : { kind: "invalid", arg: "--preset-pack (expected classic, cream-of-the-crop, combined, milkdrop-original, en-d or import:<id>)" };
   }
 
   // Check for version/help first
@@ -142,9 +143,9 @@ usage
   jukeboxcli --install-visualizer  optional Mac projectM + Cream of the Crop install
   jukeboxcli --install-linux-visualizer
                            build the Linux fullscreen companion without the logo intro
-  jukeboxcli --install-preset-pack cream-of-the-crop
-                           download Linux presets + textures (~14 MB), then select
-  jukeboxcli --preset-pack classic|cream-of-the-crop|combined
+  jukeboxcli --install-preset-pack cream-of-the-crop|milkdrop-original|en-d
+                           download Linux presets + textures (~4–14 MB), then select
+  jukeboxcli --preset-pack classic|cream-of-the-crop|combined|milkdrop-original|en-d|import:<id>
                            select installed Linux presets for the next F launch
 
 player keys

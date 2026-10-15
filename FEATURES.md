@@ -3,6 +3,14 @@
 These features are in the app now. That doesn't mean every station, terminal
 or online service will cooperate. The limits are listed below.
 
+## Source preview — 1.6.0-dev.1
+
+- Linux preset ZIP/folder preview/import, plus optional MilkDrop Original and En D.
+- Linux fullscreen defaults to mpv-only audio capture; explicit system mix option.
+- Click-mode player transport/seek/volume controls and local memory trend logging.
+
+See [preview details and limits](docs/visualiser-and-diagnostics.md).
+
 ## Supported
 
 Version 1.5.0 includes the optional [player polish features](docs/player-polish.md):
@@ -70,8 +78,8 @@ or proxy cliamp feeds.
 - Mac fullscreen effects need macOS 14.4+, a local optional build and system
   audio-recording permission. They capture only JukeboxCli's mpv audio. Community
   presets vary in GPU cost and compatibility with Apple's OpenGL implementation.
-- Linux fullscreen effects capture the active system output, so unrelated audio
-  can affect the animation; projectM remains an optional external package.
+- Stable 1.5.0 Linux effects capture system output; source preview 1.6.0-dev.1
+  isolates mpv by default and offers system output explicitly. projectM remains optional.
 - [Audio-reactive visualiser](docs/visualiser-prototype.md): accepted on Intel
   Linux; wider stream, terminal and CPU testing remains useful.
 - YouTube discovery uses an unofficial API. Cookies do not supply account APIs.

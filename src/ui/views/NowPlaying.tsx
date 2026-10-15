@@ -6,6 +6,7 @@ import { cleanText, formatDuration, trackDisplayTitle } from "../../util/format"
 import { RULE, nextPlayerTheme, playerThemeLabel, type PlayerPalette } from "../theme";
 import { ListeningQueue } from "./ListeningQueue";
 import { isLive, isStream } from "../../player/media";
+import { MouseRow } from "../components/MouseRow";
 import { Cover } from "../components/Cover";
 import { graphicsPainter, graphicsProtocol, simpleArtwork } from "../../player/graphics";
 import { RadioFallback } from "../components/RadioFallback";
@@ -121,18 +122,27 @@ export function NowPlaying({ embedded = false, onDownload = () => {} }: { embedd
     <Box height={layout.split && live && height >= 26 ? 3 : 1} overflow="hidden"><Text color={COLOR.alt} wrap={layout.split && live && height >= 26 ? "wrap" : "truncate-end"}>{live ? cleanText(st.broadcastTitle || "Waiting for station song information") : t?.artist ? cleanText(t.artist) : t ? "Online audio" : "Library · 8 Discover · o Play URL"}</Text></Box>
     {layout.split ? <Text color={COLOR.muted} wrap="truncate-end">{t?.album ? cleanText(t.album) : t?.playlist ? cleanText(t.playlist) : " "}</Text> : null}
   </Box>;
+  const clickable = store.captureMode === "none" && active && !searchVisible && !lyricsVisible && !st.loading;
   const details = <Box flexDirection="column" width={inner}>
     {(layout.split || layout.showcase) && (visualizer || (!live && samples)) ? <Box flexDirection="column">
       {!clean ? <Text color={COLOR.muted}>{visualizer ? `LIVE SPECTRUM · ${spectrumModeLabel(visualizerMode).toUpperCase()} · ${shortcutLabel("v", store.config.keybindings, "player")}` : "TRACK WAVEFORM"}</Text> : null}
       {visualizer ? <SpectrumPanel levels={spectrum} width={inner} height={layout.waveRows} paused={st.paused || Boolean(st.loading)} palette={COLOR} mode={visualizerMode} />
         : <WaveformPanel samples={samples} width={inner} height={layout.waveRows} fraction={fraction} palette={COLOR} />}
     </Box> : null}
-    {live ? <Text color={COLOR.accent} wrap="truncate-end">LIVE · no seeking or restart</Text> : <Text color={RULE}>{"─".repeat(at)}<Text color={COLOR.accent}>●</Text>{"─".repeat(progressWidth - at - 1)}</Text>}
+    {live ? <Text color={COLOR.accent} wrap="truncate-end">LIVE · no seeking or restart</Text> : <MouseRow width={progressWidth} active={clickable && canTrack && st.seekable !== false && st.duration > 0} onClick={f => { void store.playback.seek(f * st.duration - st.position); }}><Text color={RULE}>{"─".repeat(at)}<Text color={COLOR.accent}>●</Text>{"─".repeat(progressWidth - at - 1)}</Text></MouseRow>}
     <Box justifyContent="space-between">
       <Text color={COLOR.text} wrap="truncate-end">{live ? st.loading ? "Connecting…" : st.paused ? `Disconnected · ${shortcutLabel("space", store.config.keybindings)} reconnects` : `On air · ${shortcutLabel("space", store.config.keybindings)} disconnects` : st.engine === "mpv" ? `${formatDuration(st.position)} / ${st.duration > 0 ? formatDuration(st.duration) : "—"}` : "Progress needs mpv"}</Text>
-      <Text color={COLOR.alt}>{st.engine === "mpv" ? `${st.volume}%` : ""}</Text>
+      {store.config.mouseMode === "click" && canTrack ? <Box>
+        <MouseRow active={clickable} onClick={() => { void store.playback.changeVolume(-5); }}><Text color={COLOR.alt}> − </Text></MouseRow>
+        <Text color={COLOR.alt}>{st.volume}%</Text>
+        <MouseRow active={clickable} onClick={() => { void store.playback.changeVolume(5); }}><Text color={COLOR.alt}> + </Text></MouseRow>
+      </Box> : <Text color={COLOR.alt}>{st.engine === "mpv" ? `${st.volume}%` : ""}</Text>}
     </Box>
-    <Text color={COLOR.muted} wrap="truncate-end">{`${!t ? "Stopped" : st.loading ? "Loading" : st.paused ? "Paused" : "Playing"}${clean ? `${st.shuffle ? " · shuffled" : ""}${st.repeat !== "off" ? ` · repeat ${st.repeat}` : ""}` : ` · shuffle ${st.shuffle ? "on" : "off"} · repeat ${st.repeat}`}`}</Text>
+    {store.config.mouseMode === "click" ? <Box>
+      <MouseRow active={clickable && !!t} onClick={() => { void store.playback.prev(); }}><Text color={COLOR.alt}>[Prev] </Text></MouseRow>
+      <MouseRow active={clickable && !!t} onClick={() => { void store.playback.togglePause(); }}><Text color={COLOR.alt}>[{st.paused ? "Play" : "Pause"}] </Text></MouseRow>
+      <MouseRow active={clickable && !!t} onClick={() => { void store.playback.next(); }}><Text color={COLOR.alt}>[Next]</Text></MouseRow>
+    </Box> : <Text color={COLOR.muted} wrap="truncate-end">{`${!t ? "Stopped" : st.loading ? "Loading" : st.paused ? "Paused" : "Playing"}${clean ? `${st.shuffle ? " · shuffled" : ""}${st.repeat !== "off" ? ` · repeat ${st.repeat}` : ""}` : ` · shuffle ${st.shuffle ? "on" : "off"} · repeat ${st.repeat}`}`}</Text>}
     <Text color={st.error ? COLOR.warn : COLOR.muted} wrap="truncate-end">{st.error || fullscreenStatus || (st.loading ? "Loading…" : st.engine === "external" && t ? "Playing in your default app" : t ? `${isStream(t) ? "Streaming · not in Library" : "Saved locally"}${st.preloading ? " · preparing next…" : st.nextReady ? " · next prepared" : ""}` : `${shortcutLabel("m", store.config.keybindings)} closes this screen`)}</Text>
   </Box>;
   if (layout.showcase && (lyricsVisible || searchVisible)) return <Box width={width} height={height}>

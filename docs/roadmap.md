@@ -1,5 +1,16 @@
 # Roadmap
 
+## Implemented in source preview — 1.6.0-dev.1
+
+- Linux ZIP/folder preset imports with preview and explicit installation.
+- Optional MilkDrop Original and En D downloads alongside Cream of the Crop.
+- Linux mpv-only fullscreen capture with explicit system-output alternative.
+- Clickable player transport, timeline seeking and volume controls.
+- Local per-minute memory trends in session diagnostics.
+
+See [preview guide](visualiser-and-diagnostics.md). Release publication and wider
+hardware/multi-hour acceptance remain pending.
+
 ## Current release — 1.5.0
 
 - Browsing artwork previews for local songs, collections and downloaded playlists.
@@ -91,11 +102,9 @@ Arch installation builds the companion against system libprojectM 3.1.12/Qt 5;
 source and licences are retained. Longer memory-soak testing remains open.
 
 projectM is an open-source, MilkDrop-compatible OpenGL renderer whose core
-accepts PCM and performs its own FFT and beat detection. This version currently
-captures the active system output, so unrelated audio can affect the picture.
-If that proves distracting, adds unacceptable latency or cannot follow
-JukeboxCLI reliably, feed bounded decoded PCM from the existing mpv process into
-a small projectM frontend instead. Do not open a second media stream.
+accepts PCM and performs its own FFT and beat detection. Stable 1.5.0 captures the system output; source preview 1.6.0-dev.1
+uses a per-mpv PulseAudio monitor, with system capture explicitly selectable.
+No second media stream or audio rerouting is introduced.
 
 The dependency remains optional: ordinary startup, playback and the terminal
 visualiser work when the fullscreen engine is absent. Longer hands-on checks
@@ -111,12 +120,13 @@ preset paths, retained notices and missing-pack fallback. Arch installer handles
 core native dependencies and basic projectM presets; optional browser support and
 extra-pack flags keep larger downloads explicit. See [pack guide](linux-preset-packs.md).
 
-Still open: user archive imports, more curated pack choices, newer native renderers
-and long-session memory/GPU soak. No full-collection shader compatibility claim.
+Source preview adds user archive imports and two more pack choices. Still open:
+newer native renderers, broader collections and long-session memory/GPU soak.
+No full-collection shader compatibility claim.
 
 ## Later
 
-- Extend mouse coverage beyond row selection if hands-on use warrants it.
+- Evaluate drag seeking and further mouse coverage after the new click controls.
 - Exercise 1.5's queue continuation with long online playlists; 1.4's optional
   pagination only loads visible Discover results.
 - Consider other platforms once installation and playback tests exist.

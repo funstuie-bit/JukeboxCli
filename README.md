@@ -486,6 +486,15 @@ supplies the community station directory.
 
 Released under the [MIT License](LICENSE).
 
+## Source preview: 1.6.0-dev.1
+
+Linux now supports confirmed ZIP/folder MilkDrop imports and optional MilkDrop
+Original / En D downloads, plus fullscreen audio isolated to JukeboxCli by default.
+Click mode adds player transport, seek and volume controls on Mac and Linux.
+Session diagnostics records local memory trends once a minute. See
+[setup, controls and limits](docs/visualiser-and-diagnostics.md).
+The published Homebrew release remains 1.5.0; reinstall from source for this preview.
+
 Packaged startup uses React production mode to avoid retaining development render
 timing records during long sessions. Linux shares the 1.5.0 source with macOS;
 long-duration memory acceptance remains open (see [Linux handover](docs/linux-development-handover.md)).

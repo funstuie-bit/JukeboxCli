@@ -7,7 +7,7 @@ import { downloadVerified } from "./linux-preset-packs";
 
 const SOURCE_URL = "https://codeload.github.com/projectM-visualizer/projectm/tar.gz/refs/tags/v3.1.12";
 const SOURCE_SHA = "62b5b1b543b25cb8ad392d879378cfdc5c129165cf4d4f33fb159e364d42f135";
-const BUILD_REVISION = 1;
+const BUILD_REVISION = 4;
 const root = path.join(paths.data, "projectM", "frontend");
 
 async function systemBuild() {
@@ -62,7 +62,7 @@ export function patchFirstFrame(source: string): string {
 }
 
 /** Build upstream's small Qt/PulseAudio frontend against the system shared core.
- * The one behaviour patch selects a real preset before the very first render.
+ * Patches select a real first preset, isolate process audio and watch parent lifetime.
  * Source, licences and the exact recipe stay beside the private executable.
  */
 export async function installLinuxVisualizer(progress: (message: string) => void = () => {}) {
@@ -90,6 +90,19 @@ export async function installLinuxVisualizer(progress: (message: string) => void
     const qtDir = path.join(source, "src/projectM-qt"), pulseDir = path.join(source, "src/projectM-pulseaudio");
     const widget = path.join(qtDir, "qprojectmwidget.hpp");
     await fs.writeFile(widget, patchFirstFrame(await fs.readFile(widget, "utf8")));
+    const captureCandidates = [new URL("../../native/linux-visualizer/jukebox-capture.hpp", import.meta.url), new URL("./native/linux-visualizer/jukebox-capture.hpp", import.meta.url)];
+    let captureSource: string | undefined;
+    for (const candidate of captureCandidates) { try { captureSource = await fs.readFile(candidate, "utf8"); break; } catch {} }
+    if (!captureSource) throw Error("Packaged Linux capture source is missing.");
+    await fs.writeFile(path.join(pulseDir, "jukebox-capture.hpp"), captureSource);
+    const pulseFile = path.join(pulseDir, "QPulseAudioThread.cpp");
+    let pulse = await fs.readFile(pulseFile, "utf8");
+    const init = /void QPulseAudioThread::initialize_callbacks\s*\( QPulseAudioThread \* pulseThread \)\s*\{/;
+    if (!init.test(pulse)) throw Error("Unexpected PulseAudio frontend source.");
+    pulse = pulse.replace('#define TIME_EVENT_USEC', '#include "jukebox-capture.hpp"\n#define TIME_EVENT_USEC')
+      .replace(init, `$&\n    if (const char* pid = getenv("JUKEBOXCLI_CAPTURE_PID")) { JukeboxCapture::start(context, *s_qprojectM_MainWindowPtr, pid); return; }`);
+    pulse = pulse.replace("pa_threaded_mainloop_stop ( mainloop );", "pa_threaded_mainloop_stop ( mainloop );\n    JukeboxCapture::stop();");
+    await fs.writeFile(pulseFile, pulse);
     const mainWindow = path.join(qtDir, "qprojectm_mainwindow.cpp");
     await fs.writeFile(mainWindow, (await fs.readFile(mainWindow, "utf8")).replaceAll("qInitResources()", "qInitResources_application()"));
     // Arch's shared core corrected the size_t callback; honour installed headers.
@@ -101,7 +114,13 @@ export async function installLinuxVisualizer(progress: (message: string) => void
     const original = await fs.readFile(entry, "utf8");
     const main = /int main\s*\(\s*int argc, char\*argv\[\]\s*\)\s*\{/;
     if (!main.test(original)) throw Error("Unexpected frontend entry point.");
-    await fs.writeFile(entry, original.replace(main, `$&\n    if (argc == 2 && std::string(argv[1]) == "--jukeboxcli-self-test") { puts("jukeboxcli-projectm-ready"); return 0; }`));
+    await fs.writeFile(entry, ('#include <unistd.h>\n#include <QTimer>\n' + original).replace(main, `$&\n    if (argc == 2 && std::string(argv[1]) == "--jukeboxcli-self-test") { puts("jukeboxcli-projectm-ready"); return 0; }`)
+      .replace("ProjectMApplication app ( argc, argv );", `ProjectMApplication app ( argc, argv );
+    const pid_t owner = getppid();
+    QTimer lifetime;
+    QObject::connect(&lifetime, &QTimer::timeout, [&app, owner]() { if (getppid() != owner) app.quit(); });
+    lifetime.start(1000);`)
+      .replace("if (pulseThread != 0)", 'if (pulseThread != 0 && !getenv("JUKEBOXCLI_CAPTURE_PID"))'));
     const allFiles = (await Promise.all([qtDir, pulseDir].map(async dir => (await fs.readdir(dir)).map(name => path.relative(source, path.join(dir, name)))))).flat();
     const list = (extension: string) => allFiles.filter(f => f.endsWith(extension) && !f.endsWith("/ConfigFile.cpp")).join(" ");
     const recipe = `QT += widgets opengl xml
@@ -131,7 +150,7 @@ RESOURCES += src/projectM-qt/application.qrc
     const check = await execa(executable, ["--jukeboxcli-self-test"], { timeout: 5000 });
     if (check.stdout.trim() !== "jukeboxcli-projectm-ready") throw Error("Fullscreen companion startup check failed.");
     await fs.rm(build, { recursive: true });
-    await fs.writeFile(path.join(stage, "manifest.json"), JSON.stringify({ signature: system.signature, source: SOURCE_URL, sha256: SOURCE_SHA, buildRevision: BUILD_REVISION, version: system.version, patch: "Select a valid preset before the first frame; retain source and GPL/LGPL notices." }, null, 2));
+    await fs.writeFile(path.join(stage, "manifest.json"), JSON.stringify({ signature: system.signature, source: SOURCE_URL, sha256: SOURCE_SHA, buildRevision: BUILD_REVISION, version: system.version, patch: "Real first preset; per-mpv PulseAudio monitor; parent-lifetime cleanup; retained source/notices." }, null, 2));
     const target = path.join(root, system.signature);
     // Keep a previous working build unless the new one has passed its check.
     const backup = `${target}.old-${process.pid}`;

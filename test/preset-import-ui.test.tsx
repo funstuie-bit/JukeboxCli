@@ -1,0 +1,20 @@
+import { expect, it, vi } from "vitest";
+import { promises as fs } from "node:fs";
+import path from "node:path";
+import { renderReady, press } from "./ink-input";
+import { PresetImport } from "../src/ui/components/PresetImport";
+import { paths } from "../src/config/paths";
+import { listImportedPacks } from "../src/player/import-preset-pack";
+it("previews before committing and selects only after explicit confirmation", async () => {
+  const folder = path.join(paths.temp, "fixture"); await fs.mkdir(folder, { recursive: true });
+  await fs.writeFile(path.join(folder, "test.milk"), "preset");
+  const selected = vi.fn(), textMode = vi.fn();
+  const app = await renderReady(<PresetImport focused onBack={() => {}} onInstalled={selected} onTextMode={textMode} />);
+  await press(app, folder); await press(app, "\r");
+  await vi.waitFor(() => expect(app.lastFrame()).toContain("1 presets"));
+  expect(selected).not.toHaveBeenCalled(); expect(await listImportedPacks()).toEqual([]);
+  expect(textMode).toHaveBeenLastCalledWith(false);
+  await press(app, "\x1b[B"); await press(app, "\r");
+  await vi.waitFor(() => expect(selected).toHaveBeenCalledOnce());
+  expect(await listImportedPacks()).toHaveLength(1);
+});

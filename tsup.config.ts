@@ -7,7 +7,7 @@ export default defineConfig({
   target: "node22",
   platform: "node",
   // Dependencies stay external (resolved from node_modules at runtime): the
-  // remaining five are small pure-JS packages, and an unbundled build keeps
+  // runtime dependencies are pure-JS packages, and an unbundled build keeps
   // stack traces readable and the publish simple. One exception: @inkjs/ui
   // lives in devDependencies so tsup inlines it, because upstream imports
   // react without declaring it and pnpm's strict linking crashes on that
@@ -24,6 +24,7 @@ export default defineConfig({
     // ESM static imports run before a module body: use a separate launcher so
     // external React/Ink select production before any UI dependency is loaded.
     await writeFile("dist/index.js", '#!/usr/bin/env node\nprocess.env.NODE_ENV = "production";\nawait import("./app.js");\n');
+    await cp("native/linux-visualizer", "dist/native/linux-visualizer", { recursive: true });
     await cp("native/macos-visualizer", "dist/native/macos-visualizer", { recursive: true });
   },
   esbuildOptions(options) {

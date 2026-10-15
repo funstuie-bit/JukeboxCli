@@ -50,11 +50,11 @@ async function main(): Promise<void> {
   if (command.kind === "install-preset-pack" || command.kind === "preset-pack") {
     try {
       if (process.platform !== "linux") throw Error("These preset-pack commands currently support Linux only.");
-      const { installCreamPack, creamInstalled, presetPackLabel } = await import("./player/linux-preset-packs");
+      const { installPresetPack, preparePresetPack, presetPackLabel } = await import("./player/linux-preset-packs");
       const { loadConfig, saveConfig } = await import("./config/config");
-      const pack = command.kind === "install-preset-pack" ? "cream-of-the-crop" : command.pack;
-      if (command.kind === "install-preset-pack") await installCreamPack(console.log);
-      if (pack !== "classic" && !await creamInstalled()) throw Error("Download Cream of the Crop first: jukeboxcli --install-preset-pack cream-of-the-crop");
+      const pack = command.kind === "install-preset-pack" ? command.pack ?? "cream-of-the-crop" : command.pack;
+      if (command.kind === "install-preset-pack") await installPresetPack(command.pack ?? "cream-of-the-crop", console.log);
+      await preparePresetPack(pack);
       await saveConfig({ ...await loadConfig(), fullscreenPresetPack: pack });
       console.log(`${presetPackLabel(pack)} selected. Close any open fullscreen window, then press F in Now Playing.`);
     } catch (error) {
@@ -123,6 +123,8 @@ async function main(): Promise<void> {
     process.on("exit", restore);
   }
 
+  const { startMemoryLogging } = await import("./diagnostics/memory");
+  const stopMemoryLogging = startMemoryLogging();
   try {
     const { probeGraphics, enableGraphics } = await import("./player/graphics");
     if (await probeGraphics()) enableGraphics();
@@ -142,6 +144,7 @@ async function main(): Promise<void> {
     await waitUntilExit();
     graphics.graphicsPainter?.clear();
   } finally {
+    stopMemoryLogging();
     restore();
   }
 

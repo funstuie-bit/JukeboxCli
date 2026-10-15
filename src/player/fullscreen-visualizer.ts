@@ -14,7 +14,8 @@ export type FullscreenVisualizerResult =
   | { ok: false; message: string };
 
 let visualizerProcess: ChildProcess | null = null;
-let openingMac: Promise<FullscreenVisualizerResult> | null = null;
+let launchGeneration = 0;
+let openingVisualizer: Promise<FullscreenVisualizerResult> | null = null;
 
 async function launchMacVisualizer(playerPid?: number): Promise<FullscreenVisualizerResult> {
   if (!macVisualizerSupported()) return { ok: false, message: "Fullscreen effects need macOS 14.4 or newer." };
@@ -105,21 +106,30 @@ export function setPresetPath(source: string, directory: string): string {
 
 /**
  * Open the optional Linux projectM companion window. projectM captures the
- * active output monitor, so playback remains owned by the existing mpv process.
+ * selected mpv stream by default, with explicit system-output mode available.
  */
 export async function launchFullscreenVisualizer(playerPid?: number): Promise<FullscreenVisualizerResult> {
-  if (openingMac) return openingMac;
+  if (openingVisualizer) return openingVisualizer;
   if (visualizerProcess && visualizerProcess.exitCode === null && !visualizerProcess.killed) {
     return { ok: true, message: "Fullscreen effects are already open." };
   }
   if (process.platform === "darwin") {
-    openingMac = launchMacVisualizer(playerPid);
-    try { return await openingMac; } finally { openingMac = null; }
+    openingVisualizer = launchMacVisualizer(playerPid);
+    try { return await openingVisualizer; } finally { openingVisualizer = null; }
   }
   if (process.platform !== "linux") {
     return { ok: false, message: "Fullscreen effects are available on macOS and Linux." };
   }
 
+  openingVisualizer = launchLinuxVisualizer(playerPid);
+  try { return await openingVisualizer; } finally { openingVisualizer = null; }
+}
+
+async function launchLinuxVisualizer(playerPid?: number): Promise<FullscreenVisualizerResult> {
+  const generation = launchGeneration;
+  const config = await loadConfig();
+  const playerOnly = config.fullscreenAudio !== "system";
+  if (playerOnly && (!playerPid || !Number.isInteger(playerPid) || playerPid < 1)) return { ok: false, message: "Play music in JukeboxCli before opening fullscreen effects." };
   const [projectM, pactl] = await Promise.all([
     linuxVisualizerExecutable(), findOnPath("pactl"),
   ]);
@@ -142,7 +152,7 @@ export async function launchFullscreenVisualizer(playerPid?: number): Promise<Fu
   let packWarning: string | undefined;
   try {
     const configDir = projectMConfigDir();
-    const pack = await preparePresetPack((await loadConfig()).fullscreenPresetPack ?? "classic");
+    const pack = await preparePresetPack(config.fullscreenPresetPack ?? "classic");
     packWarning = pack.warning;
     await fs.mkdir(configDir, { recursive: true });
     // PlaylistFile controls the Qt playlist; the core also needs Preset Path
@@ -166,33 +176,39 @@ export async function launchFullscreenVisualizer(playerPid?: number): Promise<Fu
     return { ok: false, message: `Could not prepare fullscreen effects: ${error instanceof Error ? error.message : "settings unavailable"}` };
   }
 
-  const child = spawn(projectM, [], { stdio: ["ignore", "ignore", "pipe"] });
+  if (generation !== launchGeneration) return { ok: false, message: "Opening fullscreen effects was cancelled." };
+  const env = { ...process.env };
+  delete env.JUKEBOXCLI_CAPTURE_PID;
+  if (playerOnly) env.JUKEBOXCLI_CAPTURE_PID = String(playerPid);
+  const child = spawn(projectM, [], { stdio: ["ignore", "ignore", "pipe"], env });
   visualizerProcess = child;
   child.once("exit", () => { if (visualizerProcess === child) visualizerProcess = null; });
   child.once("error", () => { if (visualizerProcess === child) visualizerProcess = null; });
-  return await waitForVisualizerReady(child, packWarning);
+  return await waitForVisualizerReady(child, packWarning, 15000, playerOnly);
 }
 
 /** A spawn event is not proof that a real preset is ready to draw. */
-export function waitForVisualizerReady(child: ChildProcess, warning?: string, timeoutMs = 15000): Promise<FullscreenVisualizerResult> {
+export function waitForVisualizerReady(child: ChildProcess, warning?: string, timeoutMs = 15000, requireAudio = false): Promise<FullscreenVisualizerResult> {
   return new Promise(resolve => {
-    let settled = false, output = "";
+    let settled = false, output = "", presetReady = false, audioReady = !requireAudio;
     const finish = (result: FullscreenVisualizerResult) => {
       if (settled) return;
       settled = true; clearTimeout(timeout); resolve(result);
     };
     const timeout = setTimeout(() => {
       child.kill("SIGKILL");
-      finish({ ok: false, message: "Fullscreen effects could not prepare a preset. Try Built-in Classic in MilkDrop packs." });
+      finish({ ok: false, message: requireAudio && !audioReady ? "No JukeboxCli audio stream available. Start playback, or explicitly choose system output in Player appearance." : "Fullscreen effects could not prepare a preset. Try Built-in Classic in MilkDrop packs." });
     }, timeoutMs);
     child.stderr?.on("data", chunk => {
       const incoming = output + chunk.toString();
       output = incoming.slice(-4096);
-      if (incoming.includes("JUKEBOXCLI_PROJECTM_READY")) {
-        finish({ ok: true, message: warning ?? "Fullscreen effects opened · close the window to return." });
-      } else if (incoming.includes("JUKEBOXCLI_PROJECTM_ERROR")) {
+      presetReady ||= incoming.includes("JUKEBOXCLI_PROJECTM_READY");
+      audioReady ||= incoming.includes("JUKEBOXCLI_AUDIO_READY");
+      if (incoming.includes("JUKEBOXCLI_PROJECTM_ERROR")) {
         child.kill("SIGKILL");
-        finish({ ok: false, message: "No playable fullscreen startup preset. Try Built-in Classic in MilkDrop packs." });
+        finish({ ok: false, message: "Fullscreen preset or process audio capture failed. Check playback and the selected pack." });
+      } else if (presetReady && audioReady) {
+        finish({ ok: true, message: warning ?? "Fullscreen effects opened · close the window to return." });
       }
     });
     child.once("error", () => finish({ ok: false, message: "Fullscreen companion could not start. Run jukeboxcli --install-linux-visualizer to rebuild it." }));
@@ -202,6 +218,7 @@ export function waitForVisualizerReady(child: ChildProcess, warning?: string, ti
 
 /** Stop only the companion process started by this JukeboxCLI session. */
 export function closeFullscreenVisualizer(): void {
+  launchGeneration++;
   const child = visualizerProcess;
   visualizerProcess = null;
   // The legacy Qt PulseAudio frontend ignores SIGTERM on some Linux builds.

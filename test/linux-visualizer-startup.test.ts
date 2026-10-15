@@ -80,3 +80,18 @@ it("does not lose readiness when a preset emits a large burst of shader diagnost
   try { expect((await waitForVisualizerReady(child)).ok).toBe(true); }
   finally { child.kill("SIGKILL"); }
 });
+
+it("requires process audio readiness in addition to the first preset", async () => {
+  const child = spawn(process.execPath, ["-e", "process.stderr.write('JUKEBOXCLI_PROJECTM_READY\\n');setTimeout(()=>process.stderr.write('JUKEBOXCLI_AUDIO_READY\\n'),150);setInterval(()=>{},1000)"], { stdio: ["ignore", "ignore", "pipe"] });
+  let done = false;
+  try {
+    const ready = waitForVisualizerReady(child, undefined, 2000, true).then(r => { done = true; return r; });
+    await new Promise(r => setTimeout(r, 80)); expect(done).toBe(false);
+    expect((await ready).ok).toBe(true);
+  } finally { child.kill("SIGKILL"); }
+});
+it("fails closed if no process audio arrives", async () => {
+  const child = spawn(process.execPath, ["-e", "process.stderr.write('JUKEBOXCLI_PROJECTM_READY\\n');setInterval(()=>{},1000)"], { stdio: ["ignore", "ignore", "pipe"] });
+  try { expect((await waitForVisualizerReady(child, undefined, 200, true)).ok).toBe(false); }
+  finally { child.kill("SIGKILL"); }
+});

@@ -96,6 +96,7 @@ export function Settings() {
   const [choiceFocus, setChoiceFocus] = useState<{ appearance?: string; controls?: string }>({});
   const { config, setConfig, library, queue, playback, binaries, region, setCaptureMode, listRows } =
     useStore();
+  const [presetImportText, setPresetImportText] = useState(false);
   const focused = region === "content";
   const [mode, setMode] = useState<Mode>("menu");
   const [cursor, setCursor] = useState(0);
@@ -304,6 +305,7 @@ export function Settings() {
   // race the file shuffle, so only ctrl-c gets through.
   const inSubPage = focused && mode !== "menu";
   const isTextPage =
+    (mode === "preset-packs" && presetImportText) ||
     mode === "youtube" ||
     mode === "soundcloud" ||
     mode === "spotify" ||
@@ -475,7 +477,7 @@ export function Settings() {
 
   if (mode === "preset-packs") {
     return frame("MilkDrop packs", <PresetPacks selected={config.fullscreenPresetPack ?? "classic"} focused={focused}
-      onSelect={pack => setConfig({ ...currentConfig.current, fullscreenPresetPack: pack })} onBack={() => setMode("appearance")} />);
+      onTextMode={setPresetImportText} onSelect={pack => setConfig({ ...currentConfig.current, fullscreenPresetPack: pack })} onBack={() => setMode("appearance")} />);
   }
 
   if (mode === "visualizer-install") {
@@ -536,7 +538,7 @@ export function Settings() {
         { label: `Reduced motion: ${config.reducedMotion === false ? "off" : "on"} (toggle)`, value: "motion" },
         { label: `Visualizer: ${spectrumModeLabel(config.visualizerMode ?? "classic")} (cycle)`, value: "visualizer" },
         ...(["linux", "darwin"].includes(process.platform) ? [{ label: fullscreenStatus || "Fullscreen effects: open projectM", value: "fullscreen" }] : []),
-        ...(process.platform === "linux" ? [{ label: "MilkDrop packs: choose or download", value: "preset-packs" }] : []),
+        ...(process.platform === "linux" ? [{ label: "MilkDrop packs: choose, download or import", value: "preset-packs" }, { label: `Fullscreen audio: ${config.fullscreenAudio === "system" ? "system output" : "JukeboxCli only"} (toggle)`, value: "fullscreen-audio" }] : []),
         ...(macVisualizerSupported() ? [{ label: "Install Mac fullscreen pack: Cream of the Crop…", value: "visualizer-install" }] : []),
         { label: `Player layout: ${config.playerLayout ?? "classic"} (cycle)`, value: "layout" },
         { label: `Browsing artwork previews: ${config.browseArtwork ? "on" : "off"}`, value: "browse-artwork" },
@@ -546,6 +548,7 @@ export function Settings() {
         if (value === "layout") { setConfig({ ...config, playerLayout: config.playerLayout === "clean" ? "classic" : "clean" }); return; }
         if (value === "browse-artwork") { setConfig({ ...config, browseArtwork: !config.browseArtwork }); return; }
         if (value === "artwork-colours") { setConfig({ ...config, artworkColours: !config.artworkColours }); return; }
+        if (value === "fullscreen-audio") { setConfig({ ...currentConfig.current, fullscreenAudio: config.fullscreenAudio === "system" ? "player" : "system" }); return; }
         if (value === "preset-packs") { setMode("preset-packs"); return; }
         if (value === "visualizer-install") { setMode("visualizer-install"); return; }
         if (value === "fullscreen") {

@@ -3,8 +3,15 @@
 Release notes describe what changed in each build. For what works now and the
 remaining limits, see [feature status](FEATURES.md).
 
-## Unreleased
+## 1.6.0-dev.1 — Unreleased
 
+- Add Linux ZIP/folder preset import previews and confirmed installation.
+- Add optional pinned MilkDrop Original and En D downloads with textures/notices.
+- Capture only JukeboxCli's mpv stream for Linux fullscreen effects by default;
+  retain explicit system-output mode, follow stream/output changes and close the
+  companion when its parent dies.
+- Add clickable Now Playing transport, seek line and volume controls in click mode.
+- Record bounded per-minute memory counters in local session diagnostics.
 - Start packaged React/Ink in production mode before importing the UI, preventing
   unbounded development timing records during redraws. Add a packaged-runtime
   regression check to installation and publishing. Historical OOM attribution

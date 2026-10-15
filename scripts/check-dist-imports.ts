@@ -30,6 +30,7 @@ const dist = ["dist/index.js", "dist/app.js"].map(file => readFileSync(file, "ut
 for (const asset of ["main.mm", "Info.plist"]) {
   if (!existsSync(`dist/native/macos-visualizer/${asset}`)) fail(`optional Mac visualiser source missing from dist: ${asset}`);
 }
+if (!existsSync("dist/native/linux-visualizer/jukebox-capture.hpp")) fail("Linux capture source missing from dist");
 const specifiers = importedSpecifiers(dist);
 
 for (const spec of specifiers) {

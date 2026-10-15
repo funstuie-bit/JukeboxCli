@@ -1,6 +1,6 @@
 {
   "name": "jukeboxcli",
-  "version": "1.5.0",
+  "version": "1.6.0-dev.1",
   "private": true,
   "description": "Terminal music player for macOS and Linux with YouTube Music discovery, streaming, an offline library, editable queues and sharp artwork. Based on soundcli.",
   "type": "module",
@@ -37,7 +37,9 @@
     "offline"
   ],
   "author": "bairon",
-  "contributors": ["funstuie-bit"],
+  "contributors": [
+    "funstuie-bit"
+  ],
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -53,12 +55,14 @@
     "ink": "^7.0.5",
     "react": "^19.2.7",
     "string-width": "^8.2.1",
+    "yauzl": "^3.4.0",
     "youtubei.js": "^18.0.0"
   },
   "devDependencies": {
     "@inkjs/ui": "^2.0.0",
     "@types/node": "^25.9.2",
     "@types/react": "^19.2.17",
+    "@types/yauzl": "^3.4.0",
     "ink-testing-library": "^4.0.0",
     "tsup": "^8.5.1",
     "tsx": "^4.22.4",

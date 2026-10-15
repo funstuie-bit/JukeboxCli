@@ -168,3 +168,12 @@ The installer and prepublish check exercise 600 packaged-runtime redraws. This
 fix removes a demonstrated unbounded retention path, but does not certify that
 all causes of long-session memory growth are resolved. Long playback/visualiser
 soaks and Settings → Session diagnostics remain useful follow-up evidence.
+
+## Source preview 1.6.0-dev.1
+
+Implemented all five follow-up items: ZIP/folder pack imports, Original/En D
+optional downloads, player mouse controls, mpv-only Linux fullscreen capture and
+bounded memory trends. [Usage and acceptance](visualiser-and-diagnostics.md).
+Native frontend build revision4 adds per-process PulseAudio monitoring and parent
+lifetime cleanup. Reinstall to rebuild it. Stable release/Homebrew remain1.5.0;
+no new release tag is implied by the source preview.

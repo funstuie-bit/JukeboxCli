@@ -81,14 +81,14 @@ Packs live under the profile's data directory, normally
 Pinned archives are SHA-256 checked before extraction. Nested preset names are
 flattened with collision-safe names; texture basenames are retained. The launch
 configuration sets both the Qt playlist and the core texture/preset search path.
-Missing or incomplete extras fall back to Classic with a visible message.
+Missing Cream falls back to Classic with a visible message. Missing imported or
+new catalogue packs ask you to choose/download another pack.
 
 projectM 3 cannot render every MilkDrop shader identically to newer engines.
 If a preset is blank or malformed, press `Ctrl+R` in projectM to skip it or select
-Classic in JukeboxCli. Fullscreen uses the active system audio monitor; unrelated
-audio can also drive effects. An open projectM window must be closed before pack
-changes apply. Importing arbitrary user archives and a larger pack catalogue are
-not implemented in this first optional-download workflow.
+Classic in JukeboxCli. An open projectM window must be closed before pack changes
+apply. Source preview 1.6.0-dev.1 adds ZIP/folder imports, Original/En D downloads
+and mpv-only audio capture. See the [new pack and audio guide](visualiser-and-diagnostics.md).
 
 ## Provenance
 
