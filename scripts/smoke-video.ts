@@ -67,8 +67,19 @@ try {
       assert.deepEqual(await get("options/audio-files"), []);
     } else { assert(await get("vid")); assert(await get("aid")); }
   }
-  await playback.togglePause(); await wait(1400); await playback.togglePause();
+  await playback.togglePause();
+  // Network HLS chunks can take longer than a local fixture to fill the cache.
+  // Wait for decoded progress, with a hard bound, rather than a fixed 1.4s nap.
+  const deadline = Date.now() + 15_000;
+  while (Date.now() < deadline) {
+    if (Number(await get("time-pos")) > 2.5 && Number(await get("audio-pts")) > 2.5) break;
+    await wait(200);
+  }
+  await playback.togglePause();
   assert(Number(await get("time-pos")) > 2.5, "Video playback clock must advance");
+  assert(Number(await get("audio-pts")) > 2.5, "Decoded audio clock must advance too");
+  const output = await get("audio-out-params") as { samplerate?: number } | undefined;
+  assert(output && Number(output.samplerate) > 0, "Audio output must be configured, not just a selected track");
   assert.equal(await get("volume"), 0);
   console.log(`PASS: ${online ? "YouTube" : "offline separate-stream"} video/audio/video, one mpv, retained position/queue, muted playback`);
 } catch (error) {

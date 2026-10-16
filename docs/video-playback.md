@@ -1,7 +1,7 @@
 # Audio and video playback
 
-Available in JukeboxCli 1.6.1 on Mac and Linux, including the Mac Homebrew tap.
-Version 1.6.1 fixes YouTube playback when picture and sound are separate streams.
+Available in JukeboxCli 1.6.2 on Mac and Linux, including the Mac Homebrew tap.
+Separate video/audio streaming arrived in 1.6.1; 1.6.2 fixes missing HLS soundtracks.
 
 Choose **YouTube Videos** in the sidebar or press **Y** (Shift+y) outside a text
 field. On first visit the search field is ready to type into. Submit a query,
@@ -69,11 +69,22 @@ and bounded; a paired video's cache expires when either link expires. A failed
 load refreshes both links once. Sources requiring conflicting HTTP headers for
 their picture and sound are refused explicitly.
 
+Version 1.6.2 retains selected HLS audio even when yt-dlp omits its codec name.
+If mpv's video playlist load loses the external soundtrack, JukeboxCli explicitly
+attaches it to the same player. On the existing single YouTube playback retry,
+HLS audio is preferred where available to avoid repeatedly opening a blocked
+direct-audio link. Configured cookies are retained; there is no anonymous fallback.
+Changing cookie selection clears cached stream links. Cookie-read errors are
+reported separately from source blocking. Browser selection does not prove login
+state or guarantee access to every video.
+
 Developers can run `npx tsx scripts/smoke-video.ts` for an isolated, muted test
 using generated separate-stream files. Add a public YouTube URL to test the real
 extractor and mpv. The script checks video/audio/video switching, one player
 process, retained position/queue and cleanup. It uses system yt-dlp, an isolated
 profile and no browser cookies; it never modifies the user's music or settings.
+It also checks the decoded audio clock and configured audio output. This is
+muted acceptance, not a claim about physical speakers or system volume settings.
 
 The 1.6.1 playback implementation passed that check on Apple Silicon macOS using generated
 separate-stream files and a public YouTube video that failed in 1.6.0. Both video

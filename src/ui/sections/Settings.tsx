@@ -32,6 +32,8 @@ import { nextSpectrumMode, spectrumModeLabel } from "../../player/spectrum";
 import {
   detectBrowserProfiles,
   browserCookieArg,
+  validBrowserCookieArg,
+  validateCookiesFile,
   type BrowserProfile,
 } from "../../config/cookies";
 import {
@@ -77,6 +79,8 @@ type Mode =
   | "wipe-all"
   | "format"
   | "cookies"
+  | "cookies-file"
+  | "cookies-browser"
   | "pacing"
   | "ytdlp"
   | "import"
@@ -239,7 +243,7 @@ export function Settings() {
     { value: "appearance", name: "Player appearance", detail: `${playerThemeLabel(config.playerTheme)} · visualizer ${config.visualizerMode ?? "classic"}` },
     { value: "diagnostics", name: "Session diagnostics", detail: "Read errors · export a sanitised report" },
     { value: "genres", name: "Scan genre tags", detail: "Read local tags without changing audio" },
-    { value: "controls", name: "Keyboard and mouse", detail: "Optional j/k navigation and mouse controls" },
+    { value: "controls", name: "Keyboard and mouse", detail: config.mouseMode === "click" ? "Mouse: click · left plays, right opens actions" : `Mouse: ${config.mouseMode ?? "wheel"} · choose click to enable left/right actions` },
   ];
 
   function openSetting(v: Mode | "open-folder"): void {
@@ -256,13 +260,14 @@ export function Settings() {
     if (v === "cookies") {
       setCookiesError(null);
       setProfilesLoading(true);
-      void detectBrowserProfiles()
+      void detectBrowserProfiles(undefined, undefined, undefined, setCookiesError)
         .then((profiles) => {
           setBrowserProfiles(profiles);
           setProfilesLoading(false);
         })
         .catch(() => {
           setBrowserProfiles([]);
+          setCookiesError("Could not inspect browser profiles. Choose a browser manually or a cookies file.");
           setProfilesLoading(false);
         });
     }
@@ -312,6 +317,7 @@ export function Settings() {
     mode === "soundcloud" ||
     mode === "spotify" ||
     mode === "folder" ||
+    mode === "cookies-file" || mode === "cookies-browser" ||
     mode === "moving" ||
     mode === "pacing" || mode === "theme-editor" || mode === "shortcuts" || (mode === "visualizer-install" && visualizerBusy);
   useEffect(() => {
@@ -325,7 +331,7 @@ export function Settings() {
     },
     // While a conversion runs, esc belongs to the run page (stop), not to
     // navigating away from the summary that is about to appear.
-    { isActive: inSubPage && mode !== "theme-editor" && mode !== "shortcuts" && mode !== "preset-packs" && mode !== "moving" && mode !== "visualizer-install" && !(mode === "convert-run" && convertRunning) },
+    { isActive: inSubPage && mode !== "cookies-file" && mode !== "cookies-browser" && mode !== "theme-editor" && mode !== "shortcuts" && mode !== "preset-packs" && mode !== "moving" && mode !== "visualizer-install" && !(mode === "convert-run" && convertRunning) },
   );
 
   // Hooks must run on every render, including the menu and other sub-pages.
@@ -518,7 +524,7 @@ export function Settings() {
   if (mode === "controls") return frame("Keyboard and mouse", <SettingsChoices focused={focused}
     height={Math.max(3, listRows - 4)} value={choiceFocus.controls}
     onFocus={value => setChoiceFocus(previous => ({ ...previous, controls: value }))}
-    title="Left-click plays / opens; right-click shows actions. Shift-drag selects terminal text."
+    title={config.mouseMode === "click" ? "Left-click plays / opens; right-click shows actions. Shift-drag selects terminal text." : "Clicks are disabled. Choose Mouse: click below to enable left/right actions; wheel only scrolls."}
     options={[
       { value: "vim", label: `Vim-style j/k navigation: ${config.vimNavigation ? "on" : "off"} · Space pauses` },
       { value: "mouse", label: `Mouse: ${config.mouseMode ?? "wheel"} (off / wheel / click)` },
@@ -799,6 +805,31 @@ export function Settings() {
   }
 
   // ─── Cookies ───────────────────────────────────────────────────────
+  if (mode === "cookies-file" || mode === "cookies-browser") {
+    const browser = mode === "cookies-browser";
+    return frame("Cookies", <Box flexDirection="column">
+      <TextInputField key={mode}
+        title={browser ? "Browser / profile" : "Cookies file path"}
+        hint={browser ? "Use firefox or chrome; optional :profile or :/full/profile/path. Checked by yt-dlp when playing." : "Paste a path to a Netscape cookies.txt file"}
+        placeholder={browser ? "firefox" : "~/cookies.txt"}
+        defaultValue={browser ? config.cookiesFromBrowser ?? "" : config.cookiesFile ?? ""}
+        focused={focused}
+        onSubmit={async value => {
+          if (browser && !validBrowserCookieArg(value)) {
+            setCookiesError("Choose firefox, chrome, chromium, edge, brave or safari, optionally followed by :profile/path."); return;
+          }
+          const file = browser ? undefined : expandTilde(value);
+          if (file && !(await validateCookiesFile(file))) {
+            setCookiesError("Could not read a Netscape cookies file at that path."); return;
+          }
+          setConfig({ ...config, cookiesFromBrowser: browser ? value : undefined, cookiesFile: file || undefined });
+          setCookiesError(null); setMode("menu");
+        }}
+        onCancel={() => { setCookiesError(null); setMode("cookies"); }}
+      />
+      {cookiesError ? <Text color={COLOR.bad}>{cookiesError}</Text> : null}
+    </Box>);
+  }
   if (mode === "cookies") {
     // Build the options for the cookies sub-page.
     const cookieOptions: { label: string; value: string }[] = [];
@@ -813,6 +844,13 @@ export function Settings() {
       }
     }
 
+    // Automatic selectors bypass profile enumeration, but never authenticate
+    // until the user explicitly plays/downloads with the selected browser.
+    cookieOptions.push(
+      { label: "Firefox · automatic profile", value: "browser:firefox" },
+      { label: "Google Chrome · automatic profile", value: "browser:chrome" },
+      { label: "Enter browser / profile…", value: "manual-browser" },
+    );
     // Manual cookies file option
     cookieOptions.push({
       label: "Choose cookies file…",
@@ -827,51 +865,6 @@ export function Settings() {
       });
     }
 
-    // No browser profiles detected: show a message and file path entry inline
-    if (!profilesLoading && browserProfiles.length === 0) {
-      return frame(
-        "Cookies",
-        <Box flexDirection="column">
-          <Box marginBottom={1}>
-            <Text dimColor>
-              {`${ICON.dot} No browser profiles detected.`}
-            </Text>
-          </Box>
-          {config.cookiesFromBrowser || config.cookiesFile ? (
-            <Box marginBottom={1}>
-              <Text color={COLOR.alt}>
-                {config.cookiesFromBrowser
-                  ? `Browser: ${config.cookiesFromBrowser}`
-                  : `File: ${truncate(config.cookiesFile ?? "", 40)}`}
-              </Text>
-            </Box>
-          ) : null}
-          <TextInputField
-            title="Cookies file path"
-            hint="Paste a path to a Netscape cookies.txt file"
-            placeholder="~/cookies.txt"
-            defaultValue={config.cookiesFile ?? ""}
-            focused={focused}
-            onSubmit={(v) => {
-              setConfig({
-                ...config,
-                cookiesFile: v || undefined,
-                cookiesFromBrowser: undefined,
-              });
-              setMode("menu");
-            }}
-            onCancel={() => setMode("menu")}
-          />
-          {cookiesError && (
-            <Box marginTop={1}>
-              <Text color={COLOR.bad}>{cookiesError}</Text>
-            </Box>
-          )}
-        </Box>,
-      );
-    }
-
-    // Browser profiles detected: show as a SelectField
     if (profilesLoading) {
       return frame(
         "Cookies",
@@ -884,6 +877,9 @@ export function Settings() {
     return frame(
       "Cookies",
       <Box flexDirection="column">
+        <Text>Choose the browser signed into YouTube. yt-dlp checks cookies when you play or download.</Text>
+        {browserProfiles.length === 0 ? <Text dimColor>No profiles detected automatically. Try a browser below or enter its profile path.</Text> : null}
+        {cookiesError ? <Text color={COLOR.bad}>{cookiesError}</Text> : null}
         {config.cookiesFromBrowser || config.cookiesFile ? (
           <Box marginBottom={1}>
             <Text color={COLOR.alt}>
@@ -899,8 +895,11 @@ export function Settings() {
           focused={focused}
           onSelect={(v) => {
             if (v === "file") {
-              // Switch to the file-entry mode by re-rendering with no profiles
-              setBrowserProfiles([]);
+              setCookiesError(null); setMode("cookies-file");
+              return;
+            }
+            if (v === "manual-browser") {
+              setCookiesError(null); setMode("cookies-browser");
               return;
             }
             if (v === "clear") {

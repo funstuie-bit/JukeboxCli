@@ -1,8 +1,8 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { promises as fs } from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { browserCookieArg, detectBrowserProfiles, linuxChromiumKeyring, withDetectedLinuxKeyring } from "../src/config/cookies";
+import { browserCookieArg, detectBrowserProfiles, linuxChromiumKeyring, withDetectedLinuxKeyring, validBrowserCookieArg } from "../src/config/cookies";
 
 /**
  * Firefox profile detection: only profiles that actually hold a cookie
@@ -106,4 +106,51 @@ describe("detectBrowserProfiles: Linux Chromium browsers", () => {
       expect(browserCookieArg(found!)).toBe("chromium+gnomekeyring:Default");
     } finally { await fs.rm(base, { recursive: true, force: true }); }
   });
+});
+
+it("finds numbered, developer, ESR and custom-named Firefox profiles without offering empty stubs", async () => {
+  const home = await fs.mkdtemp(path.join(os.tmpdir(), "jukeboxcli-firefox-"));
+  const root = path.join(home, "Library/Application Support/Firefox/Profiles");
+  const names = ["abc.default-release-1", "abc.dev-edition-default", "abc.default-esr", "abc.My music"];
+  try {
+    for (const name of [...names, "empty.default"]) {
+      await fs.mkdir(path.join(root, name), {recursive:true});
+      if (name !== "empty.default") await fs.writeFile(path.join(root, name, "cookies.sqlite"), "fixture");
+    }
+    expect((await detectBrowserProfiles("darwin", home)).map(p => p.profileName).sort()).toEqual(names.sort());
+  } finally { await fs.rm(home, { recursive: true, force: true }); }
+});
+
+it.each(["darwin", "linux"] as const)("reads custom %s Firefox profiles.ini paths and deduplicates existing profiles", async platform => {
+  const home = await fs.mkdtemp(path.join(os.tmpdir(), "jukeboxcli-firefox-ini-"));
+  const root = path.join(home, platform === "darwin" ? "Library/Application Support/Firefox" : ".mozilla/firefox");
+  const normal = path.join(root, platform === "darwin" ? "Profiles/regular.default-release" : "regular.default-release");
+  const custom = path.join(home, "Browser Profiles/Work profile");
+  try {
+    for (const profile of [normal, custom]) {
+      await fs.mkdir(profile, { recursive: true }); await fs.writeFile(path.join(profile, "cookies.sqlite"), "fixture");
+    }
+    await fs.writeFile(path.join(root, "profiles.ini"), `[Profile0]\nName=Regular\nIsRelative=1\nPath=${path.relative(root, normal)}\n\n[Profile1]\nName=Work\nIsRelative=0\nPath=${custom}\n`);
+    const found = await detectBrowserProfiles(platform, home, null);
+    expect(found).toHaveLength(2);
+    const external = found.find(p => p.profilePath === custom)!;
+    expect(external.label).toBe("Firefox · Work");
+    expect(browserCookieArg(external)).toBe(`firefox:${custom}`);
+  } finally { await fs.rm(home, { recursive: true, force: true }); }
+});
+
+it("reports denied profile access without exposing a home path", async () => {
+  const denied = vi.spyOn(fs, "readdir").mockRejectedValue(Object.assign(Error("private-path"), { code: "EACCES" }));
+  const warn = vi.fn();
+  try {
+    await detectBrowserProfiles("darwin", "/nonexistent-cookie-test-home", null, warn);
+    expect(warn).toHaveBeenCalled();
+    expect(warn.mock.calls.flat().join(" ")).toContain("Access to Firefox profiles was denied");
+    expect(warn.mock.calls.flat().join(" ")).not.toMatch(/private-path|nonexistent-cookie-test-home/);
+  } finally { denied.mockRestore(); }
+});
+
+it("accepts explicit browser selectors and rejects flags or control characters", () => {
+  for (const selector of ["firefox", "chrome", "firefox:/path with spaces/profile", "chrome:Profile 1", "chromium+gnomekeyring:Default"]) expect(validBrowserCookieArg(selector)).toBe(true);
+  for (const selector of ["", "--exec=bad", "unknown:profile", "firefox\n--exec=bad", "firefox:"]) expect(validBrowserCookieArg(selector)).toBe(false);
 });

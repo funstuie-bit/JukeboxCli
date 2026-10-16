@@ -116,6 +116,12 @@ clears that option when no separate sound is needed. Session/history metadata
 does not include either signed URL. Fixed `StreamResolutionError` reasons pass
 through the controller; arbitrary extractor/mpv text never enters player errors.
 
+In 1.6.2, selected HLS audio may have an unknown codec; it is still retained.
+After a video load, missing external audio is explicitly selected with audio-add
+in the same process. Attachment has a bounded network timeout; failures retain a
+safe reason and use the existing single fresh-link retry. YouTube retries prefer
+an HLS soundtrack where available. Cookie selection changes clear cached links.
+
 `playerLayout` splits at 86 content columns/16 body rows; smaller views stack.
 Queue formatting measures terminal cells, not JS string length. Explicit player
 colours avoid inheriting low-contrast terminal defaults. Art and waveform load

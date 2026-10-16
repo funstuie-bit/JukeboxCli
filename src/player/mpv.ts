@@ -4,7 +4,7 @@ import net from "node:net";
 import os from "node:os";
 import path from "node:path";
 import fs from "node:fs";
-import type { ResolvedMedia } from "./media";
+import { StreamResolutionError, type ResolvedMedia } from "./media";
 import { mediaAction, mediaBindings, MEDIA_SECTION } from "./media-keys";
 import { BANDS, BandMeter, spectrumGraph, visualizerEnabled } from "./spectrum";
 
@@ -315,22 +315,22 @@ export class MpvPlayer extends EventEmitter {
   }
 
   /** Low-level write without waiting on the start handshake. */
-  private write(command: unknown[]): Promise<unknown> {
+  private write(command: unknown[], timeoutMs = 5000): Promise<unknown> {
     return new Promise((resolve, reject) => {
       if (!this.sock) {
         reject(new Error("mpv not connected"));
         return;
       }
       const id = this.reqId++;
-      const timer = setTimeout(() => { this.pending.delete(id); reject(new Error("mpv command timed out")); }, 5000);
+      const timer = setTimeout(() => { this.pending.delete(id); reject(new Error("mpv command timed out")); }, timeoutMs);
       this.pending.set(id, { resolve, reject, timer });
       this.sock.write(JSON.stringify({ command, request_id: id }) + "\n");
     });
   }
 
-  async command(command: unknown[]): Promise<unknown> {
+  async command(command: unknown[], timeoutMs = 5000): Promise<unknown> {
     await this.ensureStarted();
-    return this.write(command);
+    return this.write(command, timeoutMs);
   }
 
   async loadFile(file: string, startPaused = false): Promise<void> {
@@ -373,6 +373,15 @@ export class MpvPlayer extends EventEmitter {
       });
       try {
         await Promise.all([this.command(this.mediaCommand(media, "replace")), ready]);
+        if (epoch !== this.loadEpoch) throw new Error("mpv load cancelled");
+        // Some HLS loads discard the loadfile external-audio option while
+        // resolving the video playlist. Attach the soundtrack explicitly only
+        // if it was not selected; don't create a duplicate audio track.
+        if (media.mode === "video" && media.audioUrl && !(await this.command(["get_property", "aid"]))) {
+          if (epoch !== this.loadEpoch) throw new Error("mpv load cancelled");
+          try { await this.command(["audio-add", media.audioUrl, "select"], 20_000); }
+          catch { throw new StreamResolutionError("no-audio"); }
+        }
       } finally {
         clearTimeout(timer!);
         this.off("loaded", loaded!);

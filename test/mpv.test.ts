@@ -14,6 +14,33 @@ describe("MpvPlayer idle-command gating", () => {
   });
 });
 
+it.each([false, 1])("repairs missing HLS external audio only when aid is %s", async aid => {
+  const player = new MpvPlayer("/no/such/mpv/binary");
+  const command = vi.spyOn(player, "command").mockImplementation(async args => {
+    if (args[0] === "loadfile") queueMicrotask(() => player.emit("loaded"));
+    if (args[0] === "get_property" && args[1] === "aid") return aid;
+  });
+  try {
+    await player.loadMedia({ url: "https://cdn.example/video.m3u8", audioUrl: "https://cdn.example/audio?sig=ephemeral", mode: "video", expiresAt: Infinity }, true);
+    const additions = command.mock.calls.filter(([args]) => args[0] === "audio-add");
+    expect(additions).toHaveLength(aid ? 0 : 1);
+    if (!aid) expect(additions[0]).toEqual([["audio-add", "https://cdn.example/audio?sig=ephemeral", "select"], 20_000]);
+    expect(command.mock.calls[0]![0]).toEqual(["set_property", "pause", true]);
+  } finally { player.quit(); }
+});
+
+it("does not hide an external soundtrack attachment failure", async () => {
+  const player = new MpvPlayer("/no/such/mpv/binary");
+  vi.spyOn(player, "command").mockImplementation(async args => {
+    if (args[0] === "loadfile") queueMicrotask(() => player.emit("loaded"));
+    if (args[0] === "get_property") return false;
+    if (args[0] === "audio-add") throw Error("error running command");
+  });
+  try {
+    await expect(player.loadMedia({ url: "https://cdn.example/video.m3u8", audioUrl: "https://cdn.example/audio", mode: "video", expiresAt: Infinity })).rejects.toThrow("separate audio stream");
+  } finally { player.quit(); }
+});
+
 it("loads separate audio with video and clears external audio on the next audio or combined load", async () => {
   const player = new MpvPlayer("/no/such/mpv/binary");
   const command = vi.spyOn(player, "command").mockImplementation(async args => {

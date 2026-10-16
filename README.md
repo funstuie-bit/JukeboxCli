@@ -21,10 +21,10 @@ keeps the lot in one editable queue. Streams stay streams unless you choose to s
 them. There are lyrics, cover artwork and live visualisers too, with optional
 fullscreen MilkDrop effects on Mac and Linux.
 
-Version **1.6.1** fixes YouTube videos whose picture and sound are
-separate streams. Both play through the existing mpv window, and video failures
-now explain format, cookie or connection problems. Available from source and
-Homebrew on Mac, and from source on Linux.
+Version **1.6.2** fixes more cases of YouTube video playing without sound,
+including HLS soundtracks. Browser cookies have broader Firefox detection and
+automatic/manual profile choices when detection finds nothing. Available from
+source and Homebrew on Mac, and from source on Linux.
 
 Version **1.6.0** gives **YouTube Videos its own sidebar section**.
 Press **Y** (Shift+y) to open it, type a search and press Enter. On the results,
@@ -161,6 +161,11 @@ This is a text preview, so it also works in terminals without image support.
 
 ### Main controls
 
+**Mouse clicks are opt-in.** Open **9 Settings → Keyboard and mouse → Mouse**
+and choose **click** for left-click play/open and right-click actions. The default
+**wheel** setting scrolls only; **off** disables mouse input. Shift-drag selects
+terminal text in click mode.
+
 Listen to [Studay FM](https://www.studayfm.com/): press
 `8`, then `S` for Studay FM, StuLoFiDay, Yacht Zone, Tokyo Jazz and C'est Magnifistu.
 You can also paste the website with `R` to find all five feeds. Enter plays;
@@ -245,12 +250,12 @@ results stay temporary until you explicitly save one with **f**.
 
 ## Status and limits
 
-**Current release: [1.6.1](https://github.com/funstuie-bit/JukeboxCli/releases/tag/v1.6.1).**
-Fixes separate-stream YouTube video playback and explains failures more clearly.
+**Current release: [1.6.2](https://github.com/funstuie-bit/JukeboxCli/releases/tag/v1.6.2).**
+Fixes missing YouTube video sound and improves browser-cookie selection.
 Includes 1.6.0's video browsing, saved searches, thumbnail preview, audio/video
 menus and mouse controls, plus Linux preset imports and isolated fullscreen audio.
 Restart after updating; music and settings are kept.
-[Release notes](docs/releases/1.6.1.md).
+[Release notes](docs/releases/1.6.2.md).
 [Changelog](CHANGELOG.md).
 
 Automated install checks run on Apple Silicon and x64 Linux. Intel Macs and other
@@ -429,6 +434,16 @@ cd JukeboxCli
 Choose the audio format, quality, output folder, delays and retry count. You can
 use cookies from your browser or a Netscape-format `cookies.txt` file.
 
+In **9 Settings → Cookies**, choose the profile signed into YouTube. Firefox
+numbered, Developer Edition, ESR and custom profiles are supported. If none are
+detected, **Firefox / Google Chrome · automatic profile** lets yt-dlp locate one,
+or choose **Enter browser / profile** (for example `firefox:/path/to/profile`).
+Automatic selection may pick a different profile from the one you signed into;
+use an explicit profile when needed. Detection checks profile locations, not
+login state. yt-dlp reads cookies only when you explicitly play or download.
+An access/decryption error may require terminal permissions or another browser.
+Cookie selection is private and changing it invalidates cached stream links.
+
 ```sh
 jukeboxcli --format mp3 --cookies-from-browser chrome:Default "https://..."
 jukeboxcli --output-dir ~/Music/MyLibrary --quality 5 @somehandle
@@ -546,7 +561,7 @@ Original / En D downloads, plus fullscreen audio isolated to JukeboxCli by defau
 Click mode adds player transport, seek and volume controls on Mac and Linux.
 Session diagnostics records local memory trends once a minute. See
 [setup, controls and limits](docs/visualiser-and-diagnostics.md).
-Version 1.6.1 is available from source and the Homebrew tap.
+Version 1.6.2 is available from source and the Homebrew tap.
 
 Packaged startup uses React production mode to avoid retaining development render
 timing records during long sessions. Linux and macOS share the same release;

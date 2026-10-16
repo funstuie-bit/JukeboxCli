@@ -1,6 +1,14 @@
 # Roadmap
 
-## Current release — 1.6.1
+## Current release — 1.6.2
+
+- [x] Retain HLS audio selections with unknown codec and repair missing external audio.
+- [x] Try an HLS soundtrack on the existing single YouTube playback retry.
+- [x] Broaden Firefox detection, provide browser/manual fallbacks and explain access errors.
+- [x] Clear stream caches when cookie selection changes and distinguish cookie-read failures.
+- [x] Explain opt-in click controls and verify actual decoded audio in the player smoke check.
+
+## Shipped in 1.6.1
 
 - [x] Play separate YouTube picture/sound streams in the existing mpv process.
 - [x] Preserve useful, safe video failure reasons instead of a blanket try-audio message.

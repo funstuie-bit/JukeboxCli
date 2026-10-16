@@ -61,8 +61,14 @@ export async function detectBrowserProfiles(
   platform: NodeJS.Platform = process.platform,
   home = os.homedir(),
   linuxKeyring: BrowserProfile["keyring"] | null = linuxChromiumKeyring(platform) ?? null,
+  reportIssue?: (message: string) => void,
 ): Promise<BrowserProfile[]> {
   const profiles: BrowserProfile[] = [];
+  const reportAccess = (error: unknown, browser: string) => {
+    if (["EACCES", "EPERM"].includes((error as NodeJS.ErrnoException)?.code ?? "")) {
+      reportIssue?.(`Access to ${browser} profiles was denied. Check terminal permissions or choose a browser manually.`);
+    }
+  };
 
   const candidates: { browser: BrowserProfile["browser"]; basePath: string; label: string }[] = platform === "darwin" ? [
     {
@@ -87,18 +93,22 @@ export async function detectBrowserProfiles(
     { browser: "brave", basePath: path.join(home, ".config/BraveSoftware/Brave-Browser"), label: "Brave" },
   ] : [];
 
-  const hasCookies = async (profilePath: string) => Promise.any([
-    fs.access(path.join(profilePath, "Cookies")),
-    fs.access(path.join(profilePath, "Network/Cookies")),
-  ]).then(() => true).catch(() => false);
+  const hasCookies = async (profilePath: string, browser: string) => {
+    for (const file of ["Cookies", "Network/Cookies"]) {
+      try { await fs.access(path.join(profilePath, file)); return true; }
+      catch (error) { reportAccess(error, browser); }
+    }
+    return false;
+  };
+  const isDirectory = (file: string) => fs.stat(file).then(stat => stat.isDirectory()).catch(() => false);
 
   for (const c of candidates) {
     try {
       const entries = await fs.readdir(c.basePath, { withFileTypes: true });
       // Default profile
       const hasDefault = entries.some(
-        (e) => e.isDirectory() && e.name === "Default",
-      ) && await hasCookies(path.join(c.basePath, "Default"));
+        (e) => e.name === "Default",
+      ) && await hasCookies(path.join(c.basePath, "Default"), c.label);
       if (hasDefault) {
         profiles.push({
           browser: c.browser,
@@ -110,7 +120,7 @@ export async function detectBrowserProfiles(
       }
       // Additional profiles (Profile 1, Profile 2, etc.)
       for (const e of entries) {
-        if (e.isDirectory() && /^Profile \d+$/.test(e.name) && await hasCookies(path.join(c.basePath, e.name))) {
+        if (/^Profile \d+$/.test(e.name) && await isDirectory(path.join(c.basePath, e.name)) && await hasCookies(path.join(c.basePath, e.name), c.label)) {
           profiles.push({
             browser: c.browser,
             profileName: e.name,
@@ -120,8 +130,8 @@ export async function detectBrowserProfiles(
           });
         }
       }
-    } catch {
-      // browser not installed
+    } catch (error) {
+      reportAccess(error, c.label);
     }
   }
 
@@ -129,35 +139,49 @@ export async function detectBrowserProfiles(
   const firefoxPath = platform === "darwin"
     ? path.join(home, "Library/Application Support/Firefox/Profiles")
     : platform === "linux" ? path.join(home, ".mozilla/firefox") : "";
-  try {
-    if (!firefoxPath) return profiles;
-    const entries = await fs.readdir(firefoxPath, { withFileTypes: true });
-    for (const e of entries) {
-      if (!e.isDirectory()) continue;
-      // .default-release is the main profile, .default is older/secondary
-      const isDefault = e.name.endsWith(".default-release") || e.name.endsWith(".default");
-      if (!isDefault) continue;
-      // A profile without a cookie database can't be used by
-      // --cookies-from-browser, so don't offer it: an empty "default"
-      // stub left behind by an old Firefox install would otherwise fail
-      // every download with "could not find firefox cookies database".
-      const hasCookiesDb = await fs
-        .access(path.join(firefoxPath, e.name, "cookies.sqlite"))
-        .then(() => true)
-        .catch(() => false);
-      if (!hasCookiesDb) continue;
+  if (!firefoxPath) return profiles;
+  const firefoxRoot = path.dirname(firefoxPath);
+  // Linux puts profiles.ini beside profile folders, rather than in a parent.
+  const iniRoot = platform === "linux" ? firefoxPath : firefoxRoot;
+  const seen = new Set<string>();
+  const addFirefox = async (profilePath: string, name = path.basename(profilePath)) => {
+    try {
+      await fs.access(path.join(profilePath, "cookies.sqlite"));
+      const canonical = await fs.realpath(profilePath);
+      if (seen.has(canonical)) return;
+      seen.add(canonical);
       profiles.push({
         browser: "firefox",
-        profileName: e.name,
-        label: `Firefox · ${e.name.replace(/\.(default-release|default)$/, "")}`,
-        profilePath: path.join(firefoxPath, e.name),
+        // yt-dlp needs an explicit path for custom profiles outside its root.
+        profileName: path.dirname(profilePath) === firefoxPath ? path.basename(profilePath) : profilePath,
+        label: `Firefox · ${name.replace(/\.(default-release(?:-\d+)?|default-esr|dev-edition-default|default)$/, "")}`,
+        profilePath,
       });
+    } catch (error) { reportAccess(error, "Firefox"); }
+  };
+  try {
+    const entries = await fs.readdir(firefoxPath, { withFileTypes: true });
+    for (const e of entries) {
+      if (e.isDirectory() || e.isSymbolicLink()) await addFirefox(path.join(firefoxPath, e.name));
     }
-  } catch {
-    // Firefox not installed
-  }
+  } catch (error) { reportAccess(error, "Firefox"); }
+  try {
+    const ini = await fs.readFile(path.join(iniRoot, "profiles.ini"), "utf8");
+    for (const section of ini.split(/^\s*\[/m)) {
+      if (!/^Profile[^\]\r\n]*\]/.test(section)) continue;
+      const values = new Map([...section.matchAll(/^([\w]+)\s*=\s*(.*?)\s*$/gm)].map(m => [m[1]!, m[2]!]));
+      const location = values.get("Path");
+      if (!location || /[\x00-\x1f]/.test(location)) continue;
+      await addFirefox(path.resolve(iniRoot, location), values.get("Name"));
+    }
+  } catch (error) { reportAccess(error, "Firefox"); }
 
   return profiles;
+}
+
+/** Validate a selector, not authentication. yt-dlp checks the chosen browser. */
+export function validBrowserCookieArg(value: string): boolean {
+  return !/[\x00-\x1f\x7f]/.test(value) && /^(chrome|chromium|firefox|edge|brave|safari)(?:\+[\w-]+)?(?::\S.*)?$/.test(value);
 }
 
 /**

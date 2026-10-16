@@ -3,7 +3,15 @@
 These features are in the app now. That doesn't mean every station, terminal
 or online service will cooperate. The limits are listed below.
 
-## Current release — 1.6.1
+## Current release — 1.6.2
+
+- Retain codec-unidentified HLS soundtracks and attach missing external audio
+  after video playlist loads. The single retry can choose HLS audio for YouTube.
+- Broader Firefox profile detection, automatic browser/manual profile choices,
+  visible access errors and stream-cache invalidation when cookies change.
+- Settings shows the active mouse mode; clicks remain an explicit opt-in.
+
+## Also included from 1.6.1
 
 - Separate YouTube video/audio streams play in the same mpv process; combined
   streams and silent videos remain supported. Mode switches retain the queue.

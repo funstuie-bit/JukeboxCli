@@ -49,6 +49,20 @@ it("retains combined and silent-video sources, and rejects audio-only video resu
   expect(resolvedMedia({ url: "https://cdn.example/silent", vcodec: "h264", acodec: "none" }, 0, "video").audioUrl).toBeUndefined();
   expect(() => resolvedMedia({ url: "https://cdn.example/audio", vcodec: "none", acodec: "opus" }, 0, "video")).toThrow("no playable video");
 });
+it("keeps the selected HLS soundtrack even when yt-dlp has not identified its audio codec", () => {
+  const info = split();
+  const audio = info.requested_formats[1]! as Record<string, unknown>;
+  delete audio.acodec; audio.protocol = "m3u8_native";
+  expect(resolvedMedia(info, 500_000, "video").audioUrl).toBe(audio.url);
+});
+it.each(["audio", "video"] as const)("prefers an HLS soundtrack on a fresh YouTube %s retry without dropping cookies", async mode => {
+  run.mockResolvedValue({ stdout: JSON.stringify({url:"https://example.com/media", title:"Video"}) });
+  const resolve = createStreamResolver(async () => ({cookiesFromBrowser:"firefox"} as any));
+  const track = trackFromUrl("https://youtu.be/abcdefghijk");
+  await resolve(track, new AbortController().signal, true, mode);
+  expect(run.mock.calls[0]![1]).toContain(mode === "video" ? "bestvideo+bestaudio[protocol^=m3u8]/bestvideo+bestaudio/best/bestvideo" : "bestaudio[protocol^=m3u8]/bestaudio/best");
+  expect(run.mock.calls[0]![1]).toEqual(expect.arrayContaining(["--cookies-from-browser", "firefox"]));
+});
 it("rejects unsafe separate URLs and conflicting per-stream headers", () => {
   const info = split(); info.requested_formats[1]!.url = "file:///private/audio-secret";
   expect(() => resolvedMedia(info, 0, "video")).toThrow(StreamResolutionError);
@@ -61,11 +75,25 @@ it.each([
   ["ERROR: HTTP Error 403 https://cdn.example/?sig=private", "browser cookies"],
   ["ERROR: Private video https://cdn.example/?sig=private", "unavailable"],
   ["ERROR: operation timed out https://cdn.example/?sig=private", "timed out"],
+  ["ERROR: could not find firefox cookies database in private-profile-path", "Could not read the selected browser cookies"],
+  ["ERROR: failed to decrypt cookies private-profile-path", "Could not read the selected browser cookies"],
 ])("reports a safe reason for %s", async (stderr, message) => {
   run.mockRejectedValue({ stderr });
   const resolve = createStreamResolver(async () => ({} as any));
   const error = await resolve(trackFromUrl("https://youtu.be/abcdefghijk"), new AbortController().signal, false, "video").catch(e => e);
   expect(error).toBeInstanceOf(StreamResolutionError);
   expect(error.message).toContain(message);
-  expect(error.message).not.toMatch(/https:|sig=/);
+  expect(error.message).not.toMatch(/https:|sig=|private-profile-path/);
+});
+
+it("invalidates signed-stream caches when the selected cookies change", async () => {
+  run.mockResolvedValue({stdout:JSON.stringify({url:"https://cdn.example/media"})});
+  let cfg = {cookiesFromBrowser:"firefox"};
+  const resolve = createStreamResolver(async () => cfg as any);
+  const track = trackFromUrl("https://youtu.be/abcdefghijk"), signal = new AbortController().signal;
+  await resolve(track, signal); await resolve(track, signal);
+  expect(run).toHaveBeenCalledTimes(1);
+  cfg = {cookiesFromBrowser:"chrome"}; await resolve(track, signal);
+  expect(run).toHaveBeenCalledTimes(2);
+  expect(run.mock.calls[1]![1]).toEqual(expect.arrayContaining(["--cookies-from-browser", "chrome"]));
 });

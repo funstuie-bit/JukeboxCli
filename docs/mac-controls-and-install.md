@@ -19,8 +19,8 @@ That downloads a separate cached copy and takes effect after restarting the app;
 it never replaces Homebrew's executable. Choose System / package manager to
 switch back. `JUKEBOXCLI_SYSTEM_TOOLS=1` still keeps mpv and ffmpeg system-managed.
 
-The formula pins the `v1.6.0` source revision,
-version `1.6.0`. It does not follow every source commit, even when that
+The formula pins the `v1.6.2` source revision,
+version `1.6.2`. It does not follow every source commit, even when that
 commit has the same package version. A future release needs an explicit pin
 update; use a source install if you need the latest checkout.
 
@@ -116,6 +116,21 @@ brew list --versions jukeboxcli
 
 The explicit Homebrew path bypasses a conflicting command. Do not delete commands
 or force-overwrite links until you know which installation owns them.
+
+## Browser cookies and mouse clicks
+
+Open **9 Settings → Cookies** and choose the browser/profile signed into YouTube.
+Detection includes custom/numbered Firefox profiles and profiles.ini locations.
+If it finds nothing, use Firefox or Google Chrome's automatic-profile choice,
+or enter a browser/profile explicitly, such as `firefox:/path/to/profile`.
+Automatic selection is not login verification and may pick another profile.
+yt-dlp reads cookies when playing/downloading, not during profile enumeration.
+Access errors are shown; macOS permissions or browser decryption may still need
+attention. Never share your cookie database or exported cookies file.
+
+Open **9 Settings → Keyboard and mouse → Mouse** and choose **click** for left
+and right actions. **wheel** (the default) only scrolls; **off** disables mouse
+input. Shift-drag selects terminal text in click mode. Existing settings are kept.
 
 ## Media controls
 

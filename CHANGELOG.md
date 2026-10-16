@@ -3,6 +3,22 @@
 Release notes describe what changed in each build. For what works now and the
 remaining limits, see [feature status](FEATURES.md).
 
+## 1.6.2 — Video sound and browser cookies
+
+- Retain selected HLS soundtracks whose codec is not yet identified, and
+  explicitly attach missing external audio after the video playlist loads.
+- On the existing single YouTube playback retry, prefer an HLS soundtrack
+  where available instead of repeating a blocked direct-audio link.
+- Find numbered, Developer Edition, ESR and custom Firefox profiles, including
+  profiles.ini locations. Keep automatic Firefox/Chrome and manual profile
+  selection available even when enumeration finds nothing; explain access errors.
+- Invalidate stream links when cookie selection changes, distinguish cookie-read
+  errors from source blocking, and validate cookie-file paths before saving.
+- Show the active mouse mode in Settings and explain that wheel mode does not
+  enable clicks. Click controls remain opt-in; existing preferences are retained.
+- Strengthen real-player acceptance to check decoded audio output, not just a
+  selected track and advancing video clock.
+
 ## 1.6.1 — YouTube video playback fix
 
 - Play YouTube's separate video/audio formats through one mpv process, with

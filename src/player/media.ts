@@ -42,6 +42,7 @@ const resolutionMessages = {
   "incompatible-headers": "The source requires incompatible settings for its picture and sound. Try another result.",
   "format": "No compatible video format was returned. Update yt-dlp in Settings or try another result.",
   "blocked": "Streaming was blocked by the source. Check browser cookies in Settings or try another result.",
+  "cookies": "Could not read the selected browser cookies. Check Cookies in Settings or choose another browser/profile.",
   "unavailable": "This video is unavailable, private or restricted by the source.",
   "timeout": "Stream lookup timed out. Check your connection and try again.",
   "lookup": "Could not resolve this stream. Check your connection or try another result.",

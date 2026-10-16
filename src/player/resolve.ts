@@ -25,7 +25,9 @@ export function resolvedMedia(info: Record<string, unknown>, now = Date.now(), m
   const formats = Array.isArray(info.requested_formats)
     ? info.requested_formats.filter((f): f is Record<string, unknown> => !!f && typeof f === "object") : [];
   const video = mode === "video" ? formats.find(f => typeof f.vcodec === "string" && f.vcodec !== "none") : undefined;
-  const audio = video ? formats.find(f => typeof f.acodec === "string" && f.acodec !== "none" && f.vcodec === "none") : undefined;
+  // HLS audio selections can omit acodec until demuxing. vcodec=none still
+  // identifies the selected audio-only member; don't silently discard it.
+  const audio = video ? formats.find(f => f.vcodec === "none" && (f.acodec === undefined || (typeof f.acodec === "string" && f.acodec !== "none"))) : undefined;
   const selected = video ?? info;
   if (mode === "video" && selected.vcodec === "none") throw new StreamResolutionError("no-video");
   if (!isHttpUrl(selected.url)) throw new StreamResolutionError(selected.url ? "invalid-url" : "no-stream");
@@ -49,6 +51,7 @@ export function resolvedMedia(info: Record<string, unknown>, now = Date.now(), m
 
 export function createStreamResolver(config: () => Promise<Config>): MediaResolver {
   const cache = new Map<string, ResolvedMedia>();
+  let cookieSelection: string | undefined;
   return async (track, signal, fresh = false, mode = "audio") => {
     if (!isHttpUrl(track.streamUrl)) throw new Error("Only HTTP(S) stream links are supported.");
     signal.throwIfAborted();
@@ -56,15 +59,24 @@ export function createStreamResolver(config: () => Promise<Config>): MediaResolv
       return { url: track.streamUrl, expiresAt: Infinity };
     }
     const cacheKey = `${mode}:${track.streamUrl}`;
+    const cfg = await config();
+    signal.throwIfAborted();
+    const selectedCookies = JSON.stringify(cookieArgs(cfg));
+    if (selectedCookies !== cookieSelection) { cache.clear(); cookieSelection = selectedCookies; }
     const cached = cache.get(cacheKey);
     if (!fresh && cached && cached.expiresAt > Date.now()) return cached;
     signal.throwIfAborted();
-    const cfg = await config();
-    signal.throwIfAborted();
     try {
+      // Some YouTube direct audio links resolve successfully but return 403
+      // when opened. The existing single retry can choose HLS audio instead,
+      // without dropping configured cookies or reducing the video resolution.
+      const preferHlsAudio = fresh && track.source === "youtube";
+      const format = mode === "video"
+        ? `${preferHlsAudio ? "bestvideo+bestaudio[protocol^=m3u8]/" : ""}bestvideo+bestaudio/best/bestvideo`
+        : `${preferHlsAudio ? "bestaudio[protocol^=m3u8]/" : ""}bestaudio/best`;
       const { stdout } = await execa(resolvedYtDlpPath(), [
         "--ignore-config", "--no-warnings", "--no-playlist", "--skip-download", "--dump-single-json",
-        "--format", mode === "video" ? "bestvideo+bestaudio/best/bestvideo" : "bestaudio/best", "--socket-timeout", "15", "--retries", "1",
+        "--format", format, "--socket-timeout", "15", "--retries", "1",
         ...jsRuntimeArgs(), ...cookieArgs(cfg), "--", track.streamUrl,
       ], { env: toolEnv(), cancelSignal: signal, timeout: 45_000, maxBuffer: 8 * 1024 * 1024 });
       signal.throwIfAborted();
@@ -84,6 +96,7 @@ export function createStreamResolver(config: () => Promise<Config>): MediaResolv
       signal.throwIfAborted();
       if (error instanceof StreamResolutionError) throw error;
       const stderr = (error as { stderr?: string }).stderr ?? "";
+      if (/could not find.*cookies|could not copy.*cookies|failed to (?:decrypt|load).*cookies|could not.*decrypt|does not look like a Netscape|permission denied.*cookies/i.test(stderr)) throw new StreamResolutionError("cookies");
       if (/requested format.*not available|no video formats|only images are available/i.test(stderr)) throw new StreamResolutionError("format");
       if (/403|429|sign in|confirm.*bot|cookies|login/i.test(stderr)) {
         throw new StreamResolutionError("blocked");
