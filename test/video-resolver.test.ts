@@ -97,3 +97,27 @@ it("invalidates signed-stream caches when the selected cookies change", async ()
   expect(run).toHaveBeenCalledTimes(2);
   expect(run.mock.calls[1]![1]).toEqual(expect.arrayContaining(["--cookies-from-browser", "chrome"]));
 });
+
+it("requires an explicit anonymous retry, omits both cookie sources and keeps preferences unchanged", async () => {
+  const cfg = { cookiesFromBrowser:"firefox", cookiesFile:"/private/fixture-cookies.txt" };
+  const resolve = createStreamResolver(async () => cfg as any);
+  const track = trackFromUrl("https://youtu.be/abcdefghijk"), signal = new AbortController().signal;
+  run.mockRejectedValueOnce({stderr:"could not find firefox cookies database"});
+  await expect(resolve(track, signal)).rejects.toMatchObject({reason:"cookies"});
+  expect(run).toHaveBeenCalledTimes(1); // no silent fallback
+  run.mockResolvedValue({stdout:JSON.stringify({url:"https://cdn.example/public"})});
+  await resolve(track, signal, true, "audio", {withoutCookies:true});
+  const args = run.mock.calls[1]![1];
+  expect(args).not.toContain("--cookies-from-browser"); expect(args).not.toContain("--cookies");
+  expect(cfg).toEqual({cookiesFromBrowser:"firefox",cookiesFile:"/private/fixture-cookies.txt"});
+});
+it("keeps anonymous and configured stream caches separate", async () => {
+  run.mockImplementation(async (_tool,args) => ({stdout:JSON.stringify({url:args.includes("--cookies-from-browser") ? "https://cdn.example/auth" : "https://cdn.example/public"})}));
+  const resolve = createStreamResolver(async () => ({cookiesFromBrowser:"firefox"} as any));
+  const track = trackFromUrl("https://youtu.be/abcdefghijk"), signal = new AbortController().signal;
+  expect((await resolve(track,signal)).url).toContain("/auth");
+  expect((await resolve(track,signal,false,"audio",{withoutCookies:true})).url).toContain("/public");
+  expect((await resolve(track,signal)).url).toContain("/auth");
+  expect((await resolve(track,signal,false,"audio",{withoutCookies:true})).url).toContain("/public");
+  expect(run).toHaveBeenCalledTimes(2);
+});

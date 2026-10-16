@@ -53,7 +53,11 @@ export class StreamResolutionError extends Error {
     this.name = "StreamResolutionError";
   }
 }
-export type MediaResolver = (track: StreamTrack, signal: AbortSignal, fresh?: boolean, mode?: PlaybackMode) => Promise<ResolvedMedia>;
+export interface ResolutionOptions {
+  /** Explicit one-item retry, never a change to saved cookie preferences. */
+  withoutCookies?: boolean;
+}
+export type MediaResolver = (track: StreamTrack, signal: AbortSignal, fresh?: boolean, mode?: PlaybackMode, options?: ResolutionOptions) => Promise<ResolvedMedia>;
 
 /** Deliberate allowlist: no direct stream credentials or arbitrary input fields. */
 export function streamMetadata(t: StreamTrack): StreamTrack {

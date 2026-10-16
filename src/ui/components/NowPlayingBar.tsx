@@ -5,6 +5,7 @@ import { cleanText, formatDuration, truncate } from "../../util/format";
 import { GradientBar } from "./GradientBar";
 import { COLOR, ICON } from "../theme";
 import { isLive } from "../../player/media";
+import { MouseRow } from "./MouseRow";
 
 /** Bar width that breathes with the terminal, leaving room for the readout. */
 function barWidth(cols: number): number {
@@ -14,7 +15,7 @@ function barWidth(cols: number): number {
 }
 
 export function NowPlayingBar() {
-  const { playback, cols, mpvStatus } = useStore();
+  const { playback, cols, mpvStatus, captureMode } = useStore();
   const st = usePlayback(playback);
 
   if (!st.track) {
@@ -39,7 +40,12 @@ export function NowPlayingBar() {
   }
 
   const t = st.track;
-  if (st.error) return <Text color={COLOR.warn} wrap="truncate-end">{st.error}</Text>;
+  if (st.error) return <Box width={Math.max(10, cols - 2)}>
+    <Box flexGrow={1} minWidth={0}><Text color={COLOR.warn} wrap="truncate-end">{st.error}</Text></Box>
+    {st.cookieRetryAvailable ? <MouseRow active={captureMode === "none" && !st.loading} onClick={() => { void playback.retryWithoutCookies(); }}>
+      <Text color={COLOR.alt}> [Retry without cookies] · m → c</Text>
+    </MouseRow> : null}
+  </Box>;
   // Hard caps on top of the flexbox truncation: a single absurd title must
   // never crowd the time/volume readout off the line.
   const title = truncate(cleanText(t.title), 56);
@@ -48,6 +54,7 @@ export function NowPlayingBar() {
 
   // Small badges that only show when they're actually on, so the bar stays calm.
   const badges: string[] = [];
+  if (st.withoutCookies) badges.push("without cookies");
   if (st.shuffle) badges.push(ICON.shuffle);
   if (st.repeat === "all") badges.push(ICON.repeat);
   else if (st.repeat === "one") badges.push(`${ICON.repeat}1`);

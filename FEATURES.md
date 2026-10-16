@@ -3,7 +3,16 @@
 These features are in the app now. That doesn't mean every station, terminal
 or online service will cooperate. The limits are listed below.
 
-## Current release — 1.6.2
+## Current release — 1.7.0
+
+- Responsive Home cards for music/videos/radio/library/queue/download, listening
+  context and counts, grouped recents/stations and compact small-window choices.
+- Explicit Retry without cookies after cookie-read failures, from the error bar,
+  player c menu or Home. No silent fallback or saved preference changes; one item
+  only, including its mode switches, with separate anonymous/configured caches.
+- Offline, isolated dashboard previews; Home never starts playback or downloads.
+
+## Also included from 1.6.2
 
 - Retain codec-unidentified HLS soundtracks and attach missing external audio
   after video playlist loads. The single retry can choose HLS audio for YouTube.

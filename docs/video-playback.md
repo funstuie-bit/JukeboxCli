@@ -1,6 +1,6 @@
 # Audio and video playback
 
-Available in JukeboxCli 1.6.2 on Mac and Linux, including the Mac Homebrew tap.
+Available in JukeboxCli 1.7.0 on Mac and Linux, including the Mac Homebrew tap.
 Separate video/audio streaming arrived in 1.6.1; 1.6.2 fixes missing HLS soundtracks.
 
 Choose **YouTube Videos** in the sidebar or press **Y** (Shift+y) outside a text
@@ -78,11 +78,24 @@ Changing cookie selection clears cached stream links. Cookie-read errors are
 reported separately from source blocking. Browser selection does not prove login
 state or guarantee access to every video.
 
+After a cookie-read failure, 1.7.0 offers **Retry without cookies** on Home, the
+error bar (click mode), and Player's **c** actions menu. Nothing retries anonymously
+until you choose it. The action starts the same item in its current audio/video
+mode, retaining queue and seekable position. Saved browser/file choices don't
+change. The current item stays anonymous through mode changes/reconnects; another
+selection, next item or restart returns to configured cookies. Anonymous links
+have a separate cache and the consent is not saved in listening sessions.
+This cannot make private/restricted videos public and doesn't alter downloads.
+
 Developers can run `npx tsx scripts/smoke-video.ts` for an isolated, muted test
 using generated separate-stream files. Add a public YouTube URL to test the real
 extractor and mpv. The script checks video/audio/video switching, one player
 process, retained position/queue and cleanup. It uses system yt-dlp, an isolated
 profile and no browser cookies; it never modifies the user's music or settings.
+The optional `--cookie-retry` flag with a public URL deliberately selects a missing
+temporary Firefox profile, verifies that extraction fails first, then performs
+the explicit retry while checking unchanged preferences. It never reads a real
+browser profile. This is a developer acceptance check, not a new app CLI flag.
 It also checks the decoded audio clock and configured audio output. This is
 muted acceptance, not a claim about physical speakers or system volume settings.
 

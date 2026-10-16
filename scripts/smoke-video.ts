@@ -1,6 +1,6 @@
 // Real mpv acceptance: separate streams, mode changes, paused seek and cleanup.
 // Offline by default. Supply a public YouTube URL to exercise the real resolver.
-//   npx tsx scripts/smoke-video.ts [https://www.youtube.com/watch?v=...]
+//   npx tsx scripts/smoke-video.ts [https://www.youtube.com/watch?v=...] [--cookie-retry]
 import assert from "node:assert/strict";
 import { mkdtempSync } from "node:fs";
 import os from "node:os";
@@ -26,9 +26,13 @@ await execa("ffmpeg", ["-nostdin", "-v", "error", "-f", "lavfi", "-i",
 await execa("ffmpeg", ["-nostdin", "-v", "error", "-f", "lavfi", "-i",
   "sine=frequency=125:sample_rate=48000:duration=20", "-c:a", "pcm_s16le", sound]);
 const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
-const online = process.argv[2];
+const online = process.argv.slice(2).find(arg => !arg.startsWith("--"));
+const cookieRetry = process.argv.includes("--cookie-retry");
+assert(!cookieRetry || online, "--cookie-retry requires a public YouTube URL");
+// A missing fixture profile tests extraction failure without reading real cookies.
+const config = { ...defaultConfig, ...(cookieRetry ? { cookiesFromBrowser: `firefox:${path.join(directory, "missing-firefox-profile")}` } : {}) };
 if (online) await ensureYtDlp(undefined, "stable", "system");
-const resolver = online ? createStreamResolver(async () => defaultConfig)
+const resolver = online ? createStreamResolver(async () => config)
   : async (_track: unknown, _signal: unknown, _fresh: unknown, mode?: string) => ({
     url: mode === "video" ? picture : sound, ...(mode === "video" ? { audioUrl: sound } : {}), expiresAt: Infinity,
   });
@@ -41,6 +45,13 @@ let owned: number | undefined;
 try {
   await playback.changeVolume(-100);
   await playback.play(track, list, 0, true, false, "video", 2);
+  if (cookieRetry) {
+    assert.equal(playback.getState().cookieRetryAvailable, true, "Cookie extraction failure must offer, not perform, anonymous retry");
+    await playback.retryWithoutCookies();
+    assert.equal(playback.getState().withoutCookies, true);
+    assert.equal(config.cookiesFromBrowser, `firefox:${path.join(directory, "missing-firefox-profile")}`, "Saved cookie selection must not change");
+    if (!playback.getState().paused) await playback.togglePause();
+  }
   assert.equal(playback.getState().error, undefined);
   owned = playback.mpvProcessId;
   assert(owned);
@@ -81,7 +92,7 @@ try {
   const output = await get("audio-out-params") as { samplerate?: number } | undefined;
   assert(output && Number(output.samplerate) > 0, "Audio output must be configured, not just a selected track");
   assert.equal(await get("volume"), 0);
-  console.log(`PASS: ${online ? "YouTube" : "offline separate-stream"} video/audio/video, one mpv, retained position/queue, muted playback`);
+  console.log(`PASS: ${online ? "YouTube" : "offline separate-stream"} video/audio/video, one mpv, retained position/queue, muted playback${cookieRetry ? ", explicit cookie retry, unchanged preferences" : ""}`);
 } catch (error) {
   console.error(redactLog(error instanceof Error ? error.stack ?? error.message : String(error)));
   process.exitCode = 1;

@@ -39,6 +39,51 @@ const settle = () => new Promise(r => setTimeout(r, 5));
 beforeEach(() => { (MpvPlayer as any).current = undefined; });
 
 describe("stream playback", () => {
+  it("offers an explicit cookie retry for one item, preserving mode/position/queue without persisting consent", async () => {
+    const resolver = vi.fn(async (_track, _signal, _fresh, _mode, options) => {
+      if (!options?.withoutCookies) throw new StreamResolutionError("cookies");
+      return media("public");
+    });
+    const p = new Playback("fixture", undefined, resolver);
+    await p.retryWithoutCookies(); expect(resolver).not.toHaveBeenCalled();
+    await p.play(a, [a,b], 0, false, false, "video", 37);
+    expect(p.getState()).toMatchObject({cookieRetryAvailable:true,withoutCookies:false,mode:"video",position:37});
+    expect(resolver.mock.calls.filter(c=>c[0].id===a.id)).toHaveLength(1);
+    await p.retryWithoutCookies();
+    expect(p.getState()).toMatchObject({error:undefined,cookieRetryAvailable:false,withoutCookies:true,mode:"video",position:37,paused:false});
+    expect(p.getState().list.map(t=>t.id)).toEqual([a.id,b.id]);
+    expect(engine().mediaLoads.at(-1)).toMatchObject({mode:"video",startPosition:37});
+    expect(JSON.stringify(p.session())).not.toMatch(/withoutCookies|cookieRetryAvailable/);
+    await p.setPlaybackMode("audio");
+    expect(p.getState().withoutCookies).toBe(true);
+    await p.next();
+    expect(p.getState()).toMatchObject({track:b,withoutCookies:false,cookieRetryAvailable:true});
+    const last = resolver.mock.calls.filter(c=>c[0].id===b.id).at(-1)!;
+    expect(last[4]).toBeUndefined(); p.quit();
+  });
+  it("does not offer cookie recovery for a source restriction or a failed anonymous retry", async () => {
+    for (const reason of ["blocked", "cookies"] as const) {
+      const resolver = vi.fn(async () => { throw new StreamResolutionError(reason); });
+      const p = new Playback("fixture",undefined,resolver);
+      await p.play(a);
+      if (reason === "cookies") await p.retryWithoutCookies();
+      expect(p.getState().cookieRetryAvailable).toBe(false);
+      const count = resolver.mock.calls.length;
+      await p.retryWithoutCookies(); expect(resolver.mock.calls).toHaveLength(count); p.quit();
+    }
+  });
+  it("keeps explicit consent for repeat-one preparation of the same item", async () => {
+    const resolver = vi.fn(async (_track,_signal,_fresh,_mode,options) => {
+      if (!options?.withoutCookies) throw new StreamResolutionError("cookies");
+      return media("repeat-public");
+    });
+    const p = new Playback("fixture",undefined,resolver);
+    await p.play(a); await p.retryWithoutCookies();
+    p.cycleRepeat(); p.cycleRepeat(); await settle();
+    engine().emit("ended"); await settle();
+    expect(p.getState()).toMatchObject({track:a,withoutCookies:true,error:undefined,repeat:"one"});
+    expect(resolver.mock.calls.at(-1)![4]).toEqual({withoutCookies:true}); p.quit();
+  });
   it("preserves known duration through empty resolver and mpv reports, but accepts a real duration", async () => {
     const p = new Playback("fixture", undefined, async () => ({ ...media("a"), metadata: { title: "A", durationSec: undefined } }));
     await p.play({ ...a, durationSec: 259 });

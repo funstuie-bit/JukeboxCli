@@ -5,6 +5,7 @@ import { makeStore, makeFakePlayback } from "../scripts/fake-data";
 import { NowPlaying } from "../src/ui/views/NowPlaying";
 import { mouseEvents } from "../src/ui/mouse";
 import { trackFromUrl } from "../src/player/url";
+import { NowPlayingBar } from "../src/ui/components/NowPlayingBar";
 vi.mock("../src/player/art", () => ({ loadCoverArt: async () => null, loadWaveform: async () => null }));
 
 it("clicks transport, volume and timeline; text capture blocks clicks and unmount removes listeners", async () => {
@@ -80,4 +81,19 @@ it("keeps the queue selection and player layout when navigating and closing popu
   await press(app, "c"); await press(app, "\x1b[B"); await press(app, "\x1b[B");
   expect(app.lastFrame()).toContain("Now Playing actions");
   await press(app, "c"); expect(app.lastFrame()).toBe(before);
+});
+
+it("exposes explicit cookie recovery by player-menu keyboard and clickable error bar without saving config", async () => {
+  const track=trackFromUrl("https://youtu.be/abcdefghijk");
+  const store=makeStore({cols:140,contentWidth:138,listRows:32,region:"content",playback:makeFakePlayback({track,cookieRetryAvailable:true,error:"Could not read the selected browser cookies."})});
+  store.config.mouseMode="click"; store.setConfig=vi.fn(); store.playback.retryWithoutCookies=vi.fn(async()=>{});
+  const app=await renderReady(<StoreContext.Provider value={store}><NowPlaying embedded /></StoreContext.Provider>,140);
+  expect(app.lastFrame()).toContain("Cookie access failed"); await press(app,"c");
+  expect(app.lastFrame()).toContain("› Retry without cookies"); await press(app,"\r");
+  expect(store.playback.retryWithoutCookies).toHaveBeenCalledOnce();
+  await act(async()=>app.unmount());
+  const bar=await renderReady(<StoreContext.Provider value={store}><NowPlayingBar /></StoreContext.Provider>,140);
+  const rows=bar.lastFrame()!.split("\n"),y=rows.findIndex(line=>line.includes("[Retry without cookies]"));
+  await act(async()=>{mouseEvents.emit("press",{x:rows[y]!.indexOf("[Retry without cookies]")+1,y});});
+  expect(store.playback.retryWithoutCookies).toHaveBeenCalledTimes(2); expect(store.setConfig).not.toHaveBeenCalled();
 });

@@ -161,6 +161,7 @@ export function makeFakePlayback(
     setContinuationEnabled: () => {},
     setContinuation: () => {},
     retryContinuation: async () => {},
+    retryWithoutCookies: async () => {},
   } as unknown as Playback;
 }
 

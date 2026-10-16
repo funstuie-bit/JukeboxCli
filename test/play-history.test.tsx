@@ -51,7 +51,7 @@ it("shows and replays a stream from History and Home without adding a library fi
   const home = render(<StoreContext.Provider value={store}><Home /></StoreContext.Provider>);
   expect(home.lastFrame()).toContain("Recent · Stream fixture");
   await tick();
-  for (let i = 0; i < 4; i++) { home.stdin.write("\x1b[B"); await tick(); }
+  for (let i = 0; i < 6; i++) { home.stdin.write("\x1b[B"); await tick(); }
   home.stdin.write("\r"); await tick();
   expect(playTrack).toHaveBeenCalledWith(expect.objectContaining({ id: stream.id }));
   expect(store.library.has(stream.id)).toBe(false);

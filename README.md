@@ -21,10 +21,11 @@ keeps the lot in one editable queue. Streams stay streams unless you choose to s
 them. There are lyrics, cover artwork and live visualisers too, with optional
 fullscreen MilkDrop effects on Mac and Linux.
 
-Version **1.6.2** fixes more cases of YouTube video playing without sound,
-including HLS soundtracks. Browser cookies have broader Firefox detection and
-automatic/manual profile choices when detection finds nothing. Available from
-source and Homebrew on Mac, and from source on Linux.
+Version **1.7.0** gives Home a proper dashboard: quick-launch cards, listening
+context, recents and saved stations, with a compact layout for smaller windows.
+If browser cookies can't be read, **Retry without cookies** plays that item
+anonymously without changing your saved browser. Available from source and
+Homebrew on Mac, and from source on Linux.
 
 Version **1.6.0** gives **YouTube Videos its own sidebar section**.
 Press **Y** (Shift+y) to open it, type a search and press Enter. On the results,
@@ -140,6 +141,19 @@ artwork colours, j/k navigation, mouse play/open controls and Discover paginatio
 JukeboxCli opens on Home. Search online, browse internet radio or open your local
 music. You don't need a library or a sign-in to get started.
 
+### Home dashboard
+
+Home puts music search, YouTube videos, radio, local music, the queue and downloads
+in quick-launch cards when there's room. It shows current listening and local/
+queue/station counts, with recent plays and saved stations below. Use arrows and
+Enter, or click in mouse-click mode. Right-click a recent item/station for play
+and queue actions. The jukebox drawing stays; small windows use a compact list.
+Opening Home doesn't fetch results, start music or download anything.
+
+![Home dashboard with fictional offline fixture data](preview/home-dashboard.svg)
+
+This is a generated layout preview, not a real music collection.
+
 ### Library browsing
 
 Browse by song, artist, album or genre, including Homebrew installs.
@@ -250,12 +264,13 @@ results stay temporary until you explicitly save one with **f**.
 
 ## Status and limits
 
-**Current release: [1.6.2](https://github.com/funstuie-bit/JukeboxCli/releases/tag/v1.6.2).**
-Fixes missing YouTube video sound and improves browser-cookie selection.
+**Current release: [1.7.0](https://github.com/funstuie-bit/JukeboxCli/releases/tag/v1.7.0).**
+Adds the Home dashboard and explicit cookie-free playback recovery. Includes
+1.6.2's video soundtrack fixes and broader browser-cookie selection.
 Includes 1.6.0's video browsing, saved searches, thumbnail preview, audio/video
 menus and mouse controls, plus Linux preset imports and isolated fullscreen audio.
 Restart after updating; music and settings are kept.
-[Release notes](docs/releases/1.6.2.md).
+[Release notes](docs/releases/1.7.0.md).
 [Changelog](CHANGELOG.md).
 
 Automated install checks run on Apple Silicon and x64 Linux. Intel Macs and other
@@ -444,6 +459,15 @@ login state. yt-dlp reads cookies only when you explicitly play or download.
 An access/decryption error may require terminal permissions or another browser.
 Cookie selection is private and changing it invalidates cached stream links.
 
+Public videos often work without cookies. If configured cookie extraction fails,
+choose **Retry without cookies** on Home, click its error-bar action, or press
+**m**, then **c** for the player action. This explicitly retries the current item
+without cookies; it keeps your queue, mode and position where seekable, and
+doesn't save a Settings change. Mode switches keep that item's choice. The next
+item/new selection or app restart uses your configured cookies again. Restricted
+videos may still fail anonymously. Downloads retain their own configured cookies;
+there is no silent anonymous fallback.
+
 ```sh
 jukeboxcli --format mp3 --cookies-from-browser chrome:Default "https://..."
 jukeboxcli --output-dir ~/Music/MyLibrary --quality 5 @somehandle
@@ -561,7 +585,7 @@ Original / En D downloads, plus fullscreen audio isolated to JukeboxCli by defau
 Click mode adds player transport, seek and volume controls on Mac and Linux.
 Session diagnostics records local memory trends once a minute. See
 [setup, controls and limits](docs/visualiser-and-diagnostics.md).
-Version 1.6.2 is available from source and the Homebrew tap.
+Version 1.7.0 is available from source and the Homebrew tap.
 
 Packaged startup uses React production mode to avoid retaining development render
 timing records during long sessions. Linux and macOS share the same release;

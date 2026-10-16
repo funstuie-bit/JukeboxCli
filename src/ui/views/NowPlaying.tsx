@@ -154,7 +154,7 @@ export function NowPlaying({ embedded = false, onDownload = () => {} }: { embedd
       <MouseRow active={clickable && !!t} onClick={() => { void store.playback.togglePause(); }}><Text color={COLOR.alt}>[{st.paused ? "Play" : "Pause"}] </Text></MouseRow>
       <MouseRow active={clickable && !!t} onClick={() => { void store.playback.next(); }}><Text color={COLOR.alt}>[Next]</Text></MouseRow>
     </Box> : <Text color={COLOR.muted} wrap="truncate-end">{`${!t ? "Stopped" : st.loading ? "Loading" : st.paused ? "Paused" : "Playing"}${clean ? `${st.shuffle ? " · shuffled" : ""}${st.repeat !== "off" ? ` · repeat ${st.repeat}` : ""}` : ` · shuffle ${st.shuffle ? "on" : "off"} · repeat ${st.repeat}`}`}</Text>}
-    <Text color={st.error ? COLOR.warn : COLOR.muted} wrap="truncate-end">{st.error || fullscreenStatus || (st.loading ? "Loading…" : st.engine === "external" && t ? "Playing in your default app" : t ? `${isStream(t) ? "Streaming · not in Library" : "Saved locally"} · c actions · ${shortcutLabel("W", store.config.keybindings, "player")} ${st.mode === "video" ? "audio" : "video"}${st.preloading ? " · preparing next…" : st.nextReady ? " · next prepared" : ""}` : `${shortcutLabel("m", store.config.keybindings)} closes this screen`)}</Text>
+    <Text color={st.error ? COLOR.warn : COLOR.muted} wrap="truncate-end">{st.cookieRetryAvailable ? "Cookie access failed · c → Retry without cookies" : st.error || fullscreenStatus || (st.loading ? "Loading…" : st.engine === "external" && t ? "Playing in your default app" : t ? `${isStream(t) ? "Streaming · not in Library" : "Saved locally"}${st.withoutCookies ? " · without cookies (this item)" : ""} · c actions · ${shortcutLabel("W", store.config.keybindings, "player")} ${st.mode === "video" ? "audio" : "video"}${st.preloading ? " · preparing next…" : st.nextReady ? " · next prepared" : ""}` : `${shortcutLabel("m", store.config.keybindings)} closes this screen`)}</Text>
   </Box>;
   const perform = (task: () => void | Promise<unknown>) => {
     setMenuOpen(false);
@@ -162,6 +162,7 @@ export function NowPlaying({ embedded = false, onDownload = () => {} }: { embedd
   };
   const unavailable = !t || Boolean(st.loading) || st.engine !== "mpv";
   const actions: ContextAction[] = [
+    ...(st.cookieRetryAvailable ? [{ label: "Retry without cookies", disabled: unavailable, run: () => perform(() => store.playback.retryWithoutCookies()) }] : []),
     { label: st.paused ? "Resume playback" : "Pause playback", disabled: unavailable, run: () => perform(() => store.playback.togglePause()) },
     { label: "Previous track", disabled: unavailable, run: () => perform(() => store.playback.prev()) },
     { label: "Next track", disabled: unavailable, run: () => perform(() => store.playback.next()) },

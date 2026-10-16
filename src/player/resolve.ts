@@ -52,13 +52,13 @@ export function resolvedMedia(info: Record<string, unknown>, now = Date.now(), m
 export function createStreamResolver(config: () => Promise<Config>): MediaResolver {
   const cache = new Map<string, ResolvedMedia>();
   let cookieSelection: string | undefined;
-  return async (track, signal, fresh = false, mode = "audio") => {
+  return async (track, signal, fresh = false, mode = "audio", options) => {
     if (!isHttpUrl(track.streamUrl)) throw new Error("Only HTTP(S) stream links are supported.");
     signal.throwIfAborted();
     if (track.streamType === "direct" || track.streamType === "radio") {
       return { url: track.streamUrl, expiresAt: Infinity };
     }
-    const cacheKey = `${mode}:${track.streamUrl}`;
+    const cacheKey = `${options?.withoutCookies ? "anonymous" : "configured"}:${mode}:${track.streamUrl}`;
     const cfg = await config();
     signal.throwIfAborted();
     const selectedCookies = JSON.stringify(cookieArgs(cfg));
@@ -77,7 +77,7 @@ export function createStreamResolver(config: () => Promise<Config>): MediaResolv
       const { stdout } = await execa(resolvedYtDlpPath(), [
         "--ignore-config", "--no-warnings", "--no-playlist", "--skip-download", "--dump-single-json",
         "--format", format, "--socket-timeout", "15", "--retries", "1",
-        ...jsRuntimeArgs(), ...cookieArgs(cfg), "--", track.streamUrl,
+        ...jsRuntimeArgs(), ...(options?.withoutCookies ? [] : cookieArgs(cfg)), "--", track.streamUrl,
       ], { env: toolEnv(), cancelSignal: signal, timeout: 45_000, maxBuffer: 8 * 1024 * 1024 });
       signal.throwIfAborted();
       const info = JSON.parse(stdout);
@@ -89,8 +89,10 @@ export function createStreamResolver(config: () => Promise<Config>): MediaResolv
         thumbnailUrl: isHttpUrl(info.thumbnail) ? info.thumbnail : track.thumbnailUrl,
         isLive: info.is_live === true || info.live_status === "is_live",
       };
-      if (cache.size >= 100) cache.delete(cache.keys().next().value!);
-      cache.set(cacheKey, media);
+      if (cookieSelection === selectedCookies) {
+        if (cache.size >= 100) cache.delete(cache.keys().next().value!);
+        cache.set(cacheKey, media);
+      }
       return media;
     } catch (error) {
       signal.throwIfAborted();

@@ -11,9 +11,18 @@ choice; Escape skips to Home. You don't need an account or an existing library.
 the queue. `?` shows the keys for the current screen. While you're typing in a
 text field, shortcuts won't change playback or move you to another screen.
 
-Home shows current playback, recent local and streamed plays, and saved stations.
-Opening Home does not start playback. The large jukebox drawing appears only
-when the window has enough room; smaller windows keep the navigation choices.
+Home's dashboard shows quick-launch cards for music search, YouTube videos, radio,
+local music, the queue and optional downloads. The header has local/queue/station
+counts and current playback; recents and saved stations have their own panels.
+Use arrows and Enter in reading order, or click in click mode. Right-click recent
+items/stations for audio/video and queue actions. Selection follows the same item
+when recent history updates. Smaller windows use only choices that fit, without
+off-screen keyboard targets. Tab gives the dashboard keyboard focus.
+
+Opening Home makes no provider requests and does not start playback/downloads.
+The large jukebox drawing appears only when the window has enough room.
+The [generated dashboard preview](../preview/home-dashboard.svg) uses fictional
+data and an isolated profile; it is not a screenshot of a real library.
 To select its plain ASCII variant:
 
 ```sh

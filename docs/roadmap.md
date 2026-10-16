@@ -1,6 +1,14 @@
 # Roadmap
 
-## Current release — 1.6.2
+## Current release — 1.7.0
+
+- [x] Home dashboard with quick-launch cards, listening context, recents and stations.
+- [x] Compact row/column budgets, stable selection and mouse/keyboard actions.
+- [x] Explicit one-item Retry without cookies, with no saved-setting changes.
+- [x] Separate anonymous/configured caches and non-persisted retry consent.
+- [x] Isolated, geometry-correct Home documentation preview and regression coverage.
+
+## Shipped in 1.6.2
 
 - [x] Retain HLS audio selections with unknown codec and repair missing external audio.
 - [x] Try an HLS soundtrack on the existing single YouTube playback retry.

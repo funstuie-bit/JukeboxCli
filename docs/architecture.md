@@ -122,6 +122,14 @@ in the same process. Attachment has a bounded network timeout; failures retain a
 safe reason and use the existing single fresh-link retry. YouTube retries prefer
 an HLS soundtrack where available. Cookie selection changes clear cached links.
 
+ResolutionOptions.withoutCookies is explicit one-item consent in 1.7.0. Cookie
+read errors expose cookieRetryAvailable; retryWithoutCookies reloads the same
+queue occurrence/mode/position with cookie flags omitted. Configured and anonymous
+cache entries are distinct. The choice stays with mode changes for that item,
+resets for next/new selection, and is excluded from session/history/config writes.
+No automatic authentication downgrade is made. Home subscribes to a stable
+summary, not every position tick; its actions are budgeted to visible terminal rows.
+
 `playerLayout` splits at 86 content columns/16 body rows; smaller views stack.
 Queue formatting measures terminal cells, not JS string length. Explicit player
 colours avoid inheriting low-contrast terminal defaults. Art and waveform load

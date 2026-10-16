@@ -6,58 +6,50 @@
   <g font-family='ui-monospace, "Cascadia Mono", "SF Mono", Menlo, Consolas, "DejaVu Sans Mono", monospace' font-size="16" fill="#d8d0c6">
     <text x="41.6" y="84" textLength="748.8" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#52617c">╭────────────────────────────────────────────────────────────────────────────╮</text>
     <rect x="45.7" y="90" width="1.4" height="22" fill="#52617c"/>
-    <text x="60.8" y="106" textLength="134.4" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#b8a5ed" font-weight="600">Keyboard · 1/6</text>
+    <text x="60.8" y="106" textLength="134.4" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#b8a5ed" font-weight="600">Keyboard · 3/8</text>
     <rect x="784.9" y="90" width="1.4" height="22" fill="#52617c"/>
     <rect x="45.7" y="112" width="1.4" height="22" fill="#52617c"/>
-    <text x="60.8" y="128" textLength="76.8" lengthAdjust="spacingAndGlyphs" xml:space="preserve" font-weight="600">Navigate</text>
+    <text x="60.8" y="128" textLength="67.2" lengthAdjust="spacingAndGlyphs" xml:space="preserve" font-weight="600">Library</text>
     <rect x="784.9" y="112" width="1.4" height="22" fill="#52617c"/>
     <rect x="45.7" y="134" width="1.4" height="22" fill="#52617c"/>
-    <text x="60.8" y="150" textLength="28.8" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#8fb9ed">↑ ↓</text>
-    <text x="176" y="150" textLength="38.4" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill-opacity="0.55">Move</text>
+    <text x="60.8" y="150" textLength="9.6" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#8fb9ed">B</text>
+    <text x="214.4" y="150" textLength="384" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill-opacity="0.55">Browse songs / artists / albums / genres</text>
     <rect x="784.9" y="134" width="1.4" height="22" fill="#52617c"/>
     <rect x="45.7" y="156" width="1.4" height="22" fill="#52617c"/>
-    <text x="60.8" y="172" textLength="86.4" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#8fb9ed">PgUp PgDn</text>
-    <text x="176" y="172" textLength="105.6" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill-opacity="0.55">Jump a page</text>
+    <text x="60.8" y="172" textLength="67.2" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#8fb9ed">↵ / esc</text>
+    <text x="214.4" y="172" textLength="211.2" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill-opacity="0.55">Open collection / back</text>
     <rect x="784.9" y="156" width="1.4" height="22" fill="#52617c"/>
     <rect x="45.7" y="178" width="1.4" height="22" fill="#52617c"/>
-    <text x="60.8" y="194" textLength="9.6" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#8fb9ed">↵</text>
-    <text x="176" y="194" textLength="105.6" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill-opacity="0.55">Open / play</text>
+    <text x="60.8" y="194" textLength="48" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#8fb9ed">x / X</text>
+    <text x="214.4" y="194" textLength="355.2" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill-opacity="0.55">Mark track / clear marks (not delete)</text>
     <rect x="784.9" y="178" width="1.4" height="22" fill="#52617c"/>
     <rect x="45.7" y="200" width="1.4" height="22" fill="#52617c"/>
-    <text x="60.8" y="216" textLength="28.8" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#8fb9ed">1-9</text>
-    <text x="176" y="216" textLength="115.2" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill-opacity="0.55">Jump section</text>
+    <text x="60.8" y="216" textLength="48" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#8fb9ed">A / P</text>
+    <text x="214.4" y="216" textLength="316.8" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill-opacity="0.55">Append marked tracks / queue next</text>
     <rect x="784.9" y="200" width="1.4" height="22" fill="#52617c"/>
     <rect x="45.7" y="222" width="1.4" height="22" fill="#52617c"/>
-    <text x="60.8" y="238" textLength="9.6" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#8fb9ed">H</text>
-    <text x="176" y="238" textLength="38.4" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill-opacity="0.55">Home</text>
+    <text x="60.8" y="238" textLength="9.6" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#8fb9ed">i</text>
+    <text x="214.4" y="238" textLength="240" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill-opacity="0.55">Show / hide track details</text>
     <rect x="784.9" y="222" width="1.4" height="22" fill="#52617c"/>
     <rect x="45.7" y="244" width="1.4" height="22" fill="#52617c"/>
-    <text x="60.8" y="260" textLength="9.6" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#8fb9ed">o</text>
-    <text x="176" y="260" textLength="211.2" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill-opacity="0.55">Play URL (no download)</text>
+    <text x="60.8" y="260" textLength="28.8" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#8fb9ed">[ ]</text>
+    <text x="214.4" y="260" textLength="124.8" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill-opacity="0.55">Filter source</text>
     <rect x="784.9" y="244" width="1.4" height="22" fill="#52617c"/>
     <rect x="45.7" y="266" width="1.4" height="22" fill="#52617c"/>
-    <text x="60.8" y="282" textLength="9.6" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#8fb9ed">/</text>
-    <text x="176" y="282" textLength="57.6" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill-opacity="0.55">Search</text>
+    <text x="60.8" y="282" textLength="67.2" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#8fb9ed">2 I / E</text>
+    <text x="214.4" y="282" textLength="489.6" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill-opacity="0.55">Playlists: import / export (open playlist or queue)</text>
     <rect x="784.9" y="266" width="1.4" height="22" fill="#52617c"/>
     <rect x="45.7" y="288" width="1.4" height="22" fill="#52617c"/>
-    <text x="60.8" y="304" textLength="9.6" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#8fb9ed">d</text>
-    <text x="176" y="304" textLength="57.6" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill-opacity="0.55">Delete</text>
+    <text x="60.8" y="304" textLength="9.6" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#8fb9ed">9</text>
+    <text x="214.4" y="304" textLength="508.8" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill-opacity="0.55">Settings: scan genre tags; session diagnostics/export</text>
     <rect x="784.9" y="288" width="1.4" height="22" fill="#52617c"/>
     <rect x="45.7" y="310" width="1.4" height="22" fill="#52617c"/>
-    <text x="60.8" y="326" textLength="9.6" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#8fb9ed">t</text>
-    <text x="176" y="326" textLength="57.6" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill-opacity="0.55">Rename</text>
     <rect x="784.9" y="310" width="1.4" height="22" fill="#52617c"/>
     <rect x="45.7" y="332" width="1.4" height="22" fill="#52617c"/>
-    <text x="60.8" y="348" textLength="28.8" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#8fb9ed">tab</text>
-    <text x="176" y="348" textLength="105.6" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill-opacity="0.55">Switch pane</text>
     <rect x="784.9" y="332" width="1.4" height="22" fill="#52617c"/>
     <rect x="45.7" y="354" width="1.4" height="22" fill="#52617c"/>
-    <text x="60.8" y="370" textLength="28.8" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#8fb9ed">esc</text>
-    <text x="176" y="370" textLength="38.4" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill-opacity="0.55">Back</text>
     <rect x="784.9" y="354" width="1.4" height="22" fill="#52617c"/>
     <rect x="45.7" y="376" width="1.4" height="22" fill="#52617c"/>
-    <text x="60.8" y="392" textLength="9.6" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#8fb9ed">q</text>
-    <text x="176" y="392" textLength="38.4" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill-opacity="0.55">Quit</text>
     <rect x="784.9" y="376" width="1.4" height="22" fill="#52617c"/>
     <rect x="45.7" y="398" width="1.4" height="22" fill="#52617c"/>
     <rect x="784.9" y="398" width="1.4" height="22" fill="#52617c"/>

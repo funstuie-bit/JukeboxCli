@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1408" height="1112" viewBox="0 0 1408 1112" style="max-width: 1408px; width: 100%; height: auto;" role="img">
+  <rect width="100%" height="100%" rx="14" fill="#1e1e2e"/>
+  <rect x="0.5" y="0.5" width="1407" height="1111" rx="14" fill="none" stroke="#28282b" stroke-width="1"/>
+  <text x="704" y="29" text-anchor="middle" font-family='ui-monospace, "Cascadia Mono", "SF Mono", Menlo, Consolas, "DejaVu Sans Mono", monospace' font-size="13" fill="#8a8a8a">JukeboxCli</text>
+  <g font-family='ui-monospace, "Cascadia Mono", "SF Mono", Menlo, Consolas, "DejaVu Sans Mono", monospace' font-size="16" fill="#d8d0c6">
+    <text x="41.6" y="84" textLength="9.6" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#8fb9ed" font-weight="600">J</text>
+    <text x="51.2" y="84" textLength="9.6" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#94b7ed" font-weight="600">u</text>
+    <text x="60.8" y="84" textLength="9.6" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#98b5ed" font-weight="600">k</text>
+    <text x="70.4" y="84" textLength="9.6" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#9db2ed" font-weight="600">e</text>
+    <text x="80" y="84" textLength="9.6" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#a1b0ed" font-weight="600">b</text>
+    <text x="89.6" y="84" textLength="9.6" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#a6aeed" font-weight="600">o</text>
+    <text x="99.2" y="84" textLength="9.6" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#aaaced" font-weight="600">x</text>
+    <text x="108.8" y="84" textLength="9.6" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#afa9ed" font-weight="600">C</text>
+    <text x="118.4" y="84" textLength="9.6" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#b3a7ed" font-weight="600">l</text>
+    <text x="128" y="84" textLength="9.6" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#b8a5ed" font-weight="600">i</text>
+    <text x="41.6" y="106" textLength="1324.8" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#52617c">──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────</text>
+    <text x="41.6" y="150" textLength="9.6" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#8fb9ed" font-weight="600">▌</text>
+    <text x="60.8" y="150" textLength="9.6" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#8fb9ed" font-weight="600">H</text>
+    <text x="89.6" y="150" textLength="57.6" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#b8a5ed" font-weight="600">H Home</text>
+    <rect x="256.9" y="134" width="1.4" height="22" fill="#9aa8c3"/>
+    <text x="339.2" y="150" textLength="124.8" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#8fb9ed">.-----------.</text>
+    <text x="550.4" y="150" textLength="115.2" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#b8a5ed" font-weight="600">Your jukebox</text>
+    <text x="60.8" y="172" textLength="9.6" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#8fb9ed" font-weight="600">L</text>
+    <text x="89.6" y="172" textLength="86.4" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#e3e7f2">1 Library</text>
+    <rect x="256.9" y="156" width="1.4" height="22" fill="#9aa8c3"/>
+    <text x="320" y="172" textLength="163.2" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#8fb9ed">.'   JUKEBOX   '.</text>
+    <text x="550.4" y="172" textLength="374.4" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#e3e7f2">Local music. Online tracks. Live radio.</text>
+    <text x="60.8" y="194" textLength="9.6" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#8fb9ed" font-weight="600">=</text>
+    <text x="89.6" y="194" textLength="105.6" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#e3e7f2">2 Playlists</text>
+    <rect x="256.9" y="178" width="1.4" height="22" fill="#9aa8c3"/>
+    <text x="310.4" y="194" textLength="182.4" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#8fb9ed">/   .---------.   \</text>
+    <text x="550.4" y="194" textLength="422.4" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#aab4ce">8 local tracks · 0 queued · 2 saved stations</text>
+    <text x="60.8" y="216" textLength="9.6" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#8fb9ed" font-weight="600">~</text>
+    <text x="89.6" y="216" textLength="86.4" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#e3e7f2">3 History</text>
+    <rect x="256.9" y="200" width="1.4" height="22" fill="#9aa8c3"/>
+    <text x="300.8" y="216" textLength="201.6" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#8fb9ed">|   /  ♫     ♬  \   |</text>
+    <text x="550.4" y="216" textLength="412.8" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#8fb9ed">Ready when you are — choose something below</text>
+    <text x="60.8" y="238" textLength="9.6" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#8fb9ed" font-weight="600">v</text>
+    <text x="89.6" y="238" textLength="96" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#e3e7f2">4 Download</text>
+    <rect x="256.9" y="222" width="1.4" height="22" fill="#9aa8c3"/>
+    <text x="300.8" y="238" textLength="201.6" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#8fb9ed">|  |   ───────   |  |</text>
+    <text x="550.4" y="238" textLength="422.4" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#aab4ce">Listen first. Download only when you choose.</text>
+    <text x="60.8" y="260" textLength="9.6" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#8fb9ed" font-weight="600">&gt;</text>
+    <text x="89.6" y="260" textLength="124.8" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#e3e7f2">5 Now Playing</text>
+    <rect x="256.9" y="244" width="1.4" height="22" fill="#9aa8c3"/>
+    <text x="300.8" y="260" textLength="201.6" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#8fb9ed">|  '-------------'  |</text>
+    <text x="550.4" y="260" textLength="134.4" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#8fb9ed">m  Open player</text>
+    <text x="723.2" y="260" textLength="192" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#8fb9ed">o  Paste a music URL</text>
+    <text x="60.8" y="282" textLength="9.6" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#8fb9ed" font-weight="600">+</text>
+    <text x="89.6" y="282" textLength="67.2" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#e3e7f2">6 Queue</text>
+    <rect x="256.9" y="266" width="1.4" height="22" fill="#9aa8c3"/>
+    <text x="300.8" y="282" textLength="201.6" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#8fb9ed">|     [ C L I ]     |</text>
+    <text x="60.8" y="304" textLength="9.6" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#8fb9ed" font-weight="600">M</text>
+    <text x="89.6" y="304" textLength="153.6" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#e3e7f2">7 Music Discover</text>
+    <rect x="256.9" y="288" width="1.4" height="22" fill="#9aa8c3"/>
+    <text x="300.8" y="304" textLength="201.6" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#8fb9ed">|     ⠿⠿⠿⠿⠿⠿⠿⠿⠿     |</text>
+    <text x="60.8" y="326" textLength="9.6" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#8fb9ed" font-weight="600">o</text>
+    <text x="89.6" y="326" textLength="124.8" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#e3e7f2">8 Radio / URL</text>
+    <rect x="256.9" y="310" width="1.4" height="22" fill="#9aa8c3"/>
+    <text x="300.8" y="326" textLength="201.6" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#8fb9ed">|     ⠿⠿⠿⠿⠿⠿⠿⠿⠿     |</text>
+    <text x="60.8" y="348" textLength="9.6" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#8fb9ed" font-weight="600">&gt;</text>
+    <text x="89.6" y="348" textLength="153.6" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#e3e7f2">Y YouTube Videos</text>
+    <rect x="256.9" y="332" width="1.4" height="22" fill="#9aa8c3"/>
+    <text x="300.8" y="348" textLength="201.6" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#8fb9ed">'-------------------'</text>
+    <rect x="256.9" y="354" width="1.4" height="22" fill="#9aa8c3"/>
+    <text x="60.8" y="392" textLength="9.6" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#8fb9ed" font-weight="600">*</text>
+    <text x="89.6" y="392" textLength="96" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#e3e7f2">9 Settings</text>
+    <rect x="256.9" y="376" width="1.4" height="22" fill="#9aa8c3"/>
+    <rect x="256.9" y="398" width="1.4" height="22" fill="#9aa8c3"/>
+    <text x="281.6" y="414" textLength="144" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#8fb9ed" font-weight="600">START LISTENING</text>
+    <rect x="256.9" y="420" width="1.4" height="22" fill="#9aa8c3"/>
+    <text x="281.6" y="436" textLength="508.8" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#b8a5ed">╭───────────────────────────────────────────────────╮</text>
+    <text x="809.6" y="436" textLength="508.8" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#aab4ce">╭───────────────────────────────────────────────────╮</text>
+    <rect x="256.9" y="442" width="1.4" height="22" fill="#9aa8c3"/>
+    <rect x="285.7" y="442" width="1.4" height="22" fill="#b8a5ed"/>
+    <text x="300.8" y="458" textLength="259.2" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#b8a5ed" font-weight="600">› 7  Search and play online</text>
+    <rect x="784.9" y="442" width="1.4" height="22" fill="#b8a5ed"/>
+    <rect x="813.7" y="442" width="1.4" height="22" fill="#aab4ce"/>
+    <text x="848" y="458" textLength="163.2" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#e3e7f2" font-weight="600">Y  YouTube videos</text>
+    <rect x="1312.9" y="442" width="1.4" height="22" fill="#aab4ce"/>
+    <rect x="256.9" y="464" width="1.4" height="22" fill="#9aa8c3"/>
+    <rect x="285.7" y="464" width="1.4" height="22" fill="#b8a5ed"/>
+    <text x="300.8" y="480" textLength="345.6" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#aab4ce">Songs, artists, albums and playlists</text>
+    <rect x="784.9" y="464" width="1.4" height="22" fill="#b8a5ed"/>
+    <rect x="813.7" y="464" width="1.4" height="22" fill="#aab4ce"/>
+    <text x="828.8" y="480" textLength="307.2" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#aab4ce">Search, watch or listen as audio</text>
+    <rect x="1312.9" y="464" width="1.4" height="22" fill="#aab4ce"/>
+    <rect x="256.9" y="486" width="1.4" height="22" fill="#9aa8c3"/>
+    <text x="281.6" y="502" textLength="508.8" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#b8a5ed">╰───────────────────────────────────────────────────╯</text>
+    <text x="809.6" y="502" textLength="508.8" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#aab4ce">╰───────────────────────────────────────────────────╯</text>
+    <rect x="256.9" y="508" width="1.4" height="22" fill="#9aa8c3"/>
+    <text x="281.6" y="524" textLength="508.8" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#aab4ce">╭───────────────────────────────────────────────────╮</text>
+    <text x="809.6" y="524" textLength="508.8" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#aab4ce">╭───────────────────────────────────────────────────╮</text>
+    <rect x="256.9" y="530" width="1.4" height="22" fill="#9aa8c3"/>
+    <rect x="285.7" y="530" width="1.4" height="22" fill="#aab4ce"/>
+    <text x="320" y="546" textLength="124.8" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#e3e7f2" font-weight="600">8  Live radio</text>
+    <rect x="784.9" y="530" width="1.4" height="22" fill="#aab4ce"/>
+    <rect x="813.7" y="530" width="1.4" height="22" fill="#aab4ce"/>
+    <text x="848" y="546" textLength="211.2" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#e3e7f2" font-weight="600">1  Local music library</text>
+    <rect x="1312.9" y="530" width="1.4" height="22" fill="#aab4ce"/>
+    <rect x="256.9" y="552" width="1.4" height="22" fill="#9aa8c3"/>
+    <rect x="285.7" y="552" width="1.4" height="22" fill="#aab4ce"/>
+    <text x="300.8" y="568" textLength="345.6" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#aab4ce">Find stations · o pastes a music URL</text>
+    <rect x="784.9" y="552" width="1.4" height="22" fill="#aab4ce"/>
+    <rect x="813.7" y="552" width="1.4" height="22" fill="#aab4ce"/>
+    <text x="828.8" y="568" textLength="355.2" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#aab4ce">8 tracks · artists, albums and genres</text>
+    <rect x="1312.9" y="552" width="1.4" height="22" fill="#aab4ce"/>
+    <rect x="256.9" y="574" width="1.4" height="22" fill="#9aa8c3"/>
+    <text x="281.6" y="590" textLength="508.8" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#aab4ce">╰───────────────────────────────────────────────────╯</text>
+    <text x="809.6" y="590" textLength="508.8" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#aab4ce">╰───────────────────────────────────────────────────╯</text>
+    <rect x="256.9" y="596" width="1.4" height="22" fill="#9aa8c3"/>
+    <text x="281.6" y="612" textLength="508.8" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#aab4ce">╭───────────────────────────────────────────────────╮</text>
+    <text x="809.6" y="612" textLength="508.8" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#aab4ce">╭───────────────────────────────────────────────────╮</text>
+    <rect x="256.9" y="618" width="1.4" height="22" fill="#9aa8c3"/>
+    <rect x="285.7" y="618" width="1.4" height="22" fill="#aab4ce"/>
+    <text x="320" y="634" textLength="163.2" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#e3e7f2" font-weight="600">6  Playback queue</text>
+    <rect x="784.9" y="618" width="1.4" height="22" fill="#aab4ce"/>
+    <rect x="813.7" y="618" width="1.4" height="22" fill="#aab4ce"/>
+    <text x="848" y="634" textLength="268.8" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#e3e7f2" font-weight="600">4  Download music (optional)</text>
+    <rect x="1312.9" y="618" width="1.4" height="22" fill="#aab4ce"/>
+    <rect x="256.9" y="640" width="1.4" height="22" fill="#9aa8c3"/>
+    <rect x="285.7" y="640" width="1.4" height="22" fill="#aab4ce"/>
+    <text x="300.8" y="656" textLength="384" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#aab4ce">Mix local files, online tracks and radio</text>
+    <rect x="784.9" y="640" width="1.4" height="22" fill="#aab4ce"/>
+    <rect x="813.7" y="640" width="1.4" height="22" fill="#aab4ce"/>
+    <text x="828.8" y="656" textLength="288" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#aab4ce">Save only the music you choose</text>
+    <rect x="1312.9" y="640" width="1.4" height="22" fill="#aab4ce"/>
+    <rect x="256.9" y="662" width="1.4" height="22" fill="#9aa8c3"/>
+    <text x="281.6" y="678" textLength="508.8" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#aab4ce">╰───────────────────────────────────────────────────╯</text>
+    <text x="809.6" y="678" textLength="508.8" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#aab4ce">╰───────────────────────────────────────────────────╯</text>
+    <rect x="256.9" y="684" width="1.4" height="22" fill="#9aa8c3"/>
+    <rect x="256.9" y="706" width="1.4" height="22" fill="#9aa8c3"/>
+    <text x="281.6" y="722" textLength="508.8" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#aab4ce">╭───────────────────────────────────────────────────╮</text>
+    <text x="809.6" y="722" textLength="508.8" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#aab4ce">╭───────────────────────────────────────────────────╮</text>
+    <rect x="256.9" y="728" width="1.4" height="22" fill="#9aa8c3"/>
+    <rect x="285.7" y="728" width="1.4" height="22" fill="#aab4ce"/>
+    <text x="300.8" y="744" textLength="153.6" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#8fb9ed" font-weight="600">RECENT LISTENING</text>
+    <rect x="784.9" y="728" width="1.4" height="22" fill="#aab4ce"/>
+    <rect x="813.7" y="728" width="1.4" height="22" fill="#aab4ce"/>
+    <text x="828.8" y="744" textLength="134.4" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#8fb9ed" font-weight="600">SAVED STATIONS</text>
+    <rect x="1312.9" y="728" width="1.4" height="22" fill="#aab4ce"/>
+    <rect x="256.9" y="750" width="1.4" height="22" fill="#9aa8c3"/>
+    <rect x="285.7" y="750" width="1.4" height="22" fill="#aab4ce"/>
+    <text x="320" y="766" textLength="288" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#e3e7f2">Recent · Late Night Coding Mix</text>
+    <rect x="784.9" y="750" width="1.4" height="22" fill="#aab4ce"/>
+    <rect x="813.7" y="750" width="1.4" height="22" fill="#aab4ce"/>
+    <text x="848" y="766" textLength="163.2" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#e3e7f2">Night Shift Radio</text>
+    <rect x="1312.9" y="750" width="1.4" height="22" fill="#aab4ce"/>
+    <rect x="256.9" y="772" width="1.4" height="22" fill="#9aa8c3"/>
+    <rect x="285.7" y="772" width="1.4" height="22" fill="#aab4ce"/>
+    <text x="320" y="788" textLength="182.4" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#aab4ce">Online · Demo Radio</text>
+    <rect x="784.9" y="772" width="1.4" height="22" fill="#aab4ce"/>
+    <rect x="813.7" y="772" width="1.4" height="22" fill="#aab4ce"/>
+    <text x="848" y="788" textLength="192" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#aab4ce">LIVE · saved station</text>
+    <rect x="1312.9" y="772" width="1.4" height="22" fill="#aab4ce"/>
+    <rect x="256.9" y="794" width="1.4" height="22" fill="#9aa8c3"/>
+    <rect x="285.7" y="794" width="1.4" height="22" fill="#aab4ce"/>
+    <text x="320" y="810" textLength="182.4" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#e3e7f2">Recent · Song Title</text>
+    <rect x="784.9" y="794" width="1.4" height="22" fill="#aab4ce"/>
+    <rect x="813.7" y="794" width="1.4" height="22" fill="#aab4ce"/>
+    <text x="848" y="810" textLength="105.6" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#e3e7f2">Sunday Jazz</text>
+    <rect x="1312.9" y="794" width="1.4" height="22" fill="#aab4ce"/>
+    <rect x="256.9" y="816" width="1.4" height="22" fill="#9aa8c3"/>
+    <rect x="285.7" y="816" width="1.4" height="22" fill="#aab4ce"/>
+    <text x="320" y="832" textLength="249.6" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#aab4ce">Local · Artist Name · 3:53</text>
+    <rect x="784.9" y="816" width="1.4" height="22" fill="#aab4ce"/>
+    <rect x="813.7" y="816" width="1.4" height="22" fill="#aab4ce"/>
+    <text x="848" y="832" textLength="192" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#aab4ce">LIVE · saved station</text>
+    <rect x="1312.9" y="816" width="1.4" height="22" fill="#aab4ce"/>
+    <rect x="256.9" y="838" width="1.4" height="22" fill="#9aa8c3"/>
+    <rect x="285.7" y="838" width="1.4" height="22" fill="#aab4ce"/>
+    <text x="320" y="854" textLength="201.6" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#e3e7f2">Recent · Another Song</text>
+    <rect x="784.9" y="838" width="1.4" height="22" fill="#aab4ce"/>
+    <rect x="813.7" y="838" width="1.4" height="22" fill="#aab4ce"/>
+    <text x="848" y="854" textLength="211.2" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#e3e7f2">8  Browse all stations</text>
+    <rect x="1312.9" y="838" width="1.4" height="22" fill="#aab4ce"/>
+    <rect x="256.9" y="860" width="1.4" height="22" fill="#9aa8c3"/>
+    <rect x="285.7" y="860" width="1.4" height="22" fill="#aab4ce"/>
+    <text x="320" y="876" textLength="249.6" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#aab4ce">Local · Artist Name · 3:07</text>
+    <rect x="784.9" y="860" width="1.4" height="22" fill="#aab4ce"/>
+    <rect x="813.7" y="860" width="1.4" height="22" fill="#aab4ce"/>
+    <rect x="1312.9" y="860" width="1.4" height="22" fill="#aab4ce"/>
+    <rect x="256.9" y="882" width="1.4" height="22" fill="#9aa8c3"/>
+    <rect x="285.7" y="882" width="1.4" height="22" fill="#aab4ce"/>
+    <text x="320" y="898" textLength="192" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#e3e7f2">3  Listening history</text>
+    <rect x="784.9" y="882" width="1.4" height="22" fill="#aab4ce"/>
+    <rect x="813.7" y="882" width="1.4" height="22" fill="#aab4ce"/>
+    <rect x="1312.9" y="882" width="1.4" height="22" fill="#aab4ce"/>
+    <rect x="256.9" y="904" width="1.4" height="22" fill="#9aa8c3"/>
+    <rect x="285.7" y="904" width="1.4" height="22" fill="#aab4ce"/>
+    <rect x="784.9" y="904" width="1.4" height="22" fill="#aab4ce"/>
+    <rect x="813.7" y="904" width="1.4" height="22" fill="#aab4ce"/>
+    <rect x="1312.9" y="904" width="1.4" height="22" fill="#aab4ce"/>
+    <rect x="256.9" y="926" width="1.4" height="22" fill="#9aa8c3"/>
+    <rect x="285.7" y="926" width="1.4" height="22" fill="#aab4ce"/>
+    <rect x="784.9" y="926" width="1.4" height="22" fill="#aab4ce"/>
+    <rect x="813.7" y="926" width="1.4" height="22" fill="#aab4ce"/>
+    <rect x="1312.9" y="926" width="1.4" height="22" fill="#aab4ce"/>
+    <rect x="256.9" y="948" width="1.4" height="22" fill="#9aa8c3"/>
+    <rect x="285.7" y="948" width="1.4" height="22" fill="#aab4ce"/>
+    <rect x="784.9" y="948" width="1.4" height="22" fill="#aab4ce"/>
+    <rect x="813.7" y="948" width="1.4" height="22" fill="#aab4ce"/>
+    <rect x="1312.9" y="948" width="1.4" height="22" fill="#aab4ce"/>
+    <rect x="256.9" y="970" width="1.4" height="22" fill="#9aa8c3"/>
+    <text x="281.6" y="986" textLength="508.8" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#aab4ce">╰───────────────────────────────────────────────────╯</text>
+    <text x="809.6" y="986" textLength="508.8" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#aab4ce">╰───────────────────────────────────────────────────╯</text>
+    <rect x="256.9" y="992" width="1.4" height="22" fill="#9aa8c3"/>
+    <text x="281.6" y="1008" textLength="432" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#aab4ce">↑↓ choose · Enter open · o URL · Mouse: click</text>
+    <text x="41.6" y="1030" textLength="1324.8" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#52617c">──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────</text>
+    <text x="41.6" y="1052" textLength="576" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill-opacity="0.55">▶ Nothing playing · 7 search &amp; stream · o Play URL · 8 radio</text>
+    <text x="41.6" y="1074" textLength="19.2" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#8fb9ed">↑↓</text>
+    <text x="70.4" y="1074" textLength="57.6" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#aab4ce">Choose</text>
+    <text x="156.8" y="1074" textLength="9.6" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#8fb9ed">↵</text>
+    <text x="176" y="1074" textLength="38.4" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#aab4ce">Open</text>
+    <text x="243.2" y="1074" textLength="28.8" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#8fb9ed">tab</text>
+    <text x="281.6" y="1074" textLength="38.4" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#aab4ce">Pane</text>
+    <text x="348.8" y="1074" textLength="9.6" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#8fb9ed">m</text>
+    <text x="368" y="1074" textLength="57.6" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#aab4ce">Player</text>
+    <text x="454.4" y="1074" textLength="9.6" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#8fb9ed">?</text>
+    <text x="473.6" y="1074" textLength="38.4" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#aab4ce">Keys</text>
+  </g>
+</svg>

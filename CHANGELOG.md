@@ -3,6 +3,21 @@
 Release notes describe what changed in each build. For what works now and the
 remaining limits, see [feature status](FEATURES.md).
 
+## 1.7.0 — Home dashboard and cookie-free retry
+
+- Replace Home's plain menu with responsive quick-launch cards, local/queue/
+  station counts, current listening, grouped recents and saved stations. Preserve
+  the jukebox mark, compact windows, first-run choices and explicit play/download.
+- Add Retry without cookies after cookie-read failures: error-bar mouse action,
+  player c menu and Home keyboard/mouse action. Keep mode, seekable position and
+  queue; never change saved cookie preferences or silently downgrade authentication.
+- Keep anonymous/configured stream caches separate. Anonymous consent lasts for
+  the current item only, is not persisted, and resets on a new selection/next item.
+- Preserve stable Home selection across history updates and avoid full-dashboard
+  redraws on clock ticks. Improve mouse focus and explain the active mouse mode.
+- Generate documentation previews with isolated fixture profiles and terminal
+  widths matching the layout, not real stations or account data.
+
 ## 1.6.2 — Video sound and browser cookies
 
 - Retain selected HLS soundtracks whose codec is not yet identified, and

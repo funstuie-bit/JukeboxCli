@@ -21,23 +21,27 @@ import { Library as LibrarySection } from "../src/ui/sections/Library";
 import { footerHints } from "../src/ui/keymap";
 import { ansiToSvg } from "./ansi-to-svg";
 import { makeStore, makeFakePlayback, PLACEHOLDER_TRACKS } from "./fake-data";
+import { saveStation } from "../src/player/stations";
+import { trackFromUrl } from "../src/player/url";
 
 const COLS = 80;
 const OUT_DIR = join(dirname(fileURLToPath(import.meta.url)), "..", "preview");
 mkdirSync(OUT_DIR, { recursive: true });
 
-function save(name: string, store: Store, node: React.ReactNode): void {
-  const { lastFrame, unmount } = render(
+function save(name: string, store: Store, node: React.ReactNode, cols = COLS): void {
+  const view = render(<></>);
+  Object.defineProperty(view.stdout, "columns", {value:cols,configurable:true});
+  view.rerender(
     <ThemeProvider theme={uiTheme}>
       <StoreContext.Provider value={store}>{node}</StoreContext.Provider>
     </ThemeProvider>,
   );
-  const frame = lastFrame() ?? "";
-  unmount();
+  const frame = view.lastFrame() ?? "";
+  view.unmount();
   if (!/\x1b\[/.test(frame)) {
     throw new Error(`${name}: frame has no ANSI colors (FORCE_COLOR didn't take)`);
   }
-  const svg = ansiToSvg(frame, { cols: COLS, title: "JukeboxCli" });
+  const svg = ansiToSvg(frame, { cols, title: "JukeboxCli", ...(name === "home-dashboard" ? { bg: "#1e1e2e" } : {}) });
   writeFileSync(join(OUT_DIR, `${name}.svg`), svg);
   console.log(`preview/${name}.svg`);
 }
@@ -116,3 +120,18 @@ save(
     <HelpOverlay />
   </Box>,
 );
+
+// Fictional, offline-only Home dashboard. The entry point isolated its profile.
+saveStation("Night Shift Radio", "https://example.com/night-shift.mp3");
+saveStation("Sunday Jazz", "https://example.com/sunday-jazz.mp3");
+const homeStore = makeStore({ cols: 140, rows: 48, contentWidth: 108, listRows: 40,
+  section: "home", region: "content", config: { ...libraryStore.config, mouseMode: "click" },
+  playback: makeFakePlayback({track:null,list:[],index:-1,paused:true}) });
+for (const t of PLACEHOLDER_TRACKS.slice(0, 3).reverse()) homeStore.history.record(t);
+const online = {...trackFromUrl("https://www.youtube.com/watch?v=abcdefghijk"),title:"Late Night Coding Mix",artist:"Demo Radio"};
+homeStore.history.record(online);
+save("home-dashboard", homeStore, <Box flexDirection="column" width={140} paddingX={1}>
+  <Logo /><Rule width={138} />
+  <Box height={40} marginTop={1}><Sidebar /><Box paddingLeft={2} borderStyle="single" borderTop={false} borderBottom={false} borderRight={false} borderColor={COLOR.muted}><Home /></Box></Box>
+  <Rule width={138} /><NowPlayingBar /><Footer hints={footerHints("content","home")} />
+</Box>, 140);

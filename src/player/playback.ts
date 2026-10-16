@@ -38,6 +38,9 @@ export interface PlaybackState {
   /** True when transport controls actually work (engine === 'mpv'). */
   canControl?: boolean;
   error?: string;
+  /** Ephemeral consent/action; never persisted in a listening session. */
+  cookieRetryAvailable?: boolean;
+  withoutCookies?: boolean;
   preloading?: boolean;
   nextReady?: boolean;
   seekable?: boolean;
@@ -141,7 +144,7 @@ export class Playback extends EventEmitter {
   private prefetchAbort: AbortController | null = null;
   private prefetchWork: Promise<void> = Promise.resolve();
   private prefetchToken = 0;
-  private prepared: { token: number; index: number; track: Track; media: ResolvedMedia } | null = null;
+  private prepared: { token: number; index: number; track: Track; media: ResolvedMedia; withoutCookies: boolean } | null = null;
 
   constructor(mpvPath: string | null, opener: Opener = defaultOpener, private readonly resolver?: MediaResolver) {
     super();
@@ -317,11 +320,11 @@ export class Playback extends EventEmitter {
     this.update({ preloading: false, nextReady: false });
   }
 
-  private async media(track: Track, signal: AbortSignal, fresh = false, mode: PlaybackMode = "audio"): Promise<ResolvedMedia> {
+  private async media(track: Track, signal: AbortSignal, fresh = false, mode: PlaybackMode = "audio", withoutCookies = false): Promise<ResolvedMedia> {
     if (mode === "video") track = videoSource(track) ?? track;
     if (!isStream(track)) return { url: track.filePath, expiresAt: Infinity };
     if (!this.resolver) throw new Error("Streaming is not available in this player.");
-    return this.resolver(track, signal, fresh, mode);
+    return withoutCookies ? this.resolver(track, signal, fresh, mode, { withoutCookies: true }) : this.resolver(track, signal, fresh, mode);
   }
 
   private applyMetadata(index: number, media: ResolvedMedia): Track {
@@ -345,6 +348,7 @@ export class Playback extends EventEmitter {
     const token = this.prefetchToken;
     const index = onEndedDecision(this.order, this.state.index, this.state.repeat);
     const track = index === "stop" ? undefined : this.state.list[index];
+    const withoutCookies = index === this.state.index && this.state.withoutCookies === true;
     this.prefetchWork = (async () => {
       await m.clearNext();
       if (signal.aborted) return;
@@ -352,11 +356,11 @@ export class Playback extends EventEmitter {
       // or prepare another entry while listening to one indefinitely.
       if (!track || index === "stop" || isLive(track) || isLive(this.state.track)) { this.update({ preloading: false, nextReady: false }); return; }
       this.update({ preloading: true, nextReady: false });
-      const media = await this.media(track, signal);
+      const media = await this.media(track, signal, false, "audio", withoutCookies);
       if (signal.aborted) return;
       const enriched = this.applyMetadata(index, media);
       if (isLive(enriched)) { this.update({ preloading: false, nextReady: false }); return; }
-      this.prepared = { token, track: enriched, index, media };
+      this.prepared = { token, track: enriched, index, media, withoutCookies };
       await m.preloadNext(media, token, signal);
       if (!signal.aborted) this.update({ preloading: false, nextReady: true });
     })().catch(() => {
@@ -401,7 +405,7 @@ export class Playback extends EventEmitter {
       this.backStack = this.backStack.slice(-500);
       this.prepared = null;
       this.update({ track: next.track, index: next.index, position: 0,
-        mode: "audio", duration: next.track.durationSec ?? 0, loading: false, engine: "mpv", canControl: true, error: undefined,
+        mode: "audio", duration: next.track.durationSec ?? 0, loading: false, engine: "mpv", canControl: true, error: undefined, cookieRetryAvailable: false, withoutCookies: next.withoutCookies,
         broadcastTitle: undefined, seekable: undefined });
       this.schedulePrefetch();
     });
@@ -409,7 +413,7 @@ export class Playback extends EventEmitter {
       if (this.state.loading) return; // foreground load handles its own retry
       const next = this.prepared;
       if (next && next.token === token) {
-        void this.play(next.track, this.state.list, next.index, this.state.paused, true);
+        void this.play(next.track, this.state.list, next.index, this.state.paused, true, "audio", 0, next.withoutCookies);
       } else {
         this.update({ error: "Playback interrupted. Press enter on the track in Queue to retry, or n to skip.", loading: false, paused: true });
       }
@@ -420,7 +424,7 @@ export class Playback extends EventEmitter {
       if (this.mpv === m) {
         this.mpv = null;
         this.playRequest++; this.resolving?.abort(); this.cancelPrefetch(); this.clearContinuation();
-        this.update({ track: null, paused: true, loading: false, position: 0, mode: "audio" });
+        this.update({ track: null, paused: true, loading: false, position: 0, mode: "audio", error: undefined, cookieRetryAvailable: false, withoutCookies: false });
       }
     });
     this.mpv = m;
@@ -465,7 +469,8 @@ export class Playback extends EventEmitter {
       await this.stop();
       return;
     }
-    await this.play(this.state.list[decision]!, this.state.list, decision);
+    await this.play(this.state.list[decision]!, this.state.list, decision, false, false, "audio", 0,
+      decision === this.state.index && this.state.withoutCookies === true);
   }
 
   /** Cycle repeat: off → all (loop the list) → one (lock current track) → off. */
@@ -509,7 +514,7 @@ export class Playback extends EventEmitter {
     this.schedulePrefetch();
   }
 
-  async play(track: Track, list: Track[] = [track], index = -1, startPaused = false, fresh = false, mode: PlaybackMode = "audio", startPosition = 0): Promise<void> {
+  async play(track: Track, list: Track[] = [track], index = -1, startPaused = false, fresh = false, mode: PlaybackMode = "audio", startPosition = 0, withoutCookies = false): Promise<void> {
     const request = ++this.playRequest;
     this.resolving?.abort();
     const signal = (this.resolving = new AbortController()).signal;
@@ -537,7 +542,7 @@ export class Playback extends EventEmitter {
       duration: isLive(track) ? 0 : track.durationSec ?? 0,
       paused: startPaused,
       loading: Boolean(this.mpvPath),
-      error: undefined, nextReady: false, preloading: false,
+      error: undefined, cookieRetryAvailable: false, withoutCookies, nextReady: false, preloading: false,
       seekable: undefined, broadcastTitle: undefined,
     };
     if (newList) this.rebuildOrder();
@@ -549,7 +554,7 @@ export class Playback extends EventEmitter {
         // Cancel any old audible/preloaded entry before a slow URL lookup.
         await m.stop();
         if (request !== this.playRequest) return;
-        const media = await this.media(track, signal, fresh, mode);
+        const media = await this.media(track, signal, fresh, mode, withoutCookies);
         if (request !== this.playRequest) return;
         this.applyMetadata(this.state.index, media);
         const load = async (resolved: ResolvedMedia) => {
@@ -562,7 +567,7 @@ export class Playback extends EventEmitter {
         catch (error) {
           if ((!isStream(track) && !(mode === "video" && isStream(videoSource(track) ?? track))) || fresh || signal.aborted) throw error;
           await m.stop();
-          const renewed = await this.media(track, signal, true, mode);
+          const renewed = await this.media(track, signal, true, mode, withoutCookies);
           if (request !== this.playRequest) return;
           this.applyMetadata(this.state.index, renewed);
           await load(renewed);
@@ -585,6 +590,7 @@ export class Playback extends EventEmitter {
           if (request !== this.playRequest) return;
           const reason = error instanceof StreamResolutionError ? error.message : undefined;
           this.update({ engine: "mpv", canControl: true, loading: false, paused: true,
+            cookieRetryAvailable: !withoutCookies && error instanceof StreamResolutionError && error.reason === "cookies",
             error: mode === "video" ? `${reason ?? "Could not start video playback in mpv."} Press W in Player to try audio.`
               : reason ?? "Could not play this stream. Select it in Queue to retry, or n to skip." });
           return;
@@ -609,12 +615,20 @@ export class Playback extends EventEmitter {
     const s = this.state;
     if (!s.track || s.loading || (s.mode ?? "audio") === mode && !s.error) return;
     await this.play(s.track, s.list, s.index, s.paused, false, mode,
-      isLive(s.track) || s.seekable === false ? 0 : s.position);
+      isLive(s.track) || s.seekable === false ? 0 : s.position, s.withoutCookies);
+  }
+
+  /** User-selected recovery only: never automatically discard browser cookies. */
+  async retryWithoutCookies(): Promise<void> {
+    const s = this.state;
+    if (!s.cookieRetryAvailable || !s.track || s.loading) return;
+    await this.play(s.track, s.list, s.index, false, true, s.mode,
+      isLive(s.track) || s.seekable === false ? 0 : s.position, true);
   }
 
   async togglePause(): Promise<void> {
     if (this.state.error && this.state.track) {
-      await this.play(this.state.track, this.state.list, this.state.index, false, true, this.state.mode); return;
+      await this.play(this.state.track, this.state.list, this.state.index, false, true, this.state.mode, this.state.position, this.state.withoutCookies); return;
     }
     if (!this.state.track) {
       const first = this.order[0];
@@ -622,7 +636,7 @@ export class Playback extends EventEmitter {
       return;
     }
     if (isLive(this.state.track)) {
-      if (this.state.paused) await this.play(this.state.track, this.state.list, this.state.index, false, true, this.state.mode);
+      if (this.state.paused) await this.play(this.state.track, this.state.list, this.state.index, false, true, this.state.mode, 0, this.state.withoutCookies);
       else {
         const request = ++this.playRequest;
         this.resolving?.abort(); this.cancelPrefetch();
@@ -729,7 +743,7 @@ export class Playback extends EventEmitter {
       duration: 0,
       paused: false,
       loading: false,
-      error: undefined, preloading: false, nextReady: false,
+      error: undefined, cookieRetryAvailable: false, withoutCookies: false, preloading: false, nextReady: false,
       seekable: undefined, broadcastTitle: undefined,
     });
   }

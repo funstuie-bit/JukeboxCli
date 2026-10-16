@@ -1,4 +1,4 @@
-import { act, type ReactNode } from "react";
+import { act, createElement, Fragment, type ReactNode } from "react";
 import { afterEach, beforeEach } from "vitest";
 import { cleanup, render } from "ink-testing-library";
 
@@ -16,9 +16,16 @@ afterEach(async () => {
 
 /** A painted frame can precede useInput's passive effect on a new menu.
  * Flush React's work, not a guessed sleep, before sending the next key. */
-export async function renderReady(node: ReactNode) {
+export async function renderReady(node: ReactNode, columns?: number) {
   let view!: ReturnType<typeof render>;
-  await act(async () => { view = render(node); });
+  await act(async () => {
+    if (columns === undefined) view = render(node);
+    else {
+      view = render(createElement(Fragment));
+      Object.defineProperty(view.stdout, "columns", {value:columns,configurable:true});
+      view.rerender(node);
+    }
+  });
   return view;
 }
 

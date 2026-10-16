@@ -35,6 +35,11 @@ requirements. Do not commit cookies, credentials, direct URLs with private query
 tokens, music, profiles, logs or generated personal data. Inspect screenshots,
 recordings and error output before sharing them.
 
+`npm run previews` uses an isolated temporary profile and fictional stations.
+Wide fixtures set the renderer's terminal columns too; a wider component inside
+a narrower renderer can produce misleading border gaps. The Home regression
+tests cover compact layouts and aligned wide panels.
+
 Playing a track is not permission to download it. Removing it from the queue is
 not permission to delete the file. Keep those actions separate, and ask before
 moving or deleting user data.
