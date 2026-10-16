@@ -1,3 +1,4 @@
+import { playbackActions } from "../components/PlaybackActions";
 import { MouseRow } from "../components/MouseRow";
 import { useEffect, useRef, useState } from "react";
 import { Box, Text } from "ink";
@@ -193,7 +194,7 @@ export function Listen() {
       <Text color={COLOR.muted} wrap="truncate-end">enter play · A/P queue · f save · t rename · x/d remove · G artwork</Text>
       {!entries.length ? <Text color={COLOR.muted}>No saved stations yet. Press M/B/g/c to browse or R to add a radio stream.</Text> : null}
       {entries.slice(start, start + rows).map((entry, i) => <MouseRow key={`${i}:${entry.id}`} active={focused} width={contentWidth} onClick={() => { setCursor(start + i); void playback.selectTrack(entry, [entry]).catch(fail); }} menuTitle={cleanText(entry.title)} menuActions={[
-        { label: "Play", run: () => { void playback.selectTrack(entry, [entry]).catch(fail); } },
+        ...playbackActions(entry, mode => { void playback.selectTrack(entry, [entry], mode).catch(fail); }),
         { label: "Play next", run: () => playback.enqueue(entry, true) },
         { label: "Add to queue", run: () => playback.enqueue(entry, false) },
         ...(entry.streamType === "radio" ? [{ label: "Save / rename station", run: () => { setTarget(entry); setMode("name"); } }] : []),

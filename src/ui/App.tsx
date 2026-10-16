@@ -1,3 +1,4 @@
+import type { PlaybackMode } from "../player/media";
 import { RowMenuProvider, RowMenuOverlay } from "./components/RowActions";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Box, Text, useApp, useInput, usePaste, useStdout, useStdin } from "ink";
@@ -610,8 +611,8 @@ export function App({ initialAdd, initialOverrides }: { initialAdd?: string; ini
   );
 
   const playTrack = useCallback(
-    (t: PlayableTrack, list?: PlayableTrack[]) => {
-      void boot?.playback.selectTrack(t, list ?? [t]);
+    (t: PlayableTrack, list?: PlayableTrack[], mode: PlaybackMode = "audio") => {
+      void boot?.playback.selectTrack(t, list ?? [t], mode);
     },
     [boot],
   );

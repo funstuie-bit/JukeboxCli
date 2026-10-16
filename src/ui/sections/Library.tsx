@@ -1,3 +1,4 @@
+import type { PlaybackMode } from "../../player/media";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Box, Text } from "ink";
 import { useActionInput as useInput } from "../hooks/useActionInput";
@@ -295,7 +296,7 @@ export function Library() {
     [library],
   );
   const handleSelect = useCallback(
-    (value: string) => {
+    (value: string, mode?: PlaybackMode) => {
       if (browsingCollections) { setCollectionId(value); return; }
       if (value === "__shuffle__") {
         const shuffled = shuffle(visible);
@@ -303,7 +304,7 @@ export function Library() {
         return;
       }
       const t = library.get(value);
-      if (t) playTrack(t, visible);
+      if (t) { if (mode) playTrack(t, visible, mode); else playTrack(t, visible); }
     },
     [library, playTrack, visible, browsingCollections],
   );

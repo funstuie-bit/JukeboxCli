@@ -198,3 +198,19 @@ describe("audio/video modes", () => {
     await p.setPlaybackMode("audio"); expect(p.getState().error).toBeUndefined(); p.quit();
   });
 });
+
+it("plays a saved YouTube queue occurrence as video, then returns to the local audio without replacing the queue", async () => {
+  const saved = { ...local, source: "youtube" as const, sourceTrackId: "abcdefghijk", filePath: "/music/download.mp3" };
+  const resolver = vi.fn(async () => media("original-video"));
+  const p = new Playback("fixture", undefined, resolver);
+  await p.play(saved, [saved, saved], 0);
+  await p.playQueueIndex(1, "video");
+  expect(resolver).toHaveBeenLastCalledWith(expect.objectContaining({ kind: "stream", streamUrl: "https://www.youtube.com/watch?v=abcdefghijk" }), expect.any(AbortSignal), false, "video");
+  expect(engine().mediaLoads.at(-1)).toMatchObject({ mode: "video", url: media("original-video").url });
+  expect(p.getState()).toMatchObject({ index: 1, list: [saved, saved], track: saved });
+  resolver.mockClear();
+  await p.setPlaybackMode("audio");
+  expect(engine().mediaLoads.at(-1)).toMatchObject({ mode: "audio", url: saved.filePath });
+  expect(resolver).not.toHaveBeenCalled();
+  expect(p.getState().index).toBe(1); p.quit();
+});

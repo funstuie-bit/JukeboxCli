@@ -3,6 +3,16 @@
 Release notes describe what changed in each build. For what works now and the
 remaining limits, see [feature status](FEATURES.md).
 
+## 1.6.0-dev.10 — Unreleased
+
+- Offer Play audio / Play video in item menus across Home, Library, History,
+  playlists, Queue, Radio / URL and player search for known video sources.
+- Play video on downloaded YouTube audio resolves the original online video;
+  keep the saved file, queue occurrence and library metadata intact. Returning
+  to audio uses the local file again. Radio/audio-only items retain Play.
+- Left-click remains audio-first, including YouTube search results; Enter in
+  YouTube Videos still plays video, and its existing context choices remain.
+
 ## 1.6.0-dev.9 — Unreleased
 
 - Add right-click actions to Home recent tracks/stations, Library, History,

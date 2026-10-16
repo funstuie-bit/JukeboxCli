@@ -5,7 +5,7 @@ Linux and macOS use one source history and release process.
 
 ## Current state
 
-- Source preview: `1.6.0-dev.9`, including general YouTube video search and [audio/video controls](video-playback.md).
+- Source preview: `1.6.0-dev.10`, including general YouTube video search and [audio/video controls](video-playback.md).
 - Production release: `v1.5.0`
 - Public source: `https://github.com/funstuie-bit/JukeboxCli.git`
 - Private mirror connection details belong in private maintainer notes, not here
@@ -234,3 +234,15 @@ Esc or c closes. Existing destructive confirmations remain in place.
 Mouse mode must be click; restart after installing. Specialist editors are not
 claimed to have complete pointer coverage. macOS/VNC physical acceptance remains
 separate from automated terminal validation.
+
+### Audio/video item choices — preview dev.10 (2026-10-15)
+
+Known YouTube items and video files/URLs offer Play audio / Play video across
+Home, Library/History/playlists, Queue, Radio / URL and player search. Downloaded
+YouTube audio resolves its original online source only when video is requested;
+its queue identity and local file remain intact. Switching back uses local audio.
+Radio and audio-only entries keep Play. Left-click is audio-first, including
+YouTube results; Enter in YouTube Videos retains video playback.
+
+No eager probing of unknown URLs. Video availability still depends on the source
+and mpv; existing failure feedback offers audio. No library migration required.

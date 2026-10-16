@@ -1,3 +1,4 @@
+import { playbackActions } from "../components/PlaybackActions";
 import { useState } from "react";
 import { Box, Text } from "ink";
 import { useStore, usePlayback } from "../store";
@@ -73,7 +74,7 @@ export function ListeningQueue({ height, width, active, framed = false, controls
       // Keep the other rows' metadata and the library itself unchanged.
       const duration = row.index === state.index && state.duration > 0 ? state.duration : row.track.durationSec;
       return <MouseRow key={row.index} active={focused && !confirmClear} onClick={() => { setCursor(start + offset); run(store.playback.playQueueIndex(row.index)); }} menuTitle={title} menuActions={[
-        { label: "Play", run: () => run(store.playback.playQueueIndex(row.index)) },
+        ...playbackActions(row.track, mode => run(store.playback.playQueueIndex(row.index, mode))),
         { label: "Move up", disabled: row.index === 0, run: () => store.playback.moveQueue(row.index, -1) },
         { label: "Move down", disabled: row.index === allEntries.length - 1, run: () => store.playback.moveQueue(row.index, 1) },
         { label: "Remove from queue", run: () => run(store.playback.removeQueue(row.index)) },

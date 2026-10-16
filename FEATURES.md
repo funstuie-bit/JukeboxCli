@@ -3,8 +3,10 @@
 These features are in the app now. That doesn't mean every station, terminal
 or online service will cooperate. The limits are listed below.
 
-## Source preview — 1.6.0-dev.9
+## Source preview — 1.6.0-dev.10
 
+- Item menus offer audio/video for YouTube and recognised video files/URLs.
+  Downloaded YouTube audio can stream its original video without changing the saved file.
 - Single-click play/open across listening lists; right-click item actions on Home,
   Library, History, playlists, radio, player search and Queue, as well as Discover/Now Playing.
 - Clickable Settings rows and nested choices; keyboard navigation remains available.

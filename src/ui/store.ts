@@ -3,7 +3,7 @@ import type { Binaries } from "../bin/binaries";
 import type { Config } from "../config/config";
 import type { DownloadQueue, QueueItem } from "../download/queue";
 import type { Library } from "../library/library";
-import type { PlayableTrack as Track } from "../player/media";
+import type { PlayableTrack as Track, PlaybackMode } from "../player/media";
 import type { Playback, PlaybackState } from "../player/playback";
 import type { PlayHistory } from "../player/history";
 
@@ -84,7 +84,7 @@ export interface Store {
   rows: number;
 
   /** Play a track, optionally within an ordered list for next/prev. */
-  playTrack: (t: Track, list?: Track[]) => void;
+  playTrack: (t: Track, list?: Track[], mode?: PlaybackMode) => void;
 }
 
 export const StoreContext = createContext<Store | null>(null);

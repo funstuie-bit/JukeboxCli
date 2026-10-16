@@ -1,3 +1,4 @@
+import { videoSource } from "./video-source";
 import { EventEmitter } from "node:events";
 import { logEvent } from "../diagnostics/log";
 import { existsSync } from "node:fs";
@@ -317,6 +318,7 @@ export class Playback extends EventEmitter {
   }
 
   private async media(track: Track, signal: AbortSignal, fresh = false, mode: PlaybackMode = "audio"): Promise<ResolvedMedia> {
+    if (mode === "video") track = videoSource(track) ?? track;
     if (!isStream(track)) return { url: track.filePath, expiresAt: Infinity };
     if (!this.resolver) throw new Error("Streaming is not available in this player.");
     return this.resolver(track, signal, fresh, mode);
@@ -552,7 +554,7 @@ export class Playback extends EventEmitter {
         this.applyMetadata(this.state.index, media);
         try { await m.loadMedia({ ...media, mode, startPosition }, startPaused); }
         catch (error) {
-          if (!isStream(track) || fresh || signal.aborted) throw error;
+          if ((!isStream(track) && !(mode === "video" && isStream(videoSource(track) ?? track))) || fresh || signal.aborted) throw error;
           await m.stop();
           const renewed = await this.media(track, signal, true, mode);
           if (request !== this.playRequest) return;

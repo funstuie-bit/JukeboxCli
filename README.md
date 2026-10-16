@@ -21,15 +21,18 @@ keeps the lot in one editable queue. Streams stay streams unless you choose to s
 them. There are lyrics, cover artwork and live visualisers too, with optional
 fullscreen MilkDrop effects on Mac and Linux.
 
-Source preview **1.6.0-dev.8** gives **YouTube Videos its own sidebar section**.
+Source preview **1.6.0-dev.10** gives **YouTube Videos its own sidebar section**.
 Press **Y** (Shift+y) to open it, type a search and press Enter. On the results,
 **Enter plays video** in its own window; **a plays audio only**. Music Discover
 stays on **8** and keeps Enter for audio. Press **c** or right-click a result in
 click mouse mode for queue, download and details actions. In Now Playing,
 **c or right-click** opens pause/resume, previous/next, volume, audio/video and
-fullscreen effects actions. **Left-click plays or opens an item** in Home, Library,
-History, playlists, discovery, radio and the queue. Right-click offers the actions
-for that item (play, queue, rename/remove where supported). Settings and their
+fullscreen effects actions. **Left-click plays audio or opens an item** in Home, Library,
+History, playlists, discovery, radio and the queue. Right-click offers **Play audio**
+and **Play video** for YouTube items and recognised video files/URLs, plus the
+usual queue actions. Downloaded YouTube audio uses the original online video for
+**Play video**; audio playback still uses the saved file. Radio and audio-only
+items keep **Play**. Settings and their
 submenus also respond to a single left-click. Enable **Settings → Keyboard and mouse → Mouse: click**
 for right-click menus; **c** works in every mouse mode. Menus pop up over the
 existing player or results near your click, without replacing the screen or

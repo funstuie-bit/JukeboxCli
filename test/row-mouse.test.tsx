@@ -71,3 +71,22 @@ it("opens recent Home tracks with queue actions without starting playback", asyn
   await click(view, "Play next"); expect(s.playback.enqueue).toHaveBeenCalledWith(track, true);
   await click(view, "Recent acceptance track"); expect(s.playTrack).toHaveBeenCalledWith(track);
 });
+
+it("offers audio/video on Home recent YouTube items while keeping left-click audio", async () => {
+  const s = store(), track = trackFromUrl("https://youtu.be/abcdefghijk");
+  track.title = "Recent video choice"; s.history.record(track); s.playTrack = vi.fn();
+  const view = await renderReady(<Harness store={s}><Home /></Harness>);
+  await click(view, track.title); expect(s.playTrack).toHaveBeenLastCalledWith(track);
+  await click(view, track.title, true);
+  expect(view.lastFrame()).toContain("Play audio"); await click(view, "Play video");
+  expect(s.playTrack).toHaveBeenLastCalledWith(track, undefined, "video");
+});
+it("passes the clicked History item and chosen playback mode through the shared list", async () => {
+  const s = store(), track = trackFromUrl("https://youtu.be/abcdefghijk"), play = vi.fn();
+  track.title = "History video choice"; s.history.record(track);
+  const view = await renderReady(<Harness store={s}><SongList focused groups={[{ items: [{ value: track.id, title: track.title }] }]} onSelect={play} onQueue={() => {}} /></Harness>);
+  await click(view, track.title, true); await click(view, "Play video");
+  expect(play).toHaveBeenLastCalledWith(track.id, "video");
+  await click(view, track.title, true); await click(view, "Play audio");
+  expect(play).toHaveBeenLastCalledWith(track.id, "audio");
+});

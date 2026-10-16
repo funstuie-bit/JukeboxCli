@@ -1,3 +1,4 @@
+import { playbackActions } from "../components/PlaybackActions";
 import { MouseRow } from "../components/MouseRow";
 import type { ContextAction } from "../components/ContextMenu";
 import { useState } from "react";
@@ -30,7 +31,7 @@ export function Home({ firstRun = false }: { firstRun?: boolean }) {
   ];
   const recent = s.history.ids().map(id => s.library.get(id) ?? s.history.getStream(id)).filter(t => !!t).slice(0, 3);
   if (!firstRun && s.rows >= 30) {
-    for (const t of recent) actions.push({ label: `Recent · ${cleanText(t.title)}`, run: () => s.playTrack(t), menuActions: [{ label: "Play", run: () => s.playTrack(t) }, { label: "Play next", run: () => s.playback.enqueue(t, true) }, { label: "Add to queue", run: () => s.playback.enqueue(t, false) }] });
+    for (const t of recent) actions.push({ label: `Recent · ${cleanText(t.title)}`, run: () => s.playTrack(t), menuActions: [...playbackActions(t, mode => s.playTrack(t, undefined, mode)), { label: "Play next", run: () => s.playback.enqueue(t, true) }, { label: "Add to queue", run: () => s.playback.enqueue(t, false) }] });
     for (const station of stations) { const track = stationTrack(station); actions.push({ label: `Radio · ${cleanText(station.name)}`, run: () => { void s.playback.selectTrack(track, [track]).catch(() => {}); }, menuActions: [{ label: "Play", run: () => s.playTrack(track) }, { label: "Play next", run: () => s.playback.enqueue(track, true) }, { label: "Add to queue", run: () => s.playback.enqueue(track, false) }] }); }
   }
   useInput((input, key) => {

@@ -78,7 +78,14 @@ queue entries are checked by yt-dlp before media is saved. The queue reports
 recording is not implemented. Cancellation/pause and app exit clean up only the
 process group belonging to each download, including ffmpeg, leaving playback alone.
 
-In preview dev.9, a single left-click on a YouTube Videos result plays video;
-Music Discover plays audio or opens the clicked collection. Right-click retains
-the audio/video choice and queue/download actions. Home and saved listening
-lists also have play/queue menus, and Settings submenus accept left-click.
+In preview dev.10, left-click plays audio, including YouTube Videos results.
+Enter in YouTube Videos still plays video. Right-click offers Play audio / Play
+video on known video items in Home recent history, Library, History, playlists,
+Queue, Radio / URL and player search, as well as existing discovery menus.
+
+Downloaded YouTube tracks use the original online video for Play video. This
+needs network access and the same streaming authentication as ordinary YouTube
+playback; it does not download a video or alter the saved audio file. Switching
+back to audio uses the saved file. Known local video files and direct video URLs
+also offer the choice. Radio, audio-only files and unknown URLs keep Play; menus
+do not make network probes to guess whether a source has video.

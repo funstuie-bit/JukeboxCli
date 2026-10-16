@@ -1,3 +1,4 @@
+import type { PlaybackMode } from "../../player/media";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Box, Text } from "ink";
 import { useActionInput as useInput } from "../hooks/useActionInput";
@@ -203,9 +204,9 @@ export function History() {
     [library, history],
   );
   const handleSelect = useCallback(
-    (value: string) => {
+    (value: string, mode?: PlaybackMode) => {
       const t = library.get(value) ?? history.getStream(value);
-      if (t) playTrack(t, visible);
+      if (t) { if (mode) playTrack(t, visible, mode); else playTrack(t, visible); }
     },
     [library, history, playTrack, visible],
   );

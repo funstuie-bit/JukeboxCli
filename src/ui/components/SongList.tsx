@@ -1,3 +1,5 @@
+import { playbackActions } from "./PlaybackActions";
+import type { PlaybackMode } from "../../player/media";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { Box, Text } from "ink";
 import { useActionInput as useInput } from "../hooks/useActionInput";
@@ -32,7 +34,7 @@ interface SongListProps {
   /** Lines the section renders above this list (its header / filter tabs), so
    *  the window never overflows the body box (which corrupts Ink's redraw). */
   reserveRows?: number;
-  onSelect: (value: string) => void;
+  onSelect: (value: string, mode?: PlaybackMode) => void;
   /** When set, `d` on an item row (never the action row) asks to delete it. */
   onDelete?: (value: string) => void;
   /** When true, `d` always targets the playing track (playingId) rather than
@@ -103,7 +105,7 @@ export function SongList({
   freezePreview = false,
   selectionKey,
 }: SongListProps) {
-  const { listRows, playback } = useStore();
+  const { listRows, playback, library, history } = useStore();
   const [cursor, setCursor] = useState(0);
   const [notice, setNotice] = useState("");
   const [marked, setMarked] = useState<Set<string>>(() => new Set());
@@ -237,6 +239,7 @@ export function SongList({
         }
         const here = r.idx === clamped && focused;
         const value = r.kind === "action" ? r.value : r.item.value;
+        const track = r.kind === "item" && onQueue ? library.get(value) ?? history.getStream(value) : undefined;
         const playing = playingId !== undefined && value === playingId;
         // Right-aligned dim detail (duration / set size). Action rows have none.
         const meta = r.kind === "item" ? r.item.meta : undefined;
@@ -247,7 +250,7 @@ export function SongList({
         return (
           <MouseRow key={value} active={focused} onClick={() => { setCursor(r.idx); onSelect(value); }} menuTitle={r.kind === "item" ? cleanText(r.item.title) : r.label}
             menuActions={[
-              { label: onQueue ? "Play" : "Open", run: () => onSelect(value) },
+              ...(track ? playbackActions(track, mode => onSelect(value, mode)) : [{ label: onQueue ? "Play" : "Open", run: () => onSelect(value) }]),
               ...(r.kind === "item" && onQueue ? [{ label: "Play next", run: () => onQueue(value, true) }, { label: "Add to queue", run: () => onQueue(value, false) }] : []),
               ...(r.kind === "item" && onRename ? [{ label: "Rename", run: () => onRename(value) }] : []),
               ...(r.kind === "item" && onDelete ? [{ label: "Remove…", run: () => onDelete(value) }] : []),

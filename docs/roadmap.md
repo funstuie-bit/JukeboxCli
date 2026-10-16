@@ -1,5 +1,12 @@
 # Roadmap
 
+## Implemented in source preview — 1.6.0-dev.10
+
+- [x] Audio/video item choices beyond discovery: Home, saved lists, Queue, radio/URL and player search.
+- [x] Original YouTube video playback for downloaded audio, preserving local files and queue occurrences.
+- [x] Audio-first left-click; explicit video remains available through the menu and YouTube Enter.
+- Unknown URLs are not probed merely to build menus; unsupported sources keep Play.
+
 ## Implemented in source preview — 1.6.0-dev.9
 
 - [x] Left-click activates Home, saved-list, discovery, radio and queue entries.
