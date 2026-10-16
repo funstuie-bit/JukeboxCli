@@ -5,7 +5,7 @@ Linux and macOS use one source history and release process.
 
 ## Current state
 
-- Source preview: `1.6.0-dev.12`, including general YouTube video search and [audio/video controls](video-playback.md).
+- Source preview: `1.6.0-dev.13`, including general YouTube video search and [audio/video controls](video-playback.md).
 - Production release: `v1.5.0`
 - Public source: `https://github.com/funstuie-bit/JukeboxCli.git`
 - Private mirror connection details belong in private maintainer notes, not here
@@ -261,3 +261,12 @@ Supersedes dev.11's preserved numbers: 5 Now Playing, 6 Queue, 7 Music Discover,
 8 Radio / URL, 9 Settings. H Home, Y YouTube Videos and 1–4 remain unchanged;
 0 still restarts playback. Sidebar and numeric navigation now share navigation.ts.
 Help and current guides use the new keys; published release notes retain history.
+
+### Sidebar legibility — preview dev.13 (2026-10-15)
+
+Coloured emoji replace small monochrome sidebar symbols. Separate fixed columns
+reserve two cells for the selection marker and three for icon plus spacing; labels
+use the main foreground and the selected label remains bold/accented. The sidebar
+is 21 cells wide and App budgets content from the shared SIDEBAR_WIDTH constant.
+This supersedes dev.11's single-cell glyph choice. ASCII fallback remains aligned
+for TERM=dumb or JUKEBOXCLI_ICONS=ascii. Numbering is unchanged from dev.12.

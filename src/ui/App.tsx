@@ -1,3 +1,4 @@
+import { SIDEBAR_WIDTH } from "./navigation";
 import type { PlaybackMode } from "../player/media";
 import { RowMenuProvider, RowMenuOverlay } from "./components/RowActions";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -179,9 +180,9 @@ export function App({ initialAdd, initialOverrides }: { initialAdd?: string; ini
   // (minus the standard header + a slack row). No fixed cap, which used to
   // strand dead space below the list on tall terminals.
   const listRows = Math.max(3, bodyH - 2);
-  // Root padding (2) + sidebar (20) + its margin (1) + the content rail (1)
+  // Root padding (2) + shared sidebar width + its margin (1) + the content rail (1)
   // + its padding (2), with 2 columns of slack.
-  const contentWidth = Math.max(20, cols - 28);
+  const contentWidth = Math.max(20, cols - SIDEBAR_WIDTH - 8);
 
   const [section, setSection] = useState<Section>("home");
   // Home's listening choices own the arrows/Enter on launch; Tab opens the map.

@@ -1,5 +1,8 @@
 import type { Section } from "./store";
 
+/** Marker (2), icon (3), shortcut (2), longest label (14). */
+export const SIDEBAR_WIDTH = 21;
+
 /** Display order and fixed section shortcuts share one definition. */
 interface NavItem {
   key: Section;

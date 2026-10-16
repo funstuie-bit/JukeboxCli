@@ -1,4 +1,4 @@
-import { NAV } from "../navigation";
+import { NAV, SIDEBAR_WIDTH } from "../navigation";
 import { Box, Text } from "ink";
 import { useActionInput as useInput } from "../hooks/useActionInput";
 import { useStore } from "../store";
@@ -26,7 +26,7 @@ export function Sidebar() {
   );
 
   return (
-    <Box flexDirection="column" width={20} marginRight={1}>
+    <Box flexDirection="column" width={SIDEBAR_WIDTH} marginRight={1}>
       {NAV.map((item) => {
         const selected = item.key === section;
         // Settings is a utility, so set it off from the content sections.
@@ -34,18 +34,14 @@ export function Sidebar() {
         return (
           <MouseRow allowDuringText key={item.key} marginTop={pinned ? 1 : 0} active={region !== "help"}
             onClick={() => { setSection(item.key); setRegion("content"); }}>
-            {selected ? (
-              // The lit edge: the marker takes the ramp's sunlit end while the
-              // label stays brand flame, a subtle two-tone glow.
-              <Text color={COLOR.alt} bold={focused}>{`${ICON.bar} `}</Text>
-            ) : (
-              <Text>{"  "}</Text>
-            )}
-            <Text
-              color={selected ? COLOR.accent : COLOR.muted}
-              bold={selected && focused}
-            >
-              {`${navigationIcon(item.key)} ${item.shortcut} ${item.label}`}
+            <Box width={2} flexShrink={0}>
+              <Text color={COLOR.alt} bold>{selected ? ICON.bar : " "}</Text>
+            </Box>
+            <Box width={3} flexShrink={0}>
+              <Text color={COLOR.alt} bold>{navigationIcon(item.key)}</Text>
+            </Box>
+            <Text color={selected ? COLOR.accent : COLOR.text} bold={selected}>
+              {`${item.shortcut} ${item.label}`}
             </Text>
             {item.key === "download" && active > 0 ? (
               <Text color={COLOR.muted}>{` (${active})`}</Text>

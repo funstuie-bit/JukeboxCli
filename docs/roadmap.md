@@ -1,5 +1,10 @@
 # Roadmap
 
+## Implemented in source preview — 1.6.0-dev.13
+
+- [x] Clearer coloured sidebar icons, brighter text and fixed icon/marker columns.
+- [x] Shared sidebar width budgeting and aligned ASCII fallback.
+
 ## Implemented in source preview — 1.6.0-dev.12
 
 - [x] Renumber sections in sidebar order: 5 Player, 6 Queue, 7 Music, 8 Radio, 9 Settings.

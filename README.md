@@ -21,7 +21,7 @@ keeps the lot in one editable queue. Streams stay streams unless you choose to s
 them. There are lyrics, cover artwork and live visualisers too, with optional
 fullscreen MilkDrop effects on Mac and Linux.
 
-Source preview **1.6.0-dev.12** gives **YouTube Videos its own sidebar section**.
+Source preview **1.6.0-dev.13** gives **YouTube Videos its own sidebar section**.
 Press **Y** (Shift+y) to open it, type a search and press Enter. On the results,
 **Enter plays video** in its own window; **a plays audio only**. Music Discover
 stays on **7** and keeps Enter for audio. Press **c** or right-click a result in
@@ -40,7 +40,8 @@ moving the list. **Escape**, **c** or a click outside closes them. Sidebar click
 while typing a search. **Enter** searches; **Escape** or the clickable cancel hint
 leaves the field. Search results are retained within a session, not across restarts.
 
-Every sidebar section has a small icon. Settings sits last, separated from the
+Every sidebar section has a coloured icon in a fixed-width column, with brighter
+labels for readability. Plain terminals use aligned ASCII fallbacks. Settings sits last, separated from the
 listening sections. Number keys now follow the reordered list: **5 Now Playing**,
 **6 Queue**, **7 Music Discover**, **8 Radio / URL**, **9 Settings**. Home stays
 **H** and YouTube Videos stays **Y**; keys 1–4 are unchanged.

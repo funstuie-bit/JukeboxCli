@@ -3,6 +3,14 @@
 Release notes describe what changed in each build. For what works now and the
 remaining limits, see [feature status](FEATURES.md).
 
+## 1.6.0-dev.13 — Unreleased
+
+- Replace faint sidebar symbols with recognisable coloured emoji icons and
+  brighter labels. Keep the selected section bold and accented.
+- Give icons and selection markers fixed-width columns so Library and other
+  labels align. Reserve one extra sidebar cell without overflowing the content.
+- Preserve ASCII fallbacks and the dev.12 shortcut order.
+
 ## 1.6.0-dev.12 — Unreleased
 
 - Renumber section shortcuts to match the reordered sidebar: 5 Now Playing,
