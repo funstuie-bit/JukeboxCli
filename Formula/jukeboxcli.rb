@@ -2,9 +2,9 @@ class Jukeboxcli < Formula
   desc "Terminal music player with local music, online search and live radio"
   homepage "https://github.com/funstuie-bit/JukeboxCli"
   url "https://github.com/funstuie-bit/JukeboxCli.git",
-      tag: "v1.6.0",
-      revision: "f5fa11214cf31f7a9d2cd9ac237722d1237a3319"
-  version "1.6.0"
+      tag: "v1.6.1",
+      revision: "dad79755a6c7cae67653bc8e527ae9a6d06b0553"
+  version "1.6.1"
   license "MIT"
 
   depends_on :macos
