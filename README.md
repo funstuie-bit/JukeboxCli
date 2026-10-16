@@ -294,7 +294,8 @@ Restart after updating; music and settings are kept.
 [Changelog](CHANGELOG.md).
 
 Automated install checks run on Apple Silicon and x64 Linux. Intel Macs and other
-Linux architectures aren't part of those checks.
+Linux architectures aren't part of those checks. Playback and UI checks use
+isolated fixtures, not a real music or browser profile.
 
 A few limits are worth knowing:
 

@@ -293,8 +293,10 @@ describe("App player workflow", () => {
     await press(view, "\u0015"); await press(view, "invalid"); await press(view, "\r");
     expect(view.lastFrame()).toContain("Use Artist - Song");
     await press(view, "\u001b"); expect(view.lastFrame()).toContain("LYRICS");
-    await press(view, "O"); await press(view, "\r"); await new Promise(r => setTimeout(r, 500));
-    expect(view.lastFrame()).toContain("Other provider fixture");
+    await press(view, "O"); await press(view, "\r");
+    // The panel debounces 400ms before async cache I/O. A 500ms sleep leaves
+    // almost no headroom on shared CI; wait for the result, not runner speed.
+    await vi.waitFor(() => expect(view.lastFrame()).toContain("Other provider fixture"), { timeout: 5000 });
     expect(view.lastFrame()).not.toContain("› Other provider");
     await press(view, "l"); expect(view.lastFrame()).toContain("Playback queue · 1 tracks");
     view.unmount(); await tick();

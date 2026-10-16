@@ -40,6 +40,10 @@ Wide fixtures set the renderer's terminal columns too; a wider component inside
 a narrower renderer can produce misleading border gaps. The Home regression
 tests cover compact layouts and aligned wide panels.
 
+For asynchronous UI results, wait for the expected frame with a bounded
+`vi.waitFor` instead of guessing a sleep just longer than a component debounce.
+Keep the same result assertions; slower CI must not weaken behaviour checks.
+
 Playing a track is not permission to download it. Removing it from the queue is
 not permission to delete the file. Keep those actions separate, and ask before
 moving or deleting user data.
