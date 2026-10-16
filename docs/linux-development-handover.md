@@ -5,8 +5,8 @@ Linux and macOS use one source history and release process.
 
 ## Current state
 
-- Source preview: `1.6.0-dev.17`, including general YouTube video search and [audio/video controls](video-playback.md).
-- Production release: `v1.5.0`
+- Current source: `1.6.0`, including general YouTube video search and [audio/video controls](video-playback.md).
+- Production release: `v1.6.0`
 - Public source: `https://github.com/funstuie-bit/JukeboxCli.git`
 - Private mirror connection details belong in private maintainer notes, not here
 - Branch: `main`; both remotes must contain the same commits
@@ -170,7 +170,12 @@ fix removes a demonstrated unbounded retention path, but does not certify that
 all causes of long-session memory growth are resolved. Long playback/visualiser
 soaks and Settings → Session diagnostics remain useful follow-up evidence.
 
-## Source preview 1.6.0-dev.1
+## Development history — previews leading to 1.6.0
+
+The following entries retain historical preview status and validation. The current
+stable release is 1.6.0; broader hardware and multi-hour testing remain ongoing.
+
+### Source preview 1.6.0-dev.1
 
 Implemented all five follow-up items: ZIP/folder pack imports, Original/En D
 optional downloads, player mouse controls, mpv-only Linux fullscreen capture and

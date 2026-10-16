@@ -1,5 +1,18 @@
 # Roadmap
 
+## Current release — 1.6.0
+
+- [x] Dedicated YouTube Videos, audio/video item menus and compact landscape previews.
+- [x] Persistent search history, shared context menus and wider click navigation.
+- [x] Reordered, renumbered and brighter sidebar, with Settings last.
+- [x] Linux preset imports/extra packs and mpv-only fullscreen capture.
+- [x] Production runtime timing-retention fix and bounded memory diagnostics.
+- [ ] Continue multi-hour memory/GPU, broader terminal and physical Mac acceptance.
+- Fuller results tables, drag seeking and timed live recording remain later work.
+
+The preview entries below record development history for this stable release;
+intermediate icon/numbering choices were superseded by the final implementation.
+
 ## Implemented in source preview — 1.6.0-dev.17
 
 - [x] Compact video preview card sized to its content, with two-line titles.
@@ -10,7 +23,7 @@
 - [x] Persistent independent search history and bounded cached results after restart.
 - [x] Recent-search menus with repeat/clear actions and keyboard/mouse access.
 - [x] Responsive YouTube thumbnail/details preview pane with selection following.
-- [ ] Complete multi-hour memory/GPU and physical Mac acceptance before stable 1.6.0.
+- [ ] Continue multi-hour memory/GPU and physical Mac acceptance after release.
 - Fuller video tables, drag seeking and timed live recording remain later work.
 
 ## Implemented in source preview — 1.6.0-dev.15
@@ -106,7 +119,7 @@ This change adds the requested search catalogue, not full browsing parity.
 - [x] Closing the video window stops the current item and leaves JukeboxCli open. Subsequent queue entries default to audio.
 - [x] Test stream resolution, switching races, window closure and owned-process cleanup; install the preview and push both remotes.
 
-Inspired by TubeTUI interaction patterns; independently implemented. See [controls and acceptance limits](video-playback.md). Physical macOS acceptance and wider online-source coverage remain pending. Stable release remains 1.5.0 until release acceptance.
+Inspired by TubeTUI interaction patterns; independently implemented. See [controls and acceptance limits](video-playback.md). These changes are included in stable 1.6.0; physical Mac acceptance and wider online-source coverage remain ongoing.
 
 ## Implemented in source preview — 1.6.0-dev.1
 
@@ -116,10 +129,10 @@ Inspired by TubeTUI interaction patterns; independently implemented. See [contro
 - Clickable player transport, timeline seeking and volume controls.
 - Local per-minute memory trends in session diagnostics.
 
-See [preview guide](visualiser-and-diagnostics.md). Release publication and wider
-hardware/multi-hour acceptance remain pending.
+See [setup guide](visualiser-and-diagnostics.md). Included in stable 1.6.0; wider
+hardware/multi-hour acceptance remains ongoing.
 
-## Current release — 1.5.0
+## Shipped in 1.5.0
 
 - Browsing artwork previews for local songs, collections and downloaded playlists.
 - Optional Clean player layout and editable Up Next view; 7 retains the full queue.
@@ -210,8 +223,7 @@ Arch installation builds the companion against system libprojectM 3.1.12/Qt 5;
 source and licences are retained. Longer memory-soak testing remains open.
 
 projectM is an open-source, MilkDrop-compatible OpenGL renderer whose core
-accepts PCM and performs its own FFT and beat detection. Stable 1.5.0 captures the system output; source preview 1.6.0-dev.1
-uses a per-mpv PulseAudio monitor, with system capture explicitly selectable.
+accepts PCM and performs its own FFT and beat detection. Version 1.6.0 uses a per-mpv PulseAudio monitor, with system capture explicitly selectable.
 No second media stream or audio rerouting is introduced.
 
 The dependency remains optional: ordinary startup, playback and the terminal
@@ -228,7 +240,7 @@ preset paths, retained notices and missing-pack fallback. Arch installer handles
 core native dependencies and basic projectM presets; optional browser support and
 extra-pack flags keep larger downloads explicit. See [pack guide](linux-preset-packs.md).
 
-Source preview adds user archive imports and two more pack choices. Still open:
+Version 1.6.0 adds user archive imports and two more pack choices. Still open:
 newer native renderers, broader collections and long-session memory/GPU soak.
 No full-collection shader compatibility claim.
 
@@ -252,5 +264,5 @@ browsing or automatic signed-in Music API access. See
 [feature status](../FEATURES.md) for the current contract and known limits.
 
 Packaged startup uses React production mode to avoid retaining development render
-timing records during long sessions. Linux shares the 1.5.0 source with macOS;
+timing records during long sessions. Linux and macOS share the same release;
 long-duration memory acceptance remains open (see [Linux handover](linux-development-handover.md)).

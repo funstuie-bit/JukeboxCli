@@ -87,7 +87,7 @@ new catalogue packs ask you to choose/download another pack.
 projectM 3 cannot render every MilkDrop shader identically to newer engines.
 If a preset is blank or malformed, press `Ctrl+R` in projectM to skip it or select
 Classic in JukeboxCli. An open projectM window must be closed before pack changes
-apply. Source preview 1.6.0-dev.1 adds ZIP/folder imports, Original/En D downloads
+apply. Version 1.6.0 adds ZIP/folder imports, Original/En D downloads
 and mpv-only audio capture. See the [new pack and audio guide](visualiser-and-diagnostics.md).
 
 ## Provenance

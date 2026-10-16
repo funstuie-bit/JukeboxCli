@@ -65,7 +65,7 @@ control sequences. Raw configuration and cookie files are never attached.
 Redaction is best effort: review a report before posting it publicly. Reports
 are explicit snapshots, not a full debug trace or recordings of your listening.
 
-Source preview 1.6.0-dev.1 also records process memory counters once a minute in
+Version 1.6.0 also records process memory counters once a minute in
 this log and adds click-mode player controls. See [details](visualiser-and-diagnostics.md).
 
 ## Optional interface controls

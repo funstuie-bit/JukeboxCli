@@ -1,8 +1,6 @@
 # Preset imports, player mouse controls and memory diagnostics
 
-These changes are in source build **1.6.0-dev.1**, after stable 1.5.0.
-Reinstall from source to use them; the published Homebrew formula still installs
-1.5.0. Pack management and process audio capture below are Linux features.
+These changes are included in stable **1.6.0** on Mac and Linux, including Homebrew. Pack management and process audio capture below are Linux features.
 Mouse controls and memory logging also work on macOS.
 
 ## Optional preset downloads

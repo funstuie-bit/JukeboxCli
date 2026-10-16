@@ -1,6 +1,6 @@
 # Audio and video playback
 
-Source preview 1.6.0-dev.17; stable release/Homebrew remain 1.5.0.
+Available in JukeboxCli 1.6.0 on Mac and Linux, including Homebrew.
 
 Choose **YouTube Videos** in the sidebar or press **Y** (Shift+y) outside a text
 field. On first visit the search field is ready to type into. Submit a query,
@@ -56,7 +56,7 @@ requests video.
 No second audio player is started, and existing parent-exit cleanup remains.
 
 Video requires mpv and a source containing a video track. A failed video request
-shows an error and offers switching back to audio. This preview selects the best
+shows an error and offers switching back to audio. The player selects the best
 **combined audio/video format** supplied by yt-dlp; it does not merge separate
 adaptive streams, so some sources offer lower resolution or no combined format.
 The audio/video URL caches are separate, expire, and remain bounded. Signed URLs
@@ -96,7 +96,7 @@ queue entries are checked by yt-dlp before media is saved. The queue reports
 recording is not implemented. Cancellation/pause and app exit clean up only the
 process group belonging to each download, including ffmpeg, leaving playback alone.
 
-In preview dev.10, left-click plays audio, including YouTube Videos results.
+Left-click plays audio, including YouTube Videos results.
 Enter in YouTube Videos still plays video. Right-click offers Play audio / Play
 video on known video items in Home recent history, Library, History, playlists,
 Queue, Radio / URL and player search, as well as existing discovery menus.

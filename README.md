@@ -21,7 +21,7 @@ keeps the lot in one editable queue. Streams stay streams unless you choose to s
 them. There are lyrics, cover artwork and live visualisers too, with optional
 fullscreen MilkDrop effects on Mac and Linux.
 
-Source preview **1.6.0-dev.17** gives **YouTube Videos its own sidebar section**.
+Version **1.6.0** gives **YouTube Videos its own sidebar section**.
 Press **Y** (Shift+y) to open it, type a search and press Enter. On the results,
 **Enter plays video** in its own window; **a plays audio only**. Music Discover
 stays on **7** and keeps Enter for audio. Press **c** or right-click a result in
@@ -240,10 +240,11 @@ results stay temporary until you explicitly save one with **f**.
 
 ## Status and limits
 
-**Current release: [1.5.0](https://github.com/funstuie-bit/JukeboxCli/releases/tag/v1.5.0).**
-Adds portable playlists, genre browsing, session diagnostics and optional artwork
-colours, keyboard and mouse controls on Mac and Linux. Restart after updating;
-music and settings are kept.
+**Current release: [1.6.0](https://github.com/funstuie-bit/JukeboxCli/releases/tag/v1.6.0).**
+Adds YouTube video browsing, saved searches, a compact thumbnail preview, audio/video
+item menus and broader mouse controls. Linux also gains preset imports and isolated
+fullscreen audio. Restart after updating; music and settings are kept.
+[Release notes](docs/releases/1.6.0.md).
 [Changelog](CHANGELOG.md).
 
 Automated install checks run on Apple Silicon and x64 Linux. Intel Macs and other
@@ -532,15 +533,15 @@ supplies the community station directory.
 
 Released under the [MIT License](LICENSE).
 
-## Source preview: 1.6.0-dev.8
+## Version 1.6: packs, controls and memory diagnostics
 
 Linux now supports confirmed ZIP/folder MilkDrop imports and optional MilkDrop
 Original / En D downloads, plus fullscreen audio isolated to JukeboxCli by default.
 Click mode adds player transport, seek and volume controls on Mac and Linux.
 Session diagnostics records local memory trends once a minute. See
 [setup, controls and limits](docs/visualiser-and-diagnostics.md).
-The published Homebrew release remains 1.5.0; reinstall from source for this preview.
+Version 1.6.0 is available from source and the Homebrew tap.
 
 Packaged startup uses React production mode to avoid retaining development render
-timing records during long sessions. Linux shares the 1.5.0 source with macOS;
+timing records during long sessions. Linux and macOS share the same release;
 long-duration memory acceptance remains open (see [Linux handover](docs/linux-development-handover.md)).

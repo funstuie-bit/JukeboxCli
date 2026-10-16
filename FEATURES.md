@@ -3,7 +3,7 @@
 These features are in the app now. That doesn't mean every station, terminal
 or online service will cooperate. The limits are listed below.
 
-## Source preview — 1.6.0-dev.17
+## Current release — 1.6.0
 
 - Independent persistent search history for Music Discover and YouTube Videos;
   30 recent searches and up to 100 cached results each. Reopen/clear with h or a click.
@@ -37,8 +37,9 @@ or online service will cooperate. The limits are listed below.
 - Linux preset ZIP/folder preview/import, plus optional MilkDrop Original and En D.
 - Linux fullscreen defaults to mpv-only audio capture; explicit system mix option.
 - Click-mode player transport/seek/volume controls and local memory trend logging.
+- Packaged startup loads production React to prevent development timing retention.
 
-See [preview details and limits](docs/visualiser-and-diagnostics.md).
+See [setup and limits](docs/visualiser-and-diagnostics.md).
 
 ## Supported
 
@@ -107,8 +108,7 @@ or proxy cliamp feeds.
 - Mac fullscreen effects need macOS 14.4+, a local optional build and system
   audio-recording permission. They capture only JukeboxCli's mpv audio. Community
   presets vary in GPU cost and compatibility with Apple's OpenGL implementation.
-- Stable 1.5.0 Linux effects capture system output; source preview 1.6.0-dev.1
-  isolates mpv by default and offers system output explicitly. projectM remains optional.
+- Linux 1.6.0 effects isolate mpv by default and offer system output explicitly. projectM remains optional.
 - [Audio-reactive visualiser](docs/visualiser-prototype.md): accepted on Intel
   Linux; wider stream, terminal and CPU testing remains useful.
 - YouTube discovery uses an unofficial API. Cookies do not supply account APIs.

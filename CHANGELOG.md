@@ -3,155 +3,32 @@
 Release notes describe what changed in each build. For what works now and the
 remaining limits, see [feature status](FEATURES.md).
 
-## 1.6.0-dev.17 — Unreleased
+## 1.6.0 — YouTube video browsing and listening controls
 
-- Size the YouTube preview border around its thumbnail/details instead of
-  stretching it to the bottom of a tall terminal; allow two title lines.
-- Preserve complete landscape thumbnails in block and Sixel rendering rather
-  than applying the square album-cover crop. Keep framing modes separate in the
-  bounded artwork caches, including when menus require a block fallback.
-
-## 1.6.0-dev.16 — Unreleased
-
-- Remember recent searches and last successful results independently in Music
-  Discover and YouTube Videos across restarts. Keep 30 searches and at most 100
-  cached results per catalogue, with selection and atomic private profile saves.
-- Add h / clickable recent-search menus to repeat or clear saved searches.
-  Restoring cached results does not start playback or provider requests; resubmit
-  the query to refresh results and pagination. Collection drill-down stays in memory.
-- Add a YouTube thumbnail/details pane beside wider result lists. It follows
-  selection, settles before decoding art, uses block art beneath overlays,
-  supports i to toggle and automatically hides in small windows.
-
-## 1.6.0-dev.15 — Unreleased
-
-- Restore the coloured YouTube Videos clapperboard after the red play symbol
-  appeared misaligned in the user’s terminal.
-
-## 1.6.0-dev.14 — Unreleased
-
-- Use a bright red play symbol for YouTube Videos in the aligned sidebar.
-
-## 1.6.0-dev.13 — Unreleased
-
-- Replace faint sidebar symbols with recognisable coloured emoji icons and
-  brighter labels. Keep the selected section bold and accented.
-- Give icons and selection markers fixed-width columns so Library and other
-  labels align. Reserve one extra sidebar cell without overflowing the content.
-- Preserve ASCII fallbacks and the dev.12 shortcut order.
-
-## 1.6.0-dev.12 — Unreleased
-
-- Renumber section shortcuts to match the reordered sidebar: 5 Now Playing,
-  6 Queue, 7 Music Discover, 8 Radio / URL, 9 Settings. H Home, Y YouTube Videos
-  and 1–4 remain unchanged. 0 still restarts the current track.
-- Share one navigation definition between sidebar labels and digit handling;
-  update help, on-screen hints and current guides to the new keys.
-
-## 1.6.0-dev.11 — Unreleased
-
-- Move Settings to the end of the sidebar, separated from listening sections.
-- Add simple icons to every section, with ASCII fallbacks for plain terminals.
-- Keep the existing shortcut keys; sidebar order no longer determines labels.
-
-## 1.6.0-dev.10 — Unreleased
-
-- Offer Play audio / Play video in item menus across Home, Library, History,
-  playlists, Queue, Radio / URL and player search for known video sources.
-- Play video on downloaded YouTube audio resolves the original online video;
-  keep the saved file, queue occurrence and library metadata intact. Returning
-  to audio uses the local file again. Radio/audio-only items retain Play.
-- Left-click remains audio-first, including YouTube search results; Enter in
-  YouTube Videos still plays video, and its existing context choices remain.
-
-## 1.6.0-dev.9 — Unreleased
-
-- Add right-click actions to Home recent tracks/stations, Library, History,
-  playlists, Radio / URL, player search and playback queue rows.
-- Left-click plays or opens list entries, including discovery collections.
-  Settings rows and nested option menus now accept clicks too.
-- Keep menus above the existing screen; block underlying input and give nested
-  queue rows priority over the surrounding player. Preserve keyboard controls.
-
-## 1.6.0-dev.8 — Unreleased
-
-- Refuse live-broadcast downloads in Discover and in the yt-dlp backend. Show
-  “live stream — play only” instead of recording indefinitely or saying saved.
-  Finished videos and archived broadcasts retain ordinary downloading.
-- Do not automatically retry live refusals or count them as source throttling.
-- Supervise each download's own process group. Cancel/pause stops its yt-dlp,
-  ffmpeg and other helpers, escalating for resistant children. A lifetime pipe
-  cleans them up if the app or terminal disappears; playback mpv is separate.
-
-## 1.6.0-dev.7 — Unreleased
-
-- Replace the full-screen Now Playing actions view with a compact pop-up over
-  the running player. Keep the track, visualiser and queue visible underneath.
-- Use the same anchored pop-up for Music Discover and YouTube Videos results,
-  keeping rows in place. Clamp menus to the view edges and scroll on short screens.
-- Close menus with Escape, c or an outside click; block controls underneath to
-  prevent click-through and preserve queue selection. Use block artwork while
-  a player pop-up is open so native terminal images cannot cover the menu.
-
-## 1.6.0-dev.6 — Unreleased
-
-- Fix sidebar clicks becoming unavailable while a search field owns keyboard
-  input. Click mode now keeps navigation active while typing; wheel navigation
-  and unrelated click targets stay suppressed.
-- Add a visible, clickable search cancel hint and constrain long search text
-  to the content width. Enter searches; Escape cancels text entry.
-
-## 1.6.0-dev.5 — Unreleased
-
-- Add right-click and c actions to Now Playing: pause/resume, previous/next,
-  volume, audio/video switching and fullscreen effects.
-- Reserve keyboard input while the menu is open; closing it restores player
-  controls. Unavailable actions are dimmed. Result menus remain available in
-  Music Discover and YouTube Videos; right-click requires click mouse mode.
-
-## 1.6.0-dev.4 — Unreleased
-
-- Give YouTube Videos its own sidebar section and direct Y shortcut, opening a
-  search field on first visit. Music Discover remains on 8.
-- Enter on video results plays video directly; a plays audio only. Music and
-  ordinary queue playback retain their existing audio defaults.
-- Retain each section's query, results and selection while moving around the app.
-- Add title/channel/duration columns, small video/live/queued symbols and plain
-  icon fallbacks. Keep a visible query line with / or click to edit.
-
-## 1.6.0-dev.3 — Unreleased
-
-- Add a distinct general YouTube Videos catalogue to Discover. Y or clickable
-  source labels switch between it and the existing YouTube Music catalogue.
-- Show channel, duration/live status, publication and view metadata when supplied;
-  retain pagination, audio/video actions, queue and audio-download controls.
-- Cancel superseded Discover searches and ignore late responses after switching
-  catalogue, editing a new query or leaving the view.
-
-## 1.6.0-dev.2 — Unreleased
-
-- Add Discover actions via right click or c: Play audio/video, play next, queue,
-  download and details, retaining search results and selection.
-- Open video in the existing mpv process; W in Player switches modes, preserving
-  position, pause and volume for seekable sources. Live sources reconnect.
-- Closing the video player stops the item and retains the queue and terminal.
-- Resolve audio/video independently; following queue entries return to audio.
-- Preserve inherited-pipe cleanup and production React runtime protection.
-
-## 1.6.0-dev.1 — Unreleased
-
-- Add Linux ZIP/folder preset import previews and confirmed installation.
-- Add optional pinned MilkDrop Original and En D downloads with textures/notices.
-- Capture only JukeboxCli's mpv stream for Linux fullscreen effects by default;
-  retain explicit system-output mode, follow stream/output changes and close the
-  companion when its parent dies.
-- Add clickable Now Playing transport, seek line and volume controls in click mode.
-- Record bounded per-minute memory counters in local session diagnostics.
-- Start packaged React/Ink in production mode before importing the UI, preventing
-  unbounded development timing records during redraws. Add a packaged-runtime
-  regression check to installation and publishing. Historical OOM attribution
-  remains unconfirmed; long-session acceptance is still required.
-- Refresh the Linux handover to the shared 1.5.0 release.
+- Add a dedicated YouTube Videos section (Y): general video search, Enter for
+  video, a for audio, result columns and a compact landscape thumbnail/details
+  card. i toggles the preview; small terminals use the compact list.
+- Remember independent Music Discover/YouTube searches and last successful results
+  across restarts: 30 recent searches and up to 100 cached results per catalogue.
+  h or clickable Recent searches repeats/clears queries; cached restore stays local
+  while thumbnails may load separately. Refresh to retrieve fresh pagination.
+- Add anchored context menus across listening lists and Now Playing, plus
+  single-click play/open and clickable Settings choices. Left-click stays
+  audio-first. Known YouTube/video items offer Play audio / Play video; downloaded
+  YouTube audio can stream its original video while retaining its saved file.
+- Keep navigation available during search typing, isolate menu controls and
+  preserve the visible list beneath pop-ups. Downloads reject live broadcasts
+  explicitly and clean up their own yt-dlp/ffmpeg groups on cancellation or exit.
+- Move Settings last, brighten aligned sidebar icons and number sections in order:
+  5 Now Playing, 6 Queue, 7 Music Discover, 8 Radio / URL, 9 Settings. H Home,
+  Y Videos and keys 1–4 remain; 0 restarts playback.
+- Add Linux ZIP/folder MilkDrop imports and optional Original / En D packs;
+  fullscreen effects capture JukeboxCli's mpv audio by default, with system audio
+  selectable. Player mouse controls and bounded memory diagnostics work on Mac/Linux.
+- Load React production mode before packaged UI imports to avoid retaining
+  development render-timing entries. Preserve the production redraw guard in
+  installation/prepublish checks. Longer memory/GPU and physical Mac video/terminal
+  acceptance remain ongoing; no universal leak-free or platform-parity claim.
 
 ## 1.5.0 — Player polish and playlist continuation
 
