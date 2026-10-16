@@ -3,9 +3,9 @@
 These features are in the app now. That doesn't mean every station, terminal
 or online service will cooperate. The limits are listed below.
 
-## Source preview — 1.6.0-dev.14
+## Source preview — 1.6.0-dev.15
 
-- Red play symbol for YouTube Videos.
+- Coloured clapperboard for YouTube Videos.
 - Coloured icons in fixed-width sidebar columns and brighter labels; Settings appears last, with number shortcuts following the displayed order.
 - Item menus offer audio/video for YouTube and recognised video files/URLs.
   Downloaded YouTube audio can stream its original video without changing the saved file.

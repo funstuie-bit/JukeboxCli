@@ -38,7 +38,7 @@ export function Sidebar() {
               <Text color={COLOR.alt} bold>{selected ? ICON.bar : " "}</Text>
             </Box>
             <Box width={3} flexShrink={0}>
-              <Text color={item.key === "videos" ? "#ff4e45" : COLOR.alt} bold>{navigationIcon(item.key)}</Text>
+              <Text color={COLOR.alt} bold>{navigationIcon(item.key)}</Text>
             </Box>
             <Text color={selected ? COLOR.accent : COLOR.text} bold={selected}>
               {`${item.shortcut} ${item.label}`}

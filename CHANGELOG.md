@@ -3,6 +3,11 @@
 Release notes describe what changed in each build. For what works now and the
 remaining limits, see [feature status](FEATURES.md).
 
+## 1.6.0-dev.15 — Unreleased
+
+- Restore the coloured YouTube Videos clapperboard after the red play symbol
+  appeared misaligned in the user’s terminal.
+
 ## 1.6.0-dev.14 — Unreleased
 
 - Use a bright red play symbol for YouTube Videos in the aligned sidebar.

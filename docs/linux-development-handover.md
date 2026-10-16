@@ -5,7 +5,7 @@ Linux and macOS use one source history and release process.
 
 ## Current state
 
-- Source preview: `1.6.0-dev.14`, including general YouTube video search and [audio/video controls](video-playback.md).
+- Source preview: `1.6.0-dev.15`, including general YouTube video search and [audio/video controls](video-playback.md).
 - Production release: `v1.5.0`
 - Public source: `https://github.com/funstuie-bit/JukeboxCli.git`
 - Private mirror connection details belong in private maintainer notes, not here
@@ -273,3 +273,7 @@ for TERM=dumb or JUKEBOXCLI_ICONS=ascii. Numbering is unchanged from dev.12.
 
 Preview dev.14 uses a bright red play symbol for the YouTube Videos sidebar entry.
 Its fixed icon column and Y shortcut remain; ASCII mode uses a red > fallback.
+
+Preview dev.15 restores the dev.13 coloured clapperboard for YouTube Videos at
+Stu’s request. The red text triangle appeared misaligned in his terminal despite
+passing emulator column checks; physical rendering feedback takes precedence.

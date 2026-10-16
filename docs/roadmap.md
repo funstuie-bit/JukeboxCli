@@ -1,5 +1,9 @@
 # Roadmap
 
+## Implemented in source preview — 1.6.0-dev.15
+
+- [x] Restore the user-preferred clapperboard after physical terminal feedback on the red icon.
+
 ## Implemented in source preview — 1.6.0-dev.14
 
 - [x] Red play icon for the YouTube Videos sidebar entry.
