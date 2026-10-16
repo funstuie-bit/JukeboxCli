@@ -72,7 +72,12 @@ export function ListeningQueue({ height, width, active, framed = false, controls
       // The engine knows the current recording's duration better than saved tags.
       // Keep the other rows' metadata and the library itself unchanged.
       const duration = row.index === state.index && state.duration > 0 ? state.duration : row.track.durationSec;
-      return <MouseRow key={row.index} active={focused && !confirmClear} onClick={() => setCursor(start + offset)}><Text color={here && focused ? COLOR.selectedText : row.index === state.index ? COLOR.accent : COLOR.text} backgroundColor={here && focused ? COLOR.selection : undefined} wrap="truncate-end">
+      return <MouseRow key={row.index} active={focused && !confirmClear} onClick={() => { setCursor(start + offset); run(store.playback.playQueueIndex(row.index)); }} menuTitle={title} menuActions={[
+        { label: "Play", run: () => run(store.playback.playQueueIndex(row.index)) },
+        { label: "Move up", disabled: row.index === 0, run: () => store.playback.moveQueue(row.index, -1) },
+        { label: "Move down", disabled: row.index === allEntries.length - 1, run: () => store.playback.moveQueue(row.index, 1) },
+        { label: "Remove from queue", run: () => run(store.playback.removeQueue(row.index)) },
+      ]}><Text color={here && focused ? COLOR.selectedText : row.index === state.index ? COLOR.accent : COLOR.text} backgroundColor={here && focused ? COLOR.selection : undefined} wrap="truncate-end">
         {columns ? queueRow(artist, title, isLive(row.track) ? "LIVE" : formatDuration(duration), contentCols, marker, source) : fitRow(marker + source.padEnd(4) + " " + title + " · " + artist, cols)}
       </Text></MouseRow>;
     })}

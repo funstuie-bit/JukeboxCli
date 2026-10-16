@@ -1,3 +1,4 @@
+import { MouseRow } from "./MouseRow";
 import { useEffect, useRef, useState } from "react";
 import { Box, Text } from "ink";
 import { useActionInput as useInput } from "../hooks/useActionInput";
@@ -101,9 +102,13 @@ export function PlayerSearch({ width, height, active, onClose, onDownload }: {
       <Text color={palette.accent} wrap="truncate-end">{cleanText(query)}</Text>}</Box>
     <Text color={palette.muted} wrap="truncate-end">{notice}</Text>
     <Box height={rows} overflow="hidden" flexDirection="column">{tracks.slice(start, start + rows).map((track, i) =>
-      <Text key={track.id} color={start + i === selected ? palette.accent : palette.text} wrap="truncate-end">
+      <MouseRow key={track.id} active={active && !editing && !busy} allowDuringText onClick={() => { setCursor(start + i); void store.playback.selectTrack(track, [track]).catch(() => setNotice("Could not play · try again")); }} menuTitle={cleanText(track.title)} menuActions={[
+        { label: "Play", run: () => { void store.playback.selectTrack(track, [track]).catch(() => setNotice("Could not play · try again")); } },
+        { label: "Play next", run: () => store.playback.enqueue(track, true) },
+        { label: "Add to queue", run: () => store.playback.enqueue(track, false) },
+      ]}><Text color={start + i === selected ? palette.accent : palette.text} wrap="truncate-end">
         {start + i === selected ? "› " : "  "}{cleanText(track.title)} · {cleanText(track.artist ?? "")} · {formatDuration(track.durationSec)}
-      </Text>)}</Box>
+      </Text></MouseRow>)}</Box>
     <Text color={palette.muted} wrap="truncate-end">Esc back · / edit{more ? " · L more" : ""} · {tracks.length}/200 max</Text>
   </Box>;
 }

@@ -40,14 +40,14 @@ it("lifts saturated artwork accents and falls back for monochrome art", () => {
 it("decodes only left-button press coordinates, not release or wheel", () => {
   expect(mousePresses("\x1b[<0;5;8M\x1b[<0;5;8m\x1b[<65;5;8M")).toEqual([{ x: 4, y: 7 }]);
 });
-it("mouse clicks select a visible song row without playing it", async () => {
+it("mouse clicks play a visible song row and retain keyboard selection", async () => {
   const store = makeStore({ region: "content", listRows: 10 }); store.config.mouseMode = "click";
   const select = vi.fn();
   const view = await renderReady(<StoreContext.Provider value={store}><SongList focused
     groups={[{ items: [{ value: "a", title: "Alpha" }, { value: "b", title: "Beta" }] }]} onSelect={select} /></StoreContext.Provider>);
   await act(async () => { mouseEvents.emit("press", { x: 6, y: 1 }); });
-  expect(select).not.toHaveBeenCalled();
-  await press(view, "\r"); expect(select).toHaveBeenCalledExactlyOnceWith("b");
+  expect(select).toHaveBeenCalledExactlyOnceWith("b");
+  await press(view, "\r"); expect(select).toHaveBeenCalledTimes(2); expect(select).toHaveBeenLastCalledWith("b");
 });
 it("previews an imported stream and only queues it after A, once", async () => {
   await fs.mkdir(paths.temp, { recursive: true });

@@ -77,10 +77,11 @@ this log and adds click-mode player controls. See [details](visualiser-and-diagn
   pickers. Space remains pause. The former j-seek/k-pause aliases are disabled
   in this mode; arrows and other shortcuts still work. Text fields receive
   literal j/k. This is vertical navigation, not a complete Vim command language.
-- **Mouse:** off, wheel (default), or click. Click mode adds row selection in
-  song lists and the playback queue, and sidebar navigation. Clicking a track
-  does not play or delete it; Enter plays. Mouse reporting is disabled in text
-  fields. Terminal text selection may require Shift-drag while reporting is on.
+- **Mouse:** off, wheel (default), or click. Click mode plays or opens entries in
+  Home, song lists, discovery, radio and the playback queue. Right-click opens
+  item actions; Settings and nested choices also accept left-click. Sidebar
+  navigation remains clickable during text entry; unrelated rows and wheel
+  navigation stay blocked while typing. Terminal selection may require Shift-drag.
 - **Discover load more:** optionally fetch the next result page near the end of
   the focused list. Off by default; `L` remains available. Stops at an empty page
   or 10,000 entries. It never downloads music, starts playback or silently extends

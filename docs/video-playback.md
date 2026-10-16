@@ -77,3 +77,8 @@ queue entries are checked by yt-dlp before media is saved. The queue reports
 “live stream — play only”. Finished recordings remain downloadable. Timed live
 recording is not implemented. Cancellation/pause and app exit clean up only the
 process group belonging to each download, including ffmpeg, leaving playback alone.
+
+In preview dev.9, a single left-click on a YouTube Videos result plays video;
+Music Discover plays audio or opens the clicked collection. Right-click retains
+the audio/video choice and queue/download actions. Home and saved listening
+lists also have play/queue menus, and Settings submenus accept left-click.

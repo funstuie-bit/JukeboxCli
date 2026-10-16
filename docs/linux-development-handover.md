@@ -5,7 +5,7 @@ Linux and macOS use one source history and release process.
 
 ## Current state
 
-- Source preview: `1.6.0-dev.8`, including general YouTube video search and [audio/video controls](video-playback.md).
+- Source preview: `1.6.0-dev.9`, including general YouTube video search and [audio/video controls](video-playback.md).
 - Production release: `v1.5.0`
 - Public source: `https://github.com/funstuie-bit/JukeboxCli.git`
 - Private mirror connection details belong in private maintainer notes, not here
@@ -221,3 +221,16 @@ unrelated processes, abrupt host death, quiet live refusal and finite completion
 Real Linux acceptance also verifies a small HTTP audio download converted with
 ffmpeg and the reported YouTube live link rejected without media output. Mac
 hardware acceptance remains pending. The user's earlier partial is retained.
+
+### Linux pointer coverage — preview dev.9 (2026-10-15)
+
+Home recent items/stations and Library/History/playlist/radio/queue/player-search
+rows now expose context actions. Left-click plays or opens entries, including
+discovery collections, Settings rows and nested option menus. The app-level
+overlay avoids list reflow, suppresses background controls and native graphics,
+and gives a nested queue row priority over the surrounding player. Click outside,
+Esc or c closes. Existing destructive confirmations remain in place.
+
+Mouse mode must be click; restart after installing. Specialist editors are not
+claimed to have complete pointer coverage. macOS/VNC physical acceptance remains
+separate from automated terminal validation.

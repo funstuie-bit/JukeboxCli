@@ -78,8 +78,8 @@ export function Discover({ videos: youtube = false }: { videos?: boolean } = {})
     autoAttempt.current = page;
     void load(page.more, "more");
   }, [config.autoLoadMore, focused, menu, details, editing, busy, page, selected]);
-  const runAction = (choice: number) => {
-    const item = page.items[menu ?? selected];
+  const runAction = (choice: number, index = menu ?? selected) => {
+    const item = page.items[index];
     setMenu(null);
     if (!item?.track) return;
     if (choice <= 1) {
@@ -151,7 +151,7 @@ export function Discover({ videos: youtube = false }: { videos?: boolean } = {})
     </> : null}
     {page.items.length === 0 && !busy ? <Text color={COLOR.muted}>Listen without downloading: / search · o Play URL · 9 radio</Text> : null}
     {page.items.slice(start, start + rows).map((item, i) => <MouseRow key={`${start + i}:${item.id}`} active={focused && !editing && !busy && menu === null && !details} width={contentWidth}
-      onClick={() => setCursor(start + i)} onContextMenu={point => { if (item.track) { setCursor(start + i); setMenuAnchor({ x: point.x, y: (youtube ? 4 : 3) + i + point.y }); setMenu(start + i); } }}>
+      onClick={() => { setCursor(start + i); if (item.track) runAction(youtube ? 1 : 0, start + i); else void load(() => browseMusic(item), "browse"); }} onContextMenu={point => { if (item.track) { setCursor(start + i); setMenuAnchor({ x: point.x, y: (youtube ? 4 : 3) + i + point.y }); setMenu(start + i); } }}>
       <Text
       color={focused && selected === start + i ? COLOR.accent : undefined} wrap="truncate-end">
       {selected === start + i ? "› " : "  "}{youtube ? videoRow(item, contentWidth - 2, playback.getState().list.some(t => t.id === item.track?.id)) : `${browseIcon("music")} ${truncate(cleanText(`${item.title}${item.subtitle ? ` · ${item.subtitle}` : ""} [${item.kind}]`), contentWidth - 4)}`}

@@ -1,3 +1,4 @@
+import { MouseRow } from "./MouseRow";
 import { Box, Text } from "ink";
 import { useActionInput } from "../hooks/useActionInput";
 import { COLOR, ICON } from "../theme";
@@ -31,10 +32,10 @@ export function SettingsChoices({ title, options, focused, height, value, onFocu
   }, { isActive: focused });
   return <Box flexDirection="column">
     <Text bold color={COLOR.text} wrap="truncate-end">{title}</Text>
-    {options.slice(start, start + count).map((option, offset) => <Text key={option.value}
+    {options.slice(start, start + count).map((option, offset) => <MouseRow key={option.value} active={focused} onClick={() => { onFocus(option.value); onSelect(option.value); }}><Text
       color={focused && start + offset === selected ? COLOR.accent : COLOR.text} wrap="truncate-end">
       {focused && start + offset === selected ? `${ICON.pointer} ` : "  "}{option.label}
-    </Text>)}
+    </Text></MouseRow>)}
     <Text color={COLOR.muted} wrap="truncate-end">↑↓ choose · Enter change/open · {options.length ? selected + 1 : 0}/{options.length}{options.length > count ? ` · showing ${start + 1}–${Math.min(options.length, start + count)} · Pg↑/↓ scroll` : " · all options shown"}</Text>
   </Box>;
 }

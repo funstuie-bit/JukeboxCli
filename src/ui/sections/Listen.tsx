@@ -1,3 +1,4 @@
+import { MouseRow } from "../components/MouseRow";
 import { useEffect, useRef, useState } from "react";
 import { Box, Text } from "ink";
 import { useActionInput as useInput } from "../hooks/useActionInput";
@@ -165,11 +166,11 @@ export function Listen() {
         const visible = facets.filter(f => !facetFilter || f.name.toLowerCase().includes(facetFilter.toLowerCase()));
         const picked = Math.min(facetCursor, Math.max(0, visible.length - 1));
         const from = Math.max(0, Math.min(picked - Math.floor(rows / 2), visible.length - rows));
-        return visible.length ? visible.slice(from, from + rows).map((facet, i) => <Text key={facet.query} wrap="truncate-end"
+        return visible.length ? visible.slice(from, from + rows).map((facet, i) => <MouseRow key={facet.query} active={focused} width={contentWidth} onClick={() => { setFacetCursor(from + i); void submitDirectory(facet.query); }}><Text wrap="truncate-end"
           color={focused && picked === from + i ? COLOR.selectedText : COLOR.text}
           backgroundColor={focused && picked === from + i ? COLOR.selection : undefined}>
           {picked === from + i ? "› " : "  "}{cleanText(facet.name)}{facetKind === "quick" ? "" : ` · ${facet.count.toLocaleString()} stations`}
-        </Text>) : <Text color={COLOR.muted}>No matching {facetKind === "quick" ? "quick channels" : facetKind}. Press / to change the filter.</Text>;
+        </Text></MouseRow>) : <Text color={COLOR.muted}>No matching {facetKind === "quick" ? "quick channels" : facetKind}. Press / to change the filter.</Text>;
       })()}
     </> : mode === "name" ? <>
       <Text color={COLOR.accent} wrap="truncate-end">Name: {target?.title} · type replacement or enter to keep</Text>
@@ -191,11 +192,17 @@ export function Listen() {
       : mode === "remove" ? <><Text color={COLOR.warn} wrap="truncate-end">Remove favourite? {target ? cleanText(target.title) : ""}</Text><Text color={COLOR.warn}>y confirms · esc cancels (music and queue stay)</Text></> : <>
       <Text color={COLOR.muted} wrap="truncate-end">enter play · A/P queue · f save · t rename · x/d remove · G artwork</Text>
       {!entries.length ? <Text color={COLOR.muted}>No saved stations yet. Press M/B/g/c to browse or R to add a radio stream.</Text> : null}
-      {entries.slice(start, start + rows).map((entry, i) => <Text key={`${i}:${entry.id}`} wrap="truncate-end"
+      {entries.slice(start, start + rows).map((entry, i) => <MouseRow key={`${i}:${entry.id}`} active={focused} width={contentWidth} onClick={() => { setCursor(start + i); void playback.selectTrack(entry, [entry]).catch(fail); }} menuTitle={cleanText(entry.title)} menuActions={[
+        { label: "Play", run: () => { void playback.selectTrack(entry, [entry]).catch(fail); } },
+        { label: "Play next", run: () => playback.enqueue(entry, true) },
+        { label: "Add to queue", run: () => playback.enqueue(entry, false) },
+        ...(entry.streamType === "radio" ? [{ label: "Save / rename station", run: () => { setTarget(entry); setMode("name"); } }] : []),
+        { label: "Remove…", run: () => { if (start + i < drafts.length) setDrafts(d => d.filter(t => t !== entry)); else { setTarget(entry); setMode("remove"); } } },
+      ]}><Text wrap="truncate-end"
         color={focused && selected === start + i ? COLOR.selectedText : COLOR.text}
         backgroundColor={focused && selected === start + i ? COLOR.selection : undefined}>
         {selected === start + i ? "› " : "  "}{start + i < drafts.length ? drafts[start + i]?.directoryResult ? "[directory] " : "[found] " : "★ "}{entry.streamType === "radio" ? "[LIVE] " : ""}{cleanText(entry.title)}{entry.artist ? ` · ${cleanText(entry.artist)}` : ""}
-      </Text>)}
+      </Text></MouseRow>)}
     </>}
     <Text color={notice ? COLOR.alt : COLOR.muted} wrap="truncate-end">{notice || "Direct URLs are saved in your private listening session; use trusted links."}</Text>
     <Text color={COLOR.muted} wrap="truncate-end">{mode !== "list" ? "esc cancel · " : ""}9 Radio / URL · 7 Queue · m Player</Text>

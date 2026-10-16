@@ -1,5 +1,13 @@
 # Roadmap
 
+## Implemented in source preview — 1.6.0-dev.9
+
+- [x] Left-click activates Home, saved-list, discovery, radio and queue entries.
+- [x] Context actions on Home recent items/stations, shared song/playlist lists,
+  radio, player search and Queue; nested row actions take priority over the player.
+- [x] Clickable Settings and nested option menus. Keyboard navigation retained.
+- Drag operations and full pointer coverage of specialist editors remain future work.
+
 ## Implemented in source preview — 1.6.0-dev.8
 
 - Block unbounded live-broadcast downloads with explicit play-only feedback.

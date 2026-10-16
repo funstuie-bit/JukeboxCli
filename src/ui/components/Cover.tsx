@@ -1,3 +1,4 @@
+import { useRowMenu } from "./RowActions";
 import { memo, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { Box, Text, type DOMElement } from "ink";
 import { loadCoverArt, loadCoverImage, loadSixelImage, type CoverArt } from "../../player/art";
@@ -26,7 +27,8 @@ export function Cover({ source, cols, rows, visible, fallback, repaintKey, suppr
   const [loaded, setLoaded] = useState<{ key: string; image: CoverImage | null; art: CoverArt | null }>();
   const simple = simpleArtwork();
   // Native terminal images paint outside Ink; use text blocks under an overlay.
-  const overlayBlocks = Boolean(graphicsPainter && suppressGraphics);
+  const { menu } = useRowMenu();
+  const overlayBlocks = Boolean(graphicsPainter && (suppressGraphics || menu));
   const key = `${source}:${cols}:${rows}:${simple}:${overlayBlocks}`;
   useEffect(() => {
     if (!source || !visible || simple) return;

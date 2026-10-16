@@ -245,7 +245,13 @@ export function SongList({
         // contrast gives each row an anchor instead of one flat grey blur.
         const titleColor = here || playing ? COLOR.accent : COLOR.text;
         return (
-          <MouseRow key={value} active={focused} onClick={() => setCursor(r.idx)}>
+          <MouseRow key={value} active={focused} onClick={() => { setCursor(r.idx); onSelect(value); }} menuTitle={r.kind === "item" ? cleanText(r.item.title) : r.label}
+            menuActions={[
+              { label: onQueue ? "Play" : "Open", run: () => onSelect(value) },
+              ...(r.kind === "item" && onQueue ? [{ label: "Play next", run: () => onQueue(value, true) }, { label: "Add to queue", run: () => onQueue(value, false) }] : []),
+              ...(r.kind === "item" && onRename ? [{ label: "Rename", run: () => onRename(value) }] : []),
+              ...(r.kind === "item" && onDelete ? [{ label: "Remove…", run: () => onDelete(value) }] : []),
+            ]}>
             <Text color={COLOR.accent}>{here ? `${ICON.pointer} ` : "  "}</Text>
             <Text color={COLOR.good}>{playing ? `${ICON.play} ` : "  "}</Text>
             {onQueueMany && r.kind === "item" ? <Text color={COLOR.accent}>{marked.has(value) ? "[x] " : "[ ] "}</Text> : null}

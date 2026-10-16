@@ -27,7 +27,10 @@ Press **Y** (Shift+y) to open it, type a search and press Enter. On the results,
 stays on **8** and keeps Enter for audio. Press **c** or right-click a result in
 click mouse mode for queue, download and details actions. In Now Playing,
 **c or right-click** opens pause/resume, previous/next, volume, audio/video and
-fullscreen effects actions. Enable **Settings → Keyboard and mouse → Mouse: click**
+fullscreen effects actions. **Left-click plays or opens an item** in Home, Library,
+History, playlists, discovery, radio and the queue. Right-click offers the actions
+for that item (play, queue, rename/remove where supported). Settings and their
+submenus also respond to a single left-click. Enable **Settings → Keyboard and mouse → Mouse: click**
 for right-click menus; **c** works in every mouse mode. Menus pop up over the
 existing player or results near your click, without replacing the screen or
 moving the list. **Escape**, **c** or a click outside closes them. Sidebar clicks stay active
@@ -108,7 +111,7 @@ The appearance and keyboard menus show all options when the window has room.
 Toggles keep your selection in place; smaller windows show a scroll position.
 
 Also includes 1.4's [portable playlists, genre browsing and diagnostics](docs/library-and-diagnostics.md),
-artwork colours, j/k navigation, mouse row selection and Discover pagination.
+artwork colours, j/k navigation, mouse play/open controls and Discover pagination.
 
 ## First run
 

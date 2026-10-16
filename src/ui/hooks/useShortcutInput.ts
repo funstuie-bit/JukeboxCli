@@ -4,7 +4,7 @@ import { shortcutInput, type ShortcutScope } from "../shortcuts";
 export function useShortcutInput(handler: (input: string, key: Key) => void, scope: ShortcutScope, active: boolean) {
   const { config, captureMode } = useStore();
   useInput((input, key) => {
-    if (captureMode === "text") return;
+    if (captureMode === "text" || captureMode === "menu") return;
     const translated = shortcutInput(input, key, config.keybindings, scope);
     if (translated && !translated[1].ctrl && !translated[1].meta) handler(...translated);
   }, { isActive: active });

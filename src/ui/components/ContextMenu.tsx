@@ -37,12 +37,12 @@ export function ContextMenu({ actions, width, height, active, close, anchor, tit
     else if (key.upArrow) setSelected(i => Math.max(0, i - 1));
     else if (key.downArrow) setSelected(i => Math.min(actions.length - 1, i + 1));
     else if (key.return) choose(selected);
-  }, { isActive: active });
+  }, { isActive: active, allowDuringMenu: true });
   return <Box ref={ref} position="absolute" left={left} top={top} flexDirection="column" borderStyle="round" borderColor={COLOR.accent} backgroundColor="#171b2b" width={menuWidth} height={menuHeight}>
       {showTitle ? <Text bold color={COLOR.text} wrap="truncate-end">{title}</Text> : null}
       {actions.slice(start, start + rows).map((action, offset) => {
         const index = start + offset;
-        return <MouseRow key={action.label} active={active && !action.disabled} width={menuWidth - 2} onClick={() => choose(index)}>
+        return <MouseRow allowDuringMenu key={action.label} active={active && !action.disabled} width={menuWidth - 2} onClick={() => choose(index)}>
           <Text dimColor={action.disabled} color={index === selected ? COLOR.accent : COLOR.text} wrap="truncate-end">{index === selected ? "› " : "  "}{action.label}{action.disabled ? " (unavailable)" : ""}</Text>
         </MouseRow>;
       })}

@@ -3,7 +3,11 @@
 These features are in the app now. That doesn't mean every station, terminal
 or online service will cooperate. The limits are listed below.
 
-## Source preview — 1.6.0-dev.8
+## Source preview — 1.6.0-dev.9
+
+- Single-click play/open across listening lists; right-click item actions on Home,
+  Library, History, playlists, radio, player search and Queue, as well as Discover/Now Playing.
+- Clickable Settings rows and nested choices; keyboard navigation remains available.
 
 - Live broadcasts are play-only, with backend download filtering and explicit queue status.
 - Owned download process groups are cleaned up on cancellation and app/terminal exit.

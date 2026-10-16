@@ -1,3 +1,4 @@
+import { RowMenuProvider, RowMenuOverlay } from "./components/RowActions";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Box, Text, useApp, useInput, usePaste, useStdout, useStdin } from "ink";
 import { Spinner } from "@inkjs/ui";
@@ -708,7 +709,7 @@ export function App({ initialAdd, initialOverrides }: { initialAdd?: string; ini
   const expandedPlayerLayout = playerLayout(ruleWidth, listRows + 2);
 
   return (
-    <StoreContext.Provider value={store}>
+    <StoreContext.Provider value={store}><RowMenuProvider>
       <Box flexDirection="column" paddingX={1}>
         <Box justifyContent="space-between">
           {showLogo ? <Logo /> : null}
@@ -780,7 +781,8 @@ export function App({ initialAdd, initialOverrides }: { initialAdd?: string; ini
             </Box>
           </>
         )}
+        <RowMenuOverlay />
       </Box>
-    </StoreContext.Provider>
+    </RowMenuProvider></StoreContext.Provider>
   );
 }

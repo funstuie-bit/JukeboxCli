@@ -1,9 +1,11 @@
+import { MouseRow } from "../components/MouseRow";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { promises as fs } from "node:fs";
 import path from "node:path";
 import { Box, Text } from "ink";
 import { useActionInput as useInput } from "../hooks/useActionInput";
-import { Select, Spinner } from "@inkjs/ui";
+import { Spinner } from "@inkjs/ui";
+import { Select } from "../components/Select";
 import { useQueueItems, useStore } from "../store";
 import { TextField } from "../components/TextField";
 import { SelectField, TextInputField } from "../components/FormHelpers";
@@ -516,7 +518,7 @@ export function Settings() {
   if (mode === "controls") return frame("Keyboard and mouse", <SettingsChoices focused={focused}
     height={Math.max(3, listRows - 4)} value={choiceFocus.controls}
     onFocus={value => setChoiceFocus(previous => ({ ...previous, controls: value }))}
-    title="Mouse clicks select rows; Enter plays. Shift-drag selects terminal text."
+    title="Left-click plays / opens; right-click shows actions. Shift-drag selects terminal text."
     options={[
       { value: "vim", label: `Vim-style j/k navigation: ${config.vimNavigation ? "on" : "off"} · Space pauses` },
       { value: "mouse", label: `Mouse: ${config.mouseMode ?? "wheel"} (off / wheel / click)` },
@@ -1256,7 +1258,7 @@ export function Settings() {
           const detailColor =
             it.danger ? COLOR.bad : it.set ? COLOR.alt : undefined;
           return (
-            <Box key={it.value}>
+            <MouseRow key={it.value} active={focused} onClick={() => { setCursor(menuStart + i); openSetting(it.value); }}>
               <Text color={COLOR.accent}>
                 {active ? `${ICON.pointer} ` : "  "}
               </Text>
@@ -1275,7 +1277,7 @@ export function Settings() {
               >
                 {`   ${truncate(it.detail, DETAIL_MAX)}`}
               </Text>
-            </Box>
+            </MouseRow>
           );
         })}
       </Box>

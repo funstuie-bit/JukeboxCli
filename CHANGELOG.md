@@ -3,6 +3,15 @@
 Release notes describe what changed in each build. For what works now and the
 remaining limits, see [feature status](FEATURES.md).
 
+## 1.6.0-dev.9 — Unreleased
+
+- Add right-click actions to Home recent tracks/stations, Library, History,
+  playlists, Radio / URL, player search and playback queue rows.
+- Left-click plays or opens list entries, including discovery collections.
+  Settings rows and nested option menus now accept clicks too.
+- Keep menus above the existing screen; block underlying input and give nested
+  queue rows priority over the surrounding player. Preserve keyboard controls.
+
 ## 1.6.0-dev.8 — Unreleased
 
 - Refuse live-broadcast downloads in Discover and in the yt-dlp backend. Show

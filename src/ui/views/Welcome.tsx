@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Box, Text, useInput, usePaste } from "ink";
-import { Spinner, Select } from "@inkjs/ui";
+import { Spinner } from "@inkjs/ui";
+import { Select } from "../components/Select";
 import { useStore } from "../store";
 import { GradientBar } from "../components/GradientBar";
 import { TextField } from "../components/TextField";

@@ -17,7 +17,8 @@
 
 import { Box, Text } from "ink";
 import { useActionInput as useInput } from "../hooks/useActionInput";
-import { Select } from "@inkjs/ui";
+import { Select } from "./Select";
+import { MouseRow } from "./MouseRow";
 import { COLOR, ICON } from "../theme";
 import { TextField } from "./TextField";
 
@@ -54,11 +55,7 @@ export interface SettingRowProps {
   /** Destructive rows render the label and detail in COLOR.bad (rose), same
    *  as Settings' `it.danger` flag. Overrides `set` on the detail. */
   danger?: boolean;
-  /** Optional click handler, reserved for forward-compat with mouse-driven
-   *  menus. The keyboard path calls onSelect directly so this isn't wired to
-   *  the rendered <Box> (Ink's Box doesn't accept onClick); it's here on the
-   *  prop type for callers that want to thread it through and invoke it from
-   *  their own mouse layer. */
+  /** Activate this setting with a pointer. */
   onClick?: () => void;
 }
 
@@ -70,13 +67,9 @@ export function SettingRow({
   danger = false,
   onClick,
 }: SettingRowProps) {
-  // Intentionally not passed to <Box>: Ink's Box has no onClick prop. Kept on
-  // the prop type for forward-compat with mouse layers; a caller wiring mouse
-  // input can call onClick directly from their own useInput handler.
-  void onClick;
   const detail = detailColor({ set, danger });
   return (
-    <Box>
+    <MouseRow active={!!onClick} onClick={() => onClick?.()}>
       <Text color={COLOR.accent}>{active ? `${ICON.pointer} ` : "  "}</Text>
       <Text
         color={danger ? COLOR.bad : active ? COLOR.accent : undefined}
@@ -90,15 +83,15 @@ export function SettingRow({
           {`   ${value}`}
         </Text>
       ) : null}
-    </Box>
+    </MouseRow>
   );
 }
 
 /**
- * A select sub-page body wrapping @inkjs/ui's `Select` with a title and dim
+ * A select sub-page body wrapping the shared pointer-aware `Select` with a title and dim
  * hint, matching the layout of Settings' folder-confirm and wipe-all pages
  * when rendered inside `frame`. The `Select` keyboard (↑/↓ to move, ↵ to
- * choose) is owned by @inkjs/ui; the esc-to-cancel handler installed here
+ * choose) is owned by Select; the esc-to-cancel handler installed here
  * only fires when `focused` (e.g. `region === "content"`).
  *
  * Note: the @inkjs/ui Select prop name is `onChange`; we expose it as the
