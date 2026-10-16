@@ -1,3 +1,4 @@
+import { isLiveDownloadError } from "../ytdlp/live";
 import { EventEmitter } from "node:events";
 import { logEvent, redactLog } from "../diagnostics/log";
 import { basename, dirname, join, relative, resolve } from "node:path";
@@ -1025,12 +1026,10 @@ export class DownloadQueue extends EventEmitter {
       } catch (e) {
         if (signal.aborted) return { status: "canceled" };
         lastError = e;
-        // A permanently dead track (removed/private/404) can't succeed on a
-        // retry, so don't burn attempts or backoff delay on it.
-        if (isPermanentTrackError(e instanceof Error ? e.message : String(e))) {
-          break;
-        }
         const message = e instanceof Error ? e.message : String(e);
+        // Live recordings and permanently unavailable tracks cannot succeed
+        // on retry; do not spend attempts or backoff time on them.
+        if (isLiveDownloadError(message) || isPermanentTrackError(message)) break;
         if (isSourceBlockedError(message)) {
           // On the first refusal, not after this track has spent all three
           // attempts: waiting 20 to 40 seconds before narrowing would leave
@@ -1318,6 +1317,8 @@ export class DownloadQueue extends EventEmitter {
       item.status = "error";
       item.error = e instanceof Error ? e.message : String(e);
       this.logFailure(item, item.error);
+      // A live-recording refusal is not throttling or a stale extractor.
+      if (isLiveDownloadError(item.error)) return;
       // A run of TRANSIENT failures almost always means we're being throttled
       // or blocked, so pause the whole queue (resumable) instead of failing
       // the rest silently. Permanently dead tracks say nothing about the

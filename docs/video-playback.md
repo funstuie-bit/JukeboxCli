@@ -1,6 +1,6 @@
 # Audio and video playback
 
-Source preview 1.6.0-dev.7; stable release/Homebrew remain 1.5.0.
+Source preview 1.6.0-dev.8; stable release/Homebrew remain 1.5.0.
 
 Choose **YouTube Videos** in the sidebar or press **Y** (Shift+y) outside a text
 field. On first visit the search field is ready to type into. Submit a query,
@@ -68,3 +68,12 @@ While typing a search, sidebar clicks still navigate in click mode. Enter submit
 Escape or the clickable cancel hint leaves the field. Letters such as q remain
 literal search text. Results survive section changes within the current session;
 restarting the app starts a fresh search session.
+
+## Downloading versus live playback
+
+Live broadcasts can be played as audio or video, but ordinary Download does not
+record them. Known live results explain this immediately; pasted links and older
+queue entries are checked by yt-dlp before media is saved. The queue reports
+“live stream — play only”. Finished recordings remain downloadable. Timed live
+recording is not implemented. Cancellation/pause and app exit clean up only the
+process group belonging to each download, including ffmpeg, leaving playback alone.

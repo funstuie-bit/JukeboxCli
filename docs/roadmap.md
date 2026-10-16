@@ -1,5 +1,12 @@
 # Roadmap
 
+## Implemented in source preview — 1.6.0-dev.8
+
+- Block unbounded live-broadcast downloads with explicit play-only feedback.
+- Owned download-group cleanup on cancellation, pause and host exit; resistant
+  helper and abrupt-host-exit regression coverage. Timed live recording remains
+  a separate future feature.
+
 ## Implemented in source preview — 1.6.0-dev.7
 
 - Compact anchored context-menu overlays in Now Playing and both Discover sections.

@@ -21,7 +21,7 @@ keeps the lot in one editable queue. Streams stay streams unless you choose to s
 them. There are lyrics, cover artwork and live visualisers too, with optional
 fullscreen MilkDrop effects on Mac and Linux.
 
-Source preview **1.6.0-dev.7** gives **YouTube Videos its own sidebar section**.
+Source preview **1.6.0-dev.8** gives **YouTube Videos its own sidebar section**.
 Press **Y** (Shift+y) to open it, type a search and press Enter. On the results,
 **Enter plays video** in its own window; **a plays audio only**. Music Discover
 stays on **8** and keeps Enter for audio. Press **c** or right-click a result in
@@ -41,7 +41,11 @@ switches the current item between audio and video. Closing the video window
 stops the item and leaves the CLI open. See [controls and limits](docs/video-playback.md).
 
 Playing or browsing online music does not add it to your library. Downloads only
-start when you ask for one.
+start when you ask for one. **Live broadcasts are play-only**: Download shows a
+clear refusal instead of silently recording an endless stream. Finished videos
+and archived broadcasts can still be downloaded. Cancelling a download or
+closing JukeboxCli also stops that download's yt-dlp/ffmpeg helpers, without
+stopping unrelated players.
 
 ## Get going
 
@@ -507,7 +511,7 @@ supplies the community station directory.
 
 Released under the [MIT License](LICENSE).
 
-## Source preview: 1.6.0-dev.7
+## Source preview: 1.6.0-dev.8
 
 Linux now supports confirmed ZIP/folder MilkDrop imports and optional MilkDrop
 Original / En D downloads, plus fullscreen audio isolated to JukeboxCli by default.

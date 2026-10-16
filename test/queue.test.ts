@@ -545,6 +545,17 @@ describe("download queue per-track retry", () => {
     delete process.env.SOUNDCLI_BLOCKED_SCALE;
   });
 
+  it("does not retry or pause the batch for live-stream download refusals", async () => {
+    vi.mocked(downloadTrack).mockRejectedValue(new Error("Live streams cannot be downloaded. Choose a finished video."));
+    const q = new DownloadQueue(defaultConfig, fakeLib, 1);
+    q.enqueue(Array.from({ length: 8 }, (_, i) => input("youtube", `live-${i}`)));
+    await vi.waitFor(() => expect(q.stats().failed).toBe(8));
+    expect(downloadTrack).toHaveBeenCalledTimes(8);
+    expect(q.stats().rateLimited).toBe(false);
+    expect(q.stats().failingSource).toBe(null);
+    expect(q.stats().paused).toBe(0);
+  });
+
   it("retries a transient throw then succeeds without erroring", async () => {
     let calls = 0;
     vi.mocked(downloadTrack).mockImplementation(async () => {

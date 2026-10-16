@@ -5,7 +5,7 @@ Linux and macOS use one source history and release process.
 
 ## Current state
 
-- Source preview: `1.6.0-dev.7`, including general YouTube video search and [audio/video controls](video-playback.md).
+- Source preview: `1.6.0-dev.8`, including general YouTube video search and [audio/video controls](video-playback.md).
 - Production release: `v1.5.0`
 - Public source: `https://github.com/funstuie-bit/JukeboxCli.git`
 - Private mirror connection details belong in private maintainer notes, not here
@@ -205,3 +205,19 @@ Outside click / Escape / c closes; underlying transport and queue input are
 suspended. Pixel artwork temporarily uses blocks under an open player popup.
 Acceptance: keep playback running, right-click the player and result rows near
 edges, choose actions, dismiss outside, and confirm queue selection is retained.
+
+### 15 October 2026 — live-download and child cleanup fixes
+
+Dev.8 refuses live-broadcast downloads with UI feedback and yt-dlp's
+--break-match-filters !is_live. Exit 101 is a refusal, including when --print
+suppresses its explanatory output; never treat it as already saved. Refusals
+do not retry or trip queue throttling. A separate Node supervisor owns each
+yt-dlp process group and watches fd 3 for the parent lifetime. Cancellation and
+parent loss terminate the group, then kill resistant descendants after 750 ms.
+The supervisor script is bundled inline and does not rely on the checkout.
+
+Tests use actual subprocesses to cover cancellation, resistant descendants,
+unrelated processes, abrupt host death, quiet live refusal and finite completion.
+Real Linux acceptance also verifies a small HTTP audio download converted with
+ffmpeg and the reported YouTube live link rejected without media output. Mac
+hardware acceptance remains pending. The user's earlier partial is retained.

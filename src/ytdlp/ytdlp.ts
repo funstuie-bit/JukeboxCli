@@ -1,3 +1,5 @@
+import { DOWNLOAD_RUNNER } from "./runner";
+import { LIVE_DOWNLOAD_ERROR } from "./live";
 import readline from "node:readline";
 import { execa } from "execa";
 import { ffmpegPath, jsRuntimeArgs, toolEnv } from "../bin/binaries";
@@ -158,7 +160,7 @@ export interface DownloadParams {
   playlistName?: string;
   /** Normalized handle owning this collection (its folder segment). */
   owner?: string;
-  /** Abort the download (kills the yt-dlp child process). */
+  /** Abort the download (stops its owned yt-dlp/ffmpeg process group). */
   signal?: AbortSignal;
 }
 
@@ -181,6 +183,7 @@ export async function downloadTrack(
   params: DownloadParams,
   onProgress?: (p: DownloadProgress) => void,
 ): Promise<DownloadResult> {
+  if (params.signal?.aborted) return { status: "canceled" };
   const { url, config, sourceLabel, fixedStem, playlistName, owner } = params;
 
   // Custom output template overrides the default folder structure.
@@ -221,6 +224,9 @@ export async function downloadTrack(
     // it stays silent without this, and every row sits at "starting…".
     "--progress",
     "--no-playlist",
+    // Filter rejection must be distinct from an already-saved exit (0).
+    "--break-match-filters",
+    "!is_live",
     "--no-simulate",
     "--ignore-config",
     "--continue",
@@ -240,19 +246,22 @@ export async function downloadTrack(
     url,
   ];
 
-  const subprocess = execa(resolvedYtDlpPath(), args, {
+  const subprocess = execa(process.execPath, ["-e", DOWNLOAD_RUNNER, resolvedYtDlpPath(), ...args], {
     env: toolEnv(),
     buffer: false,
+    stdio: ["ignore", "pipe", "pipe", "pipe"],
     reject: false,
     cancelSignal: params.signal,
   });
 
   let meta: TrackMeta | undefined;
+  let rejectedLive = false;
   // Non-progress output, kept only for the failure message tail: a rolling
   // window suffices (the last lines name the error), and a warning-spewing
   // download must not grow the buffer for its whole runtime.
   const errLines: string[] = [];
   const handle = (line: string): void => {
+    if (line.includes("does not pass filter (!is_live)")) rejectedLive = true;
     if (line.startsWith("SCPROG\t")) {
       const p = parseProgress(line);
       if (p && onProgress) onProgress(p);
@@ -293,6 +302,8 @@ export async function downloadTrack(
   if (params.signal?.aborted) {
     return { status: "canceled" };
   }
+  // yt-dlp uses 101 for a break-match-filter rejection, even in quiet mode.
+  if (result.exitCode === 101 || rejectedLive) throw new Error(LIVE_DOWNLOAD_ERROR);
   if (result.exitCode !== 0) {
     const msg = errLines.slice(-5).join(" | ");
     if (isRateLimitError(msg)) return { status: "ratelimited", error: msg };

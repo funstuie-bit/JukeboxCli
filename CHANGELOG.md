@@ -3,6 +3,16 @@
 Release notes describe what changed in each build. For what works now and the
 remaining limits, see [feature status](FEATURES.md).
 
+## 1.6.0-dev.8 — Unreleased
+
+- Refuse live-broadcast downloads in Discover and in the yt-dlp backend. Show
+  “live stream — play only” instead of recording indefinitely or saying saved.
+  Finished videos and archived broadcasts retain ordinary downloading.
+- Do not automatically retry live refusals or count them as source throttling.
+- Supervise each download's own process group. Cancel/pause stops its yt-dlp,
+  ffmpeg and other helpers, escalating for resistant children. A lifetime pipe
+  cleans them up if the app or terminal disappears; playback mpv is separate.
+
 ## 1.6.0-dev.7 — Unreleased
 
 - Replace the full-screen Now Playing actions view with a compact pop-up over

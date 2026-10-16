@@ -1,3 +1,4 @@
+import { isLiveDownloadError } from "../../ytdlp/live";
 import { useEffect, useMemo, useState } from "react";
 import { Box, Text } from "ink";
 import { useActionInput as useInput } from "../hooks/useActionInput";
@@ -188,6 +189,7 @@ const MARK_COLOR: Partial<Record<QueueItem["status"], string>> = {
  */
 function shortError(e?: string): string {
   if (!e) return "couldn't save";
+  if (isLiveDownloadError(e)) return "live stream — play only";
   const m = e.toLowerCase();
   if (m.includes("missing on disk")) return "file didn't save";
   if (m.includes("drm")) return "DRM protected";

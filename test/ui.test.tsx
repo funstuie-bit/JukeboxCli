@@ -800,6 +800,14 @@ describe("queue copy, banner, overlay, welcome paste", () => {
       "yt-dlp failed (exit 1): ERROR: [soundcloud] Unable to download JSON metadata: HTTP Error 404: Not Found",
   });
 
+  it("names live-stream download refusals instead of showing starting or already saved", () => {
+    const item = { ...errorItem("live", "Live radio"), error: "Live streams cannot be downloaded. Choose a finished video." };
+    const { lastFrame } = render(wrap(<Download />, makeStore({ queue: asQueue(new FakeQueue([item])) })));
+    expect(lastFrame()).toContain("live stream — play only");
+    expect(lastFrame()).not.toContain("starting…");
+    expect(lastFrame()).not.toContain("already saved");
+  });
+
   it("failed rows sink below the queue and the header says failed", () => {
     const items: QueueItem[] = [
       errorItem("e1", "Dead Track"),

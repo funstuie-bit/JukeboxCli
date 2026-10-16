@@ -1,3 +1,4 @@
+import { LIVE_DOWNLOAD_ERROR } from "../../ytdlp/live";
 import stringWidth from "string-width";
 import { useEffect, useRef, useState } from "react";
 import { Box, Text } from "ink";
@@ -88,6 +89,7 @@ export function Discover({ videos: youtube = false }: { videos?: boolean } = {})
       playback.setContinuationEnabled(config.queueContinuation === true);
       playback.setContinuation(config.queueContinuation && parents.length ? queueLoader(page) : undefined);
     } else if (choice <= 3) { playback.enqueue(item.track, choice === 2); setNotice(choice === 2 ? "Queued next" : "Added to queue"); }
+    else if (choice === 4 && item.track.isLive) { setNotice(LIVE_DOWNLOAD_ERROR); }
     else if (choice === 4) { setPendingAdd(item.track.streamUrl); setSection("download"); }
     else setDetails(true);
   };
@@ -128,9 +130,7 @@ export function Discover({ videos: youtube = false }: { videos?: boolean } = {})
       } else if (item.track && (input === "A" || input === "P")) {
         const already = playback.getState().list.some(t => t.id === item.track!.id);
         playback.enqueue(item.track, input === "P"); setNotice(already ? "Already queued · added another occurrence · 7 Playback queue" : input === "P" ? "Queued next · 7 opens queue" : "Added to queue · 7 opens queue");
-      } else if (item.track && input === "d") {
-        setPendingAdd(item.track.streamUrl); setSection("download");
-      }
+      } else if (item.track && input === "d") { runAction(4); }
     }
   }, { isActive: focused });
   const start = Math.max(0, Math.min(selected - Math.floor(rows / 2), page.items.length - rows));
@@ -163,7 +163,7 @@ export function Discover({ videos: youtube = false }: { videos?: boolean } = {})
       <Text dimColor>esc / enter closes details</Text>
     </Box> : null}
     <Text dimColor wrap="truncate-end">{page.items.length ? `${selected + 1}/${page.items.length} · ` : ""}{parents.length ? "esc back · " : ""}{page.more ? "L load more · " : ""}8 Music · Y Videos · 7 Queue · m Player</Text>
-    {menu !== null ? <ContextMenu title={youtube ? "Video actions" : "Music actions"} actions={actions.map((label, i) => ({ label, run: () => runAction(i) }))}
+    {menu !== null ? <ContextMenu title={youtube ? "Video actions" : "Music actions"} actions={actions.map((label, i) => ({ label: i === 4 && page.items[menu]?.track?.isLive ? "Download: live stream (play only)" : label, run: () => runAction(i) }))}
       width={contentWidth} height={listRows} active={focused} anchor={menuAnchor} close={() => setMenu(null)} /> : null}
   </Box>;
 }

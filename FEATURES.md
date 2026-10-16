@@ -3,7 +3,10 @@
 These features are in the app now. That doesn't mean every station, terminal
 or online service will cooperate. The limits are listed below.
 
-## Source preview — 1.6.0-dev.7
+## Source preview — 1.6.0-dev.8
+
+- Live broadcasts are play-only, with backend download filtering and explicit queue status.
+- Owned download process groups are cleaned up on cancellation and app/terminal exit.
 
 - Sidebar navigation stays clickable during text entry; search has a clickable cancel hint.
 

@@ -126,3 +126,18 @@ it("fits compact video results and offers plain icon fallbacks", async () => {
     expect(frame.split("\n").length).toBeLessThanOrEqual(12); view.unmount();
   } finally { vi.unstubAllEnvs(); }
 });
+
+it("explains live download refusal for keyboard and menu without leaving results", async () => {
+  const track = { ...trackFromUrl("https://www.youtube.com/watch?v=abcdefghijk"), isLive: true };
+  fixture.videos.mockResolvedValue({ title: "Live results", items: [{ id: "live", title: "Live station", kind: "video", track }] });
+  const store = makeStore({ region: "content", contentWidth: 120 });
+  store.setPendingAdd = vi.fn(); store.setSection = vi.fn();
+  const view = await renderReady(<StoreContext.Provider value={store}><Discover videos /></StoreContext.Provider>);
+  await press(view, "live"); await press(view, "\r"); await press(view, "d");
+  expect(view.lastFrame()).toContain("Live streams cannot be downloaded");
+  await press(view, "c"); expect(view.lastFrame()).toContain("Download: live stream (play only)");
+  for (let i = 0; i < 4; i++) await press(view, "\x1b[B");
+  await press(view, "\r");
+  expect(view.lastFrame()).toContain("Live streams cannot be downloaded");
+  expect(store.setPendingAdd).not.toHaveBeenCalled(); expect(store.setSection).not.toHaveBeenCalled();
+});
