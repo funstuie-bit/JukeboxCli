@@ -3,6 +3,14 @@
 Release notes describe what changed in each build. For what works now and the
 remaining limits, see [feature status](FEATURES.md).
 
+## 1.6.0-dev.12 — Unreleased
+
+- Renumber section shortcuts to match the reordered sidebar: 5 Now Playing,
+  6 Queue, 7 Music Discover, 8 Radio / URL, 9 Settings. H Home, Y YouTube Videos
+  and 1–4 remain unchanged. 0 still restarts the current track.
+- Share one navigation definition between sidebar labels and digit handling;
+  update help, on-screen hints and current guides to the new keys.
+
 ## 1.6.0-dev.11 — Unreleased
 
 - Move Settings to the end of the sidebar, separated from listening sections.

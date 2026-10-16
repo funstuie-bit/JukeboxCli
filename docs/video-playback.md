@@ -8,7 +8,7 @@ select a result and press **Enter to play video**, or **a for audio only**.
 The query stays visible; `/` or clicking it in click mouse mode edits it.
 Escape leaves typing. `L` loads more results. Searching does not play anything.
 
-**Music Discover** remains on `8`, with YouTube Music's song/music-video/album/
+**Music Discover** remains on `7`, with YouTube Music's song/music-video/album/
 artist/playlist filters and Enter for audio. Each section retains its own query,
 results and selection when you leave and return during this app session. This
 browsing state is held in memory, not saved across application restarts.

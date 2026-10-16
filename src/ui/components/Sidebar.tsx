@@ -1,30 +1,12 @@
+import { NAV } from "../navigation";
 import { Box, Text } from "ink";
 import { useActionInput as useInput } from "../hooks/useActionInput";
-import { useStore, type Section } from "../store";
+import { useStore } from "../store";
 import { wrapStep } from "../move";
 import { playerPalette, ICON } from "../theme";
 import { navigationIcon } from "../icons";
 import { MouseRow } from "./MouseRow";
 
-interface NavItem {
-  key: Section;
-  label: string;
-  shortcut: string;
-}
-
-const NAV: NavItem[] = [
-  { key: "home", shortcut: "H", label: "Home" },
-  { key: "library", shortcut: "1", label: "Library" },
-  { key: "playlists", shortcut: "2", label: "Playlists" },
-  { key: "history", shortcut: "3", label: "History" },
-  { key: "download", shortcut: "4", label: "Download" },
-  { key: "player", shortcut: "6", label: "Now Playing" },
-  { key: "queue", shortcut: "7", label: "Queue" },
-  { key: "discover", shortcut: "8", label: "Music Discover" },
-  { key: "listen", shortcut: "9", label: "Radio / URL" },
-  { key: "videos", shortcut: "Y", label: "YouTube Videos" },
-  { key: "settings", shortcut: "5", label: "Settings" },
-];
 
 export function Sidebar() {
   const { section, setSection, region, setRegion, queue, config } = useStore();

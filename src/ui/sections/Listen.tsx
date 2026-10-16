@@ -130,13 +130,13 @@ export function Listen() {
     else if (key.pageDown) setCursor(Math.min(entries.length - 1, selected + rows));
     else if (track) {
       if (key.return) {
-        setNotice("Opening stream… m Player · 7 Queue");
+        setNotice("Opening stream… m Player · 6 Queue");
         void playback.selectTrack(track, [track]).then(() => {
           setNotice(playback.getState().error || "Listening online · nothing added to Library · m Player");
         }).catch(() => setNotice("Could not start playback. Select the entry in Queue to retry."));
       } else if (input === "A" || input === "P") {
         const already = playback.getState().list.some(t => t.id === track.id);
-        playback.enqueue(track, input === "P"); setNotice(already ? "Already queued · added another occurrence · 7 Playback queue" : input === "P" ? "Queued next · 7 Queue" : "Added to queue · 7 Queue");
+        playback.enqueue(track, input === "P"); setNotice(already ? "Already queued · added another occurrence · 6 Playback queue" : input === "P" ? "Queued next · 6 Queue" : "Added to queue · 6 Queue");
       } else if ((input === "f" || input === "t") && track.streamType === "radio") {
         setTarget(track); setMode("name"); setNotice("");
       } else if (input === "G" && track.streamType === "radio") {
@@ -186,7 +186,7 @@ export function Listen() {
           const remaining = drafts.filter(t => t.streamUrl !== target.streamUrl);
           setStations(next); setDrafts(remaining); playback.renameStation(target.streamUrl, cleanText(title));
           setCursor(remaining.length + next.findIndex(s => s.url === target.streamUrl)); setMode("list");
-          setNotice("Station saved · in 9 favourites, not the music Library");
+          setNotice("Station saved · in 8 favourites, not the music Library");
         } catch (e) { fail(e); }
       }} /> : null}
     </> : mode === "finding" ? <Text color={COLOR.accent}>{finding === "directory" ? "Searching Radio Browser" : finding === "feed" ? "Looking for audio feeds" : `Loading ${finding}`}… esc cancels</Text>
@@ -206,6 +206,6 @@ export function Listen() {
       </Text></MouseRow>)}
     </>}
     <Text color={notice ? COLOR.alt : COLOR.muted} wrap="truncate-end">{notice || "Direct URLs are saved in your private listening session; use trusted links."}</Text>
-    <Text color={COLOR.muted} wrap="truncate-end">{mode !== "list" ? "esc cancel · " : ""}9 Radio / URL · 7 Queue · m Player</Text>
+    <Text color={COLOR.muted} wrap="truncate-end">{mode !== "list" ? "esc cancel · " : ""}8 Radio / URL · 6 Queue · m Player</Text>
   </Box>;
 }

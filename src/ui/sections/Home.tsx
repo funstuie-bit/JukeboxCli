@@ -52,6 +52,6 @@ export function Home({ firstRun = false }: { firstRun?: boolean }) {
       </Box>
     </Box>
     {actions.map((a, i) => <MouseRow key={i} active={firstRun || s.region === "content"} width={width} onClick={a.run} menuTitle={a.label} menuActions={a.menuActions ?? [{ label: "Open", run: a.run }]}><Text color={cursor === i ? C.accent : C.text} bold={cursor === i} wrap="truncate-end">{cursor === i ? "› " : "  "}{a.label}</Text></MouseRow>)}
-    <Text color={C.muted}>{firstRun ? "↑↓ choose · Enter open · Esc skip to Home" : "↑↓ choose · Enter open · H Home · 8 search · 9 radio"}</Text>
+    <Text color={C.muted}>{firstRun ? "↑↓ choose · Enter open · Esc skip to Home" : "↑↓ choose · Enter open · H Home · 7 search · 8 radio"}</Text>
   </Box>;
 }

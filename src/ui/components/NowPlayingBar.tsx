@@ -35,7 +35,7 @@ export function NowPlayingBar() {
         </Text>
       );
     }
-    return <Text dimColor wrap="truncate-end">{ICON.play} Nothing playing · 8 search &amp; stream · o Play URL · 9 radio</Text>;
+    return <Text dimColor wrap="truncate-end">{ICON.play} Nothing playing · 7 search &amp; stream · o Play URL · 8 radio</Text>;
   }
 
   const t = st.track;

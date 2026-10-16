@@ -11,7 +11,7 @@ arrows, Page Up/Down and Home/End navigate the remaining options.
 
 ## Browsing artwork
 
-Settings (`5`) → Player appearance → Browsing artwork previews enables covers
+Settings (`9`) → Player appearance → Browsing artwork previews enables covers
 in Library (`1`) and downloaded Playlists (`2`). Albums/artist/genre collections
 use the first track's artwork. Playlist folders also use the first track, not
 an online lookup for a playlist cover. Highlighting never starts playback.
@@ -26,7 +26,7 @@ artwork support and fallback rules apply. The option is off by default.
 
 Settings → Player appearance → Player layout switches Classic / Clean.
 Open `m` for Now Playing. Clean prioritises cover art, reduces repeated labels
-and shows an editable **Up Next** subset in actual play order. `7` still opens
+and shows an editable **Up Next** subset in actual play order. `6` still opens
 the complete queue, including the current and earlier tracks. Lyrics, search
 and visualisers remain available. Very narrow layouts retain responsive fallbacks.
 
@@ -67,7 +67,7 @@ Malformed/conflicting hand-edited keybindings fall back to defaults at startup.
 ## Online playlist queue continuation
 
 Settings → Keyboard and mouse → Online playlist queue continuation is opt-in.
-After enabling it, use Discover (`8`) to open an online album/playlist and press
+After enabling it, use Discover (`7`) to open an online album/playlist and press
 Enter on a track. This starts its loaded collection and retains its next-page
 cursor. Merely browsing, a search-result song, or A/P queueing does not enable it.
 

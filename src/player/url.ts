@@ -22,7 +22,7 @@ export function trackFromUrl(input: string, radio = false): StreamTrack {
     const id = url.hostname.endsWith("youtu.be") ? url.pathname.slice(1)
       : url.pathname === "/watch" ? url.searchParams.get("v")
       : /^\/(shorts|live|embed)\//.test(url.pathname) ? url.pathname.split("/")[2] : null;
-    if (!id || !/^[\w-]{11}$/.test(id)) throw new Error("Use a YouTube video, Shorts or live link. Playlist/channel links are not supported here; use 8 Discover.");
+    if (!id || !/^[\w-]{11}$/.test(id)) throw new Error("Use a YouTube video, Shorts or live link. Playlist/channel links are not supported here; use 7 Discover.");
     const streamUrl = `https://www.youtube.com/watch?v=${id}`;
     return { kind: "stream", id: `stream:youtube:${id}`, source: "youtube", sourceTrackId: id,
       title: `YouTube · ${id}`, streamUrl, webpageUrl: streamUrl, streamType: "extractor",

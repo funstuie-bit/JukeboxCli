@@ -5,7 +5,7 @@ Linux and macOS use one source history and release process.
 
 ## Current state
 
-- Source preview: `1.6.0-dev.11`, including general YouTube video search and [audio/video controls](video-playback.md).
+- Source preview: `1.6.0-dev.12`, including general YouTube video search and [audio/video controls](video-playback.md).
 - Production release: `v1.5.0`
 - Public source: `https://github.com/funstuie-bit/JukeboxCli.git`
 - Private mirror connection details belong in private maintainer notes, not here
@@ -254,3 +254,10 @@ sections. Every section has a simple icon before its shortcut and label; plain
 terminals/JUKEBOXCLI_ICONS=ascii use ASCII fallbacks. Shortcut labels are explicit
 rather than derived from display order: 5 Settings, 6 Now Playing, 7 Queue etc.
 remain unchanged. Arrow navigation follows the displayed order.
+
+### Sidebar renumbering — preview dev.12 (2026-10-15)
+
+Supersedes dev.11's preserved numbers: 5 Now Playing, 6 Queue, 7 Music Discover,
+8 Radio / URL, 9 Settings. H Home, Y YouTube Videos and 1–4 remain unchanged;
+0 still restarts playback. Sidebar and numeric navigation now share navigation.ts.
+Help and current guides use the new keys; published release notes retain history.

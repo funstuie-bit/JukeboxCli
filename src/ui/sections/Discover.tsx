@@ -129,7 +129,7 @@ export function Discover({ videos: youtube = false }: { videos?: boolean } = {})
         } else void load(() => browseMusic(item), "browse");
       } else if (item.track && (input === "A" || input === "P")) {
         const already = playback.getState().list.some(t => t.id === item.track!.id);
-        playback.enqueue(item.track, input === "P"); setNotice(already ? "Already queued · added another occurrence · 7 Playback queue" : input === "P" ? "Queued next · 7 opens queue" : "Added to queue · 7 opens queue");
+        playback.enqueue(item.track, input === "P"); setNotice(already ? "Already queued · added another occurrence · 6 Playback queue" : input === "P" ? "Queued next · 6 opens queue" : "Added to queue · 6 opens queue");
       } else if (item.track && input === "d") { runAction(4); }
     }
   }, { isActive: focused });
@@ -149,7 +149,7 @@ export function Discover({ videos: youtube = false }: { videos?: boolean } = {})
       <Text color={COLOR.muted} wrap="truncate-end">{busy ? "Searching… esc cancels" : notice || (editing ? "Editing search" : `Enter ${browseIcon("video")} video · a audio only · c actions · A/P queue · d download`)}</Text>
       <Text color={COLOR.alt} wrap="truncate-end">{contentWidth >= 65 ? "   Title".padEnd(Math.floor(contentWidth * .58)) + "Channel".padEnd(Math.floor(contentWidth * .26)) + "Duration" : "Video · Channel · Duration"}</Text>
     </> : null}
-    {page.items.length === 0 && !busy ? <Text color={COLOR.muted}>Listen without downloading: / search · o Play URL · 9 radio</Text> : null}
+    {page.items.length === 0 && !busy ? <Text color={COLOR.muted}>Listen without downloading: / search · o Play URL · 8 radio</Text> : null}
     {page.items.slice(start, start + rows).map((item, i) => <MouseRow key={`${start + i}:${item.id}`} active={focused && !editing && !busy && menu === null && !details} width={contentWidth}
       onClick={() => { setCursor(start + i); if (item.track) runAction(0, start + i); else void load(() => browseMusic(item), "browse"); }} onContextMenu={point => { if (item.track) { setCursor(start + i); setMenuAnchor({ x: point.x, y: (youtube ? 4 : 3) + i + point.y }); setMenu(start + i); } }}>
       <Text
@@ -162,7 +162,7 @@ export function Discover({ videos: youtube = false }: { videos?: boolean } = {})
       <Text wrap="truncate-end">{cleanText(page.items[selected]?.track?.streamUrl ?? "")}</Text>
       <Text dimColor>esc / enter closes details</Text>
     </Box> : null}
-    <Text dimColor wrap="truncate-end">{page.items.length ? `${selected + 1}/${page.items.length} · ` : ""}{parents.length ? "esc back · " : ""}{page.more ? "L load more · " : ""}8 Music · Y Videos · 7 Queue · m Player</Text>
+    <Text dimColor wrap="truncate-end">{page.items.length ? `${selected + 1}/${page.items.length} · ` : ""}{parents.length ? "esc back · " : ""}{page.more ? "L load more · " : ""}7 Music · Y Videos · 6 Queue · m Player</Text>
     {menu !== null ? <ContextMenu title={youtube ? "Video actions" : "Music actions"} actions={actions.map((label, i) => ({ label: i === 4 && page.items[menu]?.track?.isLive ? "Download: live stream (play only)" : label, run: () => runAction(i) }))}
       width={contentWidth} height={listRows} active={focused} anchor={menuAnchor} close={() => setMenu(null)} /> : null}
   </Box>;

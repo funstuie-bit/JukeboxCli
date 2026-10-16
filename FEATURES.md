@@ -3,9 +3,9 @@
 These features are in the app now. That doesn't mean every station, terminal
 or online service will cooperate. The limits are listed below.
 
-## Source preview — 1.6.0-dev.11
+## Source preview — 1.6.0-dev.12
 
-- Icons on every sidebar section; Settings appears last, with existing shortcuts preserved.
+- Icons on every sidebar section; Settings appears last, with number shortcuts following the displayed order.
 - Item menus offer audio/video for YouTube and recognised video files/URLs.
   Downloaded YouTube audio can stream its original video without changing the saved file.
 - Single-click play/open across listening lists; right-click item actions on Home,

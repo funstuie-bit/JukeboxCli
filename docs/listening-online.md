@@ -2,7 +2,7 @@
 
 ## Playing without downloading
 
-Press `8`, then `/`, to search YouTube Music without an account. `[` / `]`
+Press `7`, then `/`, to search YouTube Music without an account. `[` / `]`
 changes between songs, videos, albums, artists and playlists. Enter plays a song
 or opens a collection; Escape returns, and `L` loads another page when offered.
 Collections use their currently loaded tracks as the playback context.
@@ -25,17 +25,17 @@ still searches lyrics, while `S` searches music. Search captures normal
 transport/navigation shortcuts until Escape; both player layouts support it.
 
 `o` opens a YouTube/direct audio URL or website prompt. Enter accepts the input;
-select the result and Enter plays, `A` appends or `P` queues next. In `9`, use
+select the result and Enter plays, `A` appends or `P` queues next. In `8`, use
 `M` for quick Lo-fi, Synthwave, Ambient, Chillout, Jazz, Classical, House, Drum
 & Bass, Reggae and Rock choices, `B` for popular stations, `g` to browse genres
 and tags, `c` for countries, or `/` to search station names. These all query
 Radio Browser; no station feed list is bundled or copied. Lists can themselves
 be filtered with `/`; there is no need to type query syntax.
-`9` → `R` explicitly opens a radio feed or station website. Select a directory
+`8` → `R` explicitly opens a radio feed or station website. Select a directory
 or detected feed and press `f` to save; new favourites are never added automatically.
 In Radio / URL, `t` or `f` renames, `x` or `d` asks to remove a saved
 station (`y` confirms), and `G` refreshes artwork from its website.
-Queue removal is separate: `7` → `x` removes only that listening occurrence.
+Queue removal is separate: `6` → `x` removes only that listening occurrence.
 
 Live radio shows no seek bar: space disconnects/reconnects at the live edge.
 Sessions restore paused, without connecting until you play. For ordinary streams,
@@ -47,7 +47,7 @@ so you can retry or skip.
 
 ## Refresh a saved station's artwork
 
-Select the station in `9` and press `G`. Paste its website (it's filled in if
+Select the station in `8` and press `G`. Paste its website (it's filled in if
 already known), then choose a feed. You don't need to delete and re-add the
 station. Its saved name stays put and playback doesn't reconnect.
 
@@ -109,7 +109,7 @@ the saved name and refreshes any supplied metadata; different URLs for the same
 station can still create duplicates.
 Use `f`/`t` to type a new name, or leave it blank to keep the current one.
 Renaming updates matching playing and queued stations without reloading audio.
-Saved stations live in `9`, not the downloaded music Library. The app doesn't
+Saved stations live in `8`, not the downloaded music Library. The app doesn't
 remove duplicates for you.
 
 ## Implementation

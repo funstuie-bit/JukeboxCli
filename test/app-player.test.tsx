@@ -153,13 +153,13 @@ describe("App player workflow", () => {
     expect(view.lastFrame()).toContain("Esc / click here cancels");
     await click("Enter searches");
     expect(view.lastFrame()).not.toContain("Editing search");
-    await click("5 Settings"); expect(view.lastFrame()).toContain("Download pacing");
+    await click("9 Settings"); expect(view.lastFrame()).toContain("Download pacing");
     view.unmount();
   });
   it("uses optional j/k for navigation without seeking/pausing, and preserves typing", async () => {
     const view = app({ initialOverrides: { vimNavigation: true } }); await tick(); await tick();
     await press(view, "1"); await press(view, "j"); await press(view, "A");
-    await press(view, "7"); expect(view.lastFrame()).toContain("Playback queue · 1 tracks");
+    await press(view, "6"); expect(view.lastFrame()).toContain("Playback queue · 1 tracks");
     await press(view, "\r"); await press(view, "m");
     await press(view, "k"); await press(view, "j");
     expect(view.lastFrame()).toContain("Playing · shuffle off");
@@ -207,7 +207,7 @@ describe("App player workflow", () => {
     await press(view, "Y"); expect(view.lastFrame()).toContain("Search YouTube videos");
     await press(view, "documentary"); await press(view, "\r");
     expect(view.lastFrame()).toContain("Video fixture");
-    await press(view, "8"); expect(view.lastFrame()).toContain("Music Discover");
+    await press(view, "7"); expect(view.lastFrame()).toContain("Music Discover");
     expect(view.lastFrame()).not.toContain("Video fixture");
     await press(view, "Y"); expect(view.lastFrame()).toContain("Video fixture");
     expect(view.lastFrame()).toContain("Search: documentary");
@@ -225,7 +225,7 @@ describe("App player workflow", () => {
   it("searches inside player, isolates typing, queues online results and restores lyrics", async () => {
     const view = app(); await tick(); await tick();
     await press(view, "1"); await press(view, "\u001b[B"); await press(view, "A");
-    await press(view, "7"); await press(view, "\r"); await press(view, "m");
+    await press(view, "6"); await press(view, "\r"); await press(view, "m");
     await press(view, "S"); expect(view.lastFrame()).toContain("SEARCH · Local");
     await press(view, "l: no match m n p 9 X ?");
     expect(view.lastFrame()).toContain("SEARCH · Local");
@@ -246,7 +246,7 @@ describe("App player workflow", () => {
     expect(readSession()?.volume).toBe(100);
   });
   it("searches from the embedded player, fits a small terminal and opens explicit download", async () => {
-    const view = app(); await tick(); await tick(); await press(view, "6");
+    const view = app(); await tick(); await tick(); await press(view, "5");
     await press(view, "/"); await press(view, "v: fixture"); await press(view, "\r");
     expect(view.lastFrame()).toContain("Online videos");
     Object.defineProperty(view.stdout, "columns", { configurable: true, value: 60 });
@@ -261,7 +261,7 @@ describe("App player workflow", () => {
   it("searches/selects lyrics, isolates typed shortcuts, cancels and tries the plain provider", async () => {
     const view = app(); await tick(); await tick();
     await press(view, "1"); await press(view, "\u001b[B"); await press(view, "A");
-    await press(view, "7"); await press(view, "\r"); await press(view, "m"); await press(view, "l");
+    await press(view, "6"); await press(view, "\r"); await press(view, "m"); await press(view, "l");
     await press(view, "L"); await new Promise(r => setTimeout(r, 500));
     await press(view, "/"); expect(view.lastFrame()).toContain("Search LRCLIB");
     await press(view, "\u0015"); await press(view, "plain remix n p l m ? 9");
@@ -288,7 +288,7 @@ describe("App player workflow", () => {
   it("opts into lyrics, follows seeking/pausing and keeps lyric controls out of the queue", async () => {
     const view = app(); await tick(); await tick();
     await press(view, "1"); await press(view, "\u001b[B"); await press(view, "A");
-    await press(view, "7"); await press(view, "\r"); await press(view, "m");
+    await press(view, "6"); await press(view, "\r"); await press(view, "m");
     expect(view.lastFrame()).toContain("l Lyrics");
     await press(view, "l"); await new Promise(r => setTimeout(r, 500));
     expect(view.lastFrame()).toContain("Online lyrics disabled");
@@ -304,14 +304,14 @@ describe("App player workflow", () => {
     view.stdout.emit("resize"); await tick();
     expect((view.lastFrame() ?? "").split("\n").length).toBeLessThanOrEqual(18);
     await press(view, "l"); expect(view.lastFrame()).toContain("Playback queue · 1 tracks");
-    await press(view, "6"); await press(view, "l"); await new Promise(r => setTimeout(r, 500));
+    await press(view, "5"); await press(view, "l"); await new Promise(r => setTimeout(r, 500));
     expect(view.lastFrame()).toContain("LYRICS");
     view.unmount(); await tick(); expect(readSession()?.ids).toHaveLength(1);
     expect(readSession()?.position).toBe(15); // Neither player's l toggle seeks.
   });
   it("refreshes an old favourite and queued artwork while retaining names, then removes via d", async () => {
     saveStation("My custom radio", "https://example.com/live.mp3");
-    const view = app(); await tick(); await tick(); await press(view, "9");
+    const view = app(); await tick(); await tick(); await press(view, "8");
     expect(view.lastFrame()).toContain("x/d remove");
     await press(view, "\r"); // start the legacy favourite without artwork
     await press(view, "G"); expect(view.lastFrame()).toContain("Paste the station WEBSITE");
@@ -322,7 +322,7 @@ describe("App player workflow", () => {
     await press(view, "d"); expect(view.lastFrame()).toContain("Remove favourite? My custom radio");
     await press(view, "\u001b"); expect(readStations()).toHaveLength(1);
     await press(view, "d"); await press(view, "y"); expect(readStations()).toEqual([]);
-    await press(view, "7"); expect(view.lastFrame()).toContain("Playback queue · 1 tracks");
+    await press(view, "6"); expect(view.lastFrame()).toContain("Playback queue · 1 tracks");
     view.unmount(); await tick();
     const session = readSession()!;
     expect(session.ids).toHaveLength(1);
@@ -331,16 +331,16 @@ describe("App player workflow", () => {
   it("changes player appearance, keeps queue repeats explicit and separates favourites", async () => {
     const view = app(); await tick(); await tick();
     await press(view, "R"); // not a global radio shortcut
-    await press(view, "9"); await press(view, "R");
+    await press(view, "8"); await press(view, "R");
     await press(view, "https://decayfm.com/"); await press(view, "\r");
     await press(view, "A"); await press(view, "A");
     expect(view.lastFrame()).toContain("Already queued"); expect(readStations()).toEqual([]);
-    await press(view, "7"); expect(view.lastFrame()).toContain("Playback queue · 2 tracks");
+    await press(view, "6"); expect(view.lastFrame()).toContain("Playback queue · 2 tracks");
     await press(view, "\r"); await press(view, "m");
     expect(view.lastFrame()).toContain("LIVE");
     expect(view.lastFrame()).not.toContain("No cover art");
     await press(view, "T"); await press(view, "V");
-    await press(view, "\u001b"); await press(view, "5"); await press(view, "\u001b[F");
+    await press(view, "\u001b"); await press(view, "9"); await press(view, "\u001b[F");
     for (let i = 0; i < 3; i++) await press(view, "\u001b[A");
     await press(view, "\r");
     expect(view.lastFrame()).toContain("Theme: Calm");
@@ -359,7 +359,7 @@ describe("App player workflow", () => {
     expect(readStations()).toEqual([]);
   });
   it("searches the radio directory and keeps results temporary until saved", async () => {
-    const view = app(); await tick(); await tick(); await press(view, "9");
+    const view = app(); await tick(); await tick(); await press(view, "8");
     await vi.waitFor(() => expect(view.lastFrame()).toContain("Radio / URL · Saved stations"));
     await press(view, "/"); expect(view.lastFrame()).toContain("Search station name");
     await press(view, "Fixture Radio"); await press(view, "\r");
@@ -371,14 +371,14 @@ describe("App player workflow", () => {
       thumbnailUrl: "https://directory.example/logo.png", websiteUrl: "https://directory.example/" }]);
   });
   it("browses radio genres without requiring query syntax", async () => {
-    const view = app(); await tick(); await tick(); await press(view, "9");
+    const view = app(); await tick(); await tick(); await press(view, "8");
     await vi.waitFor(() => expect(view.lastFrame()).toContain("B popular · g genres"));
     await press(view, "g"); await vi.waitFor(() => expect(view.lastFrame()).toContain("Genres & tags"));
     expect(view.lastFrame()).toContain("ambient · 321 stations");
     await press(view, "\r"); await vi.waitFor(() => expect(view.lastFrame()).toContain("[directory] [LIVE] tag:ambient"));
   });
   it("opens quick radio moods without depending on hosted station lists", async () => {
-    const view = app(); await tick(); await tick(); await press(view, "9");
+    const view = app(); await tick(); await tick(); await press(view, "8");
     await vi.waitFor(() => expect(view.lastFrame()).toContain("M quick channels"));
     await press(view, "M"); expect(view.lastFrame()).toContain("Quick channels");
     expect(view.lastFrame()).toContain("Lo-fi");
@@ -386,12 +386,12 @@ describe("App player workflow", () => {
   });
   it("opens URLs without downloading, saves radio, reconnects and restores favourites", async () => {
     const view = app(); await tick(); await tick();
-    expect(view.lastFrame()).toContain("9 Radio / URL");
+    expect(view.lastFrame()).toContain("8 Radio / URL");
     await press(view, "o"); expect(view.lastFrame()).toContain("Paste YouTube");
     await press(view, "https://youtu.be/dQw4w9WgXcQ?si=secret");
     await press(view, "\r"); expect(view.lastFrame()).toContain("Ready");
-    await press(view, "A"); await press(view, "7"); expect(view.lastFrame()).toContain("YouTube");
-    await press(view, "9"); expect(view.lastFrame()).toContain("No saved stations");
+    await press(view, "A"); await press(view, "6"); expect(view.lastFrame()).toContain("YouTube");
+    await press(view, "8"); expect(view.lastFrame()).toContain("No saved stations");
     await press(view, "R"); await press(view, "https://example.com/radio"); await press(view, "\r");
     expect(view.lastFrame()).toContain("[LIVE]");
     await press(view, "f"); await press(view, "Workday FM"); await press(view, "\r");
@@ -405,13 +405,13 @@ describe("App player workflow", () => {
     expect(view.lastFrame()).toContain("Playback queue · 2 tracks"); // idle queue was kept
     await press(view, " "); expect(view.lastFrame()).toContain("Disconnected");
     await press(view, " "); expect(view.lastFrame()).toContain("Playing");
-    await press(view, "9"); await press(view, "x"); expect(view.lastFrame()).toContain("Remove favourite?");
+    await press(view, "8"); await press(view, "x"); expect(view.lastFrame()).toContain("Remove favourite?");
     await press(view, "\u001b"); expect(readStations()).toHaveLength(1);
     view.unmount(); await tick();
     const saved = readSession()!;
     expect(saved.position).toBe(0); expect(saved.ids).toHaveLength(2);
     expect(JSON.stringify(saved)).not.toContain("secret");
-    const again = app(); await tick(); await tick(); await press(again, "9");
+    const again = app(); await tick(); await tick(); await press(again, "8");
     expect(again.lastFrame()).toContain("Workday FM");
     await press(again, "?"); expect(again.lastFrame()).toContain("Radio / URL (9)");
     expect((again.lastFrame() ?? "").split("\n").length).toBeLessThanOrEqual(24);
@@ -419,7 +419,7 @@ describe("App player workflow", () => {
     await press(again, "["); expect(again.lastFrame()).toContain("Discover (YouTube Music)");
     await press(again, "?");
     await press(again, "x"); await press(again, "y"); expect(readStations()).toEqual([]);
-    await press(again, "7"); expect(again.lastFrame()).toContain("Playback queue · 2 tracks");
+    await press(again, "6"); expect(again.lastFrame()).toContain("Playback queue · 2 tracks");
   });
   it("keeps invalid URLs in the form and fits URL entry on a small terminal", async () => {
     const view = app(); await tick(); await tick();
@@ -431,7 +431,7 @@ describe("App player workflow", () => {
     view.stdout.emit("resize"); await tick();
     await press(view, "https://example.com/" + "long".repeat(40));
     expect((view.lastFrame() ?? "").split("\n").length).toBeLessThanOrEqual(18);
-    await press(view, "\u001b"); await press(view, "8");
+    await press(view, "\u001b"); await press(view, "7");
     expect(view.lastFrame()).toContain("Discover");
     await press(view, "?"); await press(view, "\u001b[B");
     expect((view.lastFrame() ?? "").split("\n").length).toBeLessThanOrEqual(18);
@@ -439,13 +439,13 @@ describe("App player workflow", () => {
   it("searches and browses Discover, queues a stream, plays and restores it paused", async () => {
     const view = app(); await tick(); await tick();
     expect(view.lastFrame()).toContain("Music Discover");
-    await press(view, "8"); await press(view, "/"); await press(view, "fixture"); await press(view, "\r");
+    await press(view, "7"); await press(view, "/"); await press(view, "fixture"); await press(view, "\r");
     expect(view.lastFrame()).toContain("Online fixture song");
     await press(view, "L"); expect(view.lastFrame()).toContain("More results");
     await press(view, "]"); await press(view, "]"); expect(view.lastFrame()).toContain("Fixture album");
     await press(view, "\r"); expect(view.lastFrame()).toContain("Inside album");
     await press(view, "A"); expect(view.lastFrame()).toContain("Added to queue");
-    await press(view, "7"); expect(view.lastFrame()).toContain("NET"); expect(view.lastFrame()).not.toContain("[ONLINE]");
+    await press(view, "6"); expect(view.lastFrame()).toContain("NET"); expect(view.lastFrame()).not.toContain("[ONLINE]");
     await press(view, "\r"); await press(view, "m"); expect(view.lastFrame()).toContain("Streaming");
     await press(view, "m"); await press(view, "3");
     expect(view.lastFrame()).toContain("Recently played");
@@ -464,14 +464,14 @@ describe("App player workflow", () => {
     vi.stubEnv("JUKEBOXCLI_VISUALIZER", "0"); // Exercise the documented static-waveform fallback.
     const view = app(); await tick(); await tick();
     expect(view.lastFrame()).toContain("m Player");
-    expect(view.lastFrame()).toContain("6 Now Playing");
-    expect(view.lastFrame()).toContain("7 Queue");
+    expect(view.lastFrame()).toContain("5 Now Playing");
+    expect(view.lastFrame()).toContain("6 Queue");
     await press(view, "1"); // focus Library
     await press(view, "\u001b[B"); // past shuffle action to first song
     await press(view, "A");
     expect(view.lastFrame()).toContain("Added to queue");
     await press(view, "\u001b[B"); await press(view, "A");
-    await press(view, "7"); expect(view.lastFrame()).toContain("Playback queue · 2 tracks");
+    await press(view, "6"); expect(view.lastFrame()).toContain("Playback queue · 2 tracks");
     await press(view, "\r"); await press(view, "m");
     expect(view.lastFrame()).toContain("Playing · shuffle off · repeat off");
     await press(view, "b"); expect(view.lastFrame()).toContain("Artwork hidden");
@@ -484,7 +484,7 @@ describe("App player workflow", () => {
     await press(view, "\u001b[B"); await press(view, "u");
     expect(view.lastFrame()).toContain("Playback queue · 2 tracks");
     await press(view, "\u001b"); // close modal
-    expect(view.lastFrame()).toContain("7 Queue");
+    expect(view.lastFrame()).toContain("6 Queue");
     view.unmount(); await tick();
     const saved = readSession()!;
     expect(saved.ids).toHaveLength(2); expect(saved.volume).toBe(95);
@@ -495,9 +495,9 @@ describe("App player workflow", () => {
     await press(again, "x"); expect(again.lastFrame()).toContain("Playback queue · 1 tracks");
     await press(again, "X"); expect(again.lastFrame()).toContain("Clear queue and stop?");
     await press(again, "y"); expect(again.lastFrame()).toContain("Nothing playing");
-    await press(again, "7"); await press(again, "1");
+    await press(again, "6"); await press(again, "1");
     await press(again, "\u001b[B"); await press(again, "A");
-    await press(again, "7"); await press(again, " "); await press(again, "m");
+    await press(again, "6"); await press(again, " "); await press(again, "m");
     expect(again.lastFrame()).toContain("Playing · shuffle off · repeat all");
     await press(again, "X"); await press(again, "y");
     again.unmount(); await tick(); expect(readSession()?.ids).toEqual([]);
@@ -506,7 +506,7 @@ describe("App player workflow", () => {
   it("routes numbered navigation out of the modal and survives terminal resize", async () => {
     const view = app(); await tick(); await tick();
     await press(view, "m"); expect(view.lastFrame()).toContain("Nothing playing");
-    await press(view, "7"); expect(view.lastFrame()).toContain("Empty · select a song");
+    await press(view, "6"); expect(view.lastFrame()).toContain("Empty · select a song");
     Object.defineProperty(view.stdout, "columns", { configurable: true, value: 60 });
     Object.defineProperty(view.stdout, "rows", { configurable: true, value: 18 });
     view.stdout.emit("resize"); await tick();

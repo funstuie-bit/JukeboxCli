@@ -21,10 +21,10 @@ keeps the lot in one editable queue. Streams stay streams unless you choose to s
 them. There are lyrics, cover artwork and live visualisers too, with optional
 fullscreen MilkDrop effects on Mac and Linux.
 
-Source preview **1.6.0-dev.11** gives **YouTube Videos its own sidebar section**.
+Source preview **1.6.0-dev.12** gives **YouTube Videos its own sidebar section**.
 Press **Y** (Shift+y) to open it, type a search and press Enter. On the results,
 **Enter plays video** in its own window; **a plays audio only**. Music Discover
-stays on **8** and keeps Enter for audio. Press **c** or right-click a result in
+stays on **7** and keeps Enter for audio. Press **c** or right-click a result in
 click mouse mode for queue, download and details actions. In Now Playing,
 **c or right-click** opens pause/resume, previous/next, volume, audio/video and
 fullscreen effects actions. **Left-click plays audio or opens an item** in Home, Library,
@@ -41,7 +41,9 @@ while typing a search. **Enter** searches; **Escape** or the clickable cancel hi
 leaves the field. Search results are retained within a session, not across restarts.
 
 Every sidebar section has a small icon. Settings sits last, separated from the
-listening sections. Existing shortcuts stay the same: **5** still opens Settings.
+listening sections. Number keys now follow the reordered list: **5 Now Playing**,
+**6 Queue**, **7 Music Discover**, **8 Radio / URL**, **9 Settings**. Home stays
+**H** and YouTube Videos stays **Y**; keys 1–4 are unchanged.
 
 Video results show title, channel, duration and small video/live/queued symbols.
 Each section remembers its query, results and selection while JukeboxCli stays
@@ -146,7 +148,7 @@ This is a text preview, so it also works in terminals without image support.
 ### Main controls
 
 Listen to [Studay FM](https://www.studayfm.com/): press
-`9`, then `S` for Studay FM, StuLoFiDay, Yacht Zone, Tokyo Jazz and C'est Magnifistu.
+`8`, then `S` for Studay FM, StuLoFiDay, Yacht Zone, Tokyo Jazz and C'est Magnifistu.
 You can also paste the website with `R` to find all five feeds. Enter plays;
 `A`/`P` queues; `f` saves the highlighted station. Nothing plays or becomes a
 favourite automatically. These are public live streams with static station artwork;
@@ -154,18 +156,19 @@ track metadata uses the existing radio player, not the site's programme schedule
 
 | Key | Action |
 | --- | --- |
-| `8`, then `/` | Search YouTube Music |
+| `7`, then `/` | Search YouTube Music |
 | `Y` | Open YouTube Videos and search |
 | `Enter` / `a` in Videos | Play video / audio only |
 | `o` | Play a YouTube or direct audio URL |
-| `9` | Open radio and saved stations |
-| `9`, then `M` | Browse quick radio genre channels |
-| `9`, then `S` | Browse the five Studay FM stations |
-| `9`, then `B`, `g` or `c` | Browse popular radio, genres or countries |
-| `9`, then `/` | Search for a station by name |
+| `8` | Open radio and saved stations |
+| `8`, then `M` | Browse quick radio genre channels |
+| `8`, then `S` | Browse the five Studay FM stations |
+| `8`, then `B`, `g` or `c` | Browse popular radio, genres or countries |
+| `8`, then `/` | Search for a station by name |
 | `1` | Open the local library |
-| `m` or `6` | Open Now Playing |
-| `7` | Open the queue |
+| `m` or `5` | Open Now Playing |
+| `6` | Open the queue |
+| `9` | Open Settings |
 | `space` | Play or pause; reconnect live radio |
 | `?` | Show the full key guide |
 
@@ -219,7 +222,7 @@ This mode is not integrated on macOS yet.
 
 ## Radio
 
-Radio searches the community Radio Browser catalogue. In section **9**, press **M**
+Radio searches the community Radio Browser catalogue. In section **8**, press **M**
 for quick channels, **B** for popular stations, **g** for genres/tags, **c** for
 countries or **/** to search by station name. Quick choices cover Lo-fi, Synthwave,
 Ambient, Chillout, Jazz, Classical, House, Drum & Bass, Reggae and Rock. They are

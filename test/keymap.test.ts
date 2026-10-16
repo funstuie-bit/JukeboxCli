@@ -2,20 +2,20 @@ import { describe, it, expect } from "vitest";
 import { footerHints, sectionForDigit } from "../src/ui/keymap";
 
 describe("sectionForDigit", () => {
-  it("maps 1-5 to the sidebar's display order", () => {
+  it("maps library through download and the final Settings shortcut", () => {
     expect(sectionForDigit("1")).toBe("library");
     expect(sectionForDigit("2")).toBe("playlists");
     expect(sectionForDigit("3")).toBe("history");
     expect(sectionForDigit("4")).toBe("download");
-    expect(sectionForDigit("5")).toBe("settings");
+    expect(sectionForDigit("9")).toBe("settings");
   });
 
-  it("ignores everything else", () => {
+  it("maps player/listening sections and ignores non-section keys", () => {
     expect(sectionForDigit("0")).toBeNull();
-    expect(sectionForDigit("6")).toBe("player");
-    expect(sectionForDigit("7")).toBe("queue");
-    expect(sectionForDigit("8")).toBe("discover");
-    expect(sectionForDigit("9")).toBe("listen");
+    expect(sectionForDigit("5")).toBe("player");
+    expect(sectionForDigit("6")).toBe("queue");
+    expect(sectionForDigit("7")).toBe("discover");
+    expect(sectionForDigit("8")).toBe("listen");
     expect(sectionForDigit("a")).toBeNull();
     expect(sectionForDigit("")).toBeNull();
     expect(sectionForDigit("12")).toBeNull();

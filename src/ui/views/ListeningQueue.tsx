@@ -84,7 +84,7 @@ export function ListeningQueue({ height, width, active, framed = false, controls
     })}
     {!dense ? <><Box flexGrow={1} />
     {state.continuationStatus ? <Text color={COLOR.muted} wrap="truncate-end">{state.continuationStatus}</Text> : null}
-    {!controlsOutside ? <Text color={COLOR.muted} wrap="truncate-end">{upcoming ? "7 full queue · selected rows remain editable" : entries.length ? `› selected · ▶ playing / Ⅱ paused · 9 saved stations` : "7 Queue · 8 Discover"}</Text> : null}</> : null}
+    {!controlsOutside ? <Text color={COLOR.muted} wrap="truncate-end">{upcoming ? "6 full queue · selected rows remain editable" : entries.length ? `› selected · ▶ playing / Ⅱ paused · 8 saved stations` : "6 Queue · 7 Discover"}</Text> : null}</> : null}
   </Box>;
 }
 

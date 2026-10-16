@@ -189,14 +189,14 @@ export function SongList({
         setNotice("");
       } else if ((input === "A" || input === "P") && onQueueMany && selected.length > 0) {
         onQueueMany(selected, input === "P");
-        setNotice(`${selected.length} tracks ${input === "P" ? "queued next" : "added to queue"} · 7 Queue`);
+        setNotice(`${selected.length} tracks ${input === "P" ? "queued next" : "added to queue"} · 6 Queue`);
         setMarked(new Set());
       } else if ((input === "A" || input === "P") && onQueue) {
         const row = rows[rowOfIdx[clamped] ?? -1];
         if (row?.kind === "item") {
           const already = playback.getState().list.some(t => t.id === row.item.value);
           onQueue(row.item.value, input === "P");
-          setNotice(already ? "Already queued · added another occurrence · 7 Playback queue" : `${input === "P" ? "Playing next" : "Added to queue"}: ${cleanText(row.item.title)} · 7 Queue`);
+          setNotice(already ? "Already queued · added another occurrence · 6 Playback queue" : `${input === "P" ? "Playing next" : "Added to queue"}: ${cleanText(row.item.title)} · 6 Queue`);
         }
       } else if (input === "d" && onDelete) {
         // deleteTargetsPlaying: 'd' acts on the playing song (like scrub keys)

@@ -1,3 +1,4 @@
+import { NAV } from "./navigation";
 // Single source of truth for keyboard shortcuts. The footer shows a tiny
 // context-relevant subset; the `?` overlay shows everything. Defining them once
 // here means the quick hint and the full cheatsheet can never drift apart, and
@@ -15,23 +16,10 @@ interface HelpGroup {
   hints: Hint[];
 }
 
-/** Sidebar sections in display order, so digit keys can jump straight to one. */
-const SECTION_ORDER: Section[] = [
-  "library",
-  "playlists",
-  "history",
-  "download",
-  "settings",
-  "player",
-  "queue",
-  "discover",
-  "listen",
-];
-
 /** Map sidebar digit shortcuts to sections; null otherwise. */
 export function sectionForDigit(input: string): Section | null {
   if (!/^[1-9]$/.test(input)) return null;
-  return SECTION_ORDER[Number(input) - 1] ?? null;
+  return NAV.find(item => item.shortcut === input)?.key ?? null;
 }
 
 /** The full cheatsheet, shown in the `?` overlay, grouped by intent. */
@@ -93,7 +81,7 @@ export const HELP_GROUPS: HelpGroup[] = [
       { keys: "i", label: "Show / hide track details" },
       { keys: "[ ]", label: "Filter source" },
       { keys: "2 I / E", label: "Playlists: import / export (open playlist or queue)" },
-      { keys: "5", label: "Settings: scan genre tags; session diagnostics/export" },
+      { keys: "9", label: "Settings: scan genre tags; session diagnostics/export" },
     ],
   },
   {
@@ -101,7 +89,7 @@ export const HELP_GROUPS: HelpGroup[] = [
     hints: [
       { keys: "A", label: "Append selected song" },
       { keys: "P", label: "Queue selected song next" },
-      { keys: "7", label: "Open queue" },
+      { keys: "6", label: "Open queue" },
       { keys: "↵", label: "Queue: play selected" },
       { keys: "u D", label: "Queue: move up / down" },
       { keys: "x", label: "Queue: remove (keeps file)" },
@@ -111,7 +99,7 @@ export const HELP_GROUPS: HelpGroup[] = [
   {
     title: "Discover (YouTube Music)",
     hints: [
-      { keys: "8 /", label: "Open Discover / search" },
+      { keys: "7 /", label: "Open Discover / search" },
       { keys: "[ ]", label: "Song / video / album / artist / playlist" },
       { keys: "↵", label: "Stream song or browse collection" },
       { keys: "A P", label: "Append / queue next" },
@@ -162,7 +150,7 @@ const ALWAYS: Hint = { keys: "?", label: "Keys" };
 const PLAYER: Hint = { keys: "m", label: "Player" };
 export const PLAYER_HINTS: Hint[] = [
   { keys: "m/esc", label: "Back" }, { keys: "space", label: "Pause" },
-  { keys: "← →", label: "Seek" }, { keys: "l", label: "Lyrics" }, { keys: "b", label: "Artwork" }, { keys: "v", label: "Visualizer" }, { keys: "F", label: "Fullscreen" }, { keys: "T/V", label: "Look/motion" }, { keys: "7", label: "Queue" }, ALWAYS,
+  { keys: "← →", label: "Seek" }, { keys: "l", label: "Lyrics" }, { keys: "b", label: "Artwork" }, { keys: "v", label: "Visualizer" }, { keys: "F", label: "Fullscreen" }, { keys: "T/V", label: "Look/motion" }, { keys: "6", label: "Queue" }, ALWAYS,
 ];
 export const WIDE_PLAYER_HINTS: Hint[] = [
   { keys: "m/esc", label: "Back" }, { keys: "space", label: "Toggle" },

@@ -1,6 +1,6 @@
 # Lyrics
 
-Press `m` to open the player (or focus section `6`), then `l` for lyrics.
+Press `m` to open the player (or focus section `5`), then `l` for lyrics.
 Online lookup starts off. Press uppercase `L` inside the lyrics panel to enable
 it; opening the panel alone won't search the internet.
 

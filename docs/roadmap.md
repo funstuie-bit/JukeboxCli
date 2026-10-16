@@ -1,5 +1,10 @@
 # Roadmap
 
+## Implemented in source preview — 1.6.0-dev.12
+
+- [x] Renumber sections in sidebar order: 5 Player, 6 Queue, 7 Music, 8 Radio, 9 Settings.
+- [x] Shared navigation mapping for labels and key handling; current help/guides updated.
+
 ## Implemented in source preview — 1.6.0-dev.11
 
 - [x] Settings at the end of the sidebar; icons across all sections, with plain-terminal fallbacks.
@@ -117,7 +122,7 @@ still need hands-on acceptance; automated checks cannot establish those results.
 ## Previous releases
 
 Version 1.3.1 adds five Studay FM radio presets, website feed discovery and
-station artwork on Mac and Linux. In Radio / URL (`9`), press `S` to browse.
+station artwork on Mac and Linux. In Radio / URL (`8`), press `S` to browse.
 
 Version 1.3.0 adds artist/album browsing, multi-track queue actions and responsive
 text details in the library. Version 1.4.0 adds genre metadata, portable playlist

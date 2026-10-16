@@ -38,7 +38,7 @@ In Library (`1`), `B` now cycles songs → artists → albums → genres. Enter 
 group; Esc returns. Existing filters, search, marking and queue actions work.
 Genre appears in track details (`i`) and is included in Library search.
 
-Settings (`5`) → **Scan genre tags** reads local tags with ffprobe. Enter starts;
+Settings (`9`) → **Scan genre tags** reads local tags with ffprobe. Enter starts;
 `c` stops, and leaving the page cancels. Completed index updates are retained.
 It does not rewrite, rename or move audio files or contact metadata services.
 New downloads also retain a genre when yt-dlp supplies one.

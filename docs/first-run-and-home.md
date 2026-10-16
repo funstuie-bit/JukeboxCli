@@ -6,8 +6,8 @@ choice; Escape skips to Home. You don't need an account or an existing library.
 ## Navigation
 
 `H` returns Home. Use arrows and Enter for its choices, recents and saved stations.
-`/` opens online search from Home; `8` opens Discover and `9` opens Radio / URL.
-`1` opens Library, `6` opens Now Playing, `m` expands the player and `7` opens
+`/` opens online search from Home; `7` opens Discover and `8` opens Radio / URL.
+`1` opens Library, `5` opens Now Playing, `m` expands the player and `6` opens
 the queue. `?` shows the keys for the current screen. While you're typing in a
 text field, shortcuts won't change playback or move you to another screen.
 
