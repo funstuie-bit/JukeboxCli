@@ -21,10 +21,10 @@ keeps the lot in one editable queue. Streams stay streams unless you choose to s
 them. There are lyrics, cover artwork and live visualisers too, with optional
 fullscreen MilkDrop effects on Mac and Linux.
 
-Source preview **1.6.1-dev.1** fixes YouTube videos whose picture and sound are
+Version **1.6.1** fixes YouTube videos whose picture and sound are
 separate streams. Both play through the existing mpv window, and video failures
-now explain format, cookie or connection problems. The published Homebrew release
-is still **1.6.0**; these fixes need the updated source build.
+now explain format, cookie or connection problems. Available from source and
+Homebrew on Mac, and from source on Linux.
 
 Version **1.6.0** gives **YouTube Videos its own sidebar section**.
 Press **Y** (Shift+y) to open it, type a search and press Enter. On the results,
@@ -245,11 +245,12 @@ results stay temporary until you explicitly save one with **f**.
 
 ## Status and limits
 
-**Current release: [1.6.0](https://github.com/funstuie-bit/JukeboxCli/releases/tag/v1.6.0).**
-Adds YouTube video browsing, saved searches, a compact thumbnail preview, audio/video
-item menus and broader mouse controls. Linux also gains preset imports and isolated
-fullscreen audio. Restart after updating; music and settings are kept.
-[Release notes](docs/releases/1.6.0.md).
+**Current release: [1.6.1](https://github.com/funstuie-bit/JukeboxCli/releases/tag/v1.6.1).**
+Fixes separate-stream YouTube video playback and explains failures more clearly.
+Includes 1.6.0's video browsing, saved searches, thumbnail preview, audio/video
+menus and mouse controls, plus Linux preset imports and isolated fullscreen audio.
+Restart after updating; music and settings are kept.
+[Release notes](docs/releases/1.6.1.md).
 [Changelog](CHANGELOG.md).
 
 Automated install checks run on Apple Silicon and x64 Linux. Intel Macs and other
@@ -545,7 +546,7 @@ Original / En D downloads, plus fullscreen audio isolated to JukeboxCli by defau
 Click mode adds player transport, seek and volume controls on Mac and Linux.
 Session diagnostics records local memory trends once a minute. See
 [setup, controls and limits](docs/visualiser-and-diagnostics.md).
-Version 1.6.0 is available from source and the Homebrew tap.
+Version 1.6.1 is available from source and the Homebrew tap.
 
 Packaged startup uses React production mode to avoid retaining development render
 timing records during long sessions. Linux and macOS share the same release;

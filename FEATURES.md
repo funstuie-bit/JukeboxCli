@@ -3,16 +3,16 @@
 These features are in the app now. That doesn't mean every station, terminal
 or online service will cooperate. The limits are listed below.
 
-## Source preview — 1.6.1-dev.1
+## Current release — 1.6.1
 
 - Separate YouTube video/audio streams play in the same mpv process; combined
   streams and silent videos remain supported. Mode switches retain the queue.
 - Safe, specific errors explain unsupported formats, cookies and lookup timeouts.
 - Stream URLs stay in memory; either stream's expiry invalidates the cached pair.
 
-These fixes are in the source preview, not the published 1.6.0 Homebrew release.
+Available from source on Mac/Linux and the Mac Homebrew tap.
 
-## Current release — 1.6.0
+## Also included from 1.6.0
 
 - Independent persistent search history for Music Discover and YouTube Videos;
   30 recent searches and up to 100 cached results each. Reopen/clear with h or a click.

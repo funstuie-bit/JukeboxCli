@@ -1,14 +1,14 @@
 # Roadmap
 
-## Source preview — 1.6.1-dev.1
+## Current release — 1.6.1
 
 - [x] Play separate YouTube picture/sound streams in the existing mpv process.
 - [x] Preserve useful, safe video failure reasons instead of a blanket try-audio message.
 - [x] Add regression coverage for expiry, audio reversion and private URL handling.
 - Real Mac/Linux acceptance command: `npx tsx scripts/smoke-video.ts`, with an
-  optional public YouTube URL. This preview is not a Homebrew release yet.
+  optional public YouTube URL. Available from source and the Mac Homebrew tap.
 
-## Current release — 1.6.0
+## Shipped in 1.6.0
 
 - [x] Dedicated YouTube Videos, audio/video item menus and compact landscape previews.
 - [x] Persistent search history, shared context menus and wider click navigation.

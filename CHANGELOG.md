@@ -3,7 +3,7 @@
 Release notes describe what changed in each build. For what works now and the
 remaining limits, see [feature status](FEATURES.md).
 
-## 1.6.1-dev.1 — YouTube video playback fix (unreleased)
+## 1.6.1 — YouTube video playback fix
 
 - Play YouTube's separate video/audio formats through one mpv process, with
   combined-format and silent-video fallback. Playing does not download media files.

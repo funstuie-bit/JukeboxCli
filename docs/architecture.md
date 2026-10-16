@@ -108,7 +108,7 @@ the fix does not guess at or reset existing settings.
 
 ## Player rendering
 
-The 1.6.1 source preview lets `ResolvedMedia` carry an optional ephemeral
+Version 1.6.1 lets `ResolvedMedia` carry an optional ephemeral
 `audioUrl` beside its video URL. The resolver accepts yt-dlp's selected format
 pair, validates HTTP(S) URLs/allowed headers and uses the earlier expiry. mpv
 receives video plus `audio-files` in one loadfile command; every load explicitly

@@ -1,9 +1,7 @@
 # Audio and video playback
 
-Available in JukeboxCli 1.6.0 on Mac and Linux, including Homebrew.
-
-The separate-stream playback fix below requires source preview **1.6.1-dev.1**.
-Published Homebrew 1.6.0 still requires a combined audio/video stream.
+Available in JukeboxCli 1.6.1 on Mac and Linux, including the Mac Homebrew tap.
+Version 1.6.1 fixes YouTube playback when picture and sound are separate streams.
 
 Choose **YouTube Videos** in the sidebar or press **Y** (Shift+y) outside a text
 field. On first visit the search field is ready to type into. Submit a query,
@@ -58,8 +56,8 @@ entries, session restoration and Enter in Music Discover default to audio; Enter
 requests video.
 No second audio player is started, and existing parent-exit cleanup remains.
 
-Video requires mpv and a source containing a video track. In the 1.6.1 source
-preview, yt-dlp selects separate video/audio formats when available, falling back
+Video requires mpv and a source containing a video track. In 1.6.1,
+yt-dlp selects separate video/audio formats when available, falling back
 to a combined stream or silent video. The existing mpv plays both streams; no
 media files are downloaded or merged on disk. Switching back to audio clears
 the separate soundtrack. Position, pause, volume and the queue stay intact.
@@ -77,7 +75,7 @@ extractor and mpv. The script checks video/audio/video switching, one player
 process, retained position/queue and cleanup. It uses system yt-dlp, an isolated
 profile and no browser cookies; it never modifies the user's music or settings.
 
-The 1.6.1 source preview passed that check on Apple Silicon macOS using generated
+The 1.6.1 playback implementation passed that check on Apple Silicon macOS using generated
 separate-stream files and a public YouTube video that failed in 1.6.0. Both video
 and audio loaded, playback advanced, mode switches kept one mpv process and the
 queue/paused position, and quitting removed the test player. Wider source,
@@ -88,8 +86,9 @@ a controlled live HTTP broadcast. Mode switching used one mpv PID, retained
 paused local position/volume, and compositor window closure stopped the item.
 One public YouTube live link could not resolve; broad live-source acceptance
 remains pending. Automated coverage includes mode selection/cache separation,
-queue defaults, window shutdown and keyboard/right-click actions. Physical macOS video-window acceptance remains pending;
-shared source and automated checks do not establish that hardware result.
+queue defaults, window shutdown and keyboard/right-click actions. The Mac smoke
+check above opened the native GPU window; broader visual, terminal and physical
+media-control acceptance remains pending.
 
 ## Right-click menus
 
