@@ -21,7 +21,7 @@ keeps the lot in one editable queue. Streams stay streams unless you choose to s
 them. There are lyrics, cover artwork and live visualisers too, with optional
 fullscreen MilkDrop effects on Mac and Linux.
 
-Source preview **1.6.0-dev.10** gives **YouTube Videos its own sidebar section**.
+Source preview **1.6.0-dev.11** gives **YouTube Videos its own sidebar section**.
 Press **Y** (Shift+y) to open it, type a search and press Enter. On the results,
 **Enter plays video** in its own window; **a plays audio only**. Music Discover
 stays on **8** and keeps Enter for audio. Press **c** or right-click a result in
@@ -39,6 +39,9 @@ existing player or results near your click, without replacing the screen or
 moving the list. **Escape**, **c** or a click outside closes them. Sidebar clicks stay active
 while typing a search. **Enter** searches; **Escape** or the clickable cancel hint
 leaves the field. Search results are retained within a session, not across restarts.
+
+Every sidebar section has a small icon. Settings sits last, separated from the
+listening sections. Existing shortcuts stay the same: **5** still opens Settings.
 
 Video results show title, channel, duration and small video/live/queued symbols.
 Each section remembers its query, results and selection while JukeboxCli stays

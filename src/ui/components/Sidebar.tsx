@@ -3,26 +3,27 @@ import { useActionInput as useInput } from "../hooks/useActionInput";
 import { useStore, type Section } from "../store";
 import { wrapStep } from "../move";
 import { playerPalette, ICON } from "../theme";
-import { browseIcon } from "../icons";
+import { navigationIcon } from "../icons";
 import { MouseRow } from "./MouseRow";
 
 interface NavItem {
   key: Section;
   label: string;
+  shortcut: string;
 }
 
 const NAV: NavItem[] = [
-  { key: "home", label: "Home" },
-  { key: "library", label: "Library" },
-  { key: "playlists", label: "Playlists" },
-  { key: "history", label: "History" },
-  { key: "download", label: "Download" },
-  { key: "settings", label: "Settings" },
-  { key: "player", label: "Now Playing" },
-  { key: "queue", label: "Queue" },
-  { key: "discover", label: "Music Discover" },
-  { key: "listen", label: "Radio / URL" },
-  { key: "videos", label: "YouTube Videos" },
+  { key: "home", shortcut: "H", label: "Home" },
+  { key: "library", shortcut: "1", label: "Library" },
+  { key: "playlists", shortcut: "2", label: "Playlists" },
+  { key: "history", shortcut: "3", label: "History" },
+  { key: "download", shortcut: "4", label: "Download" },
+  { key: "player", shortcut: "6", label: "Now Playing" },
+  { key: "queue", shortcut: "7", label: "Queue" },
+  { key: "discover", shortcut: "8", label: "Music Discover" },
+  { key: "listen", shortcut: "9", label: "Radio / URL" },
+  { key: "videos", shortcut: "Y", label: "YouTube Videos" },
+  { key: "settings", shortcut: "5", label: "Settings" },
 ];
 
 export function Sidebar() {
@@ -44,7 +45,7 @@ export function Sidebar() {
 
   return (
     <Box flexDirection="column" width={20} marginRight={1}>
-      {NAV.map((item, i) => {
+      {NAV.map((item) => {
         const selected = item.key === section;
         // Settings is a utility, so set it off from the content sections.
         const pinned = item.key === "settings";
@@ -62,7 +63,7 @@ export function Sidebar() {
               color={selected ? COLOR.accent : COLOR.muted}
               bold={selected && focused}
             >
-              {`${item.key === "videos" ? "Y" : i === 0 ? "H" : i} ${item.key === "videos" ? browseIcon("video") + " " : item.key === "discover" ? browseIcon("music") + " " : ""}${item.label}`}
+              {`${navigationIcon(item.key)} ${item.shortcut} ${item.label}`}
             </Text>
             {item.key === "download" && active > 0 ? (
               <Text color={COLOR.muted}>{` (${active})`}</Text>

@@ -3,6 +3,12 @@
 Release notes describe what changed in each build. For what works now and the
 remaining limits, see [feature status](FEATURES.md).
 
+## 1.6.0-dev.11 — Unreleased
+
+- Move Settings to the end of the sidebar, separated from listening sections.
+- Add simple icons to every section, with ASCII fallbacks for plain terminals.
+- Keep the existing shortcut keys; sidebar order no longer determines labels.
+
 ## 1.6.0-dev.10 — Unreleased
 
 - Offer Play audio / Play video in item menus across Home, Library, History,

@@ -3,3 +3,15 @@ export function browseIcon(kind: "video" | "music" | "live" | "queued"): string 
   const plain = process.env.TERM === "dumb" || process.env.JUKEBOXCLI_ICONS === "ascii";
   return ({ video: plain ? ">" : "▶", music: plain ? "M" : "♫", live: plain ? "*" : "●", queued: plain ? "+" : "✓" })[kind];
 }
+
+/** Single-cell text symbols, avoiding a dependency on patched icon fonts. */
+export function navigationIcon(section: "home" | "library" | "playlists" | "history" | "download" | "settings" | "player" | "queue" | "discover" | "listen" | "videos"): string {
+  const plain = process.env.TERM === "dumb" || process.env.JUKEBOXCLI_ICONS === "ascii";
+  const symbols = {
+    home: ["⌂", "H"], library: ["▤", "L"], playlists: ["≡", "="],
+    history: ["↶", "~"], download: ["↓", "v"], settings: ["⚙", "*"],
+    player: ["▷", ">"], queue: ["≣", "+"], discover: ["♫", "M"],
+    listen: ["◉", "o"], videos: ["▶", ">"],
+  };
+  return symbols[section][plain ? 1 : 0]!;
+}

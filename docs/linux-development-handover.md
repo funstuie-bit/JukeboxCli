@@ -5,7 +5,7 @@ Linux and macOS use one source history and release process.
 
 ## Current state
 
-- Source preview: `1.6.0-dev.10`, including general YouTube video search and [audio/video controls](video-playback.md).
+- Source preview: `1.6.0-dev.11`, including general YouTube video search and [audio/video controls](video-playback.md).
 - Production release: `v1.5.0`
 - Public source: `https://github.com/funstuie-bit/JukeboxCli.git`
 - Private mirror connection details belong in private maintainer notes, not here
@@ -246,3 +246,11 @@ YouTube results; Enter in YouTube Videos retains video playback.
 
 No eager probing of unknown URLs. Video availability still depends on the source
 and mpv; existing failure feedback offers audio. No library migration required.
+
+### Sidebar presentation — preview dev.11 (2026-10-15)
+
+Settings is now the final sidebar item, with a gap separating it from listening
+sections. Every section has a simple icon before its shortcut and label; plain
+terminals/JUKEBOXCLI_ICONS=ascii use ASCII fallbacks. Shortcut labels are explicit
+rather than derived from display order: 5 Settings, 6 Now Playing, 7 Queue etc.
+remain unchanged. Arrow navigation follows the displayed order.

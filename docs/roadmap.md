@@ -1,5 +1,10 @@
 # Roadmap
 
+## Implemented in source preview — 1.6.0-dev.11
+
+- [x] Settings at the end of the sidebar; icons across all sections, with plain-terminal fallbacks.
+- [x] Stable keyboard shortcuts independent of the visual menu order.
+
 ## Implemented in source preview — 1.6.0-dev.10
 
 - [x] Audio/video item choices beyond discovery: Home, saved lists, Queue, radio/URL and player search.
