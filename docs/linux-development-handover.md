@@ -5,7 +5,7 @@ Linux and macOS use one source history and release process.
 
 ## Current state
 
-- Source preview: `1.6.0-dev.13`, including general YouTube video search and [audio/video controls](video-playback.md).
+- Source preview: `1.6.0-dev.14`, including general YouTube video search and [audio/video controls](video-playback.md).
 - Production release: `v1.5.0`
 - Public source: `https://github.com/funstuie-bit/JukeboxCli.git`
 - Private mirror connection details belong in private maintainer notes, not here
@@ -270,3 +270,6 @@ use the main foreground and the selected label remains bold/accented. The sideba
 is 21 cells wide and App budgets content from the shared SIDEBAR_WIDTH constant.
 This supersedes dev.11's single-cell glyph choice. ASCII fallback remains aligned
 for TERM=dumb or JUKEBOXCLI_ICONS=ascii. Numbering is unchanged from dev.12.
+
+Preview dev.14 uses a bright red play symbol for the YouTube Videos sidebar entry.
+Its fixed icon column and Y shortcut remain; ASCII mode uses a red > fallback.

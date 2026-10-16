@@ -11,7 +11,7 @@ export function navigationIcon(section: "home" | "library" | "playlists" | "hist
     home: ["🏠", "H"], library: ["📚", "L"], playlists: ["📋", "="],
     history: ["🕘", "~"], download: ["📥", "v"], settings: ["🔧", "*"],
     player: ["🎵", ">"], queue: ["📑", "+"], discover: ["🔎", "M"],
-    listen: ["📻", "o"], videos: ["🎬", ">"],
+    listen: ["📻", "o"], videos: ["▶", ">"],
   };
   return symbols[section][plain ? 1 : 0]!;
 }

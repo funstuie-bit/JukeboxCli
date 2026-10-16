@@ -1,5 +1,9 @@
 # Roadmap
 
+## Implemented in source preview — 1.6.0-dev.14
+
+- [x] Red play icon for the YouTube Videos sidebar entry.
+
 ## Implemented in source preview — 1.6.0-dev.13
 
 - [x] Clearer coloured sidebar icons, brighter text and fixed icon/marker columns.

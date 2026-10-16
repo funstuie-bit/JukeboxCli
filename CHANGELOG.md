@@ -3,6 +3,10 @@
 Release notes describe what changed in each build. For what works now and the
 remaining limits, see [feature status](FEATURES.md).
 
+## 1.6.0-dev.14 — Unreleased
+
+- Use a bright red play symbol for YouTube Videos in the aligned sidebar.
+
 ## 1.6.0-dev.13 — Unreleased
 
 - Replace faint sidebar symbols with recognisable coloured emoji icons and
