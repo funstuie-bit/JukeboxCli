@@ -3,20 +3,48 @@ import { resolvedYtDlpPath } from "../bin/ytdlp-fetch";
 import { jsRuntimeArgs, toolEnv } from "../bin/binaries";
 import { cookieArgs } from "../ytdlp/args";
 import type { Config } from "../config/config";
-import { isHttpUrl, type MediaResolver, type ResolvedMedia } from "./media";
+import { isHttpUrl, StreamResolutionError, type MediaResolver, type ResolvedMedia, type PlaybackMode } from "./media";
 
-/** Sanitise extractor output: signed URLs stay in memory and never in errors. */
-export function resolvedMedia(info: Record<string, unknown>, now = Date.now()): ResolvedMedia {
-  if (!isHttpUrl(info.url)) throw new Error("No playable audio stream was returned.");
-  const expiry = Number(new URL(info.url).searchParams.get("expire")) * 1000;
-  const expiresAt = Math.min(now + 5 * 60_000, expiry > now ? expiry - 30_000 : Infinity);
+function safeHeaders(value: unknown): Record<string, string> {
   const headers: Record<string, string> = {};
-  if (info.http_headers && typeof info.http_headers === "object") {
-    for (const [name, value] of Object.entries(info.http_headers)) {
-      if (/^(user-agent|referer|origin|accept|accept-language)$/i.test(name) && typeof value === "string" && !/[\r\n]/.test(value)) headers[name] = value;
+  if (value && typeof value === "object") {
+    for (const [name, content] of Object.entries(value)) {
+      if (/^(user-agent|referer|origin|accept|accept-language)$/i.test(name) && typeof content === "string" && !/[\r\n]/.test(content)) headers[name] = content;
     }
   }
-  return { url: info.url, headers, expiresAt };
+  return headers;
+}
+
+function streamExpiry(url: string, now: number): number {
+  const expiry = Number(new URL(url).searchParams.get("expire")) * 1000;
+  return expiry > 0 && Number.isFinite(expiry) ? expiry - 30_000 : now + 5 * 60_000;
+}
+
+/** Sanitise extractor output: signed URLs stay in memory and never in errors. */
+export function resolvedMedia(info: Record<string, unknown>, now = Date.now(), mode: PlaybackMode = "audio"): ResolvedMedia {
+  const formats = Array.isArray(info.requested_formats)
+    ? info.requested_formats.filter((f): f is Record<string, unknown> => !!f && typeof f === "object") : [];
+  const video = mode === "video" ? formats.find(f => typeof f.vcodec === "string" && f.vcodec !== "none") : undefined;
+  const audio = video ? formats.find(f => typeof f.acodec === "string" && f.acodec !== "none" && f.vcodec === "none") : undefined;
+  const selected = video ?? info;
+  if (mode === "video" && selected.vcodec === "none") throw new StreamResolutionError("no-video");
+  if (!isHttpUrl(selected.url)) throw new StreamResolutionError(selected.url ? "invalid-url" : "no-stream");
+  if (audio && !isHttpUrl(audio.url)) throw new StreamResolutionError("invalid-url");
+  const headers = safeHeaders(info.http_headers);
+  for (const [name, value] of Object.entries(safeHeaders(selected.http_headers))) {
+    const key = Object.keys(headers).find(key => key.toLowerCase() === name.toLowerCase()) ?? name;
+    headers[key] = value;
+  }
+  // mpv's loadfile options apply to both streams. Refuse conflicting headers
+  // rather than quietly sending one stream the other's credentials/settings.
+  for (const [name, value] of Object.entries(safeHeaders(audio?.http_headers))) {
+    const key = Object.keys(headers).find(key => key.toLowerCase() === name.toLowerCase()) ?? name;
+    if (headers[key] !== undefined && headers[key] !== value) throw new StreamResolutionError("incompatible-headers");
+    headers[key] = value;
+  }
+  const audioUrl = audio?.url as string | undefined;
+  const expiresAt = Math.min(now + 5 * 60_000, streamExpiry(selected.url, now), audioUrl ? streamExpiry(audioUrl, now) : Infinity);
+  return { url: selected.url, ...(audioUrl ? { audioUrl } : {}), headers, expiresAt };
 }
 
 export function createStreamResolver(config: () => Promise<Config>): MediaResolver {
@@ -36,12 +64,12 @@ export function createStreamResolver(config: () => Promise<Config>): MediaResolv
     try {
       const { stdout } = await execa(resolvedYtDlpPath(), [
         "--ignore-config", "--no-warnings", "--no-playlist", "--skip-download", "--dump-single-json",
-        "--format", mode === "video" ? "best[vcodec!=none][acodec!=none]" : "bestaudio/best", "--socket-timeout", "15", "--retries", "1",
+        "--format", mode === "video" ? "bestvideo+bestaudio/best/bestvideo" : "bestaudio/best", "--socket-timeout", "15", "--retries", "1",
         ...jsRuntimeArgs(), ...cookieArgs(cfg), "--", track.streamUrl,
       ], { env: toolEnv(), cancelSignal: signal, timeout: 45_000, maxBuffer: 8 * 1024 * 1024 });
       signal.throwIfAborted();
       const info = JSON.parse(stdout);
-      const media = resolvedMedia(info);
+      const media = resolvedMedia(info, Date.now(), mode);
       media.metadata = {
         title: typeof info.title === "string" ? info.title : track.title,
         artist: typeof info.artist === "string" ? info.artist : typeof info.uploader === "string" ? info.uploader : track.artist,
@@ -54,11 +82,15 @@ export function createStreamResolver(config: () => Promise<Config>): MediaResolv
       return media;
     } catch (error) {
       signal.throwIfAborted();
+      if (error instanceof StreamResolutionError) throw error;
       const stderr = (error as { stderr?: string }).stderr ?? "";
+      if (/requested format.*not available|no video formats|only images are available/i.test(stderr)) throw new StreamResolutionError("format");
       if (/403|429|sign in|confirm.*bot|cookies|login/i.test(stderr)) {
-        throw new Error("Streaming was blocked by the source. Check browser cookies in Settings or try another result.");
+        throw new StreamResolutionError("blocked");
       }
-      throw new Error("Could not resolve this stream. Check your connection or try another result.");
+      if (/video unavailable|private video|video.*removed|not available in your country|age.restricted/i.test(stderr)) throw new StreamResolutionError("unavailable");
+      if ((error as { timedOut?: boolean }).timedOut || /timed? out|timeout/i.test(stderr)) throw new StreamResolutionError("timeout");
+      throw new StreamResolutionError("lookup");
     }
   };
 }

@@ -21,6 +21,11 @@ keeps the lot in one editable queue. Streams stay streams unless you choose to s
 them. There are lyrics, cover artwork and live visualisers too, with optional
 fullscreen MilkDrop effects on Mac and Linux.
 
+Source preview **1.6.1-dev.1** fixes YouTube videos whose picture and sound are
+separate streams. Both play through the existing mpv window, and video failures
+now explain format, cookie or connection problems. The published Homebrew release
+is still **1.6.0**; these fixes need the updated source build.
+
 Version **1.6.0** gives **YouTube Videos its own sidebar section**.
 Press **Y** (Shift+y) to open it, type a search and press Enter. On the results,
 **Enter plays video** in its own window; **a plays audio only**. Music Discover

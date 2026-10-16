@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { Playback } from "../src/player/playback";
 import { MpvPlayer } from "../src/player/mpv";
-import type { ResolvedMedia, StreamTrack } from "../src/player/media";
+import { StreamResolutionError, type ResolvedMedia, type StreamTrack } from "../src/player/media";
 import { persistListeningSession, readSession, sessionFile } from "../src/player/session";
 import { readFileSync, writeFileSync } from "node:fs";
 import { trackFromUrl } from "../src/player/url";
@@ -167,6 +167,43 @@ describe("stream playback", () => {
 });
 
 describe("audio/video modes", () => {
+  it("passes separate streams to one engine and keeps signed links out of sessions and errors", async () => {
+    const resolver = vi.fn(async (_t, _signal, _fresh, mode) => ({ ...media("video"),
+      ...(mode === "video" ? { audioUrl: "https://media.example/audio?sig=audio-private" } : {}) }));
+    const p = new Playback("fixture", undefined, resolver);
+    await p.play(a, [a, b], 0, true, false, "video");
+    const m = engine();
+    expect(m.mediaLoads.at(-1)).toMatchObject({ audioUrl: "https://media.example/audio?sig=audio-private", mode: "video" });
+    const saver = persistListeningSession(p); saver.close();
+    expect(readFileSync(sessionFile, "utf8")).not.toMatch(/audioUrl|audio-private|temporary|headers/);
+    await p.setPlaybackMode("audio");
+    expect(engine()).toBe(m); expect(m.mediaLoads.at(-1)).not.toHaveProperty("audioUrl");
+    expect(p.getState().list.map(t => t.id)).toEqual([a.id, b.id]); p.quit();
+  });
+  it("preserves safe format and authentication failure reasons in video mode", async () => {
+    for (const reason of ["format", "blocked", "timeout"] as const) {
+      const error = new StreamResolutionError(reason);
+      const p = new Playback("fixture", undefined, async () => { throw error; });
+      await p.play(a, [a, b], 0, false, false, "video");
+      expect(p.getState().error).toContain(error.message);
+      expect(p.getState().error).toContain("Press W");
+      expect(p.getState().list).toEqual([a, b]); p.quit();
+    }
+  });
+  it("refreshes both links once if the separate audio fails, then reports that reason", async () => {
+    const resolver = vi.fn(async (_track, _signal, fresh) => {
+      const m = engine();
+      m.command = async (args: unknown[]) => args[1] === "aid" ? false : 1;
+      return { ...media(fresh ? "renewed" : "first"), audioUrl: "https://media.example/audio?sig=private-audio" };
+    });
+    const p = new Playback("fixture", undefined, resolver);
+    await p.play(a, [a, b], 0, false, false, "video");
+    expect(resolver.mock.calls.map(call => call[2])).toEqual([false, true]);
+    expect(engine().mediaLoads).toHaveLength(2);
+    expect(p.getState().error).toContain("separate audio stream");
+    expect(p.getState().error).not.toMatch(/https:|sig=|private-audio/);
+    expect(p.getState().list).toEqual([a, b]); p.quit();
+  });
   it("switches in one engine, preserves position/pause/volume, then defaults queued entries to audio", async () => {
     const resolver = vi.fn(async (..._args: any[]) => media("a"));
     const p = new Playback("fixture", undefined, resolver);

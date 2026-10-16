@@ -108,6 +108,14 @@ the fix does not guess at or reset existing settings.
 
 ## Player rendering
 
+The 1.6.1 source preview lets `ResolvedMedia` carry an optional ephemeral
+`audioUrl` beside its video URL. The resolver accepts yt-dlp's selected format
+pair, validates HTTP(S) URLs/allowed headers and uses the earlier expiry. mpv
+receives video plus `audio-files` in one loadfile command; every load explicitly
+clears that option when no separate sound is needed. Session/history metadata
+does not include either signed URL. Fixed `StreamResolutionError` reasons pass
+through the controller; arbitrary extractor/mpv text never enters player errors.
+
 `playerLayout` splits at 86 content columns/16 body rows; smaller views stack.
 Queue formatting measures terminal cells, not JS string length. Explicit player
 colours avoid inheriting low-contrast terminal defaults. Art and waveform load

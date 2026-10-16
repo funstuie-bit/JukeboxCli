@@ -3,6 +3,17 @@
 Release notes describe what changed in each build. For what works now and the
 remaining limits, see [feature status](FEATURES.md).
 
+## 1.6.1-dev.1 — YouTube video playback fix (unreleased)
+
+- Play YouTube's separate video/audio formats through one mpv process, with
+  combined-format and silent-video fallback. Playing does not download media files.
+- Expire cached links when either stream expires, refresh failed loads once,
+  and clear external audio when returning to audio or another queue entry.
+- Keep useful format, authentication, unavailable-video and timeout reasons in
+  the player and diagnostics without exposing extractor output or signed URLs.
+- Add a real mpv video smoke check for Mac/Linux: offline fixtures by default,
+  with an explicit YouTube URL for online playback and mode-switch acceptance.
+
 ## 1.6.0 — YouTube video browsing and listening controls
 
 - Add a dedicated YouTube Videos section (Y): general video search, Enter for

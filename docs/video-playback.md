@@ -2,6 +2,9 @@
 
 Available in JukeboxCli 1.6.0 on Mac and Linux, including Homebrew.
 
+The separate-stream playback fix below requires source preview **1.6.1-dev.1**.
+Published Homebrew 1.6.0 still requires a combined audio/video stream.
+
 Choose **YouTube Videos** in the sidebar or press **Y** (Shift+y) outside a text
 field. On first visit the search field is ready to type into. Submit a query,
 select a result and press **Enter to play video**, or **a for audio only**.
@@ -55,12 +58,30 @@ entries, session restoration and Enter in Music Discover default to audio; Enter
 requests video.
 No second audio player is started, and existing parent-exit cleanup remains.
 
-Video requires mpv and a source containing a video track. A failed video request
-shows an error and offers switching back to audio. The player selects the best
-**combined audio/video format** supplied by yt-dlp; it does not merge separate
-adaptive streams, so some sources offer lower resolution or no combined format.
-The audio/video URL caches are separate, expire, and remain bounded. Signed URLs
-are never saved in the listening session or displayed in errors.
+Video requires mpv and a source containing a video track. In the 1.6.1 source
+preview, yt-dlp selects separate video/audio formats when available, falling back
+to a combined stream or silent video. The existing mpv plays both streams; no
+media files are downloaded or merged on disk. Switching back to audio clears
+the separate soundtrack. Position, pause, volume and the queue stay intact.
+
+Format, source-blocking/cookie, unavailable-video and lookup-timeout failures
+show a safe reason and offer switching back to audio. Raw extractor output and
+signed links are not shown or saved. Audio/video lookup caches remain separate
+and bounded; a paired video's cache expires when either link expires. A failed
+load refreshes both links once. Sources requiring conflicting HTTP headers for
+their picture and sound are refused explicitly.
+
+Developers can run `npx tsx scripts/smoke-video.ts` for an isolated, muted test
+using generated separate-stream files. Add a public YouTube URL to test the real
+extractor and mpv. The script checks video/audio/video switching, one player
+process, retained position/queue and cleanup. It uses system yt-dlp, an isolated
+profile and no browser cookies; it never modifies the user's music or settings.
+
+The 1.6.1 source preview passed that check on Apple Silicon macOS using generated
+separate-stream files and a public YouTube video that failed in 1.6.0. Both video
+and audio loaded, playback advanced, mode switches kept one mpv process and the
+queue/paused position, and quitting removed the test player. Wider source,
+terminal and physical media-control acceptance remains ongoing.
 
 Linux acceptance passed for generated local video, a public YouTube video and
 a controlled live HTTP broadcast. Mode switching used one mpv PID, retained

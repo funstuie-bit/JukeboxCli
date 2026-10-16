@@ -339,7 +339,11 @@ export class MpvPlayer extends EventEmitter {
 
   private mediaCommand(media: ResolvedMedia, action: "replace" | "append") {
     const options: Record<string, string> = { "ytdl": "no", "http-header-fields": "", "vid": media.mode === "video" ? "auto" : "no",
+      "audio-files-clr": "",
       "start": String(media.startPosition ?? 0) };
+    // Path-list separators differ by OS. Append one raw item after clearing
+    // instead of splitting URLs (https:) or filenames containing punctuation.
+    if (media.mode === "video" && media.audioUrl) options["audio-files-append"] = media.audioUrl;
     // mpv's string-list escaping uses backslashes for commas and backslashes.
     if (media.headers && Object.keys(media.headers).length) {
       options["http-header-fields"] = Object.entries(media.headers)

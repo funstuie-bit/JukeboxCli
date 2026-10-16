@@ -27,9 +27,30 @@ export interface ResolvedMedia {
   mode?: PlaybackMode;
   startPosition?: number;
   url: string;
+  /** Optional separate audio stream; ephemeral like url, never session metadata. */
+  audioUrl?: string;
   headers?: Record<string, string>;
   expiresAt: number;
   metadata?: Pick<StreamTrack, "title" | "artist" | "durationSec" | "thumbnailUrl" | "isLive">;
+}
+/** Fixed user-facing reasons; extractor output and signed URLs never become errors. */
+const resolutionMessages = {
+  "no-stream": "No playable stream was returned by the source.",
+  "no-video": "This source has no playable video stream.",
+  "no-audio": "The video's separate audio stream could not be loaded. Try again or choose another result.",
+  "invalid-url": "The source returned an unsupported stream link.",
+  "incompatible-headers": "The source requires incompatible settings for its picture and sound. Try another result.",
+  "format": "No compatible video format was returned. Update yt-dlp in Settings or try another result.",
+  "blocked": "Streaming was blocked by the source. Check browser cookies in Settings or try another result.",
+  "unavailable": "This video is unavailable, private or restricted by the source.",
+  "timeout": "Stream lookup timed out. Check your connection and try again.",
+  "lookup": "Could not resolve this stream. Check your connection or try another result.",
+} as const;
+export class StreamResolutionError extends Error {
+  constructor(readonly reason: keyof typeof resolutionMessages) {
+    super(resolutionMessages[reason]);
+    this.name = "StreamResolutionError";
+  }
 }
 export type MediaResolver = (track: StreamTrack, signal: AbortSignal, fresh?: boolean, mode?: PlaybackMode) => Promise<ResolvedMedia>;
 

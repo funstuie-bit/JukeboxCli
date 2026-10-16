@@ -3,7 +3,7 @@ import { EventEmitter } from "node:events";
 import { logEvent } from "../diagnostics/log";
 import { existsSync } from "node:fs";
 import type { Track as LibraryTrack } from "../library/types";
-import { isLive, isStream, isHttpUrl, streamMetadata, type StreamTrack, type PlayableTrack as Track, type MediaResolver, type ResolvedMedia, type PlaybackMode } from "./media";
+import { isLive, isStream, isHttpUrl, streamMetadata, StreamResolutionError, type StreamTrack, type PlayableTrack as Track, type MediaResolver, type ResolvedMedia, type PlaybackMode } from "./media";
 import { MpvPlayer } from "./mpv";
 import { dispatchMediaAction } from "./media-keys";
 import { onEndedDecision, shuffledOrder, stepIndex } from "./order";
@@ -552,17 +552,22 @@ export class Playback extends EventEmitter {
         const media = await this.media(track, signal, fresh, mode);
         if (request !== this.playRequest) return;
         this.applyMetadata(this.state.index, media);
-        try { await m.loadMedia({ ...media, mode, startPosition }, startPaused); }
+        const load = async (resolved: ResolvedMedia) => {
+          await m.loadMedia({ ...resolved, mode, startPosition }, startPaused);
+          if (request !== this.playRequest) return;
+          if (mode === "video" && !(await m.command(["get_property", "vid"]))) throw new StreamResolutionError("no-video");
+          if (mode === "video" && resolved.audioUrl && !(await m.command(["get_property", "aid"]))) throw new StreamResolutionError("no-audio");
+        };
+        try { await load(media); }
         catch (error) {
           if ((!isStream(track) && !(mode === "video" && isStream(videoSource(track) ?? track))) || fresh || signal.aborted) throw error;
           await m.stop();
           const renewed = await this.media(track, signal, true, mode);
           if (request !== this.playRequest) return;
           this.applyMetadata(this.state.index, renewed);
-          await m.loadMedia({ ...renewed, mode, startPosition }, startPaused);
+          await load(renewed);
         }
         if (request !== this.playRequest) return;
-        if (mode === "video" && !(await m.command(["get_property", "vid"]))) throw new Error("No video track");
         const volume = clampVolume(await m.getVolume());
         if (request !== this.playRequest) return;
         this.update({
@@ -578,9 +583,10 @@ export class Playback extends EventEmitter {
         if (isStream(track) || mode === "video") {
           await m.stop().catch(() => {});
           if (request !== this.playRequest) return;
+          const reason = error instanceof StreamResolutionError ? error.message : undefined;
           this.update({ engine: "mpv", canControl: true, loading: false, paused: true,
-            error: mode === "video" ? "Could not play video. Press W in Player to try audio." : error instanceof Error && /^(Streaming|Could not resolve|Only HTTP)/.test(error.message)
-              ? error.message : "Could not play this stream. Select it in Queue to retry, or n to skip." });
+            error: mode === "video" ? `${reason ?? "Could not start video playback in mpv."} Press W in Player to try audio.`
+              : reason ?? "Could not play this stream. Select it in Queue to retry, or n to skip." });
           return;
         }
         // mpv failed to start or load: fall through to the external opener.
