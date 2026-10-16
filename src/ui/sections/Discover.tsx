@@ -10,6 +10,8 @@ import { TextField } from "../components/TextField";
 import { ContextMenu } from "../components/ContextMenu";
 import { MouseRow } from "../components/MouseRow";
 import { browseIcon } from "../icons";
+import { searchHistoryFor, type SavedSearch } from "../../sources/search-history";
+import { VideoPreview } from "../components/VideoPreview";
 import { COLOR } from "../theme";
 
 const filters: MusicFilter[] = ["song", "video", "album", "artist", "playlist"];
@@ -22,12 +24,17 @@ const sessions = new WeakMap<object, Map<boolean, BrowseSnapshot>>();
 export function Discover({ videos: youtube = false }: { videos?: boolean } = {}) {
   const { config, region, setCaptureMode, playback, setPendingAdd, setSection, listRows, contentWidth, pendingSearch, setPendingSearch } = useStore();
   const focused = region === "content";
-  const saved = sessions.get(playback)?.get(youtube);
+  const [history] = useState(() => searchHistoryFor(playback));
+  const persisted = history.last(youtube);
+  const saved = sessions.get(playback)?.get(youtube) ?? (persisted ? { ...persisted, parents: [] } : undefined);
+  const [cached, setCached] = useState(!sessions.get(playback)?.has(youtube) && !!persisted);
+  const [recentOpen, setRecentOpen] = useState(false);
+  const [preview, setPreview] = useState(true);
   const [query, setQuery] = useState(saved?.query ?? "");
-  const [kind, setKind] = useState<MusicFilter>(saved?.kind ?? "song");
+  const [kind, setKind] = useState<MusicFilter>(saved?.kind ?? (youtube ? "video" : "song"));
   const [editing, setEditing] = useState(youtube && !saved?.query);
   const [page, setPage] = useState<MusicPage>(saved?.page ?? { title: youtube ? "Search videos, channels and topics" : "YouTube Music · no sign-in needed", items: [] });
-  useEffect(() => { if (pendingSearch) { setMenu(null); setDetails(false); setEditing(true); setPendingSearch(false); } }, [pendingSearch, setPendingSearch]);
+  useEffect(() => { if (pendingSearch) { setMenu(null); setRecentOpen(false); setDetails(false); setEditing(true); setPendingSearch(false); } }, [pendingSearch, setPendingSearch]);
   const [parents, setParents] = useState<{ page: MusicPage; cursor: number }[]>(saved?.parents ?? []);
   const [cursor, setCursor] = useState(saved?.cursor ?? 0);
   const [busy, setBusy] = useState(false);
@@ -44,13 +51,15 @@ export function Discover({ videos: youtube = false }: { videos?: boolean } = {})
   useEffect(() => () => {
     const cache = sessions.get(playback) ?? new Map<boolean, BrowseSnapshot>();
     cache.set(youtube, snapshot.current); sessions.set(playback, cache);
-  }, [playback, youtube]);
+    const current = snapshot.current;
+    if (!current.parents.length) history.rememberCursor(youtube, current.query, current.kind, current.cursor);
+  }, [playback, youtube, history]);
   useEffect(() => () => { request.current++; controller.current?.abort(); }, []);
   useEffect(() => {
-    setCaptureMode(focused && editing ? "text" : focused && menu !== null ? "menu" : focused && details ? "picker" : focused && (parents.length > 0 || busy) ? "esc" : "none");
+    setCaptureMode(focused && editing ? "text" : focused && (menu !== null || recentOpen) ? "menu" : focused && details ? "picker" : focused && (parents.length > 0 || busy) ? "esc" : "none");
     return () => setCaptureMode("none");
-  }, [focused, editing, menu, details, parents.length, busy, setCaptureMode]);
-  const load = async (task: (signal: AbortSignal) => Promise<MusicPage>, mode: "search" | "browse" | "more") => {
+  }, [focused, editing, menu, recentOpen, details, parents.length, busy, setCaptureMode]);
+  const load = async (task: (signal: AbortSignal) => Promise<MusicPage>, mode: "search" | "browse" | "more", searched?: SavedSearch) => {
     const token = ++request.current;
     controller.current?.abort();
     const pending = new AbortController(); controller.current = pending;
@@ -58,26 +67,42 @@ export function Discover({ videos: youtube = false }: { videos?: boolean } = {})
     try {
       const next = await task(pending.signal);
       if (token !== request.current) return;
-      if (mode === "browse") setParents(p => [...p, { page, cursor }]);
+      if (mode === "browse") setParents(p => [...p, { page, cursor }].slice(-20));
       if (mode === "search") setParents([]);
       const items = (mode === "more" ? [...page.items, ...next.items] : next.items).slice(0, 10000);
       setPage({ ...next, items, more: items.length >= 10000 || !next.items.length ? undefined : next.more });
       if (mode !== "more") setCursor(0);
+      setCached(false);
+      if (searched) {
+        history.record(youtube, searched.query, searched.kind, next);
+        if (history.error) setNotice(history.error);
+      } else if (mode === "more" && !parents.length) {
+        history.record(youtube, query, kind, { ...next, items });
+        if (history.error) setNotice(history.error);
+      }
     } catch {
       if (token === request.current) setNotice("Could not load search results. Check your connection; / searches again.");
     } finally { if (token === request.current) setBusy(false); }
   };
   const search = (value: string, videos = youtube, filter = kind) => {
-    setPage({ title: value, items: [] }); setParents([]); setCursor(0);
-    void load(signal => videos ? searchYouTubeVideos(value, signal) : searchMusic(value, filter, signal), "search");
+    value = value.trim().slice(0, 500); if (!value) { setEditing(true); return; }
+    setQuery(value); setPage({ title: value, items: [] }); setParents([]); setCursor(0);
+    void load(signal => videos ? searchYouTubeVideos(value, signal) : searchMusic(value, filter, signal), "search", { query: value, kind: filter });
   };
+  const recent = history.recent(youtube);
+  const openRecent = () => {
+    request.current++; controller.current?.abort(); setBusy(false); setEditing(false); setDetails(false); setMenu(null); setRecentOpen(true);
+  };
+  const showPreview = youtube && preview && contentWidth >= 88 && listRows >= 15 && !details;
+  const previewWidth = showPreview ? Math.min(38, Math.floor(contentWidth * .34)) : 0;
+  const resultsWidth = contentWidth - previewWidth;
   const rows = Math.max(1, listRows - (youtube ? 5 : 4) - (editing ? 1 : 0) - (details ? 6 : 0));
   const selected = Math.min(cursor, Math.max(0, page.items.length - 1));
   useEffect(() => {
-    if (!config.autoLoadMore || !focused || menu !== null || details || editing || busy || !page.more || !page.items.length || page.items.length >= 10000 || selected < page.items.length - 3 || autoAttempt.current === page) return;
+    if (!config.autoLoadMore || !focused || menu !== null || recentOpen || details || editing || busy || !page.more || !page.items.length || page.items.length >= 10000 || selected < page.items.length - 3 || autoAttempt.current === page) return;
     autoAttempt.current = page;
     void load(page.more, "more");
-  }, [config.autoLoadMore, focused, menu, details, editing, busy, page, selected]);
+  }, [config.autoLoadMore, focused, menu, recentOpen, details, editing, busy, page, selected]);
   const runAction = (choice: number, index = menu ?? selected) => {
     const item = page.items[index];
     setMenu(null);
@@ -95,8 +120,10 @@ export function Discover({ videos: youtube = false }: { videos?: boolean } = {})
   };
   useInput((input, key) => {
     if (details) { if (key.escape || key.return) setDetails(false); return; }
-    if (menu !== null) return;
+    if (menu !== null || recentOpen) return;
     if (editing) { if (key.escape) setEditing(false); return; }
+    if (input === "h") { openRecent(); return; }
+    if (youtube && input === "i") { setPreview(v => !v); return; }
     if (key.escape) {
       request.current++; controller.current?.abort(); setBusy(false);
       const parent = parents.at(-1);
@@ -133,36 +160,58 @@ export function Discover({ videos: youtube = false }: { videos?: boolean } = {})
       } else if (item.track && input === "d") { runAction(4); }
     }
   }, { isActive: focused });
+  useEffect(() => {
+    if (busy || editing || parents.length) return;
+    const timer = setTimeout(() => history.rememberCursor(youtube, query, kind, selected), 250);
+    return () => clearTimeout(timer);
+  }, [history, youtube, query, kind, selected, busy, editing, parents.length]);
   const start = Math.max(0, Math.min(selected - Math.floor(rows / 2), page.items.length - rows));
   return <Box position="relative" flexDirection="column" width={contentWidth} height={listRows}>
     <Text bold color={COLOR.alt} wrap="truncate-end">{browseIcon(youtube ? "video" : "music")} {youtube ? "YouTube Videos" : "Music Discover"} · {cleanText(page.title)}</Text>
     {!youtube ? <Text color={COLOR.muted} wrap="truncate-end">{filters.map(f => f === kind ? `[${f}]` : f).join("  ")}</Text> : null}
     {focused && editing ? <TextField defaultValue={query} width={contentWidth} placeholder={youtube ? "Search YouTube videos…" : "Search music…"} onChange={setQuery}
       onSubmit={value => { setQuery(value); search(value); }} />
-      : youtube ? <MouseRow active={focused && menu === null && !details} onClick={() => { setEditing(true); }} width={contentWidth}>
+      : youtube ? <MouseRow active={focused && menu === null && !recentOpen && !details} onClick={() => { setEditing(true); }} width={contentWidth}>
         <Text color={COLOR.muted} wrap="truncate-end">Search: {query || "type a video, channel or topic"} · / edit</Text>
       </MouseRow> : <Text color={COLOR.muted} wrap="truncate-end">{busy ? "Loading… esc cancels" : notice || `/ search${youtube ? "" : " · [ ] type"} · enter audio/open · c actions · A/P queue · d download`}</Text>}
-    {focused && editing ? <MouseRow allowDuringText active={focused} width={contentWidth} onClick={() => setEditing(false)}>
-      <Text color={COLOR.alt} wrap="truncate-end">Enter searches · Esc / click here cancels · sidebar stays clickable</Text>
-    </MouseRow> : null}
+    {focused && editing ? <Box width={contentWidth}>
+      <MouseRow allowDuringText active={focused} width={Math.max(1, contentWidth - 18)} onClick={() => setEditing(false)}>
+        <Text color={COLOR.alt} wrap="truncate-end">Enter searches · Esc / click here cancels</Text>
+      </MouseRow>
+      <MouseRow allowDuringText active={focused} width={18} onClick={openRecent}><Text color={COLOR.alt}>Recent searches</Text></MouseRow>
+    </Box> : null}
     {youtube ? <>
       <Text color={COLOR.muted} wrap="truncate-end">{busy ? "Searching… esc cancels" : notice || (editing ? "Editing search" : `Enter ${browseIcon("video")} video · a audio only · c actions · A/P queue · d download`)}</Text>
-      <Text color={COLOR.alt} wrap="truncate-end">{contentWidth >= 65 ? "   Title".padEnd(Math.floor(contentWidth * .58)) + "Channel".padEnd(Math.floor(contentWidth * .26)) + "Duration" : "Video · Channel · Duration"}</Text>
     </> : null}
+    <Box width={contentWidth} height={youtube ? rows + 1 : rows}>
+    <Box flexDirection="column" width={resultsWidth}>
+    {youtube ? <Text color={COLOR.alt} wrap="truncate-end">{resultsWidth >= 65 ? "   Title".padEnd(Math.floor(resultsWidth * .58)) + "Channel".padEnd(Math.floor(resultsWidth * .26)) + "Duration" : "Video · Channel · Duration"}</Text> : null}
     {page.items.length === 0 && !busy ? <Text color={COLOR.muted}>Listen without downloading: / search · o Play URL · 8 radio</Text> : null}
-    {page.items.slice(start, start + rows).map((item, i) => <MouseRow key={`${start + i}:${item.id}`} active={focused && !editing && !busy && menu === null && !details} width={contentWidth}
+    {page.items.slice(start, start + rows).map((item, i) => <MouseRow key={`${start + i}:${item.id}`} active={focused && !editing && !busy && menu === null && !recentOpen && !details} width={resultsWidth}
       onClick={() => { setCursor(start + i); if (item.track) runAction(0, start + i); else void load(() => browseMusic(item), "browse"); }} onContextMenu={point => { if (item.track) { setCursor(start + i); setMenuAnchor({ x: point.x, y: (youtube ? 4 : 3) + i + point.y }); setMenu(start + i); } }}>
       <Text
       color={focused && selected === start + i ? COLOR.accent : undefined} wrap="truncate-end">
-      {selected === start + i ? "› " : "  "}{youtube ? videoRow(item, contentWidth - 2, playback.getState().list.some(t => t.id === item.track?.id)) : `${browseIcon("music")} ${truncate(cleanText(`${item.title}${item.subtitle ? ` · ${item.subtitle}` : ""} [${item.kind}]`), contentWidth - 4)}`}
+      {selected === start + i ? "› " : "  "}{youtube ? videoRow(item, resultsWidth - 2, playback.getState().list.some(t => t.id === item.track?.id)) : `${browseIcon("music")} ${truncate(cleanText(`${item.title}${item.subtitle ? ` · ${item.subtitle}` : ""} [${item.kind}]`), resultsWidth - 4)}`}
     </Text></MouseRow>)}
+    </Box>
+    {showPreview ? <VideoPreview item={page.items[selected]} width={previewWidth} height={rows + 1} visible={focused && !editing} overlay={menu !== null || recentOpen} /> : null}
+    </Box>
     {details ? <Box flexDirection="column" borderStyle="round" borderColor={COLOR.accent}>
       <Text>{cleanText(page.items[selected]?.title ?? "")}</Text>
       <Text>{cleanText(page.items[selected]?.subtitle ?? "")}</Text>
       <Text wrap="truncate-end">{cleanText(page.items[selected]?.track?.streamUrl ?? "")}</Text>
       <Text dimColor>esc / enter closes details</Text>
     </Box> : null}
-    <Text dimColor wrap="truncate-end">{page.items.length ? `${selected + 1}/${page.items.length} · ` : ""}{parents.length ? "esc back · " : ""}{page.more ? "L load more · " : ""}7 Music · Y Videos · 6 Queue · m Player</Text>
+    <MouseRow active={focused && !editing && menu === null && !recentOpen && !details} width={contentWidth} onClick={openRecent}>
+    <Text dimColor wrap="truncate-end">{page.items.length ? `${selected + 1}/${page.items.length} · ` : ""}{parents.length ? "esc back · " : ""}{page.more ? "L load more · " : ""}h searches{cached ? " · saved results; / refresh" : ""}{youtube ? ` · i preview ${preview ? showPreview ? "on" : "auto-hidden" : "off"}` : ""} · 7 Music · Y Videos · 6 Queue · m Player</Text></MouseRow>
+    {recentOpen ? <ContextMenu title="Recent searches" width={contentWidth} height={listRows} active={focused} close={() => setRecentOpen(false)} actions={[
+      ...recent.map(entry => ({ label: `${entry.query}${youtube ? "" : ` [${entry.kind}]`}`, run: () => {
+        setRecentOpen(false); setKind(entry.kind); search(entry.query, youtube, entry.kind);
+      } })),
+      { label: recent.length ? "Clear saved searches" : "No saved searches yet", disabled: !recent.length, run: () => {
+        history.clear(youtube); setRecentOpen(false); setCached(false); setNotice(history.error ?? "Saved search history cleared");
+      } },
+    ]} /> : null}
     {menu !== null ? <ContextMenu title={youtube ? "Video actions" : "Music actions"} actions={actions.map((label, i) => ({ label: i === 4 && page.items[menu]?.track?.isLive ? "Download: live stream (play only)" : label, run: () => runAction(i) }))}
       width={contentWidth} height={listRows} active={focused} anchor={menuAnchor} close={() => setMenu(null)} /> : null}
   </Box>;

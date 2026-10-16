@@ -5,7 +5,7 @@ Linux and macOS use one source history and release process.
 
 ## Current state
 
-- Source preview: `1.6.0-dev.15`, including general YouTube video search and [audio/video controls](video-playback.md).
+- Source preview: `1.6.0-dev.16`, including general YouTube video search and [audio/video controls](video-playback.md).
 - Production release: `v1.5.0`
 - Public source: `https://github.com/funstuie-bit/JukeboxCli.git`
 - Private mirror connection details belong in private maintainer notes, not here
@@ -277,3 +277,27 @@ Its fixed icon column and Y shortcut remain; ASCII mode uses a red > fallback.
 Preview dev.15 restores the dev.13 coloured clapperboard for YouTube Videos at
 Stu’s request. The red text triangle appeared misaligned in his terminal despite
 passing emulator column checks; physical rendering feedback takes precedence.
+
+### Search history and video preview — dev.16 (2026-10-15)
+
+Music Discover and YouTube Videos independently retain 30 recent searches and
+up to 100 cached results after restart, with root selection. h or the clickable
+Recent searches/footer opens repeat/clear actions. Cached restore is offline;
+resubmit to refresh results/pagination. Collection drill-down stays session-only.
+Search history is private profile data in search-history.json, not a shared file.
+
+YouTube Videos displays a thumbnail/details pane with at least 88 content columns
+and 15 content rows; i toggles it and smaller windows hide it. Artwork settles
+before loading and falls back to text. Verify keyboard/mouse recent searches,
+restart, resizing and existing result menus. Stable/Homebrew remain 1.5.0;
+multi-hour memory/GPU and physical Mac acceptance are still release prerequisites.
+
+Validation: 874 tests passed, 5 skipped, 105 files. Typecheck, installed doctor,
+build/import audit and packaged 600-redraw memory guard passed. A real signed-out
+YouTube search rendered thumbnails; result menus, click from typing into recent
+searches, repeat, restart selection and compact resize passed in an isolated PTY.
+A ten-minute production UI/local-playback run completed 4,266 interaction steps,
+with 100 cached video rows, section/menu/preview changes and real mpv playback.
+RSS peaked at 199.1 MiB and ended at 197.3 MiB; heap samples showed collection
+rather than uninterrupted growth. Ctrl-C removed the owned mpv. This is a short
+CPU/UI exercise, not a multi-hour online/projectM/GPU soak or proof of no leaks.

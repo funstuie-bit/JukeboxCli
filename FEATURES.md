@@ -3,8 +3,13 @@
 These features are in the app now. That doesn't mean every station, terminal
 or online service will cooperate. The limits are listed below.
 
-## Source preview — 1.6.0-dev.15
+## Source preview — 1.6.0-dev.16
 
+- Independent persistent search history for Music Discover and YouTube Videos;
+  30 recent searches and up to 100 cached results each. Reopen/clear with h or a click.
+  Results restore locally; thumbnails load separately. A new search refreshes pagination.
+- Responsive YouTube thumbnail/details pane following selection, i toggle,
+  compact list on smaller terminals and settled artwork loading.
 - Coloured clapperboard for YouTube Videos.
 - Coloured icons in fixed-width sidebar columns and brighter labels; Settings appears last, with number shortcuts following the displayed order.
 - Item menus offer audio/video for YouTube and recognised video files/URLs.
@@ -22,7 +27,7 @@ or online service will cooperate. The limits are listed below.
 - Now Playing right-click / c menu: transport, volume, audio/video and fullscreen effects.
 
 - Separate YouTube Videos section (Y), direct Enter video / a audio playback,
-  remembered browsing state, result columns and small icons. Music Discover is 8.
+  remembered browsing state, result columns and small icons. Music Discover is 7.
 
 - Discover keyboard/right-click audio/video actions and per-item video window.
 - Player W switches audio/video; window closure stops the item, retaining the queue.

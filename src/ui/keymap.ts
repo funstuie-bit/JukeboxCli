@@ -100,6 +100,7 @@ export const HELP_GROUPS: HelpGroup[] = [
     title: "Discover (YouTube Music)",
     hints: [
       { keys: "7 /", label: "Open Discover / search" },
+      { keys: "h", label: "Recent searches: repeat / clear (saved across restarts)" },
       { keys: "[ ]", label: "Song / video / album / artist / playlist" },
       { keys: "↵", label: "Stream song or browse collection" },
       { keys: "A P", label: "Append / queue next" },
@@ -113,12 +114,14 @@ export const HELP_GROUPS: HelpGroup[] = [
     { keys: "/", label: "Edit search (Escape returns to results)" },
     { keys: "enter", label: "Play selected video in its own window" },
     { keys: "a", label: "Play audio only" },
+    { keys: "h", label: "Recent searches: repeat / clear (or click the footer)" },
+    { keys: "i", label: "Show / hide thumbnail/details preview (wide terminals)" },
     { keys: "c", label: "Actions (also right-click in click mode)" },
     { keys: "A/P", label: "Append / play next (audio queue)" },
     { keys: "L", label: "Load more results" },
   ] },
   {
-    title: "Radio / URL (9)",
+    title: "Radio / URL (8)",
     hints: [
       { keys: "/", label: "Search Radio Browser directory" },
       { keys: "B / g / c", label: "Popular / genres / countries" },

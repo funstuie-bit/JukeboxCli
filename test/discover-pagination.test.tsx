@@ -1,5 +1,7 @@
+import { rmSync } from "node:fs";
+import { SearchHistory, searchHistoryFile } from "../src/sources/search-history";
 import stringWidth from "string-width";
-import { expect, it, vi } from "vitest";
+import { beforeEach, expect, it, vi } from "vitest";
 import { press, renderReady, act } from "./ink-input";
 import { StoreContext } from "../src/ui/store";
 import { makeStore } from "../scripts/fake-data";
@@ -13,6 +15,8 @@ vi.mock("../src/sources/music", async importOriginal => ({
   browseMusic: fixture.browse,
   searchYouTubeVideos: fixture.videos,
 }));
+vi.mock("../src/player/art", () => ({ loadCoverArt: async () => null }));
+beforeEach(() => { rmSync(searchHistoryFile, { force: true }); });
 it("only auto-fetches with opt-in and stops at an empty continuation", async () => {
   fixture.more.mockResolvedValue({ title: "Results", items: [], more: fixture.more });
   const store = makeStore({ region: "content" }); store.config.autoLoadMore = true;
@@ -109,7 +113,8 @@ it("cancels a hidden video search and ignores its late result", async () => {
   await act(async () => { view.unmount(); }); expect(signal.aborted).toBe(true);
   await act(async () => { resolve({ title: "Stale", items: [{ id: "late", title: "Stale video", kind: "video" }] }); });
   const returned = await renderReady(node());
-  expect(returned.lastFrame()).not.toContain("Stale video"); returned.unmount();
+  expect(returned.lastFrame()).not.toContain("Stale video");
+  expect(new SearchHistory().recent(true)).toEqual([]); returned.unmount();
 });
 
 it("fits compact video results and offers plain icon fallbacks", async () => {
@@ -140,4 +145,56 @@ it("explains live download refusal for keyboard and menu without leaving results
   await press(view, "\r");
   expect(view.lastFrame()).toContain("Live streams cannot be downloaded");
   expect(store.setPendingAdd).not.toHaveBeenCalled(); expect(store.setSection).not.toHaveBeenCalled();
+});
+
+it("restores saved video results with a new playback session, reopens recent searches and clears them", async () => {
+  const track = { ...trackFromUrl("https://www.youtube.com/watch?v=abcdefghijk"), artist: "Test channel", durationSec: 123 };
+  fixture.videos.mockImplementation(async (query: string) => ({ title: query, items: [
+    { id: "one", kind: "video", title: `${query} first`, track },
+    { id: "two", kind: "video", title: `${query} second`, track },
+  ] }));
+  let store = makeStore({ region: "content", contentWidth: 100, listRows: 20 });
+  let view = await renderReady(<StoreContext.Provider value={store}><Discover videos /></StoreContext.Provider>);
+  await press(view, "ambient"); await press(view, "\r"); await press(view, "\x1b[B");
+  await act(async () => view.unmount());
+  fixture.videos.mockClear();
+  store = makeStore({ region: "content", contentWidth: 100, listRows: 20 });
+  store.playback.selectTrack = vi.fn(async () => {});
+  view = await renderReady(<StoreContext.Provider value={store}><Discover videos /></StoreContext.Provider>);
+  expect(view.lastFrame()).toContain("Search: ambient"); expect(view.lastFrame()).toContain("2/2");
+  expect(view.lastFrame()).toContain("saved results"); expect(fixture.videos).not.toHaveBeenCalled();
+  await press(view, "h"); expect(view.lastFrame()).toContain("Recent searches");
+  await press(view, "\r"); expect(fixture.videos).toHaveBeenCalledWith("ambient", expect.any(AbortSignal));
+  expect(store.playback.selectTrack).not.toHaveBeenCalled();
+  await press(view, "h"); await press(view, "\x1b[B"); await press(view, "\r");
+  expect(view.lastFrame()).toContain("Saved search history cleared");
+  expect(new SearchHistory().recent(true)).toEqual([]);
+  await act(async () => view.unmount());
+  expect(new SearchHistory().last(true)).toBeUndefined();
+});
+
+it("keeps a responsive preview beside results, follows selection and suspends it under menus", async () => {
+  const track = trackFromUrl("https://www.youtube.com/watch?v=abcdefghijk");
+  fixture.videos.mockResolvedValue({ title: "Preview search", items: [
+    { id: "one", kind: "video", title: "First preview", track: { ...track, artist: "First channel", durationSec: 120 } },
+    { id: "two", kind: "video", title: "Second preview", track: { ...track, artist: "Second channel", isLive: true } },
+  ] });
+  const store = makeStore({ region: "content", contentWidth: 120, listRows: 20 });
+  store.playback.selectTrack = vi.fn(async () => {});
+  const node = () => <StoreContext.Provider value={store}><Discover videos /></StoreContext.Provider>;
+  const view = await renderReady(node());
+  await press(view, "preview"); await press(view, "\r");
+  expect(view.lastFrame()).toContain("Video preview"); expect(view.lastFrame()).toContain("2:00");
+  expect(view.lastFrame()!.match(/First preview/g)?.length, view.lastFrame()).toBe(2);
+  await press(view, "\x1b[B"); expect(view.lastFrame()).toContain("LIVE · play only");
+  expect(store.playback.selectTrack).not.toHaveBeenCalled();
+  await press(view, "c"); expect(view.lastFrame()).toContain("Play video");
+  await press(view, "\x1b"); await vi.waitFor(() => expect(view.lastFrame()).not.toContain("Play video"));
+  await press(view, "i"); expect(view.lastFrame()).not.toContain("Video preview");
+  await press(view, "i"); expect(view.lastFrame()).toContain("Video preview");
+  store.contentWidth = 40; store.listRows = 12;
+  await act(async () => view.rerender(node()));
+  expect(view.lastFrame()).not.toContain("Video preview");
+  expect(Math.max(...view.lastFrame()!.split("\n").map(stringWidth))).toBeLessThanOrEqual(40);
+  expect(view.lastFrame()!.split("\n").length).toBeLessThanOrEqual(12);
 });

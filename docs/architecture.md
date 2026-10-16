@@ -48,6 +48,19 @@ to ignore stale results; each provider fetch has a 20-second timeout. Leaving a
 view cancels its result publication. Player search additionally scopes AbortSignal
 through AsyncLocalStorage to abort its HTTP requests and continuations independently;
 shared client bootstrap retains its timeout and does not inherit a caller's abort.
+`sources/search-history.ts` persists two bounded catalogues per profile: 30 recent
+query/filter pairs and up to 100 allowlisted results from each last successful
+search. Files are capped at 1 MiB; unusually long metadata trims cached rows while
+keeping recent queries. Atomic mode-0600 writes contain only stable YouTube metadata, canonical
+watch URLs and provider-hosted thumbnails, never resolved streams or parser
+continuations. Oversized/invalid files fail empty; write errors leave browsing
+usable with visible feedback. Selection saves after settling and on unmount.
+The UI's WeakMap session snapshots retain live pagination/back-navigation while
+running, with at most 20 parent pages. Disk restore does not make provider requests;
+refresh or repeating a saved query retrieves new continuation callbacks.
+`VideoPreview` settles artwork selection and reuses Cover's bounded caches and
+native-image overlay suppression; a narrow/short view retains the full list.
+
 Music API authentication is distinct from yt-dlp cookies. There is no separate Music sign-in;
 browser-cookie playback/downloads remain available.
 Cookies don't add account playlists or likes. Those aren't implemented.

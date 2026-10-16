@@ -3,6 +3,18 @@
 Release notes describe what changed in each build. For what works now and the
 remaining limits, see [feature status](FEATURES.md).
 
+## 1.6.0-dev.16 — Unreleased
+
+- Remember recent searches and last successful results independently in Music
+  Discover and YouTube Videos across restarts. Keep 30 searches and at most 100
+  cached results per catalogue, with selection and atomic private profile saves.
+- Add h / clickable recent-search menus to repeat or clear saved searches.
+  Restoring cached results does not start playback or provider requests; resubmit
+  the query to refresh results and pagination. Collection drill-down stays in memory.
+- Add a YouTube thumbnail/details pane beside wider result lists. It follows
+  selection, settles before decoding art, uses block art beneath overlays,
+  supports i to toggle and automatically hides in small windows.
+
 ## 1.6.0-dev.15 — Unreleased
 
 - Restore the coloured YouTube Videos clapperboard after the red play symbol

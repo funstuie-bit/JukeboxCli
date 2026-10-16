@@ -886,7 +886,7 @@ describe("queue copy, banner, overlay, welcome paste", () => {
 
   it.each([
     ["library", "Library"], ["queue", "Listening queue"], ["player", "Player"],
-    ["listen", "Radio / URL (9)"], ["discover", "Discover (YouTube Music)"],
+    ["listen", "Radio / URL (8)"], ["discover", "Discover (YouTube Music)"],
   ] as const)("opens the correct help group from %s", (section, title) => {
     const ui = render(wrap(<HelpOverlay />, makeStore({ section })));
     expect(ui.lastFrame()).toContain(title);

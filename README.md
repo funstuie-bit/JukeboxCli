@@ -21,7 +21,7 @@ keeps the lot in one editable queue. Streams stay streams unless you choose to s
 them. There are lyrics, cover artwork and live visualisers too, with optional
 fullscreen MilkDrop effects on Mac and Linux.
 
-Source preview **1.6.0-dev.15** gives **YouTube Videos its own sidebar section**.
+Source preview **1.6.0-dev.16** gives **YouTube Videos its own sidebar section**.
 Press **Y** (Shift+y) to open it, type a search and press Enter. On the results,
 **Enter plays video** in its own window; **a plays audio only**. Music Discover
 stays on **7** and keeps Enter for audio. Press **c** or right-click a result in
@@ -38,7 +38,9 @@ for right-click menus; **c** works in every mouse mode. Menus pop up over the
 existing player or results near your click, without replacing the screen or
 moving the list. **Escape**, **c** or a click outside closes them. Sidebar clicks stay active
 while typing a search. **Enter** searches; **Escape** or the clickable cancel hint
-leaves the field. Search results are retained within a session, not across restarts.
+leaves the field. Music Discover and YouTube Videos now keep their recent searches
+and last successful results after restarting. Press **h** outside the search field,
+or click **Recent searches** while typing, to repeat or clear saved searches.
 
 Every sidebar section has a coloured icon in a fixed-width column, with brighter
 labels for readability; YouTube Videos uses a coloured clapperboard. Plain terminals use aligned ASCII fallbacks. Settings sits last, separated from the
@@ -47,8 +49,13 @@ listening sections. Number keys now follow the reordered list: **5 Now Playing**
 **H** and YouTube Videos stays **Y**; keys 1–4 are unchanged.
 
 Video results show title, channel, duration and small video/live/queued symbols.
-Each section remembers its query, results and selection while JukeboxCli stays
-open. **/** edits search; Escape leaves typing. In Now Playing (**m**), **W**
+A thumbnail/details pane follows the highlighted video on wider terminals;
+**i** toggles it, and smaller windows automatically keep the compact list.
+Each section saves up to 30 recent searches and 100 results from its last successful
+search, including selection. Saved results reopen without rerunning the search;
+thumbnails may load separately.
+**/** and Enter refresh them and restore pagination. Collection drill-down remains
+session-only. **/** edits search; Escape leaves typing. In Now Playing (**m**), **W**
 switches the current item between audio and video. Closing the video window
 stops the item and leaves the CLI open. See [controls and limits](docs/video-playback.md).
 

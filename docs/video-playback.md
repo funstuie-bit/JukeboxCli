@@ -1,6 +1,6 @@
 # Audio and video playback
 
-Source preview 1.6.0-dev.8; stable release/Homebrew remain 1.5.0.
+Source preview 1.6.0-dev.16; stable release/Homebrew remain 1.5.0.
 
 Choose **YouTube Videos** in the sidebar or press **Y** (Shift+y) outside a text
 field. On first visit the search field is ready to type into. Submit a query,
@@ -10,8 +10,18 @@ Escape leaves typing. `L` loads more results. Searching does not play anything.
 
 **Music Discover** remains on `7`, with YouTube Music's song/music-video/album/
 artist/playlist filters and Enter for audio. Each section retains its own query,
-results and selection when you leave and return during this app session. This
-browsing state is held in memory, not saved across application restarts.
+results and selection when you leave and return during this app session. They also
+save up to 30 recent searches and 100 results from the last successful search per
+catalogue across restarts. Saved results reopen immediately, including selection,
+without playback or provider requests. Press `/` then Enter to refresh the query
+and retrieve fresh pagination; provider continuation callbacks are not persisted.
+Collection drill-down and deeper back-navigation remain session-only.
+
+Press **h** outside text entry, click the results footer, or click **Recent searches**
+while typing. Choose a query with arrows/Enter or a left click to search again.
+**Clear saved searches** removes that catalogue's saved queries/results; the other
+catalogue and listening history stay intact. Search history is stored privately in
+`search-history.json` in the profile's data directory, not in diagnostics exports.
 Player search's existing `v:` shortcut still searches music videos.
 
 Video results have title, channel and duration columns when space permits,
@@ -22,7 +32,14 @@ already queued. Music browsing uses `♫`. No special icon font is required.
 In either section, `c` or right-click in click mouse mode opens Play audio,
 Play video, Play next, Add to queue, Download or Details. Choose using arrows /
 Enter or a left click; Escape dismisses. Downloads use the existing audio flow.
-Details remain an explicit action; a persistent preview pane is deferred.
+YouTube Videos shows a persistent thumbnail/details pane alongside the list when
+content is at least 88 columns wide and 15 rows high (roughly a 117-column terminal,
+with extra height for the app chrome). It follows the highlighted result and shows
+title, channel, duration/live status and available date/view metadata. **i** toggles
+it; smaller windows automatically hide it. Scrolling settles for 180 ms before
+artwork decoding, and overlays suppress native graphics so menus remain visible.
+Details also remains available as an explicit action. Artwork failure falls back to
+text and never blocks navigation or playback.
 
 Video opens a separate mpv window. In Player (`m`), `W` switches the current item
 between audio and video (rebindable in Settings). Existing transport, seeking
@@ -66,8 +83,7 @@ Native terminal artwork temporarily uses block rendering to keep menus on top.
 
 While typing a search, sidebar clicks still navigate in click mode. Enter submits;
 Escape or the clickable cancel hint leaves the field. Letters such as q remain
-literal search text. Results survive section changes within the current session;
-restarting the app starts a fresh search session.
+literal search text. Successful searches also survive application restarts as described above.
 
 ## Downloading versus live playback
 

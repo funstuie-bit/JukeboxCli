@@ -1,5 +1,13 @@
 # Roadmap
 
+## Implemented in source preview — 1.6.0-dev.16
+
+- [x] Persistent independent search history and bounded cached results after restart.
+- [x] Recent-search menus with repeat/clear actions and keyboard/mouse access.
+- [x] Responsive YouTube thumbnail/details preview pane with selection following.
+- [ ] Complete multi-hour memory/GPU and physical Mac acceptance before stable 1.6.0.
+- Fuller video tables, drag seeking and timed live recording remain later work.
+
 ## Implemented in source preview — 1.6.0-dev.15
 
 - [x] Restore the user-preferred clapperboard after physical terminal feedback on the red icon.
@@ -55,7 +63,7 @@
 
 - Fix the search focus trap: sidebar clicks work while typing in click mode.
 - Visible search cancel target and bounded text field; result history remains
-  session-only, with cross-restart browsing history deferred.
+  session-only in this preview; dev.16 adds cross-restart search history.
 
 ## Implemented in source preview — 1.6.0-dev.5
 
@@ -70,7 +78,7 @@
 - Independent music/video browsing snapshots while moving between sections.
 - Video title/channel/duration columns and small music/video/live/queued icons,
   with a compact list on narrow terminals and plain-symbol fallbacks.
-- Persistent preview pane remains deferred until navigation acceptance.
+- Persistent preview pane was deferred here; implemented in dev.16.
 
 
 ## Implemented in source preview — 1.6.0-dev.3
@@ -80,7 +88,7 @@
   channel/duration/live/date/view metadata and existing audio/video actions.
 - Cancelled searches cannot replace results from a newly selected catalogue.
 
-A persistent preview pane and full TubeTUI-style table remain future UI work.
+The persistent preview pane ships in dev.16; a fuller TubeTUI-style table remains future work.
 This change adds the requested search catalogue, not full browsing parity.
 
 

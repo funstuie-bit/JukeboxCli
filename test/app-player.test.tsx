@@ -1,3 +1,4 @@
+import { searchHistoryFile } from "../src/sources/search-history";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { render, cleanup } from "ink-testing-library";
 import { ThemeProvider } from "@inkjs/ui";
@@ -111,7 +112,7 @@ async function press(view: ReturnType<typeof app>, key: string) {
   view.stdin.write(key);
   await tick();
 }
-afterEach(() => { startup.fresh = false; startup.writes = []; startup.readEffective = undefined; vi.unstubAllEnvs(); cleanup(); rmSync(sessionFile, { force: true }); rmSync(stationsFile, { force: true }); rmSync(path.join(paths.cache, "lyrics-v1.json"), { force: true }); });
+afterEach(() => { startup.fresh = false; startup.writes = []; startup.readEffective = undefined; vi.unstubAllEnvs(); cleanup(); rmSync(searchHistoryFile, { force: true }); rmSync(sessionFile, { force: true }); rmSync(stationsFile, { force: true }); rmSync(path.join(paths.cache, "lyrics-v1.json"), { force: true }); });
 
 describe("App player workflow", () => {
   it("uses rebound player controls without interpreting text as shortcuts", async () => {
@@ -150,6 +151,10 @@ describe("App player workflow", () => {
     await press(view, "q"); expect(view.lastFrame()).toContain("Editing search");
     await click("1 Library"); expect(view.lastFrame()).not.toContain("Editing search");
     await press(view, "Y"); await press(view, "/");
+    await click("Recent searches");
+    expect(view.lastFrame()).toContain("No saved searches yet");
+    await press(view, "\x1b"); await vi.waitFor(() => expect(view.lastFrame()).not.toContain("No saved searches yet"));
+    await press(view, "/");
     expect(view.lastFrame()).toContain("Esc / click here cancels");
     await click("Enter searches");
     expect(view.lastFrame()).not.toContain("Editing search");
@@ -413,7 +418,7 @@ describe("App player workflow", () => {
     expect(JSON.stringify(saved)).not.toContain("secret");
     const again = app(); await tick(); await tick(); await press(again, "8");
     expect(again.lastFrame()).toContain("Workday FM");
-    await press(again, "?"); expect(again.lastFrame()).toContain("Radio / URL (9)");
+    await press(again, "?"); expect(again.lastFrame()).toContain("Radio / URL (8)");
     expect((again.lastFrame() ?? "").split("\n").length).toBeLessThanOrEqual(24);
     await press(again, "["); expect(again.lastFrame()).toContain("YouTube Videos");
     await press(again, "["); expect(again.lastFrame()).toContain("Discover (YouTube Music)");
