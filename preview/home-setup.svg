@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1638.4" height="958" viewBox="0 0 1638.4 958" style="max-width: 1638.4px; width: 100%; height: auto;" role="img">
+  <rect width="100%" height="100%" rx="14" fill="#0c0c0d"/>
+  <rect x="0.5" y="0.5" width="1637.4" height="957" rx="14" fill="none" stroke="#28282b" stroke-width="1"/>
+  <text x="819.2" y="29" text-anchor="middle" font-family='ui-monospace, "Cascadia Mono", "SF Mono", Menlo, Consolas, "DejaVu Sans Mono", monospace' font-size="13" fill="#8a8a8a">JukeboxCli</text>
+  <g font-family='ui-monospace, "Cascadia Mono", "SF Mono", Menlo, Consolas, "DejaVu Sans Mono", monospace' font-size="16" fill="#d8d0c6">
+    <text x="32" y="84" textLength="489.6" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#b8a5ed" font-weight="600">SETUP &amp; EXTRAS · nothing here is required to listen</text>
+    <text x="32" y="106" textLength="643.2" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#aab4ce">Choose the controls and look you want. Optional installs ask first.</text>
+    <text x="32" y="128" textLength="124.8" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#e3e7f2" font-weight="600">Make it yours</text>
+    <text x="32" y="150" textLength="470.4" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#b8a5ed">❯ ✓ Mouse clicks: left plays, right opens actions</text>
+    <text x="51.2" y="172" textLength="547.2" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#e3e7f2">○ Wheel only: scroll without taking normal text selection</text>
+    <text x="51.2" y="194" textLength="316.8" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#e3e7f2">○ Keyboard only: no mouse capture</text>
+    <text x="51.2" y="216" textLength="547.2" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#e3e7f2">Artwork colours: off · match Home and Player to the cover</text>
+    <text x="51.2" y="238" textLength="508.8" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#e3e7f2">Decorative motion: off · jukebox lights while playing</text>
+    <text x="51.2" y="260" textLength="374.4" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#e3e7f2">Themes, layout and terminal visualiser…</text>
+    <text x="51.2" y="282" textLength="537.6" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#e3e7f2">projectM fullscreen pack: optional · review and install…</text>
+    <text x="51.2" y="304" textLength="624" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#e3e7f2">Browser cookies: optional · public playback can work without them</text>
+    <text x="51.2" y="326" textLength="489.6" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#e3e7f2">Hide the Home setup checklist (u reopens this page)</text>
+    <text x="51.2" y="348" textLength="115.2" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#e3e7f2">Back to Home</text>
+    <text x="32" y="370" textLength="537.6" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#9aa8c3">↑↓ choose · Enter change/open · 1/10 · all options shown</text>
+    <text x="32" y="392" textLength="547.2" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#8fb9ed">Shift-drag selects terminal text when clicks are enabled.</text>
+    <text x="32" y="414" textLength="451.2" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#aab4ce">✓ Mouse clicks: left plays, right opens actions</text>
+    <text x="32" y="436" textLength="403.2" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#aab4ce">Esc back · ↑↓/Pg choose · Enter apply/open</text>
+  </g>
+</svg>

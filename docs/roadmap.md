@@ -1,6 +1,15 @@
 # Roadmap
 
-## Current release — 1.7.0
+## Current release — 1.8.0
+
+- [x] First-run/Home setup choices: mouse, colours, motion and direct extras links.
+- [x] Dismissible Home checklist without automatic preference changes/downloads.
+- [x] Recent artwork/station tiles, roomy cover header and opt-in artwork accents.
+- [x] Reduced-motion-aware decorative cabinet lights; retain compact layouts.
+- [x] Mac projectM status, progress and explicit install failure/retry feedback.
+- [ ] Continue fresh-Mac projectM install/build and remote-display acceptance.
+
+## Shipped in 1.7.0
 
 - [x] Home dashboard with quick-launch cards, listening context, recents and stations.
 - [x] Compact row/column budgets, stable selection and mouse/keyboard actions.

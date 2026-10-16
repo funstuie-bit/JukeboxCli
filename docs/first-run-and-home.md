@@ -11,6 +11,24 @@ choice; Escape skips to Home. You don't need an account or an existing library.
 the queue. `?` shows the keys for the current screen. While you're typing in a
 text field, shortcuts won't change playback or move you to another screen.
 
+## Setup & extras
+
+Press **u on Home**, including on first launch. Choose Mouse clicks, Wheel only,
+or Keyboard only explicitly. Defaults and existing preferences are unchanged;
+Shift-drag selects terminal text in click mode. Artwork colours and decorative
+motion toggle in place without moving your selection. Themes/layout and cookies
+open their exact Settings pages. Browsing this page does not read browser cookies.
+
+The optional Mac projectM row shows whether the pack is installed. Choosing it
+opens the download/build confirmation, not an automatic install. Progress, a
+failure reason and an explicit retry remain visible; music doesn't need projectM.
+Linux links to its appearance/setup controls instead of the Mac installer.
+
+The Home setup checklist is dismissible. That preference survives restarts,
+but **u** and **9 Settings** remain available. All options are optional, and
+Enter can still go straight to online search on first run. Escape goes back.
+Short windows scroll the setup choices with arrows/PgUp/PgDn and retain focus.
+
 Home's dashboard shows quick-launch cards for music search, YouTube videos, radio,
 local music, the queue and optional downloads. The header has local/queue/station
 counts and current playback; recents and saved stations have their own panels.
@@ -19,7 +37,16 @@ items/stations for audio/video and queue actions. Selection follows the same ite
 when recent history updates. Smaller windows use only choices that fit, without
 off-screen keyboard targets. Tab gives the dashboard keyboard focus.
 
-Opening Home makes no provider requests and does not start playback/downloads.
+Roomy Home layouts show recent cover tiles, station logos and a larger current/
+recent cover. Missing art uses text tiles; Apple Terminal keeps its simple
+fallback. Artwork colours use the same opt-in as Player and respect custom
+accent/high-contrast settings. Reduced motion stays on by default. With it off,
+the cabinet grille animates slowly only while playing and visible; this is
+decoration, not an audio visualiser. Pause, loading, help and unmount stop it.
+
+Opening Home makes no search/extractor requests and does not start playback or
+media downloads. Supplied thumbnail URLs may load as artwork; local covers are
+read with ffmpeg. Image loading never blocks navigation or listening.
 The large jukebox drawing appears only when the window has enough room.
 The [generated dashboard preview](../preview/home-dashboard.svg) uses fictional
 data and an isolated profile; it is not a screenshot of a real library.

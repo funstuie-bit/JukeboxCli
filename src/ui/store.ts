@@ -39,6 +39,7 @@ export type CaptureMode = "none" | "text" | "picker" | "esc" | "menu";
 
 /** Playlists section: browsing sets vs songs inside one set. */
 export type PlaylistsDepth = "sets" | "songs";
+export type SettingsPage = "controls" | "appearance" | "visualizer-install" | "cookies";
 
 export interface Store {
   config: Config;
@@ -70,6 +71,9 @@ export interface Store {
   /** One-shot intent from the global o shortcut, consumed by Listen. */
   openUrlRequest?: number;
   setOpenUrlRequest?: (value: number) => void;
+  /** Explicit Home setup link, consumed once by Settings; never persisted. */
+  pendingSettings?: SettingsPage | null;
+  setPendingSettings?: (page: SettingsPage | null) => void;
   /** Status line while mpv auto-installs in the background (null when idle). */
   mpvStatus: string | null;
   /** How many rows a scrolling list may use, so the layout fits the terminal. */

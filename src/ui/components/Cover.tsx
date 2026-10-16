@@ -22,7 +22,7 @@ const Blocks = memo(function Blocks({ art }: { art: CoverArt }) {
     <Text key={y}>{art.cells.slice(y * art.cols, (y + 1) * art.cols).map((c, x) =>
       <Text key={x} color={hex(c.top)} backgroundColor={hex(c.bottom)}>▀</Text>)}</Text>)}</Box>;
 });
-export function Cover({ source, cols, rows, visible, fallback, repaintKey, suppressGraphics = false, toggleHint = "b", fit = "cover" }: { source?: string; cols: number; rows: number; visible: boolean; fallback?: ReactNode; repaintKey?: string; suppressGraphics?: boolean; toggleHint?: string; fit?: ArtworkFit }) {
+export function Cover({ source, cols, rows, visible, fallback, repaintKey, suppressGraphics = false, toggleHint = "b", fit = "cover", loadingFallback = false }: { source?: string; cols: number; rows: number; visible: boolean; fallback?: ReactNode; repaintKey?: string; suppressGraphics?: boolean; toggleHint?: string; fit?: ArtworkFit; loadingFallback?: boolean }) {
   const ref = useRef<DOMElement>(null);
   const [loaded, setLoaded] = useState<{ key: string; image: CoverImage | null; art: CoverArt | null }>();
   const simple = simpleArtwork();
@@ -63,7 +63,7 @@ export function Cover({ source, cols, rows, visible, fallback, repaintKey, suppr
   if (image) { w = Math.min(cols, Math.max(1, Math.floor(rows * image.width / image.height / cellAspect)));
     h = Math.min(rows, Math.max(1, Math.ceil(w * image.height / image.width * cellAspect))); }
   return <Box width={cols} height={rows} alignItems="center" justifyContent="center">
-    {image ? <Box ref={ref} width={w} height={h} /> : mine?.art ? <Blocks art={mine.art} /> : visible && (simple || !source || mine) && fallback ? fallback :
+    {image ? <Box ref={ref} width={w} height={h} /> : mine?.art ? <Blocks art={mine.art} /> : visible && (simple || !source || mine || loadingFallback) && fallback ? fallback :
       <Box width={cols} height={rows} borderStyle="round" borderColor={RULE} alignItems="center" justifyContent="center">
         <Text color={COLOR.muted}>{!visible ? `Artwork hidden · ${toggleHint}` : simple ? "Simple artwork" : !source || mine ? "No cover art" : "Loading artwork…"}</Text>
       </Box>}

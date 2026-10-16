@@ -63,6 +63,12 @@ Technical names and commands still need to be exact.
 - [Welcome](preview/welcome.svg)
 - [Library](preview/library.svg)
 - [Key guide](preview/keys.svg)
+- [Home dashboard](preview/home-dashboard.svg)
+- [Setup & extras](preview/home-setup.svg)
+
+System ffmpeg/ffprobe are needed for the procedural fixture cover. The generator
+never downloads tools or reads an actual music/browser profile; its PPM artwork
+lives in the isolated temporary profile. These drawings are not real album art.
 
 These are generated documentation illustrations, not screenshots or runtime
 assets. Regenerate them after relevant UI changes. `scripts/preview.tsx` provides

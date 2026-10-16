@@ -99,6 +99,7 @@ function HintLine({ children }: { children: string }) {
 }
 
 export function Settings() {
+  const store = useStore();
   const [choiceFocus, setChoiceFocus] = useState<{ appearance?: string; controls?: string }>({});
   const { config, setConfig, library, queue, playback, binaries, region, setCaptureMode, listRows } =
     useStore();
@@ -118,6 +119,8 @@ export function Settings() {
   const [ytdlpBusy, setYtdlpBusy] = useState(false);
   const [fullscreenStatus, setFullscreenStatus] = useState("");
   const [visualizerBusy, setVisualizerBusy] = useState(false);
+  const [visualizerFailed, setVisualizerFailed] = useState(false);
+  const [visualizerSteps, setVisualizerSteps] = useState<string[]>([]);
   const visualizerInstallActive = useRef(false);
   const [visualizerInstallAttempt, setVisualizerInstallAttempt] = useState(0);
   const currentConfig = useRef(config);
@@ -290,6 +293,13 @@ export function Settings() {
     }
     setMode(v);
   }
+
+  useEffect(() => {
+    if (!store.pendingSettings || region === "help") return;
+    const page = store.pendingSettings;
+    store.setPendingSettings?.(null);
+    openSetting(page === "visualizer-install" && !macVisualizerSupported() ? "appearance" : page);
+  }, [store.pendingSettings, region]);
 
   // Menu navigation (the sub-pages own the keyboard via their own handlers).
   useInput(
@@ -494,17 +504,26 @@ export function Settings() {
       <Text>About 61 MB to download, plus CMake via Homebrew if missing. Builds locally.</Text>
       <Text>Needs macOS 14.4+, Apple Command Line Tools and audio-recording permission.</Text>
       <Text>Captures only JukeboxCli's mpv audio. No virtual driver, microphone or recording.</Text>
-      {visualizerBusy ? <Text>Installing. Keep JukeboxCli open until it finishes.</Text> : <SelectField key={visualizerInstallAttempt} title="Download and install this optional pack?"
+      {visualizerBusy ? <Text color={COLOR.alt}>Installing. Keep JukeboxCli open until it finishes.</Text> : <SelectField key={visualizerInstallAttempt} title="Download and install this optional pack?"
         focused={focused} options={[
           { label: "Back", value: "back" },
-          { label: "Install / repair the complete pack", value: "install" },
+          { label: visualizerFailed ? "Retry installation / repair the complete pack" : "Install / repair the complete pack", value: "install" },
         ]} onSelect={value => {
           if (visualizerInstallActive.current) return;
           if (value === "back") { setMode("appearance"); return; }
           setVisualizerBusy(true);
+          setVisualizerFailed(false);
+          setFullscreenStatus("");
+          setVisualizerSteps([]);
           visualizerInstallActive.current = true;
-          void installMacVisualizer(setFullscreenStatus)
-            .catch(error => setFullscreenStatus(error instanceof Error ? error.message : "Visualiser installation failed."))
+          void installMacVisualizer(message => {
+            setFullscreenStatus(message);
+            setVisualizerSteps(previous => [...previous.slice(-2), message]);
+          })
+            .catch(error => {
+              setVisualizerFailed(true);
+              setFullscreenStatus(error instanceof Error ? error.message : "Visualiser installation failed.");
+            })
             .finally(() => {
               // Reset Select's remembered choice: its onChange effect can
               // replay an old selection when an async status update renders.
@@ -513,7 +532,9 @@ export function Settings() {
               setVisualizerBusy(false);
             });
         }} onCancel={() => setMode("appearance")} />}
-      {fullscreenStatus ? <Text color={COLOR.alt}>{fullscreenStatus}</Text> : null}
+      {listRows >= 20 && visualizerSteps.length > 1 ? visualizerSteps.slice(0, -1).map((step, i) => <Text key={i} color={COLOR.muted} wrap="truncate-end">✓ {step}</Text>) : null}
+      {fullscreenStatus ? <Text color={visualizerFailed ? COLOR.bad : COLOR.alt} wrap="truncate-end">{visualizerFailed ? "Install failed: " : ""}{fullscreenStatus}</Text> : null}
+      {visualizerFailed ? <><Text color={COLOR.muted} wrap="truncate-end">Music still works. Retry below; a previous working pack is kept.</Text><Text color={COLOR.muted} wrap="truncate-end">Screenshot the error above if it fails again. Esc goes back.</Text></> : null}
     </Box>);
   }
 

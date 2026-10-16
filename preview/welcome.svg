@@ -17,13 +17,14 @@
     <text x="41.6" y="106" textLength="748.8" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#52617c">──────────────────────────────────────────────────────────────────────────────</text>
     <text x="41.6" y="150" textLength="201.6" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#b8a5ed" font-weight="600">Welcome to JukeboxCli</text>
     <text x="41.6" y="172" textLength="278.4" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#aab4ce">Downloads: ~/Music/JukeboxCli</text>
-    <text x="41.6" y="194" textLength="144" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#8fb9ed" font-weight="600">START LISTENING</text>
-    <text x="41.6" y="216" textLength="230.4" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#b8a5ed" font-weight="600">› Search and play online</text>
-    <text x="60.8" y="238" textLength="134.4" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#e3e7f2">YouTube videos</text>
-    <text x="60.8" y="260" textLength="96" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#e3e7f2">Live radio</text>
-    <text x="60.8" y="282" textLength="182.4" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#e3e7f2">Local music library</text>
-    <text x="60.8" y="304" textLength="134.4" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#e3e7f2">Playback queue</text>
-    <text x="60.8" y="326" textLength="240" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#e3e7f2">Download music (optional)</text>
-    <text x="41.6" y="348" textLength="393.6" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#aab4ce">↑↓ choose · Enter open · Esc skip to Home</text>
+    <text x="41.6" y="194" textLength="672" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#b8a5ed" font-weight="600">u  Setup &amp; extras · Mouse clicks OFF · colours OFF · optional projectM</text>
+    <text x="41.6" y="216" textLength="144" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#8fb9ed" font-weight="600">START LISTENING</text>
+    <text x="41.6" y="238" textLength="230.4" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#b8a5ed" font-weight="600">› Search and play online</text>
+    <text x="60.8" y="260" textLength="134.4" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#e3e7f2">YouTube videos</text>
+    <text x="60.8" y="282" textLength="96" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#e3e7f2">Live radio</text>
+    <text x="60.8" y="304" textLength="182.4" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#e3e7f2">Local music library</text>
+    <text x="60.8" y="326" textLength="134.4" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#e3e7f2">Playback queue</text>
+    <text x="60.8" y="348" textLength="240" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#e3e7f2">Download music (optional)</text>
+    <text x="41.6" y="370" textLength="412.8" lengthAdjust="spacingAndGlyphs" xml:space="preserve" fill="#aab4ce">↑↓ choose · Enter open · u Setup · Esc skip</text>
   </g>
 </svg>

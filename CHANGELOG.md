@@ -3,6 +3,21 @@
 Release notes describe what changed in each build. For what works now and the
 remaining limits, see [feature status](FEATURES.md).
 
+## 1.8.0 — Setup that isn't hidden, and a livelier Home
+
+- Add Home's u Setup & extras, available on first run: explicit click/wheel/off
+  mouse choices, artwork colours, decorative motion and direct Settings links.
+  Keep existing preferences; a dismissible checklist never blocks listening.
+- Show recent cover tiles, station logos and a larger current/recent cover in
+  roomy layouts. Keep text fallbacks and compact keyboard-accessible layouts.
+  Share opt-in artwork accents with Player, including appearance overrides.
+- Animate only the jukebox grille, slowly and decoratively, when playing with
+  reduced motion off. Stop on pause/loading/help/unmount; no extra audio analysis.
+- Show Mac projectM installed status in setup, an explicit install confirmation,
+  recent progress steps and failure/retry feedback. Preserve an existing working
+  pack and never launch downloads from merely visiting Home/setup.
+- Correct stale Mac fullscreen documentation and explain optional setup.
+
 ## 1.7.0 — Home dashboard and cookie-free retry
 
 - Replace Home's plain menu with responsive quick-launch cards, local/queue/

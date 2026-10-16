@@ -11,13 +11,13 @@ const baseline = (): Config => stripDeprecatedConfig({ ...defaultConfig, firstRu
 
 describe("launch-only config", () => {
   it("persists polish preferences and rejects malformed hand-edited values", async () => {
-    await saveConfig({ ...baseline(), browseArtwork: true, playerLayout: "clean", queueContinuation: true,
+    await saveConfig({ ...baseline(), browseArtwork: true, playerLayout: "clean", queueContinuation: true, homeSetupDismissed: true,
       appearance: { background: "solid", accent: "#65c7d0", border: "double", highContrast: true }, keybindings: { pause: "ctrl+e" } });
-    expect(await loadConfig()).toMatchObject({ browseArtwork: true, playerLayout: "clean", queueContinuation: true,
+    expect(await loadConfig()).toMatchObject({ browseArtwork: true, playerLayout: "clean", queueContinuation: true, homeSetupDismissed: true,
       appearance: { background: "solid", accent: "#65c7d0", border: "double", highContrast: true }, keybindings: { pause: "ctrl+e" } });
-    await fs.writeFile(configFile, JSON.stringify({ ...baseline(), browseArtwork: "yes", playerLayout: "bad", queueContinuation: "yes",
+    await fs.writeFile(configFile, JSON.stringify({ ...baseline(), browseArtwork: "yes", playerLayout: "bad", queueContinuation: "yes", homeSetupDismissed: "yes",
       appearance: { accent: "invalid", highContrast: "false" }, keybindings: { pause: "n" } }));
-    expect(await loadConfig()).toMatchObject({ browseArtwork: false, playerLayout: "classic", queueContinuation: false,
+    expect(await loadConfig()).toMatchObject({ browseArtwork: false, playerLayout: "classic", queueContinuation: false, homeSetupDismissed: false,
       appearance: { highContrast: false }, keybindings: {} });
   });
   it("uses every CLI override without changing the saved file or the next launch", async () => {

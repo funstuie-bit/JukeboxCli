@@ -3,7 +3,18 @@
 These features are in the app now. That doesn't mean every station, terminal
 or online service will cooperate. The limits are listed below.
 
-## Current release — 1.7.0
+## Current release — 1.8.0
+
+- Home u Setup & extras: opt-in mouse controls, artwork colours, motion, direct
+  settings and optional projectM confirmation. Dismissible persistent checklist.
+- Cover-led Home tiles/header in roomy windows; static/simple fallbacks and
+  compact layouts elsewhere. Shared artwork accents honour custom appearance.
+- Slow decorative grille lights while playing, only with reduced motion off;
+  no timer while paused/loading/hidden/unmounted.
+- Mac projectM installed-state hint, progress steps and explicit failure/retry.
+  No automatic downloads or preference changes.
+
+## Also included from 1.7.0
 
 - Responsive Home cards for music/videos/radio/library/queue/download, listening
   context and counts, grouped recents/stations and compact small-window choices.

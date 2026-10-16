@@ -196,6 +196,7 @@ export function App({ initialAdd, initialOverrides }: { initialAdd?: string; ini
   const [pendingSearch, setPendingSearch] = useState(false);
   const [pendingAdd, setPendingAdd] = useState<string | null>(null);
   const [openUrlRequest, setOpenUrlRequest] = useState(0);
+  const [pendingSettings, setPendingSettings] = useState<Store["pendingSettings"]>(null);
   const [playlistsDepth, setPlaylistsDepth] =
     useState<PlaylistsDepth>("sets");
 
@@ -644,6 +645,8 @@ export function App({ initialAdd, initialOverrides }: { initialAdd?: string; ini
       pendingAdd,
       openUrlRequest,
       setOpenUrlRequest,
+      pendingSettings,
+      setPendingSettings,
       setPendingAdd,
       mpvStatus,
       listRows,
@@ -665,6 +668,7 @@ export function App({ initialAdd, initialOverrides }: { initialAdd?: string; ini
     pendingSearch,
     pendingAdd,
     openUrlRequest,
+    pendingSettings,
     mpvStatus,
     listRows,
     compact,

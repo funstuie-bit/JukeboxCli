@@ -22,6 +22,8 @@ export interface Config {
   artworkColours?: boolean;
   vimNavigation?: boolean;
   mouseMode?: "off" | "wheel" | "click";
+  /** Dismissible Home setup checklist; settings remain available afterwards. */
+  homeSetupDismissed?: boolean;
   autoLoadMore?: boolean;
   /** Optional Linux fullscreen preset collection; extra packs download only on request. */
   fullscreenPresetPack?: PresetPack;
@@ -141,6 +143,7 @@ export async function loadConfig(): Promise<Config> {
     cfg.artworkColours = parsed.artworkColours === true;
     cfg.vimNavigation = parsed.vimNavigation === true;
     cfg.mouseMode = parsed.mouseMode === "off" || parsed.mouseMode === "click" ? parsed.mouseMode : "wheel";
+    cfg.homeSetupDismissed = parsed.homeSetupDismissed === true;
     cfg.autoLoadMore = parsed.autoLoadMore === true;
     cfg.fullscreenAudio = parsed.fullscreenAudio === "system" ? "system" : "player";
     cfg.fullscreenPresetPack = isPresetPack(parsed.fullscreenPresetPack) ? parsed.fullscreenPresetPack : "classic";

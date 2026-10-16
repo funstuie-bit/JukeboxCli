@@ -34,6 +34,7 @@ export const HELP_GROUPS: HelpGroup[] = [
       { keys: "↵", label: "Open / play" },
       { keys: "1-9", label: "Jump section" },
       { keys: "H", label: "Home" },
+      { keys: "u", label: "Home: Setup & extras (mouse, colours, motion, projectM)" },
       { keys: "o", label: "Play URL (no download)" },
       { keys: "/", label: "Search" },
       { keys: "d", label: "Delete" },

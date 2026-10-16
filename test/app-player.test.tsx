@@ -207,6 +207,17 @@ describe("App player workflow", () => {
     await press(view, "\r"); await press(view, "m");
     expect(view.lastFrame()).toContain("Streaming · not in Library");
   });
+  it("offers first-run mouse setup and opens the exact appearance page from Home", async () => {
+    startup.fresh = true;
+    const view = app(); await tick(); await tick();
+    await press(view,"u");expect(view.lastFrame()).toContain("SETUP & EXTRAS");
+    expect(startup.writes).toHaveLength(0);await press(view,"\r");
+    expect(startup.writes.at(-1)).toMatchObject({mouseMode:"click",firstRunComplete:false});
+    for(let i=0;i<5;i++)await press(view,"\x1b[B");await press(view,"\r");
+    expect(view.lastFrame()).toContain("Player appearance");expect(view.lastFrame()).toContain("Theme:");
+    expect(startup.writes.at(-1)).toMatchObject({mouseMode:"click",firstRunComplete:true});
+    await press(view,"\x1b");await press(view,"H");expect(view.lastFrame()).toContain("Your jukebox");
+  });
   it("opens Videos directly with Y and retains results after visiting Music", async () => {
     const view = app(); await tick(); await tick();
     await press(view, "Y"); expect(view.lastFrame()).toContain("Search YouTube videos");

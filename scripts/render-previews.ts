@@ -6,6 +6,9 @@ import { mkdtempSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 process.env.FORCE_COLOR = "3";
+delete process.env.NO_COLOR;
+process.env.JUKEBOXCLI_SYSTEM_TOOLS = "1";
+(globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 // Components may read saved stations. Never let fixture previews read a real profile.
 process.env.JUKEBOXCLI_HOME = mkdtempSync(path.join(os.tmpdir(), "jukeboxcli-previews-"));
 await import("./render-previews-impl");

@@ -21,11 +21,11 @@ keeps the lot in one editable queue. Streams stay streams unless you choose to s
 them. There are lyrics, cover artwork and live visualisers too, with optional
 fullscreen MilkDrop effects on Mac and Linux.
 
-Version **1.7.0** gives Home a proper dashboard: quick-launch cards, listening
-context, recents and saved stations, with a compact layout for smaller windows.
-If browser cookies can't be read, **Retry without cookies** plays that item
-anonymously without changing your saved browser. Available from source and
-Homebrew on Mac, and from source on Linux.
+Version **1.8.0** makes the optional setup easier to find. Press **u on Home** for
+mouse clicks, artwork colours, decorative motion and fullscreen effects. Home
+gets cover-led recent listening, station tiles and a larger cover when there's
+room. Existing preferences stay as they are; nothing installs itself. Available
+from source and Homebrew on Mac, and from source on Linux.
 
 Version **1.6.0** gives **YouTube Videos its own sidebar section**.
 Press **Y** (Shift+y) to open it, type a search and press Enter. On the results,
@@ -39,7 +39,7 @@ and **Play video** for YouTube items and recognised video files/URLs, plus the
 usual queue actions. Downloaded YouTube audio uses the original online video for
 **Play video**; audio playback still uses the saved file. Radio and audio-only
 items keep **Play**. Settings and their
-submenus also respond to a single left-click. Enable **Settings → Keyboard and mouse → Mouse: click**
+submenus also respond to a single left-click. Enable **Home → u Setup & extras → Mouse clicks**, or **Settings → Keyboard and mouse → Mouse: click**
 for right-click menus; **c** works in every mouse mode. Menus pop up over the
 existing player or results near your click, without replacing the screen or
 moving the list. **Escape**, **c** or a click outside closes them. Sidebar clicks stay active
@@ -147,8 +147,19 @@ Home puts music search, YouTube videos, radio, local music, the queue and downlo
 in quick-launch cards when there's room. It shows current listening and local/
 queue/station counts, with recent plays and saved stations below. Use arrows and
 Enter, or click in mouse-click mode. Right-click a recent item/station for play
-and queue actions. The jukebox drawing stays; small windows use a compact list.
-Opening Home doesn't fetch results, start music or download anything.
+and queue actions. Roomy windows show cover tiles and a larger current/recent
+cover; missing artwork has a quiet text fallback. **Artwork colours** applies
+your cover's accent to Home and Player. With decorative motion enabled, the
+jukebox's grille lights animate while music plays; they aren't an audio meter.
+The jukebox drawing stays; small windows use a compact list. Opening Home
+doesn't search providers, start music or download media. Supplied online
+thumbnail URLs may load separately, using the terminal's existing artwork mode.
+
+Press **u** for **Setup & extras**, including on first launch. Pick mouse clicks,
+wheel-only scrolling or keyboard-only controls, then choose colours/motion if
+you fancy them. Shift-drag selects terminal text in click mode. The Home setup
+checklist can be dismissed; **u** still opens the page afterwards. Nothing here
+is required to listen. Cookies and projectM stay optional and ask first.
 
 ![Home dashboard with fictional offline fixture data](preview/home-dashboard.svg)
 
@@ -175,7 +186,7 @@ This is a text preview, so it also works in terminals without image support.
 
 ### Main controls
 
-**Mouse clicks are opt-in.** Open **9 Settings → Keyboard and mouse → Mouse**
+**Mouse clicks are opt-in.** Press **u on Home → Mouse clicks**, or open **9 Settings → Keyboard and mouse → Mouse**
 and choose **click** for left-click play/open and right-click actions. The default
 **wheel** setting scrolls only; **off** disables mouse input. Shift-drag selects
 terminal text in click mode.
@@ -202,6 +213,7 @@ track metadata uses the existing radio player, not the site's programme schedule
 | `m` or `5` | Open Now Playing |
 | `6` | Open the queue |
 | `9` | Open Settings |
+| `u` on Home | Setup & extras: mouse, colours, motion and optional projectM |
 | `space` | Play or pause; reconnect live radio |
 | `?` | Show the full key guide |
 
@@ -246,12 +258,19 @@ The live audio visualiser runs by default on **Mac and Linux**. Lowercase `v`
 cycles Classic Peak, Smooth, Bass Mirror, Outline, Bricks and Mosaic.
 Uppercase `V` controls decorative motion, not the audio visualiser.
 
-**Fullscreen MilkDrop effects are Linux-only.** The optional projectM companion
-opens a separate graphics window while playback and the terminal visualiser
-continue. Press uppercase `F` in Now Playing after installing the optional
-frontend. It captures system output, so other apps can affect it too.
-See the [Linux setup below](#install-in-full) and [visualiser notes](docs/visualiser-prototype.md).
-This mode is not integrated on macOS yet.
+**Fullscreen MilkDrop effects are optional on Mac and Linux.** The projectM
+companion opens a separate graphics window while music and the terminal
+visualiser continue. Press uppercase `F` in Now Playing once it's installed.
+On **macOS 14.4+**, **Home → u → projectM fullscreen pack** opens an install
+confirmation for projectM 4, Cream of the Crop presets and MilkDrop textures.
+It downloads about 61 MB, builds locally, and may install CMake through Homebrew.
+Apple's Command Line Tools and audio-recording permission are needed. The Mac
+companion captures JukeboxCli's mpv audio, without a virtual audio driver.
+Progress and failures stay visible; a failed install offers an explicit retry
+and keeps a previous working pack. It is never installed by entering Home.
+See the [Mac setup](docs/mac-visualizer.md), [Linux setup](docs/linux-install.md)
+and [visualiser notes](docs/visualiser-prototype.md). Linux defaults to mpv-only
+capture, with system-output capture available as an explicit setting.
 
 ## Radio
 
@@ -264,13 +283,14 @@ results stay temporary until you explicitly save one with **f**.
 
 ## Status and limits
 
-**Current release: [1.7.0](https://github.com/funstuie-bit/JukeboxCli/releases/tag/v1.7.0).**
-Adds the Home dashboard and explicit cookie-free playback recovery. Includes
+**Current release: [1.8.0](https://github.com/funstuie-bit/JukeboxCli/releases/tag/v1.8.0).**
+Adds discoverable optional setup, cover-led Home visuals and clearer projectM
+install/retry feedback. Keeps explicit cookie-free playback recovery. Includes
 1.6.2's video soundtrack fixes and broader browser-cookie selection.
 Includes 1.6.0's video browsing, saved searches, thumbnail preview, audio/video
 menus and mouse controls, plus Linux preset imports and isolated fullscreen audio.
 Restart after updating; music and settings are kept.
-[Release notes](docs/releases/1.7.0.md).
+[Release notes](docs/releases/1.8.0.md).
 [Changelog](CHANGELOG.md).
 
 Automated install checks run on Apple Silicon and x64 Linux. Intel Macs and other
@@ -585,7 +605,7 @@ Original / En D downloads, plus fullscreen audio isolated to JukeboxCli by defau
 Click mode adds player transport, seek and volume controls on Mac and Linux.
 Session diagnostics records local memory trends once a minute. See
 [setup, controls and limits](docs/visualiser-and-diagnostics.md).
-Version 1.7.0 is available from source and the Homebrew tap.
+Version 1.8.0 is available from source and the Homebrew tap.
 
 Packaged startup uses React production mode to avoid retaining development render
 timing records during long sessions. Linux and macOS share the same release;

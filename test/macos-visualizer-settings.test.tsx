@@ -40,3 +40,15 @@ it("requires confirmation and keeps hooks stable across the Mac installer page",
   await press(view, "\u001b");
   await waitForFrame(view, "Player appearance");
 });
+
+it("consumes the Home extras link and shows failure plus an explicit retry without auto-reinstall", async () => {
+  vi.mocked(installMacVisualizer).mockRejectedValueOnce(Error("Fixture connection unavailable"))
+    .mockImplementationOnce(async progress => { progress?.("Downloading and verifying fixture pack…"); progress?.("Fixture installed."); });
+  const setPendingSettings=vi.fn();
+  const view=await renderReady(<StoreContext.Provider value={makeStore({pendingSettings:"visualizer-install",setPendingSettings,region:"content",listRows:30})}><Settings/></StoreContext.Provider>);
+  await waitForFrame(view,"Download and install this optional pack?");expect(setPendingSettings).toHaveBeenCalledWith(null);expect(installMacVisualizer).not.toHaveBeenCalled();
+  await press(view,"\x1b[B");await press(view,"\r");
+  await waitForFrame(view,"Install failed: Fixture connection unavailable");
+  expect(view.lastFrame()).toContain("Music still works.");expect(view.lastFrame()).toContain("Retry installation");expect(installMacVisualizer).toHaveBeenCalledTimes(1);
+  await press(view,"\x1b[B");await press(view,"\r");await waitForFrame(view,"Fixture installed.");expect(installMacVisualizer).toHaveBeenCalledTimes(2);
+});
