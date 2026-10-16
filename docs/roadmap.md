@@ -1,5 +1,10 @@
 # Roadmap
 
+## Implemented in source preview — 1.6.0-dev.17
+
+- [x] Compact video preview card sized to its content, with two-line titles.
+- [x] Full landscape thumbnail framing in block/Sixel and native image modes.
+
 ## Implemented in source preview — 1.6.0-dev.16
 
 - [x] Persistent independent search history and bounded cached results after restart.

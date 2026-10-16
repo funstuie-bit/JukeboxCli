@@ -21,7 +21,7 @@ keeps the lot in one editable queue. Streams stay streams unless you choose to s
 them. There are lyrics, cover artwork and live visualisers too, with optional
 fullscreen MilkDrop effects on Mac and Linux.
 
-Source preview **1.6.0-dev.16** gives **YouTube Videos its own sidebar section**.
+Source preview **1.6.0-dev.17** gives **YouTube Videos its own sidebar section**.
 Press **Y** (Shift+y) to open it, type a search and press Enter. On the results,
 **Enter plays video** in its own window; **a plays audio only**. Music Discover
 stays on **7** and keeps Enter for audio. Press **c** or right-click a result in
@@ -49,7 +49,8 @@ listening sections. Number keys now follow the reordered list: **5 Now Playing**
 **H** and YouTube Videos stays **Y**; keys 1–4 are unchanged.
 
 Video results show title, channel, duration and small video/live/queued symbols.
-A thumbnail/details pane follows the highlighted video on wider terminals;
+A compact thumbnail/details card follows the highlighted video on wider terminals.
+Its border fits the contents and thumbnails keep their full landscape framing;
 **i** toggles it, and smaller windows automatically keep the compact list.
 Each section saves up to 30 recent searches and 100 results from its last successful
 search, including selection. Saved results reopen without rerunning the search;

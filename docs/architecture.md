@@ -60,6 +60,9 @@ running, with at most 20 parent pages. Disk restore does not make provider reque
 refresh or repeating a saved query retrieves new continuation callbacks.
 `VideoPreview` settles artwork selection and reuses Cover's bounded caches and
 native-image overlay suppression; a narrow/short view retains the full list.
+Its compact card budgets a landscape image from terminal cell aspect and bounds
+the text rows. Cover uses contain framing for video thumbnails in block/Sixel
+rendering, with framing-aware caches; album art keeps its existing square crop.
 
 Music API authentication is distinct from yt-dlp cookies. There is no separate Music sign-in;
 browser-cookie playback/downloads remain available.

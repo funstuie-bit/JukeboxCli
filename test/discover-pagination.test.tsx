@@ -192,6 +192,11 @@ it("keeps a responsive preview beside results, follows selection and suspends it
   await press(view, "\x1b"); await vi.waitFor(() => expect(view.lastFrame()).not.toContain("Play video"));
   await press(view, "i"); expect(view.lastFrame()).not.toContain("Video preview");
   await press(view, "i"); expect(view.lastFrame()).toContain("Video preview");
+  store.listRows = 60;
+  await act(async () => view.rerender(node()));
+  const bottom = view.lastFrame()!.split("\n").findIndex(line => line.includes("└"));
+  expect(bottom).toBeGreaterThan(0);
+  expect(bottom).toBeLessThan(30); // The preview card must not stretch to the terminal's bottom.
   store.contentWidth = 40; store.listRows = 12;
   await act(async () => view.rerender(node()));
   expect(view.lastFrame()).not.toContain("Video preview");

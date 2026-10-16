@@ -5,7 +5,7 @@ Linux and macOS use one source history and release process.
 
 ## Current state
 
-- Source preview: `1.6.0-dev.16`, including general YouTube video search and [audio/video controls](video-playback.md).
+- Source preview: `1.6.0-dev.17`, including general YouTube video search and [audio/video controls](video-playback.md).
 - Production release: `v1.5.0`
 - Public source: `https://github.com/funstuie-bit/JukeboxCli.git`
 - Private mirror connection details belong in private maintainer notes, not here
@@ -301,3 +301,19 @@ with 100 cached video rows, section/menu/preview changes and real mpv playback.
 RSS peaked at 199.1 MiB and ended at 197.3 MiB; heap samples showed collection
 rather than uninterrupted growth. Ctrl-C removed the owned mpv. This is a short
 CPU/UI exercise, not a multi-hour online/projectM/GPU soak or proof of no leaks.
+
+### Compact landscape video preview — dev.17 (2026-10-15)
+
+After jukeboxcli8.png confirmed working thumbnails and saved history, Stu approved
+a shorter preview card. The border now fits the image and details instead of
+filling the terminal height. Two title lines improve readability. Block/Sixel
+video thumbnails use full-image contain framing; album cover framing remains
+unchanged and cache keys distinguish the two modes. Native PNGs already preserve
+source proportions. i toggle, resizing and context-menu artwork suppression remain.
+
+Validation: 875 passed, 5 skipped; typecheck, install/build/import audit and
+production redraw guard passed. Real ffmpeg fixtures verify both coloured edges
+survive block and Sixel thumbnail rendering, with separate album-crop cache
+behaviour. Installed signed-out YouTube search displayed thumbnails and the card
+ended at row 24 of a 60-row terminal. Wider hardware appearance remains subject
+to user feedback; stable/Homebrew remain 1.5.0.

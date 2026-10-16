@@ -1,6 +1,6 @@
 # Audio and video playback
 
-Source preview 1.6.0-dev.16; stable release/Homebrew remain 1.5.0.
+Source preview 1.6.0-dev.17; stable release/Homebrew remain 1.5.0.
 
 Choose **YouTube Videos** in the sidebar or press **Y** (Shift+y) outside a text
 field. On first visit the search field is ready to type into. Submit a query,
@@ -32,11 +32,13 @@ already queued. Music browsing uses `♫`. No special icon font is required.
 In either section, `c` or right-click in click mouse mode opens Play audio,
 Play video, Play next, Add to queue, Download or Details. Choose using arrows /
 Enter or a left click; Escape dismisses. Downloads use the existing audio flow.
-YouTube Videos shows a persistent thumbnail/details pane alongside the list when
+YouTube Videos shows a compact thumbnail/details card alongside the list when
 content is at least 88 columns wide and 15 rows high (roughly a 117-column terminal,
 with extra height for the app chrome). It follows the highlighted result and shows
 title, channel, duration/live status and available date/view metadata. **i** toggles
-it; smaller windows automatically hide it. Scrolling settles for 180 ms before
+it; smaller windows automatically hide it. The border fits the content rather than
+the terminal height, titles have two lines, and thumbnails preserve the whole
+landscape image in block, Sixel and native image modes. Scrolling settles for 180 ms before
 artwork decoding, and overlays suppress native graphics so menus remain visible.
 Details also remains available as an explicit action. Artwork failure falls back to
 text and never blocks navigation or playback.

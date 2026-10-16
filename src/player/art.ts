@@ -3,6 +3,7 @@ import { ffmpegPath } from "../bin/binaries";
 import type { CoverImage } from "./graphics";
 
 const images = new Map<string, Promise<CoverImage | null>>();
+export type ArtworkFit = "cover" | "contain";
 /** Keep real image detail. Fit happens at placement, never by cropping the source. */
 export function loadCoverImage(source: string, maxSize = 1024): Promise<CoverImage | null> {
   const cacheKey = `${source}:${maxSize}`;
@@ -80,14 +81,15 @@ export function loadSixelImage(
   source: string,
   width: number,
   height: number,
+  fit: ArtworkFit = "cover",
 ): Promise<CoverImage | null> {
-  const cacheKey = `sixel:${source}:${width}x${height}`;
+  const cacheKey = `sixel:${fit}:${source}:${width}x${height}`;
   const cached = images.get(cacheKey); if (cached) return cached;
   const work = (async () => {
     try {
       const { stdout } = await execa(ffmpegPath(), ["-nostdin", "-v", "error", "-i", source,
         "-map", "0:v:0", "-frames:v", "1", "-vf",
-        `crop='min(iw,ih)':'min(iw,ih)',scale=${width}:${height}:force_original_aspect_ratio=decrease,pad=${width}:${height}:(ow-iw)/2:(oh-ih)/2:color=black@0`,
+        `${artworkFilter(width, height, fit)}:color=black@0`,
         "-pix_fmt", "rgba", "-f", "rawvideo", "pipe:1"],
       { encoding: "buffer", timeout: 8000, maxBuffer: 8 * 1024 * 1024 });
       const rgba = Buffer.from(stdout);
@@ -132,10 +134,13 @@ export interface Waveform {
   samples: number[];
 }
 
-/** Fill the square-ish text cover with the centred album image, not 16:9 thumbnail bars. */
-export function coverArtFilter(cols: number, rows: number): string {
-  const px = rows * 2;
-  return `crop='min(iw,ih)':'min(iw,ih)',scale=${cols}:${px}:force_original_aspect_ratio=decrease,pad=${cols}:${px}:(ow-iw)/2:(oh-ih)/2`;
+/** Album covers crop square by default; video previews contain the complete source. */
+export function coverArtFilter(cols: number, rows: number, fit: ArtworkFit = "cover"): string {
+  return artworkFilter(cols, rows * 2, fit);
+}
+function artworkFilter(width: number, height: number, fit: ArtworkFit): string {
+  const crop = fit === "cover" ? "crop='min(iw,ih)':'min(iw,ih)'," : "";
+  return `${crop}scale=${width}:${height}:force_original_aspect_ratio=decrease,pad=${width}:${height}:(ow-iw)/2:(oh-ih)/2`;
 }
 
 /** How long a cached extraction survives before a re-read can refresh it. */
@@ -144,6 +149,7 @@ const CACHE_TTL_MS = 10 * 60 * 1000;
 interface CacheEntry {
   at: number;
   art: CoverArt | null;
+  artFit?: ArtworkFit;
   wave: Waveform | null;
 }
 
@@ -161,7 +167,8 @@ function entryFor(filePath: string): CacheEntry {
 
 /** Drop an entry (the file changed or was deleted). */
 export function forgetArt(filePath: string): void {
-  for (const key of images.keys()) if (key.startsWith(`${filePath}:`)) images.delete(key);
+  for (const key of images.keys()) if (key.startsWith(`${filePath}:`) ||
+      key.startsWith(`sixel:cover:${filePath}:`) || key.startsWith(`sixel:contain:${filePath}:`)) images.delete(key);
   cache.delete(filePath);
   inflight.delete(filePath);
 }
@@ -187,10 +194,11 @@ export async function loadCoverArt(
   filePath: string,
   cols: number,
   rows: number,
+  fit: ArtworkFit = "cover",
 ): Promise<CoverArt | null> {
   const e = entryFor(filePath);
-  if (e.art && e.art.cols === cols && e.art.rows === rows) return e.art;
-  // A different size than cached: re-extract (cheap; runs at track change).
+  if (e.art && e.art.cols === cols && e.art.rows === rows && e.artFit === fit) return e.art;
+  // A different size or framing than cached: re-extract at selection changes.
   try {
     const px = rows * 2;
     const { stdout } = await execa(
@@ -205,9 +213,9 @@ export async function loadCoverArt(
         "0:v",
         "-frames:v",
         "1",
-        // Crop to the render aspect (cover-fit), then scale to exact pixels.
+        // Use the chosen framing, then fit the exact terminal pixel dimensions.
         "-vf",
-        coverArtFilter(cols, rows),
+        coverArtFilter(cols, rows, fit),
         "-f",
         "rawvideo",
         "-pix_fmt",
@@ -248,6 +256,7 @@ export async function loadCoverArt(
       brightness: bright / cells.length,
     };
     e.art = art;
+    e.artFit = fit;
     trim();
     return art;
   } catch {

@@ -3,12 +3,13 @@
 These features are in the app now. That doesn't mean every station, terminal
 or online service will cooperate. The limits are listed below.
 
-## Source preview — 1.6.0-dev.16
+## Source preview — 1.6.0-dev.17
 
 - Independent persistent search history for Music Discover and YouTube Videos;
   30 recent searches and up to 100 cached results each. Reopen/clear with h or a click.
   Results restore locally; thumbnails load separately. A new search refreshes pagination.
-- Responsive YouTube thumbnail/details pane following selection, i toggle,
+- Compact YouTube thumbnail/details card with a content-sized border, full-image
+  landscape framing, two-line titles, selection following and i toggle;
   compact list on smaller terminals and settled artwork loading.
 - Coloured clapperboard for YouTube Videos.
 - Coloured icons in fixed-width sidebar columns and brighter labels; Settings appears last, with number shortcuts following the displayed order.

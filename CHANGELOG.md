@@ -3,6 +3,14 @@
 Release notes describe what changed in each build. For what works now and the
 remaining limits, see [feature status](FEATURES.md).
 
+## 1.6.0-dev.17 — Unreleased
+
+- Size the YouTube preview border around its thumbnail/details instead of
+  stretching it to the bottom of a tall terminal; allow two title lines.
+- Preserve complete landscape thumbnails in block and Sixel rendering rather
+  than applying the square album-cover crop. Keep framing modes separate in the
+  bounded artwork caches, including when menus require a block fallback.
+
 ## 1.6.0-dev.16 — Unreleased
 
 - Remember recent searches and last successful results independently in Music

@@ -1,7 +1,7 @@
 import { useRowMenu } from "./RowActions";
 import { memo, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { Box, Text, type DOMElement } from "ink";
-import { loadCoverArt, loadCoverImage, loadSixelImage, type CoverArt } from "../../player/art";
+import { loadCoverArt, loadCoverImage, loadSixelImage, type CoverArt, type ArtworkFit } from "../../player/art";
 import { graphicsPainter, graphicsProtocol, cellAspect, cellHeight, cellWidth, simpleArtwork, type CoverImage, type ImageRect } from "../../player/graphics";
 import { COLOR, RULE } from "../theme";
 
@@ -22,14 +22,14 @@ const Blocks = memo(function Blocks({ art }: { art: CoverArt }) {
     <Text key={y}>{art.cells.slice(y * art.cols, (y + 1) * art.cols).map((c, x) =>
       <Text key={x} color={hex(c.top)} backgroundColor={hex(c.bottom)}>▀</Text>)}</Text>)}</Box>;
 });
-export function Cover({ source, cols, rows, visible, fallback, repaintKey, suppressGraphics = false, toggleHint = "b" }: { source?: string; cols: number; rows: number; visible: boolean; fallback?: ReactNode; repaintKey?: string; suppressGraphics?: boolean; toggleHint?: string }) {
+export function Cover({ source, cols, rows, visible, fallback, repaintKey, suppressGraphics = false, toggleHint = "b", fit = "cover" }: { source?: string; cols: number; rows: number; visible: boolean; fallback?: ReactNode; repaintKey?: string; suppressGraphics?: boolean; toggleHint?: string; fit?: ArtworkFit }) {
   const ref = useRef<DOMElement>(null);
   const [loaded, setLoaded] = useState<{ key: string; image: CoverImage | null; art: CoverArt | null }>();
   const simple = simpleArtwork();
   // Native terminal images paint outside Ink; use text blocks under an overlay.
   const { menu } = useRowMenu();
   const overlayBlocks = Boolean(graphicsPainter && (suppressGraphics || menu));
-  const key = `${source}:${cols}:${rows}:${simple}:${overlayBlocks}`;
+  const key = `${source}:${cols}:${rows}:${simple}:${overlayBlocks}:${fit}`;
   useEffect(() => {
     if (!source || !visible || simple) return;
     let cancelled = false;
@@ -37,13 +37,13 @@ export function Cover({ source, cols, rows, visible, fallback, repaintKey, suppr
       // 480px RGB stays below the inline protocol's 1MiB escape-sequence cap,
       // even for uncompressible images after base64 encoding.
       const image = graphicsPainter && !overlayBlocks ? graphicsProtocol === "sixel"
-        ? await loadSixelImage(source, Math.max(1, cols * cellWidth), Math.max(1, rows * cellHeight))
+        ? await loadSixelImage(source, Math.max(1, cols * cellWidth), Math.max(1, rows * cellHeight), fit)
         : await loadCoverImage(source, graphicsProtocol === "iterm" ? 480 : 1024) : null;
-      const art = image ? null : await loadCoverArt(source, cols, rows);
+      const art = image ? null : await loadCoverArt(source, cols, rows, fit);
       if (!cancelled) setLoaded({ key, image, art });
     })();
     return () => { cancelled = true; };
-  }, [source, key, cols, rows, visible, simple, overlayBlocks]);
+  }, [source, key, cols, rows, visible, simple, overlayBlocks, fit]);
   const mine = visible && !simple && loaded?.key === key ? loaded : undefined;
   const image = mine?.image;
   useLayoutEffect(() => {
