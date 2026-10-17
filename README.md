@@ -27,11 +27,11 @@ gets cover-led recent listening, station tiles and a larger cover when there's
 room. Existing preferences stay as they are; nothing installs itself. Available
 from source and Homebrew on Mac, and from source on Linux.
 
-Source preview **1.8.1-dev.3** shows sharp native Home thumbnails alongside
+Version **1.8.1** shows sharp native Home thumbnails alongside
 its featured cover on supported terminals, with block artwork as the fallback.
 Long titles truncate without squeezing images. Foot/Sixel artwork uses adaptive
 colours and survives asynchronous image loading and hide/restore. It also patches
-a build/test dependency. Stable and Homebrew remain **1.8.0**.
+a build/test dependency. Available from source on Linux and Mac, and Homebrew on Mac.
 
 Version **1.6.0** gives **YouTube Videos its own sidebar section**.
 Press **Y** (Shift+y) to open it, type a search and press Enter. On the results,
@@ -289,14 +289,16 @@ results stay temporary until you explicitly save one with **f**.
 
 ## Status and limits
 
-**Current release: [1.8.0](https://github.com/funstuie-bit/JukeboxCli/releases/tag/v1.8.0).**
+**Current release: [1.8.1](https://github.com/funstuie-bit/JukeboxCli/releases/tag/v1.8.1).**
+Sharp native Home thumbnails appear together; long titles keep artwork aligned,
+and Foot/Sixel colours retain photographic detail.
 Adds discoverable optional setup, cover-led Home visuals and clearer projectM
 install/retry feedback. Keeps explicit cookie-free playback recovery. Includes
 1.6.2's video soundtrack fixes and broader browser-cookie selection.
 Includes 1.6.0's video browsing, saved searches, thumbnail preview, audio/video
 menus and mouse controls, plus Linux preset imports and isolated fullscreen audio.
 Restart after updating; music and settings are kept.
-[Release notes](docs/releases/1.8.0.md).
+[Release notes](docs/releases/1.8.1.md).
 [Changelog](CHANGELOG.md).
 
 Automated install checks run on Apple Silicon and x64 Linux. Intel Macs and other
@@ -612,7 +614,7 @@ Original / En D downloads, plus fullscreen audio isolated to JukeboxCli by defau
 Click mode adds player transport, seek and volume controls on Mac and Linux.
 Session diagnostics records local memory trends once a minute. See
 [setup, controls and limits](docs/visualiser-and-diagnostics.md).
-Version 1.8.0 is available from source and the Homebrew tap.
+Version 1.8.1 is available from source and the Homebrew tap.
 
 Packaged startup uses React production mode to avoid retaining development render
 timing records during long sessions. Linux and macOS share the same release;

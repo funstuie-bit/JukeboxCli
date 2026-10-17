@@ -3,6 +3,19 @@
 Release notes describe what changed in each build. For what works now and the
 remaining limits, see [feature status](FEATURES.md).
 
+## 1.8.1 — Sharp Home thumbnails
+
+- Render native recent/station thumbnails together with the featured cover on
+  supported terminals, retaining block/simple fallbacks and foreground priority.
+- Keep artwork at its decoded width beside long titles, preventing wrapped
+  thumbnail rows from overlapping headings and neighbours.
+- Preserve photographic Foot/Sixel colours with an adaptive 256-colour palette.
+- Restore new/moved cell images after Ink flushes loading frames; retain unchanged
+  images between frames and clean up each native image independently.
+- Patch the development-only source-map-js dependency to 1.2.2.
+- Promote the accepted preview to the shared Linux/Mac stable release and Mac
+  Homebrew tap. No new system dependencies or automatic preference changes.
+
 ## 1.8.1-dev.3 — Sharp Home thumbnails together (source preview)
 
 - Replace the forced block thumbnails with native recent/station images on

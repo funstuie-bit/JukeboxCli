@@ -5,11 +5,19 @@ Linux and macOS use one source history and release process.
 
 ## Current state
 
-- Current source: `1.8.1-dev.3`, including Home setup/artwork and [audio/video controls](video-playback.md).
-- Production release/Homebrew: `v1.8.0`; the source preview is not a new stable release.
+- Current source: `1.8.1`, including Home setup/artwork and [audio/video controls](video-playback.md).
+- Production release/Homebrew: `v1.8.1`; the accepted native-thumbnail fixes are included.
 - Public source: `https://github.com/funstuie-bit/JukeboxCli.git`
 - Private mirror connection details belong in private maintainer notes, not here
 - Branch: `main`; both remotes must contain the same commits
+
+### 2026-10-17 stable release — 1.8.1
+
+Promotes the accepted 1.8.1-dev.3 runtime to a shared Mac/Linux patch release.
+Native Home thumbnails, adaptive Sixel colours, fixed artwork dimensions and the
+build-dependency patch are included. No new runtime behaviour or dependencies
+were added during promotion. The Homebrew formula pins the immutable source tag;
+restart after updating. The preview sections below retain the validation history.
 
 ### 2026-10-17 native thumbnail follow-up — 1.8.1-dev.3
 

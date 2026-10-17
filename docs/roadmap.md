@@ -1,5 +1,13 @@
 # Roadmap
 
+## Current release — 1.8.1
+
+- [x] Publish accepted native Home thumbnails and adaptive Sixel colours.
+- [x] Preserve fixed artwork widths and paint after Ink flushes loading frames.
+- [x] Patch the development-only source-map-js dependency.
+- [x] Real Foot/installed-app thumbnail acceptance and Mac/Linux install checks.
+- [ ] Continue broader physical Mac and long-session memory/GPU acceptance.
+
 ## Implemented in source preview — 1.8.1-dev.3
 
 - [x] Sharp native Home thumbnails alongside the featured cover; keep fallbacks.
@@ -18,7 +26,7 @@
 - [x] Patch the development-only source-map-js dependency identified in the Linux audit.
 - Stable/Homebrew remain 1.8.0; this preview is available from source on Mac/Linux.
 
-## Current release — 1.8.0
+## Shipped in 1.8.0
 
 - [x] First-run/Home setup choices: mouse, colours, motion and direct extras links.
 - [x] Dismissible Home checklist without automatic preference changes/downloads.
