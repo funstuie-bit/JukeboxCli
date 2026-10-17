@@ -5,9 +5,9 @@ import { defaultConfig } from "../src/config/config";
 import { makeStore, makeFakePlayback, makeFakeLibrary } from "../scripts/fake-data";
 import { renderReady, act } from "./ink-input";
 
-const fixture = vi.hoisted(() => ({ remove: vi.fn(), set: vi.fn(), blocks: vi.fn(), images: vi.fn() }));
+const fixture = vi.hoisted(() => ({ native: true, remove: vi.fn(), set: vi.fn(), blocks: vi.fn(), images: vi.fn() }));
 vi.mock("../src/player/graphics", () => ({
-  graphicsPainter: { set: fixture.set, paint: vi.fn() }, graphicsProtocol: "kitty",
+  get graphicsPainter() { return fixture.native ? { set: fixture.set, paint: vi.fn(), repaintSixel: vi.fn() } : undefined; }, graphicsProtocol: "kitty",
   cellAspect: .5, simpleArtwork: () => false,
 }));
 vi.mock("../src/player/art", () => ({ loadCoverImage: fixture.images, loadCoverArt: fixture.blocks }));
@@ -17,10 +17,13 @@ vi.mock("../src/player/stations", async original => ({
 }));
 
 it.each([
-  "Short title",
-  "A very long stream title that must truncate instead of squeezing its adjacent artwork with many extra words",
-])("keeps Home artwork within its tiles alongside the native cover with %s", async title => {
+  [true, "Short title"],
+  [true, "A very long stream title that must truncate instead of squeezing its adjacent artwork with many extra words"],
+  [false, "Short title"],
+  [false, "A very long stream title that must truncate instead of squeezing its adjacent artwork with many extra words"],
+] as const)("keeps Home thumbnails in their own boxes with native=%s and %s", async (native, title) => {
   vi.clearAllMocks();
+  fixture.native = native;
   fixture.set.mockReturnValue(fixture.remove);
   fixture.images.mockResolvedValue({ width: 80, height: 80, png: new Uint8Array([1]) });
   fixture.blocks.mockImplementation(async (_source: string, cols: number, rows: number) => ({
@@ -40,18 +43,25 @@ it.each([
 
   expect(view.lastFrame()).toContain("Recent ·");
   expect(view.lastFrame()).toContain("Fixture Radio");
-  expect(fixture.blocks).toHaveBeenCalledWith(recent.filePath, 8, 4, "cover");
-  expect(fixture.blocks).toHaveBeenCalledWith("https://example.com/radio.png", 8, 4, "cover");
   const lines = view.lastFrame()!.split("\n");
   const heading = lines.findIndex(line => line.includes("RECENT LISTENING"));
-  const artworkRows = lines.map((line, y) => ({ line, y })).filter(row => row.line.includes("▀"));
-  expect(artworkRows).toHaveLength(4);
-  expect(artworkRows.every(row => row.y > heading)).toBe(true);
-  expect(artworkRows.map(row => row.line.match(/▀/g)?.length)).toEqual([16, 16, 16, 16]);
-  expect(fixture.images).toHaveBeenCalledExactlyOnceWith(recent.filePath, 1024);
-  expect(fixture.set).toHaveBeenCalledOnce();
+  if (native) {
+    expect(fixture.blocks).not.toHaveBeenCalled();
+    expect(fixture.images).toHaveBeenCalledTimes(3);
+    expect(fixture.set).toHaveBeenCalledTimes(3);
+    const tileRects = fixture.set.mock.calls.map(call => call[1]()).filter(rect => rect.rows === 4);
+    expect(tileRects).toHaveLength(2);
+    expect(tileRects.every(rect => rect.cols === 8 && rect.y > heading)).toBe(true);
+  } else {
+    expect(fixture.blocks).toHaveBeenCalledWith(recent.filePath, 8, 4, "cover");
+    expect(fixture.blocks).toHaveBeenCalledWith("https://example.com/radio.png", 8, 4, "cover");
+    const artworkRows = lines.map((line, y) => ({ line, y })).filter(row => row.y > heading && row.line.includes("▀"));
+    expect(artworkRows).toHaveLength(4);
+    expect(artworkRows.map(row => row.line.match(/▀/g)?.length)).toEqual([16, 16, 16, 16]);
+    expect(fixture.set).not.toHaveBeenCalled();
+  }
 
   await act(async () => { view.rerender(node(true)); });
-  expect(fixture.remove).toHaveBeenCalledOnce();
+  expect(fixture.remove).toHaveBeenCalledTimes(native ? 3 : 0);
   expect(view.lastFrame()).not.toContain("▀");
 });

@@ -115,8 +115,7 @@ export function Home({ firstRun = false }: { firstRun?: boolean }) {
   const tile = (a: HomeAction, rowWidth: number) => <MouseRow key={a.id} active={clickable} width={rowWidth}
     onClick={() => { setSelectedId(a.id); s.setRegion("content"); a.run(); }} menuTitle={a.label} menuActions={a.menuActions}>
     <Box height={4} width={rowWidth} gap={1}>
-      {/* The native painter owns one image slot; keep every small tile visible alongside the featured cover. */}
-      <Cover source={a.source} cols={8} rows={4} visible={s.region !== "help"} suppressGraphics loadingFallback fallback={<Box width={8} height={4} borderStyle="round" borderColor={C.alt} alignItems="center" justifyContent="center"><Text bold color={C.accent}>{a.live ? "LIVE" : "♫"}</Text></Box>} />
+      <Cover source={a.source} cols={8} rows={4} visible={s.region !== "help"} repaintKey={`${selectedId}:${track?.id}:${paused}:${loading}`} loadingFallback fallback={<Box width={8} height={4} borderStyle="round" borderColor={C.alt} alignItems="center" justifyContent="center"><Text bold color={C.accent}>{a.live ? "LIVE" : "♫"}</Text></Box>} />
       <Box flexDirection="column" flexGrow={1} minWidth={0} justifyContent="center">
         <Text bold color={actions[selected]?.id === a.id ? C.accent : C.text} wrap="truncate-end">{actions[selected]?.id === a.id ? "› " : "  "}{a.label}</Text>
         <Text color={C.muted} wrap="truncate-end">  {a.detail}</Text>
@@ -145,7 +144,7 @@ export function Home({ firstRun = false }: { firstRun?: boolean }) {
         {layout.mark && !track && featured ? <><Text color={C.alt} wrap="truncate-end">LAST ON THE DECK</Text><Text color={C.text} wrap="truncate-end">{cleanText(featured.title)}</Text></> : null}
       </Box>
       {layout.mark && width >= 112 && artSource(featured) ? <Box flexDirection="column" width={24} flexShrink={0}>
-        <Cover source={artSource(featured)} cols={24} rows={10} visible={s.region !== "help"} loadingFallback fallback={<Box width={24} height={10} borderStyle="round" borderColor={C.alt} alignItems="center" justifyContent="center"><Text color={C.accent}>{isLive(featured ?? null) ? "ON AIR" : "ON THE DECK"}</Text></Box>} />
+        <Cover source={artSource(featured)} cols={24} rows={10} visible={s.region !== "help"} repaintKey={`${selectedId}:${track?.id}:${paused}:${loading}`} loadingFallback fallback={<Box width={24} height={10} borderStyle="round" borderColor={C.alt} alignItems="center" justifyContent="center"><Text color={C.accent}>{isLive(featured ?? null) ? "ON AIR" : "ON THE DECK"}</Text></Box>} />
       </Box> : null}
     </Box>
     {checklist ? <MouseRow active={clickable} width={width} onClick={() => { s.setRegion("content"); setSetup(true); }}><Text color={C.accent} bold wrap="truncate-end">u  Setup & extras · Mouse clicks {s.config.mouseMode === "click" ? "ON" : "OFF"} · colours {s.config.artworkColours ? "ON" : "OFF"} · optional projectM</Text></MouseRow> : null}

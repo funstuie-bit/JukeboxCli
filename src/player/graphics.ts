@@ -24,18 +24,19 @@ export function inlineImage(image: CoverImage, rect: ImageRect): string {
   if (image.png.length > 740000) return ""; // Defensive cap; decoder normally produces <=480px RGB.
   return `${ESC}7${ESC}[${rect.y + 1};${rect.x + 1}H${ESC}]1337;File=inline=1;size=${image.png.length};width=${rect.cols};height=${rect.rows};preserveAspectRatio=1:${Buffer.from(image.png).toString("base64")}\x07${ESC}8`;
 }
-export const deleteImage = `${ESC}_Ga=d,d=I,i=${ID},q=2${ESC}\\`;
-export function imagePackets(png: Uint8Array): string {
+const deleteImageId = (id: number) => `${ESC}_Ga=d,d=I,i=${id},q=2${ESC}\\`;
+export const deleteImage = deleteImageId(ID);
+export function imagePackets(png: Uint8Array, id = ID): string {
   const encoded = Buffer.from(png).toString("base64");
   const chunks: string[] = [];
   for (let at = 0; at < encoded.length; at += 4096) {
-    chunks.push(`${ESC}_G${at === 0 ? `a=t,f=100,t=d,i=${ID},q=2,` : ""}m=${at + 4096 < encoded.length ? 1 : 0};${encoded.slice(at, at + 4096)}${ESC}\\`);
+    chunks.push(`${ESC}_G${at === 0 ? `a=t,f=100,t=d,i=${id},q=2,` : ""}m=${at + 4096 < encoded.length ? 1 : 0};${encoded.slice(at, at + 4096)}${ESC}\\`);
   }
   return chunks.join("");
 }
-export function imagePlacement(rect: ImageRect): string {
+export function imagePlacement(rect: ImageRect, id = ID): string {
   // Give only the width: Kitty computes height from the source aspect ratio.
-  return `${ESC}7${ESC}[${rect.y + 1};${rect.x + 1}H${ESC}_Ga=p,i=${ID},p=1,c=${rect.cols},C=1,q=2${ESC}\\${ESC}8`;
+  return `${ESC}7${ESC}[${rect.y + 1};${rect.x + 1}H${ESC}_Ga=p,i=${id},p=1,c=${rect.cols},C=1,q=2${ESC}\\${ESC}8`;
 }
 export function sixelPlacement(image: CoverImage, rect: ImageRect): string {
   return image.sixel ? `${ESC}7${ESC}[${rect.y + 1};${rect.x + 1}H${image.sixel}${ESC}8` : "";
@@ -89,49 +90,93 @@ export async function probeGraphics(input = process.stdin, output = process.stdo
   });
 }
 
+interface ImageTarget { image: CoverImage; rect: () => ImageRect | null; id: number }
+interface PaintedImage { image: CoverImage; rect: ImageRect }
 export class GraphicsPainter {
-  private targets = new Set<{ image: CoverImage; rect: () => ImageRect | null }>();
-  private uploaded?: CoverImage;
-  private rect: ImageRect | null = null;
-  get status() { return { visible: Boolean(this.uploaded), rect: this.rect, pixels: this.uploaded ? [this.uploaded.width, this.uploaded.height] : null }; }
+  private targets = new Set<ImageTarget>();
+  private painted = new Map<ImageTarget, PaintedImage>();
+  private nextId = ID;
+  private cellImagesDirty = false;
+  get status() {
+    const last = [...this.painted.values()].at(-1);
+    return { visible: Boolean(last), rect: last?.rect ?? null,
+      pixels: last ? [last.image.width, last.image.height] : null, count: this.painted.size };
+  }
   constructor(private readonly write: (s: string) => void, private readonly protocol: GraphicsProtocol = "kitty") {}
   set(image: CoverImage, rect: () => ImageRect | null): () => void {
-    const target = { image, rect }; this.targets.add(target);
+    const target = { image, rect, id: this.nextId++ }; this.targets.add(target);
+    this.cellImagesDirty = true;
     return () => { this.targets.delete(target); this.paint(); };
   }
-  /** A changed text row can erase cell-backed Sixel pixels; restore only that image. */
+  /** A changed text row can erase cell-backed Sixel pixels; restore only matching images. */
   repaintSixel(image: CoverImage): void {
-    if (this.protocol !== "sixel" || this.uploaded !== image) return;
-    this.uploaded = undefined; this.rect = null; this.paint();
+    if (this.protocol !== "sixel") return;
+    let dirty = false;
+    for (const [target, previous] of this.painted) if (previous.image === image) {
+      this.painted.delete(target); dirty = true;
+    }
+    if (dirty) this.paint();
+    if (dirty) this.cellImagesDirty = true;
   }
   clear(): void {
-    // Inline images are text-cell content: Ink's full-frame redraw erases them.
-    // Never erase a stale rectangle after Ink has painted new text there.
-    if (this.uploaded && this.protocol === "kitty") this.write(deleteImage);
-    this.uploaded = undefined;
-    this.rect = null;
+    // Ink owns cell-backed image erasure; never clear stale rectangles over new text.
+    if (this.protocol === "kitty") for (const target of this.painted.keys()) this.write(deleteImageId(target.id));
+    this.painted.clear();
+  }
+  /** Commit cell images after Ink flushes any throttled text output. */
+  paintAfterRender(): void {
+    if (this.protocol !== "kitty" && this.cellImagesDirty) this.painted.clear();
+    this.paint();
+    this.cellImagesDirty = false;
   }
   paint(): void {
-    // An embedded player can stay mounted behind the expanded player. Keep
-    // both registrations so closing the modal restores the underlying art.
-    const target = [...this.targets].reverse().find(t => t.rect() !== null);
-    const rect = target?.rect();
-    if (!rect || rect.cols < 1 || rect.rows < 1) { this.clear(); return; }
-    const image = target!.image;
-    if (this.protocol === "iterm") {
-      if (this.uploaded === image && this.rect && sameRect(this.rect, rect)) return;
-      this.write(inlineImage(image, rect)); this.uploaded = image; this.rect = rect; return;
+    const visible: { target: ImageTarget; rect: ImageRect }[] = [];
+    // Newer overlapping registrations belong to the foreground player. Disjoint
+    // Home covers each keep their own placement and image lifetime.
+    for (const target of [...this.targets].reverse()) {
+      const rect = target.rect();
+      if (!rect || rect.cols < 1 || rect.rows < 1 || visible.some(other => overlaps(other.rect, rect))) continue;
+      visible.push({ target, rect });
     }
-    if (this.protocol === "sixel") {
-      if (this.uploaded === image && this.rect && sameRect(this.rect, rect)) return;
-      this.write(sixelPlacement(image, rect)); this.uploaded = image; this.rect = rect; return;
+    const wanted = new Set(visible.map(item => item.target));
+    for (const target of this.painted.keys()) if (!wanted.has(target)) {
+      if (this.protocol === "kitty") this.write(deleteImageId(target.id));
+      this.painted.delete(target);
     }
-    if (this.uploaded !== image) {
-      this.clear(); this.write(imagePackets(image.png)); this.uploaded = image;
+    for (const { target, rect } of visible.reverse()) {
+      const image = target.image, previous = this.painted.get(target);
+      if (this.protocol === "kitty") {
+        if (!previous) this.write(imagePackets(image.png, target.id));
+        this.write(imagePlacement(rect, target.id));
+      } else if (!previous || !sameRect(previous.rect, rect)) {
+        this.cellImagesDirty = true;
+        this.write(this.protocol === "iterm" ? inlineImage(image, rect) : sixelPlacement(image, rect));
+      }
+      this.painted.set(target, { image, rect });
     }
-    this.write(imagePlacement(rect));
-    this.rect = rect;
   }
+}
+/** Coalesce frame callbacks; Ink's onRender can run before its throttled stdout write. */
+export function createGraphicsRenderer(flush: () => Promise<void>, painter: () => GraphicsPainter | undefined) {
+  let pending = false, closed = false;
+  let task: NodeJS.Immediate | undefined;
+  return {
+    onRender() {
+      if (pending || closed) return;
+      pending = true;
+      task = setImmediate(() => {
+        task = undefined;
+        void (async () => {
+          try { await flush(); if (!closed) painter()?.paintAfterRender(); }
+          finally { pending = false; }
+        })().catch(() => { /* App's waitUntilExit reports render/exit failures. */ });
+      });
+    },
+    dispose() { closed = true; if (task) clearImmediate(task); },
+  };
+}
+function overlaps(a: ImageRect, b: ImageRect): boolean {
+  return a.x < b.x + b.cols && b.x < a.x + a.cols && a.y < b.y + b.rows && b.y < a.y + a.rows;
 }
 function sameRect(a: ImageRect, b: ImageRect): boolean {
   return a.x === b.x && a.y === b.y && a.cols === b.cols && a.rows === b.rows;

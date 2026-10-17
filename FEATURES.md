@@ -3,10 +3,11 @@
 These features are in the app now. That doesn't mean every station, terminal
 or online service will cooperate. The limits are listed below.
 
-## Source preview — 1.8.1-dev.2
+## Source preview — 1.8.1-dev.3
 
-- All small Home thumbnails use block artwork, keeping recents and station logos
-  visible together while the large featured cover uses native terminal graphics.
+- Native Home thumbnails and the featured cover render together in supported
+  terminals; block/simple artwork remains available as a fallback. Adaptive
+  Sixel colours preserve photographic detail, with painting after text flushes.
 - Artwork keeps its decoded width beside long titles, preventing wrapped pixel
   rows from overlapping panel headings or neighbouring items.
 - Patched development-only source-map-js dependency; stable/Homebrew remain 1.8.0.

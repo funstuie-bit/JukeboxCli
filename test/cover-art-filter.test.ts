@@ -33,11 +33,11 @@ describe("text cover artwork framing", () => {
       expect(square?.cells[0]?.top[0]).toBeLessThan(50);
       expect(square?.cells[31]?.top[1]).toBeLessThan(50);
       const sixel = await loadSixelImage(file, 32, 18, "contain");
-      expect(sixel?.sixel).toMatch(/#48(?:!|[?~])/); // Red left edge in the rendered body.
-      expect(sixel?.sixel).toMatch(/#12(?:!|[?~])/); // Green right edge.
+      expect(sixel?.sixel).toContain(";2;100;0;0"); // Red left edge remains in the adaptive palette.
+      expect(sixel?.sixel).toContain(";2;0;100;0"); // Green right edge.
       const croppedSixel = await loadSixelImage(file, 32, 18);
-      expect(croppedSixel?.sixel).not.toMatch(/#48(?:!|[?~])/);
-      expect(croppedSixel?.sixel).not.toMatch(/#12(?:!|[?~])/);
+      expect(croppedSixel?.sixel).not.toContain(";2;100;0;0");
+      expect(croppedSixel?.sixel).not.toContain(";2;0;100;0");
       const again = await loadCoverArt(file, 32, 9, "contain");
       expect(again?.cells[0]?.top[0]).toBeGreaterThan(200);
       expect(again?.cells[31]?.top[1]).toBeGreaterThan(200);

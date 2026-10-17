@@ -5,11 +5,34 @@ Linux and macOS use one source history and release process.
 
 ## Current state
 
-- Current source: `1.8.1-dev.2`, including Home setup/artwork and [audio/video controls](video-playback.md).
+- Current source: `1.8.1-dev.3`, including Home setup/artwork and [audio/video controls](video-playback.md).
 - Production release/Homebrew: `v1.8.0`; the source preview is not a new stable release.
 - Public source: `https://github.com/funstuie-bit/JukeboxCli.git`
 - Private mirror connection details belong in private maintainer notes, not here
 - Branch: `main`; both remotes must contain the same commits
+
+### 2026-10-17 native thumbnail follow-up — 1.8.1-dev.3
+
+The earlier previews corrected image-slot conflicts and title wrapping, but
+forcing Home's small thumbnails to blocks limited them to eight pixels wide.
+Home now uses native images where supported. The painter keeps disjoint covers
+visible together, gives overlapping foreground views priority, and uses distinct
+Kitty image IDs. Block/simple and overlay fallbacks remain available.
+
+Foot/Sixel uses an adaptive 256-colour ffmpeg palette. A coalesced render callback
+waits for Ink's actual text flush before restoring new/moved cell images; static
+images are retained during unchanged frames. Real Foot captures with three photo/
+logo fixtures verify four simultaneous images (including the featured cover),
+initial loading, absence behind Help and restoration. The read-only fixture is
+`npx tsx scripts/visual-home-art.tsx /path/to/image [...] --auto`.
+
+947 tests passed / 5 skipped (109 files), typecheck/build/import checks, production
+600-redraw memory guard and real ffmpeg/Sixel decoding passed on Arch. No new
+system dependency or stable/Homebrew release was introduced.
+The locally installed 1.8.1-dev.3 was also captured in a real Foot window with
+three local image fixtures: all recent thumbnails and the featured cover were
+visible together after initial loading. Isolated block-mode navigation/resize/
+exit checks passed, and the owned native fixture closed cleanly.
 
 ### 2026-10-17 thumbnail wrapping follow-up — 1.8.1-dev.2
 

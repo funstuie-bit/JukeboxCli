@@ -3,6 +3,18 @@
 Release notes describe what changed in each build. For what works now and the
 remaining limits, see [feature status](FEATURES.md).
 
+## 1.8.1-dev.3 — Sharp Home thumbnails together (source preview)
+
+- Replace the forced block thumbnails with native recent/station images on
+  supported terminals. Paint disjoint covers together, using separate Kitty IDs
+  and retaining foreground priority for overlapping player views.
+- Preserve photographic Sixel colours with ffmpeg's adaptive 256-colour palette.
+  Keep existing block/simple fallbacks and fixed artwork dimensions.
+- Paint after Ink's actual output flush, restoring newly loaded or moved cell
+  images without retransmitting unchanged images every frame.
+- Add a read-only real-terminal Home fixture for simultaneous covers and
+  hide/restore acceptance. No new system dependency or stable/Homebrew release.
+
 ## 1.8.1-dev.2 — Keep thumbnail rows inside their tiles (source preview)
 
 - Keep artwork boxes at their decoded width. Long titles no longer shrink Home

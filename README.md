@@ -27,12 +27,11 @@ gets cover-led recent listening, station tiles and a larger cover when there's
 room. Existing preferences stay as they are; nothing installs itself. Available
 from source and Homebrew on Mac, and from source on Linux.
 
-Source preview **1.8.1-dev.2** keeps all Home thumbnails visible together in
-terminals with native image support: small tiles use block artwork while the
-featured cover keeps native rendering. Long titles truncate without squeezing
-artwork or spilling thumbnail rows over panel headings. It also updates a
-build/test dependency.
-The stable release and Homebrew remain **1.8.0**.
+Source preview **1.8.1-dev.3** shows sharp native Home thumbnails alongside
+its featured cover on supported terminals, with block artwork as the fallback.
+Long titles truncate without squeezing images. Foot/Sixel artwork uses adaptive
+colours and survives asynchronous image loading and hide/restore. It also patches
+a build/test dependency. Stable and Homebrew remain **1.8.0**.
 
 Version **1.6.0** gives **YouTube Videos its own sidebar section**.
 Press **Y** (Shift+y) to open it, type a search and press Enter. On the results,

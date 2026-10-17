@@ -1,5 +1,12 @@
 # Roadmap
 
+## Implemented in source preview — 1.8.1-dev.3
+
+- [x] Sharp native Home thumbnails alongside the featured cover; keep fallbacks.
+- [x] Independent image lifetimes and foreground priority for overlapping views.
+- [x] Adaptive Sixel colours and painting after Ink flushes loading frames.
+- [x] Real Foot Home acceptance with long titles and hide/restore captures.
+
 ## Implemented in source preview — 1.8.1-dev.2
 
 - [x] Prevent long Home titles from shrinking artwork and wrapping it over nearby UI.

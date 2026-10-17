@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { inlineImage, inlineQuery, supportsInline, graphicsProtocol, simpleArtwork } from "../src/player/graphics";
 import { encodeSixel } from "../src/player/art";
 afterEach(() => vi.unstubAllEnvs());
-import { GraphicsPainter, imagePackets, imagePlacement, deleteImage, graphicsQuery, probeGraphics } from "../src/player/graphics";
+import { GraphicsPainter, imagePackets, imagePlacement, deleteImage, graphicsQuery, probeGraphics, createGraphicsRenderer } from "../src/player/graphics";
 
 describe("terminal image lifecycle", () => {
   it("defaults only native Terminal to simple artwork and respects explicit modes", () => {
@@ -22,6 +22,59 @@ describe("terminal image lifecycle", () => {
   });
   const image = { png: new Uint8Array(7000), width: 1024, height: 576 };
   const rect = { x: 3, y: 5, cols: 42, rows: 12 };
+  it("coalesces graphics painting behind the actual text flush and cancels work on exit", async () => {
+    let release!: () => void;
+    const flush = vi.fn(() => new Promise<void>(resolve => { release = resolve; }));
+    const painter = new GraphicsPainter(() => {}), paint = vi.spyOn(painter, "paintAfterRender");
+    const renderer = createGraphicsRenderer(flush, () => painter);
+    renderer.onRender(); renderer.onRender();
+    await new Promise<void>(resolve => setImmediate(resolve));
+    expect(flush).toHaveBeenCalledOnce(); expect(paint).not.toHaveBeenCalled();
+    release(); await new Promise<void>(resolve => setImmediate(resolve));
+    expect(paint).toHaveBeenCalledOnce();
+    renderer.onRender(); renderer.dispose();
+    await new Promise<void>(resolve => setImmediate(resolve));
+    expect(flush).toHaveBeenCalledOnce(); expect(paint).toHaveBeenCalledOnce();
+  });
+  it("restores Sixel covers after a loading frame flush without repainting unchanged frames", () => {
+    const writes: string[] = [], painter = new GraphicsPainter(s => writes.push(s), "sixel");
+    painter.set({ ...image, sixel: "\x1bPqfirst\x1b\\" }, () => rect);
+    painter.paint(); painter.paintAfterRender();
+    expect(writes).toHaveLength(2);
+    painter.paintAfterRender(); expect(writes).toHaveLength(2);
+    painter.set({ ...image, sixel: "\x1bPqsecond\x1b\\" }, () => ({ ...rect, y: rect.y + rect.rows + 1 }));
+    painter.paint(); painter.paintAfterRender();
+    expect(writes.filter(packet => packet.includes("first"))).toHaveLength(3);
+    expect(writes.filter(packet => packet.includes("second"))).toHaveLength(2);
+    painter.paintAfterRender(); expect(writes).toHaveLength(5);
+  });
+  it.each(["kitty", "sixel", "iterm"] as const)("paints disjoint %s covers together and removes only the hidden cover", protocol => {
+    const writes: string[] = [], painter = new GraphicsPainter(s => writes.push(s), protocol);
+    const cover = { ...image, sixel: "\x1bPqfixture\x1b\\" };
+    const removeFirst = painter.set(cover, () => rect);
+    const second = { ...rect, x: rect.x + rect.cols + 2 };
+    painter.set(cover, () => second);
+    painter.paint();
+    expect(painter.status.count).toBe(2);
+    const placements = writes.filter(packet => protocol === "kitty" ? packet.includes("a=p") : packet.includes("fixture") || packet.includes("File=inline"));
+    expect(placements).toHaveLength(2);
+    expect(placements[0]).toContain(`\x1b[${rect.y + 1};${rect.x + 1}H`);
+    expect(placements[1]).toContain(`\x1b[${second.y + 1};${second.x + 1}H`);
+    if (protocol === "kitty") {
+      expect(placements[0]).toContain("i=197704,");
+      expect(placements[1]).toContain("i=197705,");
+    }
+    const uploads = writes.filter(packet => packet.includes("a=t")).length;
+    removeFirst();
+    expect(painter.status.count).toBe(1);
+    expect(painter.status.rect).toEqual(second);
+    expect(writes.filter(packet => packet.includes("a=t"))).toHaveLength(uploads);
+    if (protocol === "kitty") {
+      expect(writes).toContain(deleteImage);
+      expect(writes.some(packet => packet.includes("a=d") && packet.includes("i=197705,"))).toBe(false);
+    }
+    painter.clear(); expect(painter.status.count).toBe(0);
+  });
   it("renders inline PNGs with explicit inline mode, bounded cell placement and preserved cursor", () => {
     const packet = inlineImage(image, rect);
     expect(packet).toContain("File=inline=1;size=7000;width=42;height=12;preserveAspectRatio=1:");
@@ -45,6 +98,15 @@ describe("terminal image lifecycle", () => {
     painter.set(sixel, () => rect); painter.paint(); painter.repaintSixel(sixel);
     expect(writes).toHaveLength(2);
     painter.repaintSixel({ ...sixel }); expect(writes).toHaveLength(2);
+  });
+  it("repaints an affected Sixel thumbnail without retransmitting its neighbours", () => {
+    const writes: string[] = [], painter = new GraphicsPainter(s => writes.push(s), "sixel");
+    const first = { ...image, sixel: "\x1bPqfirst\x1b\\" }, second = { ...image, sixel: "\x1bPqsecond\x1b\\" };
+    painter.set(first, () => rect); painter.set(second, () => ({ ...rect, y: rect.y + rect.rows + 1 }));
+    painter.paint(); painter.repaintSixel(first);
+    expect(writes.filter(packet => packet.includes("first"))).toHaveLength(2);
+    expect(writes.filter(packet => packet.includes("second"))).toHaveLength(1);
+    expect(painter.status.count).toBe(2);
   });
   it("respects an explicit missing inline capability even after an older cell-size reply", async () => {
     vi.stubEnv("TERM_PROGRAM", "iTerm.app");
@@ -92,10 +154,21 @@ describe("terminal image lifecycle", () => {
       255, 0, 0, 255, 0, 255, 0, 255,
     ]), 2, 2);
     expect(encoded.startsWith("\x1bP0;1;0q\"1;1;2;2")).toBe(true);
-    expect(encoded).toContain("#48");
-    expect(encoded).toContain("#12");
+    expect(encoded).toContain(";2;100;0;0");
+    expect(encoded).toContain(";2;0;100;0");
     expect(encoded.endsWith("\x1b\\")).toBe(true);
     expect(encodeSixel(new Uint8Array(3), 1, 1)).toBe("");
+  });
+  it("retains dark photographic tones instead of snapping them to black or primary colours", () => {
+    const encoded = encodeSixel(new Uint8Array([60, 30, 10, 255, 100, 70, 40, 255]), 2, 1);
+    expect(encoded).toContain(";2;24;12;4");
+    expect(encoded).toContain(";2;39;27;16");
+  });
+  it("bounds the palette even when supplied a frame that was not colour-reduced", () => {
+    const rgba = Uint8Array.from(Array.from({ length: 300 }, (_, i) => [i & 255, i >> 8, (i * 13) & 255, 255]).flat());
+    const encoded = encodeSixel(rgba, 300, 1);
+    expect(encoded.match(/#\d+;2;/g)).toHaveLength(256);
+    expect(encoded).not.toMatch(/#(?:25[6-9]|2[6-9]\d|[3-9]\d\d)/);
   });
   it("chunks payloads and preserves the text renderer's cursor", () => {
     const packets = imagePackets(image.png).split("\x1b\\").filter(Boolean);

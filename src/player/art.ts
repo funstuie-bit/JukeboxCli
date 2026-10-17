@@ -24,25 +24,44 @@ export function loadCoverImage(source: string, maxSize = 1024): Promise<CoverIma
   return work;
 }
 
-/** Encode an RGBA frame using a compact 4x4x4 RGB Sixel palette. */
+/** Encode a palette-reduced RGBA frame without losing its image-specific colours. */
 export function encodeSixel(rgba: Uint8Array, width: number, height: number): string {
   if (rgba.length < width * height * 4 || width < 1 || height < 1) return "";
-  const ESC = "\x1b";
-  const palette = Array.from({ length: 64 }, (_, i) => {
-    const r = Math.round(((i >> 4) & 3) * 100 / 3);
-    const g = Math.round(((i >> 2) & 3) * 100 / 3);
-    const b = Math.round((i & 3) * 100 / 3);
-    return `#${i};2;${r};${g};${b}`;
-  }).join("");
-  const colourAt = (at: number) =>
-    ((rgba[at]! * 3 / 255 + 0.5) << 4) |
-    ((rgba[at + 1]! * 3 / 255 + 0.5) << 2) |
-    (rgba[at + 2]! * 3 / 255 + 0.5);
-  const runs = (values: number[]) => {
-    let out = "";
-    for (let at = 0; at < values.length;) {
+  const ESC = "\x1b", colours: number[][] = [], lookup = new Map<number, number>();
+  const indices = new Int16Array(width * height).fill(-1);
+  let overflow = false;
+  for (let pixel = 0; pixel < indices.length; pixel++) {
+    const at = pixel * 4;
+    if (rgba[at + 3]! < 128) continue;
+    const key = (rgba[at]! << 16) | (rgba[at + 1]! << 8) | rgba[at + 2]!;
+    let colour = lookup.get(key);
+    if (colour === undefined) {
+      if (colours.length === 256) { overflow = true; break; }
+      colour = colours.length; lookup.set(key, colour);
+      colours.push([rgba[at]!, rgba[at + 1]!, rgba[at + 2]!]);
+    }
+    indices[pixel] = colour;
+  }
+  // Production ffmpeg supplies at most 256 adaptive colours. Bound arbitrary
+  // callers too, rather than creating an unbounded terminal palette.
+  if (overflow) {
+    colours.length = 0;
+    for (let i = 0; i < 256; i++) colours.push([
+      Math.round(((i >> 5) & 7) * 255 / 7), Math.round(((i >> 2) & 7) * 255 / 7), Math.round((i & 3) * 255 / 3),
+    ]);
+    for (let pixel = 0; pixel < indices.length; pixel++) {
+      const at = pixel * 4;
+      indices[pixel] = rgba[at + 3]! < 128 ? -1 : (Math.round(rgba[at]! * 7 / 255) << 5) |
+        (Math.round(rgba[at + 1]! * 7 / 255) << 2) | Math.round(rgba[at + 2]! * 3 / 255);
+    }
+  }
+  const palette = colours.map((rgb, i) => `#${i};2;${rgb.map(c => Math.round(c * 100 / 255)).join(";")}`).join("");
+  const runs = (values: Uint8Array) => {
+    let out = "", length = values.length;
+    while (length && values[length - 1] === 0) length--;
+    for (let at = 0; at < length;) {
       let end = at + 1;
-      while (end < values.length && values[end] === values[at]) end++;
+      while (end < length && values[end] === values[at]) end++;
       const count = end - at, char = String.fromCharCode(63 + values[at]!);
       out += count >= 4 ? `!${count}${char}` : char.repeat(count);
       at = end;
@@ -51,27 +70,15 @@ export function encodeSixel(rgba: Uint8Array, width: number, height: number): st
   };
   let body = "";
   for (let top = 0; top < height; top += 6) {
-    const present = new Set<number>();
-    for (let y = top; y < Math.min(height, top + 6); y++) {
-      for (let x = 0; x < width; x++) {
-        const at = (y * width + x) * 4;
-        if (rgba[at + 3]! >= 128) present.add(colourAt(at));
-      }
+    const bands = new Map<number, Uint8Array>();
+    for (let y = top; y < Math.min(height, top + 6); y++) for (let x = 0; x < width; x++) {
+      const colour = indices[y * width + x]!;
+      if (colour < 0) continue;
+      let values = bands.get(colour);
+      if (!values) { values = new Uint8Array(width); bands.set(colour, values); }
+      values[x] = values[x]! | (1 << (y - top));
     }
-    const colours = [...present];
-    colours.forEach((colour, colourIndex) => {
-      const values = Array<number>(width).fill(0);
-      for (let x = 0; x < width; x++) {
-        let bits = 0;
-        for (let bit = 0; bit < 6 && top + bit < height; bit++) {
-          const at = ((top + bit) * width + x) * 4;
-          if (rgba[at + 3]! >= 128 && colourAt(at) === colour) bits |= 1 << bit;
-        }
-        values[x] = bits;
-      }
-      while (values.at(-1) === 0) values.pop();
-      body += `#${colour}${runs(values)}${colourIndex + 1 < colours.length ? "$" : ""}`;
-    });
+    body += [...bands].map(([colour, values]) => `#${colour}${runs(values)}`).join("$");
     if (top + 6 < height) body += "-";
   }
   return `${ESC}P0;1;0q\"1;1;${width};${height}${palette}${body}${ESC}\\`;
@@ -89,7 +96,8 @@ export function loadSixelImage(
     try {
       const { stdout } = await execa(ffmpegPath(), ["-nostdin", "-v", "error", "-i", source,
         "-map", "0:v:0", "-frames:v", "1", "-vf",
-        `${artworkFilter(width, height, fit)}:color=black@0`,
+        `format=rgba,${artworkFilter(width, height, fit)}:color=black@0,split[a][b];` +
+        "[a]palettegen=stats_mode=single[palette];[b][palette]paletteuse=dither=sierra2_4a",
         "-pix_fmt", "rgba", "-f", "rawvideo", "pipe:1"],
       { encoding: "buffer", timeout: 8000, maxBuffer: 8 * 1024 * 1024 });
       const rgba = Buffer.from(stdout);

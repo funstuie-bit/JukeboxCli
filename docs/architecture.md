@@ -152,19 +152,23 @@ Feature F advertises inline images; older iTerm2 needs its identity plus a live
 cell-size response. Reply collection uses the same bounded probe window. Inline
 mode emits OSC1337 File=inline=1 PNGs, at 480px RGB to bound base64 below 1 MiB.
 Ink's full-frame text redraw erases inline images; repaint occurs afterward.
-There is no post-frame rectangle erasure, which could destroy new text. Keep
-incremental rendering disabled.
+There is no post-frame rectangle erasure, which could destroy new text.
+Incremental rendering leaves unchanged image rows intact.
 
-`Cover` reserves an Ink box and registers its geometry. `GraphicsPainter` chooses
-the latest visible registration; an expanded player can hide an embedded player
-without losing its registration. Coordinates sum Yoga ancestor offsets;
+`Cover` reserves an Ink box and registers its geometry. `GraphicsPainter` paints
+all disjoint visible registrations, with separate Kitty image IDs. Newer
+overlapping registrations take foreground priority; an expanded player can
+hide an embedded player without losing its registration. Coordinates sum Yoga ancestor offsets;
 display:none ancestors suppress pixel art too. Ink 7's onRender callback precedes
-stdout output, so painting is deferred with setImmediate. Cursor save/restore and
+stdout output. A coalesced callback waits for waitUntilRenderFlush before final
+painting; newly loaded/moved cell images are restored after throttled text writes.
+Unchanged Sixel/inline images are retained rather than retransmitted every frame. Cursor save/restore and
 Kitty C=1 preserve Ink's cursor. Only this app's image ID is deleted.
 
 PNG extraction is limited to 1024px/5MiB/8 seconds, cached for 12 source entries
-per process. Sixel uses a built-in 64-colour encoder over an ffmpeg-decoded RGBA
-frame, so it does not require a separate image utility. PNG transmission uses
+per process. Sixel uses ffmpeg palettegen/paletteuse for up to 256 adaptive colours, then a
+built-in run-length encoder over the reduced RGBA frame. The encoder also caps
+unreduced input at 256 colours; it does not require a separate image utility. PNG transmission uses
 4096-character base64 chunks and quiet replies.
 A placement ID is reused for moves/resizes. Only width is sent, so the terminal
 preserves source aspect; probed cell dimensions budget height. Restart after
@@ -179,6 +183,12 @@ diagnostics. Run from the repo (or set TSX_TSCONFIG_PATH). Tests cover chunking,
 probe/cleanup/stacked registrations, responsive layouts, Unicode queue columns
 and App input/persistence. Real-terminal checks remain necessary for protocol,
 font and permission differences.
+
+`npx tsx scripts/visual-home-art.tsx /path/to/image [...] --auto` provides a
+read-only, real-terminal Home fixture with multiple covers, long titles and a
+hide/restore cycle. It requires system ffmpeg/ffprobe and does not bootstrap
+tools, start playback or write a profile. Optional JUKEBOXCLI_VISUAL_REPORT
+records protocol, phase and visible-image count.
 
 `npx tsx scripts/smoke-sixel.ts` exercises image extraction and encoding without
 drawing to the terminal.

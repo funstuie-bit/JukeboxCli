@@ -129,20 +129,23 @@ async function main(): Promise<void> {
     const { probeGraphics, enableGraphics } = await import("./player/graphics");
     if (await probeGraphics()) enableGraphics();
     const graphics = await import("./player/graphics");
-    const { waitUntilExit } = render(
-      <ThemeProvider theme={uiTheme}>
-        <App initialAdd={command.initialAdd} initialOverrides={command.overrides} />
-      </ThemeProvider>,
-      {
-        // Sixel images occupy terminal cells. Updating only changed text lines
-        // keeps Foot from erasing and repainting the cover on every visualizer
-        // frame, which previously made otherwise-sharp artwork flash.
-        incrementalRendering: true,
-        onRender: () => { setImmediate(() => graphics.graphicsPainter?.paint()); },
-      },
-    );
-    await waitUntilExit();
-    graphics.graphicsPainter?.clear();
+    let app: ReturnType<typeof render> | undefined;
+    const renderer = graphics.createGraphicsRenderer(() => app?.waitUntilRenderFlush() ?? Promise.resolve(), () => graphics.graphicsPainter);
+    try {
+      app = render(
+        <ThemeProvider theme={uiTheme}>
+          <App initialAdd={command.initialAdd} initialOverrides={command.overrides} />
+        </ThemeProvider>,
+        {
+          // Sixel images occupy terminal cells. Updating only changed text lines
+          // keeps Foot from erasing and repainting the cover on every visualizer
+          // frame, which previously made otherwise-sharp artwork flash.
+          incrementalRendering: true,
+          onRender: renderer.onRender,
+        },
+      );
+      await app.waitUntilExit();
+    } finally { renderer.dispose(); graphics.graphicsPainter?.clear(); }
   } finally {
     stopMemoryLogging();
     restore();
