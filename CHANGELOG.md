@@ -3,6 +3,12 @@
 Release notes describe what changed in each build. For what works now and the
 remaining limits, see [feature status](FEATURES.md).
 
+## 1.8.1-dev.2 — Keep thumbnail rows inside their tiles (source preview)
+
+- Keep artwork boxes at their decoded width. Long titles no longer shrink Home
+  thumbnails, wrap their pixel rows or paint over panel headings and neighbours.
+- Extend the Home regression to check complete artwork rows with long titles.
+
 ## 1.8.1-dev.1 — Home artwork compatibility (source preview)
 
 - Render Home's small recent/station thumbnails as blocks so they remain visible

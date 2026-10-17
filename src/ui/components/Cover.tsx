@@ -62,7 +62,8 @@ export function Cover({ source, cols, rows, visible, fallback, repaintKey, suppr
   let w = cols, h = rows;
   if (image) { w = Math.min(cols, Math.max(1, Math.floor(rows * image.width / image.height / cellAspect)));
     h = Math.min(rows, Math.max(1, Math.ceil(w * image.height / image.width * cellAspect))); }
-  return <Box width={cols} height={rows} alignItems="center" justifyContent="center">
+  // Block rows are decoded at this exact width; shrinking wraps them into nearby UI.
+  return <Box width={cols} height={rows} flexShrink={0} alignItems="center" justifyContent="center">
     {image ? <Box ref={ref} width={w} height={h} /> : mine?.art ? <Blocks art={mine.art} /> : visible && (simple || !source || mine || loadingFallback) && fallback ? fallback :
       <Box width={cols} height={rows} borderStyle="round" borderColor={RULE} alignItems="center" justifyContent="center">
         <Text color={COLOR.muted}>{!visible ? `Artwork hidden · ${toggleHint}` : simple ? "Simple artwork" : !source || mine ? "No cover art" : "Loading artwork…"}</Text>

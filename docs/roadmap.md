@@ -1,5 +1,10 @@
 # Roadmap
 
+## Implemented in source preview — 1.8.1-dev.2
+
+- [x] Prevent long Home titles from shrinking artwork and wrapping it over nearby UI.
+- [x] Check thumbnail row geometry as well as simultaneous image visibility.
+
 ## Implemented in source preview — 1.8.1-dev.1
 
 - [x] Keep Home's recent/station artwork visible together with the native featured cover.

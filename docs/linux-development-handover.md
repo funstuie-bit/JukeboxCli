@@ -5,11 +5,23 @@ Linux and macOS use one source history and release process.
 
 ## Current state
 
-- Current source: `1.8.1-dev.1`, including Home setup/artwork and [audio/video controls](video-playback.md).
+- Current source: `1.8.1-dev.2`, including Home setup/artwork and [audio/video controls](video-playback.md).
 - Production release/Homebrew: `v1.8.0`; the source preview is not a new stable release.
 - Public source: `https://github.com/funstuie-bit/JukeboxCli.git`
 - Private mirror connection details belong in private maintainer notes, not here
 - Branch: `main`; both remotes must contain the same commits
+
+### 2026-10-17 thumbnail wrapping follow-up — 1.8.1-dev.2
+
+Long Home titles could shrink an eight-column cover to six columns. Its decoded
+rows then wrapped and overflowed into the panel heading and neighbouring items.
+Cover boxes now retain their requested dimensions, leaving text to truncate.
+The regression reproduces the previous overlap and verifies four intact artwork
+rows below the heading for both short and long titles. 937 tests passed / 5 skipped
+(109 files), plus typecheck, build/import audit and the production redraw guard.
+Installed 1.8.1-dev.2 passed an isolated terminal check using a long title: all
+eight columns remain inside four artwork rows, with the heading/border intact.
+Setup/preset navigation, Videos, compact resize and clean exit also passed.
 
 Version 1.2.0 includes Mac fullscreen effects, Linux preset packs and native
 first-frame logo removal. It retains 1.1.1's mpv lifetime protection.
@@ -23,7 +35,7 @@ installation remain unchanged. Rebuild/install to receive the 1.8 Home/setup and
 1.6.1/1.6.2 audio/video/cookie improvements together; restart an already running
 JukeboxCli after installation.
 
-Arch checks for this preview: 936 tests passed / 5 skipped (109 files), typecheck,
+Arch checks for the first preview: 936 tests passed / 5 skipped (109 files), typecheck,
 build/import audit and the production 600-redraw memory guard passed. Full and
 production-only dependency audits report zero vulnerabilities. The Home regression
 checks simultaneous recent/station thumbnails, one native featured cover and

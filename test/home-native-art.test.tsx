@@ -2,7 +2,7 @@ import { expect, it, vi } from "vitest";
 import { Home } from "../src/ui/sections/Home";
 import { StoreContext } from "../src/ui/store";
 import { defaultConfig } from "../src/config/config";
-import { makeStore, makeFakePlayback } from "../scripts/fake-data";
+import { makeStore, makeFakePlayback, makeFakeLibrary } from "../scripts/fake-data";
 import { renderReady, act } from "./ink-input";
 
 const fixture = vi.hoisted(() => ({ remove: vi.fn(), set: vi.fn(), blocks: vi.fn(), images: vi.fn() }));
@@ -16,7 +16,11 @@ vi.mock("../src/player/stations", async original => ({
   readStations: () => [{ name: "Fixture Radio", url: "https://example.com/radio.mp3", thumbnailUrl: "https://example.com/radio.png" }],
 }));
 
-it("shows recent and station tiles together while reserving native graphics for the featured cover", async () => {
+it.each([
+  "Short title",
+  "A very long stream title that must truncate instead of squeezing its adjacent artwork with many extra words",
+])("keeps Home artwork within its tiles alongside the native cover with %s", async title => {
+  vi.clearAllMocks();
   fixture.set.mockReturnValue(fixture.remove);
   fixture.images.mockResolvedValue({ width: 80, height: 80, png: new Uint8Array([1]) });
   fixture.blocks.mockImplementation(async (_source: string, cols: number, rows: number) => ({
@@ -28,7 +32,8 @@ it("shows recent and station tiles together while reserving native graphics for 
     config: { ...defaultConfig, artworkColours: false, reducedMotion: true },
     playback: makeFakePlayback({ track: null, list: [], paused: true }),
   });
-  const recent = store.library.all()[0]!;
+  const recent = { ...store.library.all()[0]!, title };
+  store.library = makeFakeLibrary([recent]);
   store.history.record(recent);
   const node = (hidden = false) => <StoreContext.Provider value={{ ...store, region: hidden ? "help" : "content" }}><Home /></StoreContext.Provider>;
   const view = await renderReady(node(), store.cols);
@@ -37,7 +42,12 @@ it("shows recent and station tiles together while reserving native graphics for 
   expect(view.lastFrame()).toContain("Fixture Radio");
   expect(fixture.blocks).toHaveBeenCalledWith(recent.filePath, 8, 4, "cover");
   expect(fixture.blocks).toHaveBeenCalledWith("https://example.com/radio.png", 8, 4, "cover");
-  expect(view.lastFrame()!.match(/▀/g)).toHaveLength(64);
+  const lines = view.lastFrame()!.split("\n");
+  const heading = lines.findIndex(line => line.includes("RECENT LISTENING"));
+  const artworkRows = lines.map((line, y) => ({ line, y })).filter(row => row.line.includes("▀"));
+  expect(artworkRows).toHaveLength(4);
+  expect(artworkRows.every(row => row.y > heading)).toBe(true);
+  expect(artworkRows.map(row => row.line.match(/▀/g)?.length)).toEqual([16, 16, 16, 16]);
   expect(fixture.images).toHaveBeenCalledExactlyOnceWith(recent.filePath, 1024);
   expect(fixture.set).toHaveBeenCalledOnce();
 
