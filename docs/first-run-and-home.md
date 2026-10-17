@@ -38,7 +38,9 @@ when recent history updates. Smaller windows use only choices that fit, without
 off-screen keyboard targets. Tab gives the dashboard keyboard focus.
 
 Roomy Home layouts show recent cover tiles, station logos and a larger current/
-recent cover. Missing art uses text tiles; Apple Terminal keeps its simple
+recent cover. Small tiles use block artwork so every thumbnail can appear
+together; the large featured cover uses native graphics where supported.
+Missing art uses text tiles; Apple Terminal keeps its simple
 fallback. Artwork colours use the same opt-in as Player and respect custom
 accent/high-contrast settings. Reduced motion stays on by default. With it off,
 the cabinet grille animates slowly only while playing and visible; this is

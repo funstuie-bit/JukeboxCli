@@ -115,7 +115,8 @@ export function Home({ firstRun = false }: { firstRun?: boolean }) {
   const tile = (a: HomeAction, rowWidth: number) => <MouseRow key={a.id} active={clickable} width={rowWidth}
     onClick={() => { setSelectedId(a.id); s.setRegion("content"); a.run(); }} menuTitle={a.label} menuActions={a.menuActions}>
     <Box height={4} width={rowWidth} gap={1}>
-      <Cover source={a.source} cols={8} rows={4} visible={s.region !== "help"} loadingFallback fallback={<Box width={8} height={4} borderStyle="round" borderColor={C.alt} alignItems="center" justifyContent="center"><Text bold color={C.accent}>{a.live ? "LIVE" : "♫"}</Text></Box>} />
+      {/* The native painter owns one image slot; keep every small tile visible alongside the featured cover. */}
+      <Cover source={a.source} cols={8} rows={4} visible={s.region !== "help"} suppressGraphics loadingFallback fallback={<Box width={8} height={4} borderStyle="round" borderColor={C.alt} alignItems="center" justifyContent="center"><Text bold color={C.accent}>{a.live ? "LIVE" : "♫"}</Text></Box>} />
       <Box flexDirection="column" flexGrow={1} minWidth={0} justifyContent="center">
         <Text bold color={actions[selected]?.id === a.id ? C.accent : C.text} wrap="truncate-end">{actions[selected]?.id === a.id ? "› " : "  "}{a.label}</Text>
         <Text color={C.muted} wrap="truncate-end">  {a.detail}</Text>

@@ -3,6 +3,13 @@
 Release notes describe what changed in each build. For what works now and the
 remaining limits, see [feature status](FEATURES.md).
 
+## 1.8.1-dev.1 — Home artwork compatibility (source preview)
+
+- Render Home's small recent/station thumbnails as blocks so they remain visible
+  together alongside the native featured cover on Mac and Linux terminals.
+- Update the development-only source-map-js lockfile entry to patched 1.2.2.
+- Refresh the Linux handover for the shared 1.8 series. Stable/Homebrew stay 1.8.0.
+
 ## 1.8.0 — Setup that isn't hidden, and a livelier Home
 
 - Add Home's u Setup & extras, available on first run: explicit click/wheel/off

@@ -1,5 +1,11 @@
 # Roadmap
 
+## Implemented in source preview — 1.8.1-dev.1
+
+- [x] Keep Home's recent/station artwork visible together with the native featured cover.
+- [x] Patch the development-only source-map-js dependency identified in the Linux audit.
+- Stable/Homebrew remain 1.8.0; this preview is available from source on Mac/Linux.
+
 ## Current release — 1.8.0
 
 - [x] First-run/Home setup choices: mouse, colours, motion and direct extras links.

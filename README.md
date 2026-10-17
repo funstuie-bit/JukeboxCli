@@ -27,6 +27,11 @@ gets cover-led recent listening, station tiles and a larger cover when there's
 room. Existing preferences stay as they are; nothing installs itself. Available
 from source and Homebrew on Mac, and from source on Linux.
 
+Source preview **1.8.1-dev.1** keeps all Home thumbnails visible together in
+terminals with native image support: small tiles use block artwork while the
+featured cover keeps native rendering. It also updates a build/test dependency.
+The stable release and Homebrew remain **1.8.0**.
+
 Version **1.6.0** gives **YouTube Videos its own sidebar section**.
 Press **Y** (Shift+y) to open it, type a search and press Enter. On the results,
 **Enter plays video** in its own window; **a plays audio only**. Music Discover

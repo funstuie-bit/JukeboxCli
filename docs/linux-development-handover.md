@@ -5,14 +5,35 @@ Linux and macOS use one source history and release process.
 
 ## Current state
 
-- Current source: `1.6.0`, including general YouTube video search and [audio/video controls](video-playback.md).
-- Production release: `v1.6.0`
+- Current source: `1.8.1-dev.1`, including Home setup/artwork and [audio/video controls](video-playback.md).
+- Production release/Homebrew: `v1.8.0`; the source preview is not a new stable release.
 - Public source: `https://github.com/funstuie-bit/JukeboxCli.git`
 - Private mirror connection details belong in private maintainer notes, not here
 - Branch: `main`; both remotes must contain the same commits
 
 Version 1.2.0 includes Mac fullscreen effects, Linux preset packs and native
 first-frame logo removal. It retains 1.1.1's mpv lifetime protection.
+
+The 2026-10-17 Linux review of the Mac updates found no separate branch to merge:
+both platforms share `main`. The source preview fixes competing Home native images
+by using block thumbnails for small recent/station tiles and retaining native
+graphics for the large featured cover. It also patches development-only
+`source-map-js` to 1.2.2. Existing preferences and optional Linux projectM/preset
+installation remain unchanged. Rebuild/install to receive the 1.8 Home/setup and
+1.6.1/1.6.2 audio/video/cookie improvements together; restart an already running
+JukeboxCli after installation.
+
+Arch checks for this preview: 936 tests passed / 5 skipped (109 files), typecheck,
+build/import audit and the production 600-redraw memory guard passed. Full and
+production-only dependency audits report zero vulnerabilities. The Home regression
+checks simultaneous recent/station thumbnails, one native featured cover and
+native image cleanup when hidden; physical native-terminal acceptance remains
+separate from the automated renderer checks.
+
+The user-prefix command was upgraded locally from 1.6.0 to 1.8.1-dev.1. Its doctor
+and isolated terminal checks passed Home artwork, setup clicks, Linux projectM/
+preset routes, cookie settings navigation, Videos, compact resize and clean exit.
+The pre-existing listening session was left running; reopening loads the update.
 
 The private repository's pre-1.0 history was replaced during reconciliation.
 Always make a fresh clone after a machine rebuild. Never merge, rebase or copy
