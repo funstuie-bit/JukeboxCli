@@ -1,5 +1,6 @@
 import { DOWNLOAD_RUNNER } from "./runner";
 import { LIVE_DOWNLOAD_ERROR } from "./live";
+import { isYouTubeLookup, ytDlpLookupError } from "./errors";
 import readline from "node:readline";
 import { execa } from "execa";
 import { ffmpegPath, jsRuntimeArgs, toolEnv } from "../bin/binaries";
@@ -120,6 +121,9 @@ export async function enumerate(
   try {
     ({ stdout } = await execa(resolvedYtDlpPath(), args, { env: toolEnv() }));
   } catch (e) {
+    // Enumeration is deliberately anonymous; never present yt-dlp's generic
+    // cookies advice as a missing JukeboxCli configuration requirement.
+    if (isYouTubeLookup(url)) throw ytDlpLookupError(e, false);
     // Surface yt-dlp's own "ERROR: ..." line instead of the raw execa dump.
     const err = e as { stderr?: string };
     const match = err.stderr?.match(/ERROR:\s*(.+)/);

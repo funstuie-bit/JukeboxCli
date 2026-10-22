@@ -71,15 +71,15 @@ it("rejects unsafe separate URLs and conflicting per-stream headers", () => {
   expect(() => resolvedMedia(conflict, 0, "video")).toThrow("incompatible settings");
 });
 it.each([
-  ["ERROR: Requested format is not available https://cdn.example/?sig=private", "compatible video format"],
-  ["ERROR: HTTP Error 403 https://cdn.example/?sig=private", "browser cookies"],
-  ["ERROR: Private video https://cdn.example/?sig=private", "unavailable"],
+  ["ERROR: Requested format is not available https://cdn.example/?sig=private", "compatible media format"],
+  ["ERROR: HTTP Error 403 https://cdn.example/?sig=private", "source refused"],
+  ["ERROR: Private video https://cdn.example/?sig=private", "requires sign-in"],
   ["ERROR: operation timed out https://cdn.example/?sig=private", "timed out"],
   ["ERROR: could not find firefox cookies database in private-profile-path", "Could not read the selected browser cookies"],
   ["ERROR: failed to decrypt cookies private-profile-path", "Could not read the selected browser cookies"],
 ])("reports a safe reason for %s", async (stderr, message) => {
   run.mockRejectedValue({ stderr });
-  const resolve = createStreamResolver(async () => ({} as any));
+  const resolve = createStreamResolver(async () => ({cookiesFromBrowser:"firefox"} as any));
   const error = await resolve(trackFromUrl("https://youtu.be/abcdefghijk"), new AbortController().signal, false, "video").catch(e => e);
   expect(error).toBeInstanceOf(StreamResolutionError);
   expect(error.message).toContain(message);

@@ -196,7 +196,7 @@ export function Settings() {
         ? `Browser: ${config.cookiesFromBrowser}`
         : config.cookiesFile
           ? `File: ${truncate(config.cookiesFile, 30)}`
-          : "not set",
+          : "Anonymous · cookies optional",
       set: Boolean(config.cookiesFromBrowser || config.cookiesFile),
     },
     {
@@ -854,6 +854,9 @@ export function Settings() {
   if (mode === "cookies") {
     // Build the options for the cookies sub-page.
     const cookieOptions: { label: string; value: string }[] = [];
+    if (!config.cookiesFromBrowser && !config.cookiesFile) cookieOptions.push({
+      label: "Keep anonymous playback (no browser cookies)", value: "anonymous",
+    });
 
     // Browser profiles (if detected)
     if (browserProfiles.length > 0) {
@@ -898,7 +901,8 @@ export function Settings() {
     return frame(
       "Cookies",
       <Box flexDirection="column">
-        <Text>Choose the browser signed into YouTube. yt-dlp checks cookies when you play or download.</Text>
+        <Text>Public links are tried without sign-in by default. Cookies are optional for restricted items or source verification.</Text>
+        <Text>Choose a browser only if you want yt-dlp to use its cookies when playing or downloading.</Text>
         {browserProfiles.length === 0 ? <Text dimColor>No profiles detected automatically. Try a browser below or enter its profile path.</Text> : null}
         {cookiesError ? <Text color={COLOR.bad}>{cookiesError}</Text> : null}
         {config.cookiesFromBrowser || config.cookiesFile ? (
@@ -915,6 +919,7 @@ export function Settings() {
           options={cookieOptions}
           focused={focused}
           onSelect={(v) => {
+            if (v === "anonymous") { setMode("menu"); return; }
             if (v === "file") {
               setCookiesError(null); setMode("cookies-file");
               return;

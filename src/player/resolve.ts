@@ -2,6 +2,7 @@ import { execa } from "execa";
 import { resolvedYtDlpPath } from "../bin/ytdlp-fetch";
 import { jsRuntimeArgs, toolEnv } from "../bin/binaries";
 import { cookieArgs } from "../ytdlp/args";
+import { ytDlpLookupError } from "../ytdlp/errors";
 import type { Config } from "../config/config";
 import { isHttpUrl, StreamResolutionError, type MediaResolver, type ResolvedMedia, type PlaybackMode } from "./media";
 
@@ -61,6 +62,7 @@ export function createStreamResolver(config: () => Promise<Config>): MediaResolv
     const cacheKey = `${options?.withoutCookies ? "anonymous" : "configured"}:${mode}:${track.streamUrl}`;
     const cfg = await config();
     signal.throwIfAborted();
+    const cookies = options?.withoutCookies ? [] : cookieArgs(cfg);
     const selectedCookies = JSON.stringify(cookieArgs(cfg));
     if (selectedCookies !== cookieSelection) { cache.clear(); cookieSelection = selectedCookies; }
     const cached = cache.get(cacheKey);
@@ -77,7 +79,7 @@ export function createStreamResolver(config: () => Promise<Config>): MediaResolv
       const { stdout } = await execa(resolvedYtDlpPath(), [
         "--ignore-config", "--no-warnings", "--no-playlist", "--skip-download", "--dump-single-json",
         "--format", format, "--socket-timeout", "15", "--retries", "1",
-        ...jsRuntimeArgs(), ...(options?.withoutCookies ? [] : cookieArgs(cfg)), "--", track.streamUrl,
+        ...jsRuntimeArgs(), ...cookies, "--", track.streamUrl,
       ], { env: toolEnv(), cancelSignal: signal, timeout: 45_000, maxBuffer: 8 * 1024 * 1024 });
       signal.throwIfAborted();
       const info = JSON.parse(stdout);
@@ -96,16 +98,7 @@ export function createStreamResolver(config: () => Promise<Config>): MediaResolv
       return media;
     } catch (error) {
       signal.throwIfAborted();
-      if (error instanceof StreamResolutionError) throw error;
-      const stderr = (error as { stderr?: string }).stderr ?? "";
-      if (/could not find.*cookies|could not copy.*cookies|failed to (?:decrypt|load).*cookies|could not.*decrypt|does not look like a Netscape|permission denied.*cookies/i.test(stderr)) throw new StreamResolutionError("cookies");
-      if (/requested format.*not available|no video formats|only images are available/i.test(stderr)) throw new StreamResolutionError("format");
-      if (/403|429|sign in|confirm.*bot|cookies|login/i.test(stderr)) {
-        throw new StreamResolutionError("blocked");
-      }
-      if (/video unavailable|private video|video.*removed|not available in your country|age.restricted/i.test(stderr)) throw new StreamResolutionError("unavailable");
-      if ((error as { timedOut?: boolean }).timedOut || /timed? out|timeout/i.test(stderr)) throw new StreamResolutionError("timeout");
-      throw new StreamResolutionError("lookup");
+      throw ytDlpLookupError(error, cookies.length > 0);
     }
   };
 }

@@ -3,6 +3,18 @@
 Release notes describe what changed in each build. For what works now and the
 remaining limits, see [feature status](FEATURES.md).
 
+## 1.8.2 — Anonymous YouTube status and accurate failure reasons
+
+- Label no-profile mode Anonymous / cookies optional, with an explicit keep-
+  anonymous choice in Settings. Don't select a browser or rewrite preferences.
+- Distinguish source verification, rate limits, restricted items, JavaScript
+  solver failures, unavailable content and generic refusal in playback and
+  pasted YouTube metadata. Never expose raw extractor URLs/profile paths.
+- Only report a cookie-read failure when the request actually used cookies.
+  Keep explicit one-item cookie-free retry and separate caches unchanged.
+- Add no-profile audio/video, failure classification and cookie-setting tests.
+  No source-verification bypass or guarantee of anonymous access is implied.
+
 ## 1.8.1 — Sharp Home thumbnails
 
 - Render native recent/station thumbnails together with the featured cover on

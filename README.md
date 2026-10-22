@@ -21,6 +21,13 @@ keeps the lot in one editable queue. Streams stay streams unless you choose to s
 them. There are lyrics, cover artwork and live visualisers too, with optional
 fullscreen MilkDrop effects on Mac and Linux.
 
+**Cookies are optional.** Public YouTube links are tried anonymously when no
+browser/file is selected. Version **1.8.2** makes that mode explicit and separates
+source verification, rate limits, restricted items and tool errors from actual
+cookie-read failures. Updating doesn't enable or clear browser access. YouTube
+can still demand verification on a particular connection; anonymous playback
+cannot be guaranteed for every video or network.
+
 Version **1.8.0** makes the optional setup easier to find. Press **u on Home** for
 mouse clicks, artwork colours, decorative motion and fullscreen effects. Home
 gets cover-led recent listening, station tiles and a larger cover when there's
@@ -289,7 +296,9 @@ results stay temporary until you explicitly save one with **f**.
 
 ## Status and limits
 
-**Current release: [1.8.1](https://github.com/funstuie-bit/JukeboxCli/releases/tag/v1.8.1).**
+**Current release: [1.8.2](https://github.com/funstuie-bit/JukeboxCli/releases/tag/v1.8.2).**
+Anonymous playback is a valid default, not incomplete setup. Source failures now
+have specific, safe messages instead of generic advice to configure cookies.
 Sharp native Home thumbnails appear together; long titles keep artwork aligned,
 and Foot/Sixel colours retain photographic detail.
 Adds discoverable optional setup, cover-led Home visuals and clearer projectM
@@ -298,7 +307,7 @@ install/retry feedback. Keeps explicit cookie-free playback recovery. Includes
 Includes 1.6.0's video browsing, saved searches, thumbnail preview, audio/video
 menus and mouse controls, plus Linux preset imports and isolated fullscreen audio.
 Restart after updating; music and settings are kept.
-[Release notes](docs/releases/1.8.1.md).
+[Release notes](docs/releases/1.8.2.md).
 [Changelog](CHANGELOG.md).
 
 Automated install checks run on Apple Silicon and x64 Linux. Intel Macs and other
@@ -614,7 +623,7 @@ Original / En D downloads, plus fullscreen audio isolated to JukeboxCli by defau
 Click mode adds player transport, seek and volume controls on Mac and Linux.
 Session diagnostics records local memory trends once a minute. See
 [setup, controls and limits](docs/visualiser-and-diagnostics.md).
-Version 1.8.1 is available from source and the Homebrew tap.
+Version 1.8.2 is available from source and the Homebrew tap.
 
 Packaged startup uses React production mode to avoid retaining development render
 timing records during long sessions. Linux and macOS share the same release;

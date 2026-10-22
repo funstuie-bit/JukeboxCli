@@ -3,7 +3,15 @@
 These features are in the app now. That doesn't mean every station, terminal
 or online service will cooperate. The limits are listed below.
 
-## Current release — 1.8.1
+## Current release — 1.8.2
+
+- Explicit Anonymous / cookies optional mode when no browser/file is selected.
+- Distinct safe playback and pasted-YouTube errors for source verification,
+  throttling, restricted content, tool failures and real cookie-read failures.
+- Cookies remain opt-in. No automatic browser selection, authentication
+  downgrade, repeated bot-challenge retries or guarantee against source blocking.
+
+## Also included from 1.8.1
 
 - Native Home thumbnails and the featured cover render together in supported
   terminals; block/simple artwork remains available as a fallback. Adaptive

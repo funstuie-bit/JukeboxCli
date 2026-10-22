@@ -19,8 +19,8 @@ That downloads a separate cached copy and takes effect after restarting the app;
 it never replaces Homebrew's executable. Choose System / package manager to
 switch back. `JUKEBOXCLI_SYSTEM_TOOLS=1` still keeps mpv and ffmpeg system-managed.
 
-The formula pins the `v1.8.1` source revision,
-version `1.8.1`. It does not follow every source commit, even when that
+The formula pins the `v1.8.2` source revision,
+version `1.8.2`. It does not follow every source commit, even when that
 commit has the same package version. A future release needs an explicit pin
 update; use a source install if you need the latest checkout.
 
@@ -119,7 +119,16 @@ or force-overwrite links until you know which installation owns them.
 
 ## Browser cookies and mouse clicks
 
-Open **9 Settings → Cookies** and choose the browser/profile signed into YouTube.
+No cookie profile is needed to try a public YouTube link. **9 Settings → Cookies**
+shows **Anonymous · cookies optional** when neither a browser nor a file is set;
+**Keep anonymous playback** leaves preferences untouched. Real cookie-read errors
+are reported only if that lookup used a cookie source. A source verification
+challenge, rate limit, restricted item or JavaScript solver failure is different
+and now gets its own message. Updating yt-dlp may help extraction changes; no
+app can promise unrestricted anonymous access on every connection. Cookies can
+help some challenges/restricted items but are not enabled automatically.
+
+If you choose cookies, open **9 Settings → Cookies** and select the browser/profile signed into YouTube.
 Detection includes custom/numbered Firefox profiles and profiles.ini locations.
 If it finds nothing, use Firefox or Google Chrome's automatic-profile choice,
 or enter a browser/profile explicitly, such as `firefox:/path/to/profile`.

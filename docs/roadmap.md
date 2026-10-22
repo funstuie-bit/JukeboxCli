@@ -1,6 +1,14 @@
 # Roadmap
 
-## Current release — 1.8.1
+## Current release — 1.8.2
+
+- [x] Make anonymous playback explicit rather than a missing setup field.
+- [x] Separate source verification/rate limits/tool issues from cookie access.
+- [x] Verify public cookie-free video/audio playback and no-profile regression.
+- Source authentication/connection restrictions remain external limits, not a
+  promise that every network or video will work anonymously.
+
+## Shipped in 1.8.1
 
 - [x] Publish accepted native Home thumbnails and adaptive Sixel colours.
 - [x] Preserve fixed artwork widths and paint after Ink flushes loading frames.
