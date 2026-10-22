@@ -11,6 +11,9 @@ jobs:
     name: Apple Silicon install
     runs-on: macos-15
     timeout-minutes: 25
+    env:
+      npm_config_audit: "false"
+      npm_config_fund: "false"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -24,7 +27,7 @@ jobs:
       - run: npm run typecheck
       - run: npm run build && npx tsx scripts/check-dist-imports.ts
       - name: Independent install and reinstall with an isolated profile
-        run: npx tsx scripts/smoke-install.ts
+        run: npx --no-install tsx scripts/smoke-install.ts
       - name: Source formula install and functional test
         env:
           HOMEBREW_GITHUB_API_TOKEN: ${{ github.token }}

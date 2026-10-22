@@ -23,6 +23,13 @@ has advanced either target. Never overwrite concurrent work to complete a releas
 Historical beta release notes stay historical. Production status does not imply
 that every terminal, processor architecture or external music service was tested.
 
+Install CI disables npm's incidental audit/funding requests; these are not install
+assertions or a replacement for a dependency security audit. The isolated installer
+smoke keeps a separate user home/profile while reusing npm's download cache. It
+still installs the locked dependency tree, tests relocation and reinstall, and
+checks that the existing profile survives. Do not skip these checks or move the
+source tag to correct test-only infrastructure.
+
 Old checkouts from before the history reconciliation must not merge their history
 back into main. Retain them as backups and clone afresh; port only reviewed,
 unpublished changes. Routine releases never need a force push.

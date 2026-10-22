@@ -8,10 +8,13 @@ const root = path.resolve(import.meta.dirname, "..");
 const temp = await mkdtemp(path.join(tmpdir(), "jukeboxcli-install-check-"));
 const source = path.join(temp, "source checkout"), installHome = path.join(temp, "home"), prefix = path.join(installHome, ".local"), profile = path.join(temp, "profile");
 const unusablePrefix = path.join(temp, "configured-prefix-is-a-file");
+// Keep the app/user home isolated without discarding setup-node's verified npm
+// download cache. npm ci still installs and checks the complete locked tree.
+const npmCache = (await execa("npm", ["config", "get", "cache"])).stdout.trim();
 await cp(root, source, { recursive: true, filter: file => !path.relative(root, file).split(path.sep).some(part => ["node_modules", ".git", "dist"].includes(part)) });
 await mkdir(profile); await mkdir(installHome); await writeFile(unusablePrefix, "not a directory");
 await writeFile(path.join(profile, "keep.json"), '{"fixture":"must survive"}');
-const env = { ...process.env, HOME: installHome, npm_config_prefix: unusablePrefix, JUKEBOXCLI_HOME: profile, JUKEBOXCLI_SYSTEM_TOOLS: "1", JUKEBOXCLI_MEDIA_KEYS: "0" };
+const env = { ...process.env, HOME: installHome, npm_config_cache: npmCache, npm_config_prefer_offline: "true", npm_config_audit: "false", npm_config_fund: "false", npm_config_prefix: unusablePrefix, JUKEBOXCLI_HOME: profile, JUKEBOXCLI_SYSTEM_TOOLS: "1", JUKEBOXCLI_MEDIA_KEYS: "0" };
 const initialInstall = await execa("sh", ["./install.sh", "--no-system-deps", "--no-visualizer"], { cwd: source, env, timeout: 180000, stdout: "pipe", stderr: "inherit" });
 process.stdout.write(`${initialInstall.stdout}\n`);
 assert.match(initialInstall.stdout, /Installing JukeboxCli under .*\.local instead\./);
