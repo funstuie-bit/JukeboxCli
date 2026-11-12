@@ -6,7 +6,8 @@ import { useActionInput as useInput } from "../hooks/useActionInput";
 import { useStore } from "../store";
 import { wrapStep } from "../move";
 import { cleanText } from "../../util/format";
-import { COLOR, ICON } from "../theme";
+import { ICON } from "../theme";
+import { usePalette } from "../palette";
 import { MouseRow } from "./MouseRow";
 
 export interface SongItem {
@@ -105,6 +106,7 @@ export function SongList({
   freezePreview = false,
   selectionKey,
 }: SongListProps) {
+  const COLOR = usePalette();
   const { listRows, playback, library, history } = useStore();
   const [cursor, setCursor] = useState(0);
   const [notice, setNotice] = useState("");

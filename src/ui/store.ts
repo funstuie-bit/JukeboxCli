@@ -42,6 +42,14 @@ export type PlaylistsDepth = "sets" | "songs";
 export type SettingsPage = "controls" | "appearance" | "visualizer-install" | "cookies";
 
 export interface Store {
+  previewConfig?: (config: Config | null) => void;
+  openListeningTools?: () => void;
+  openCommands?: () => void;
+  lifecycleStatus?: string;
+  powerSaving?: boolean;
+  uiObscured?: boolean;
+  pendingPlayerAction?: string;
+  setPendingPlayerAction?: (id: string | undefined) => void;
   config: Config;
   setConfig: (c: Config) => void;
   library: Library;

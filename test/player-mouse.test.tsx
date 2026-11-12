@@ -12,7 +12,7 @@ it("clicks transport, volume and timeline; text capture blocks clicks and unmoun
   const store = makeStore({ cols: 140, contentWidth: 138, listRows: 32, region: "content" });
   store.config.mouseMode = "click";
   const playback = store.playback;
-  playback.prev = vi.fn(); playback.next = vi.fn(); playback.togglePause = vi.fn(); playback.changeVolume = vi.fn(); playback.seek = vi.fn();
+  playback.prev = vi.fn(); playback.next = vi.fn(); playback.togglePause = vi.fn(); playback.changeVolume = vi.fn(); playback.seekTo = vi.fn();
   const before = mouseEvents.listenerCount("press");
   const node = () => <StoreContext.Provider value={store}><NowPlaying embedded /></StoreContext.Provider>;
   const app = await renderReady(node());
@@ -24,7 +24,7 @@ it("clicks transport, volume and timeline; text capture blocks clicks and unmoun
   await click("[Prev]"); await click("[Pause]"); await click("[Next]"); await click(" + "); await click(" − ");
   expect(playback.prev).toHaveBeenCalledOnce(); expect(playback.togglePause).toHaveBeenCalledOnce(); expect(playback.next).toHaveBeenCalledOnce();
   expect(playback.changeVolume).toHaveBeenNthCalledWith(1, 5); expect(playback.changeVolume).toHaveBeenNthCalledWith(2, -5);
-  await click("─●", 3); expect(playback.seek).toHaveBeenCalledOnce();
+  await click("─●", 3); expect(playback.seekTo).toHaveBeenCalledOnce();
   store.captureMode = "text"; await act(async () => { app.rerender(node()); });
   await click("[Next]"); expect(playback.next).toHaveBeenCalledOnce();
   await act(async () => { app.unmount(); }); expect(mouseEvents.listenerCount("press")).toBe(before);

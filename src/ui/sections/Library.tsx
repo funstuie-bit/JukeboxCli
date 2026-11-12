@@ -42,7 +42,9 @@ function shuffle<T>(arr: T[]): T[] {
 }
 
 /** Source/search filters shared by song, artist and album browsing. */
+import { usePalette } from "../palette";
 export function Library() {
+  const COLOR = usePalette();
   const {
     library,
     config,

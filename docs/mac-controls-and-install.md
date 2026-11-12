@@ -172,3 +172,8 @@ If the bridge fails, you can still use the controls inside the terminal.
 Automated tests don't tell us whether every Mac's physical keys and Control
 Centre work. Include your macOS version, terminal and keyboard when reporting
 a problem with them.
+
+The unreleased1.9.0 source build also packages an optional process-owned helper
+for sleep, supported output disconnects and Low Power Mode. It is separate from
+the media-key bridge above; see [listening tools](listening-tools.md) for limits
+and the off switch. No permanent service or system audio capture is installed.

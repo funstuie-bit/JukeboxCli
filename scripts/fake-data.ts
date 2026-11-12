@@ -162,6 +162,12 @@ export function makeFakePlayback(
     setContinuation: () => {},
     retryContinuation: async () => {},
     retryWithoutCookies: async () => {},
+    setEqualizer: async () => {},
+    setSleepTimer: () => {},
+    suspendPlayback: async () => {},
+    seekTo: async () => {},
+    seekChapter: async () => {},
+    resumeTrack: async () => {},
   } as unknown as Playback;
 }
 

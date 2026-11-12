@@ -1,4 +1,5 @@
 import { promises as fs } from "node:fs";
+import { validEqualizer, type Equalizer } from "../player/audio-tools";
 import path from "node:path";
 import { parseSpotifyInput } from "../sources/spotify/public";
 import { normalizeSpotifyHandle } from "../sources/spotify/handle";
@@ -14,6 +15,10 @@ import { validAppearance, type Appearance } from "../ui/appearance";
 import { validBindings, type Bindings } from "../ui/shortcuts";
 
 export interface Config {
+  equalizer?: Equalizer;
+  lowPower?: boolean;
+  lifecycle?: boolean;
+  downloadEstimates?: boolean;
   keybindings?: Bindings;
   browseArtwork?: boolean;
   playerLayout?: "classic" | "clean";
@@ -136,6 +141,10 @@ export async function loadConfig(): Promise<Config> {
     const parsed = JSON.parse(raw) as Partial<Config>;
     const cfg = { ...defaultConfig, ...parsed };
     cfg.browseArtwork = parsed.browseArtwork === true;
+    cfg.equalizer = validEqualizer(parsed.equalizer);
+    cfg.lowPower = parsed.lowPower === true;
+    cfg.lifecycle = parsed.lifecycle !== false;
+    cfg.downloadEstimates = parsed.downloadEstimates === true;
     cfg.playerLayout = parsed.playerLayout === "clean" ? "clean" : "classic";
     cfg.appearance = validAppearance(parsed.appearance);
     cfg.queueContinuation = parsed.queueContinuation === true;

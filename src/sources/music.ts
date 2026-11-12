@@ -15,6 +15,8 @@ export interface MusicResult {
   kind: MusicFilter;
   title: string;
   subtitle?: string;
+  published?: string;
+  views?: string;
   track?: StreamTrack;
 }
 export interface MusicPage {
@@ -119,6 +121,8 @@ export function youtubeVideoResult(raw: any): MusicResult | null {
   item.track.isLive = raw.is_live === true;
   const published = raw.published?.toString();
   const views = raw.short_view_count?.toString() ?? raw.view_count?.toString();
+  item.published = typeof published === "string" && published !== "[object Object]" ? published.slice(0, 80) : undefined;
+  item.views = typeof views === "string" && views !== "[object Object]" ? views.slice(0, 80) : undefined;
   item.subtitle = [item.track.artist, item.track.isLive ? "LIVE" : raw.duration?.text, published, views]
     .filter(value => typeof value === "string" && value && value !== "[object Object]").join(" · ");
   return item;

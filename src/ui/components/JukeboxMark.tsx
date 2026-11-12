@@ -22,7 +22,8 @@ export const JUKEBOX_MARK = [
   "  '-------------------'  ",
 ].join("\n");
 export const ASCII_JUKEBOX = JUKEBOX_MARK.replace(/[♫♬]/g, "*").replace(/─/g, "-").replace(/⠿/g, ":");
-export function JukeboxMark({ animate = false, color = COLOR.alt }: { animate?: boolean; color?: string }) {
+export const COMPACT_JUKEBOX = "  .-------.  \n / JUKEBOX \\\n | [C L I] |\n | ::::::: |\n '---------'";
+export function JukeboxMark({ animate = false, color = COLOR.alt, compact = false }: { animate?: boolean; color?: string; compact?: boolean }) {
   const [phase, setPhase] = useState(0);
   useEffect(() => {
     if (!animate) return;
@@ -34,5 +35,5 @@ export function JukeboxMark({ animate = false, color = COLOR.alt }: { animate?: 
   // Decorative cabinet lights only, never presented as an audio spectrum.
   if (animate) mark = mark.replace(ascii ? ":".repeat(9) : "⠿".repeat(9),
     (ascii ? [":::::::::", "::..:..::", ":..:::..:", "...:::..."] : ["⠿⠿⠿⠿⠿⠿⠿⠿⠿", "⠿⠿⠶⠶⠿⠶⠶⠿⠿", "⠿⠶⠶⠿⠿⠿⠶⠶⠿", "⠶⠶⠶⠿⠿⠿⠶⠶⠶"])[phase]!);
-  return <Text color={color}>{mark}</Text>;
+  return <Text color={color}>{compact ? COMPACT_JUKEBOX : mark}</Text>;
 }

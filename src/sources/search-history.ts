@@ -17,6 +17,8 @@ function result(value: any): MusicResult | null {
   if (!value || !text(value.id, 200) || !kinds.includes(value.kind) || !text(value.title) ||
       (value.subtitle !== undefined && !text(value.subtitle, 1000))) return null;
   const item: MusicResult = { id: value.id, kind: value.kind, title: value.title, subtitle: value.subtitle };
+  item.published = text(value.published,80) ? value.published : undefined;
+  item.views = text(value.views,80) ? value.views : undefined;
   const t = value.track;
   if (t?.source === "youtube" && text(t.sourceTrackId, 11) && /^[\w-]{11}$/.test(t.sourceTrackId)) {
     const id = t.sourceTrackId;

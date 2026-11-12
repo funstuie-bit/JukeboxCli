@@ -3,6 +3,23 @@
 These features are in the app now. That doesn't mean every station, terminal
 or online service will cooperate. The limits are listed below.
 
+## Implemented in source — 1.9.0 (unreleased)
+
+- Compact Home cabinet, three-line mini-player, collapsible sidebar and a more
+  balanced Clean layout. Responsive real-history/Continue and station covers.
+- Full-interface palette previews with Save/discard; solid-theme contrast checks.
+- Verified mpv audio details, minute/track/album sleep timers and a saved 10-band
+  EQ with an independently owned filter. Flat/bypass keeps spectrum analysis.
+- Searchable command palette, chapter actions, pointer hover, seek/volume drag.
+- Bounded per-media resume history, Resume/Start again, richer wide video rows
+  and opt-in, cancellable audio download-size estimates.
+- Scoped Mac sleep/output/low-power helper and Linux logind sleep observer.
+  No wake auto-play. Manual low-power visuals; unsupported events are labelled.
+
+See [controls, behaviour and platform limits](docs/listening-tools.md).
+Physical lifecycle acceptance and the next release's Mac/Linux install gates
+remain required. The stable release/Homebrew pin below is unchanged.
+
 ## Current release — 1.8.2
 
 - Explicit Anonymous / cookies optional mode when no browser/file is selected.

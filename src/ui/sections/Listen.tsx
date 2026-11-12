@@ -16,7 +16,9 @@ import { STUDAYFM_WEBSITE } from "../../player/studayfm";
 type DraftTrack = StreamTrack & { directoryResult?: boolean };
 
 /** Listening is deliberately separate from Download and the saved library. */
+import { usePalette } from "../palette";
 export function Listen() {
+  const COLOR = usePalette();
   const { region, setCaptureMode, playback, listRows, contentWidth, openUrlRequest, setOpenUrlRequest } = useStore();
   const focused = region === "content";
   const [loaded] = useState(() => {

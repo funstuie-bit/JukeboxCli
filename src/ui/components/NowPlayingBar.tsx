@@ -1,4 +1,5 @@
 import { Box, Text } from "ink";
+import { usePalette } from "../palette";
 import { useStore, usePlayback } from "../store";
 import { mpvInstallHint } from "../../player/playback";
 import { cleanText, formatDuration, truncate } from "../../util/format";
@@ -15,6 +16,7 @@ function barWidth(cols: number): number {
 }
 
 export function NowPlayingBar() {
+  const COLOR = usePalette();
   const { playback, cols, mpvStatus, captureMode } = useStore();
   const st = usePlayback(playback);
 
@@ -40,6 +42,7 @@ export function NowPlayingBar() {
   }
 
   const t = st.track;
+  if (st.notice) return <Text color={COLOR.warn} wrap="truncate-end">{st.paused ? "Ⅱ" : "▶"} {st.notice}{st.paused && st.engine === "mpv" ? " · space resumes" : ""}</Text>;
   if (st.error) return <Box width={Math.max(10, cols - 2)}>
     <Box flexGrow={1} minWidth={0}><Text color={COLOR.warn} wrap="truncate-end">{st.error}</Text></Box>
     {st.cookieRetryAvailable ? <MouseRow active={captureMode === "none" && !st.loading} onClick={() => { void playback.retryWithoutCookies(); }}>

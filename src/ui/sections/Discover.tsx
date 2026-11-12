@@ -1,4 +1,5 @@
 import { LIVE_DOWNLOAD_ERROR } from "../../ytdlp/live";
+import { usePalette } from "../palette";
 import stringWidth from "string-width";
 import { useEffect, useRef, useState } from "react";
 import { Box, Text } from "ink";
@@ -12,6 +13,7 @@ import { MouseRow } from "../components/MouseRow";
 import { browseIcon } from "../icons";
 import { searchHistoryFor, type SavedSearch } from "../../sources/search-history";
 import { VideoPreview } from "../components/VideoPreview";
+import { createSizeEstimator, estimateLabel } from "../../ytdlp/estimate";
 import { COLOR } from "../theme";
 
 const filters: MusicFilter[] = ["song", "video", "album", "artist", "playlist"];
@@ -22,7 +24,8 @@ interface BrowseSnapshot {
 // Two bounded browsing snapshots per player session. No cross-profile/global history.
 const sessions = new WeakMap<object, Map<boolean, BrowseSnapshot>>();
 export function Discover({ videos: youtube = false }: { videos?: boolean } = {}) {
-  const { config, region, setCaptureMode, playback, setPendingAdd, setSection, listRows, contentWidth, pendingSearch, setPendingSearch } = useStore();
+  const COLOR = usePalette();
+  const { config, region, setCaptureMode, playback, history: playHistory, setPendingAdd, setSection, listRows, contentWidth, pendingSearch, setPendingSearch } = useStore();
   const focused = region === "content";
   const [history] = useState(() => searchHistoryFor(playback));
   const persisted = history.last(youtube);
@@ -41,7 +44,9 @@ export function Discover({ videos: youtube = false }: { videos?: boolean } = {})
   const [details, setDetails] = useState(false);
   const [menu, setMenu] = useState<number | null>(null);
   const [menuAnchor, setMenuAnchor] = useState<{ x: number; y: number }>();
-  const actions = ["Play audio", "Play video", "Play next", "Add to queue", "Download", "Details"];
+  const actions = ["Play audio", "Play video", "Play next", "Add to queue", "Download", "Details", "Resume", "Start again"];
+  const [estimate, setEstimate] = useState("");
+  const [estimateSize] = useState(() => createSizeEstimator());
   const [notice, setNotice] = useState("");
   const request = useRef(0);
   const controller = useRef<AbortController | null>(null);
@@ -98,6 +103,18 @@ export function Discover({ videos: youtube = false }: { videos?: boolean } = {})
   const resultsWidth = contentWidth - previewWidth;
   const rows = Math.max(1, listRows - (youtube ? 5 : 4) - (editing ? 1 : 0) - (details ? 6 : 0));
   const selected = Math.min(cursor, Math.max(0, page.items.length - 1));
+  const highlighted = page.items[selected]?.track;
+  useEffect(() => {
+    setEstimate("");
+    if (!youtube || !showPreview || !config.downloadEstimates || !focused || editing || busy || menu !== null || recentOpen || !highlighted || highlighted.isLive) return;
+    const controller = new AbortController();
+    const timer = setTimeout(() => {
+      setEstimate("Checking audio size…");
+      void estimateSize(highlighted, config, controller.signal).then(value => { if (!controller.signal.aborted) setEstimate(estimateLabel(value)); })
+        .catch(() => { if (!controller.signal.aborted) setEstimate("Audio size unknown"); });
+    }, 600);
+    return () => { clearTimeout(timer); controller.abort(); };
+  }, [highlighted, config, focused, editing, busy, menu, recentOpen, youtube, showPreview, estimateSize]);
   useEffect(() => {
     if (!config.autoLoadMore || !focused || menu !== null || recentOpen || details || editing || busy || !page.more || !page.items.length || page.items.length >= 10000 || selected < page.items.length - 3 || autoAttempt.current === page) return;
     autoAttempt.current = page;
@@ -107,6 +124,11 @@ export function Discover({ videos: youtube = false }: { videos?: boolean } = {})
     const item = page.items[index];
     setMenu(null);
     if (!item?.track) return;
+    if (choice === 6 || choice === 7) {
+      const position = choice === 6 ? playHistory.progress(item.track.id)?.position ?? 0 : 0;
+      void playback.resumeTrack(item.track, position, youtube ? "video" : "audio").catch(() => setNotice("Could not start playback. Try again in Queue."));
+      return;
+    }
     if (choice <= 1) {
       const tracks = parents.length ? page.items.flatMap(i => i.track ? [i.track] : []) : [item.track];
       void playback.selectTrack(item.track, tracks, choice === 1 ? "video" : "audio")
@@ -185,16 +207,16 @@ export function Discover({ videos: youtube = false }: { videos?: boolean } = {})
     </> : null}
     <Box width={contentWidth} height={youtube ? rows + 1 : rows}>
     <Box flexDirection="column" width={resultsWidth}>
-    {youtube ? <Text color={COLOR.alt} wrap="truncate-end">{resultsWidth >= 65 ? "   Title".padEnd(Math.floor(resultsWidth * .58)) + "Channel".padEnd(Math.floor(resultsWidth * .26)) + "Duration" : "Video · Channel · Duration"}</Text> : null}
+    {youtube ? <Text color={COLOR.alt} wrap="truncate-end">{resultsWidth >= 112 ? "  " + padColumn("Title", resultsWidth - 64) + padColumn("Channel", 22) + padColumn("Published", 20) + padColumn("Views", 12) + "Duration" : resultsWidth >= 65 ? "   Title".padEnd(Math.floor(resultsWidth * .58)) + "Channel".padEnd(Math.floor(resultsWidth * .26)) + "Duration" : "Video · Channel · Duration"}</Text> : null}
     {page.items.length === 0 && !busy ? <Text color={COLOR.muted}>Listen without downloading: / search · o Play URL · 8 radio</Text> : null}
     {page.items.slice(start, start + rows).map((item, i) => <MouseRow key={`${start + i}:${item.id}`} active={focused && !editing && !busy && menu === null && !recentOpen && !details} width={resultsWidth}
       onClick={() => { setCursor(start + i); if (item.track) runAction(0, start + i); else void load(() => browseMusic(item), "browse"); }} onContextMenu={point => { if (item.track) { setCursor(start + i); setMenuAnchor({ x: point.x, y: (youtube ? 4 : 3) + i + point.y }); setMenu(start + i); } }}>
       <Text
       color={focused && selected === start + i ? COLOR.accent : undefined} wrap="truncate-end">
-      {selected === start + i ? "› " : "  "}{youtube ? videoRow(item, resultsWidth - 2, playback.getState().list.some(t => t.id === item.track?.id)) : `${browseIcon("music")} ${truncate(cleanText(`${item.title}${item.subtitle ? ` · ${item.subtitle}` : ""} [${item.kind}]`), resultsWidth - 4)}`}
+      {selected === start + i ? "› " : "  "}{youtube ? videoRow(item, resultsWidth - 2, playback.getState().list.some(t => t.id === item.track?.id), playHistory.progress(item.track?.id ?? "")?.completed ? "watched" : playHistory.progress(item.track?.id ?? "") ? "resume" : "") : `${browseIcon("music")} ${truncate(cleanText(`${item.title}${item.subtitle ? ` · ${item.subtitle}` : ""} [${item.kind}]`), resultsWidth - 4)}`}
     </Text></MouseRow>)}
     </Box>
-    {showPreview ? <VideoPreview item={page.items[selected]} width={previewWidth} height={rows + 1} visible={focused && !editing} overlay={menu !== null || recentOpen} /> : null}
+    {showPreview ? <VideoPreview item={page.items[selected]} width={previewWidth} height={rows + 1} visible={focused && !editing} overlay={menu !== null || recentOpen} estimate={estimate} /> : null}
     </Box>
     {details ? <Box flexDirection="column" borderStyle="round" borderColor={COLOR.accent}>
       <Text>{cleanText(page.items[selected]?.title ?? "")}</Text>
@@ -212,23 +234,34 @@ export function Discover({ videos: youtube = false }: { videos?: boolean } = {})
         history.clear(youtube); setRecentOpen(false); setCached(false); setNotice(history.error ?? "Saved search history cleared");
       } },
     ]} /> : null}
-    {menu !== null ? <ContextMenu title={youtube ? "Video actions" : "Music actions"} actions={actions.map((label, i) => ({ label: i === 4 && page.items[menu]?.track?.isLive ? "Download: live stream (play only)" : label, run: () => runAction(i) }))}
+    {menu !== null ? <ContextMenu title={youtube ? "Video actions" : "Music actions"} actions={actions.map((label, i) => ({ label: i === 4 && page.items[menu]?.track?.isLive ? "Download: live stream (play only)" : i === 6 ? `Resume · ${formatDuration(playHistory.progress(page.items[menu]?.track?.id ?? "")?.position ?? 0)}` : label, disabled: i === 6 && (!playHistory.progress(page.items[menu]?.track?.id ?? "") || page.items[menu]?.track?.isLive), run: () => runAction(i) }))}
       width={contentWidth} height={listRows} active={focused} anchor={menuAnchor} close={() => setMenu(null)} /> : null}
   </Box>;
 }
 
-function videoRow(item: import("../../sources/music").MusicResult, width: number, queued: boolean): string {
+export function videoRow(item: import("../../sources/music").MusicResult, width: number, queued: boolean, progress = ""): string {
   const icon = browseIcon(item.track?.isLive ? "live" : "video");
-  const title = `${icon}${queued ? browseIcon("queued") : " "} ${cleanText(item.title)}`;
+  const title = `${icon}${queued ? browseIcon("queued") : " "} ${progress ? `[${progress}] ` : ""}${cleanText(item.title)}`;
   const channel = cleanText(item.track?.artist ?? "—");
   const duration = item.track?.isLive ? "LIVE" : item.track?.durationSec ? formatDuration(item.track.durationSec) : "—";
-  if (width < 63) return truncate(`${title} · ${channel} · ${duration}`, width);
+  if (width < 63) return clipCells(`${title} · ${channel} · ${duration}`, width);
+  if (width >= 110) return padColumn(title, width - 62) + padColumn(channel, 22) + padColumn(cleanText(item.published ?? "—"), 20) + padColumn(cleanText(item.views ?? "—"), 12) + padColumn(duration, 8);
   const titleWidth = Math.floor((width + 2) * .58) - 2;
   const channelWidth = Math.floor((width + 2) * .26);
-  return padColumn(title, titleWidth) + padColumn(channel, channelWidth) + truncate(duration, width - titleWidth - channelWidth);
+  return padColumn(title, titleWidth) + padColumn(channel, channelWidth) + clipCells(duration, width - titleWidth - channelWidth);
 }
 
+function clipCells(text: string, width: number): string {
+  if (width <= 0) return "";
+  if (stringWidth(text) <= width) return text;
+  let value = "";
+  for (const { segment } of new Intl.Segmenter().segment(text)) {
+    if (stringWidth(value + segment) > width - 1) break;
+    value += segment;
+  }
+  return value + "…";
+}
 function padColumn(text: string, width: number): string {
-  const value = truncate(text, width - 1);
+  const value = clipCells(text, width - 1);
   return value + " ".repeat(Math.max(0, width - stringWidth(value)));
 }

@@ -3,10 +3,11 @@ import { Box, Text } from "ink";
 import { useActionInput as useInput } from "../hooks/useActionInput";
 import { diagnosticReport, exportDiagnostics, redactLog } from "../../diagnostics/log";
 import { useStore } from "../store";
-import { COLOR } from "../theme";
+import { usePalette } from "../palette";
 import { displayPath } from "../../util/format";
 
 export function Diagnostics({ focused }: { focused: boolean }) {
+  const COLOR = usePalette();
   const { listRows } = useStore();
   const [lines, setLines] = useState(["Loading diagnostics…"]);
   const [offset, setOffset] = useState(0);

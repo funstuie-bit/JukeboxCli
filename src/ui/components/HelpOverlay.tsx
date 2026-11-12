@@ -3,11 +3,13 @@ import { Box, Text } from "ink";
 import { useActionInput as useInput } from "../hooks/useActionInput";
 import { HELP_GROUPS } from "../keymap";
 import { useStore } from "../store";
-import { COLOR, RULE } from "../theme";
+import { RULE } from "../theme";
+import { usePalette } from "../palette";
 import { shortcutLabel } from "../shortcuts";
 
 /** Bounded, keyboard-paged help: adding a feature must not push its keys offscreen. */
 export function HelpOverlay() {
+  const COLOR = usePalette();
   const { cols, rows, compact, section, config } = useStore();
   // Resolve by title so adding a help group cannot shift unrelated sections.
   const [page, setPage] = useState(() => {

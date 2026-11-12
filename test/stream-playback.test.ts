@@ -14,6 +14,7 @@ vi.mock("../src/player/mpv", async () => {
     fail = 0; volume = 100;
     constructor() { super(); (this.constructor as any).current = this; }
     setInitialVolume(v: number) { this.volume = v; }
+    async setEqualizer() {}
     async getVolume() { return this.volume; }
     async loadMedia(media: ResolvedMedia) { this.mediaLoads.push(media); this.loads.push(media.url); if (this.fail-- > 0) throw Error("signed URL rejected"); }
     async clearNext() { this.next = null; }
@@ -37,6 +38,67 @@ const local = { id: "local", title: "local", source: "local" as const, sourceTra
 const media = (id: string): ResolvedMedia => ({ url: `https://media.example/${id}?secret=temporary`, expiresAt: Date.now() + 60_000 });
 const settle = () => new Promise(r => setTimeout(r, 5));
 beforeEach(() => { (MpvPlayer as any).current = undefined; });
+
+describe("listening tools and lifecycle", () => {
+  it("does not promise a timer or start mpv for an external/idle player",async()=>{
+    const external=new Playback(null,()=>{});
+    expect(()=>external.setSleepTimer("minutes",15)).toThrow(/need mpv/); external.quit();
+    const idle=new Playback("fixture",undefined,async()=>media("a"));
+    await idle.suspendPlayback(); expect(engine()).toBeUndefined(); idle.quit();
+  });
+  it("retains extractor chapters when a direct stream has no embedded chapter list",async()=>{
+    const chapters=[{title:"Intro",time:0},{title:"Second part",time:45}];
+    const p=new Playback("fixture",undefined,async()=>({...media("a"),chapters}));
+    await p.play({...a,durationSec:300}); engine().emit("property","chapter-list",[]);
+    expect(p.getState().chapters).toEqual(chapters); await p.seekChapter(1);
+    expect(engine().seekAbsolute).toHaveBeenCalledWith(45); expect(p.getState().position).toBe(45); p.quit();
+  });
+  it("expires a minute timer, blocks repeat/EOF and resumes only explicitly", async () => {
+    vi.useFakeTimers({ toFake: ["setTimeout","clearTimeout","Date"] });
+    const p = new Playback("fixture", undefined, async () => media("a"));
+    try {
+      await p.play(a,[a,b]); p.cycleRepeat(); p.cycleRepeat();
+      p.setSleepTimer("minutes",1);
+      await vi.advanceTimersByTimeAsync(60_000);
+      expect(p.getState()).toMatchObject({paused:true,notice:"Sleep timer finished",sleepTimer:undefined,track:a});
+      engine().emit("ended"); await Promise.resolve();
+      expect(p.getState().track?.id).toBe(a.id);
+      await p.togglePause(); expect(p.getState().paused).toBe(false);
+      expect(p.getState().list.map(t=>t.id)).toEqual([a.id,b.id]);
+    } finally { p.quit(); vi.useRealTimers(); }
+  });
+  it("stops at a known album boundary, even with repeat enabled", async () => {
+    const first = {...a,album:"Album"}, second = {...b,album:"Album"}, other = {...c,album:"Other"};
+    const p = new Playback("fixture",undefined,async t=>media(t.id));
+    await p.play(first,[first,second,other]); p.cycleRepeat(); p.setSleepTimer("album");
+    engine().emit("ended"); await settle(); expect(p.getState().track?.id).toBe(b.id);
+    engine().emit("ended"); await settle(); expect(p.getState()).toMatchObject({track:second,paused:true,sleepTimer:undefined});
+    expect(p.getState().list).toHaveLength(3); p.quit();
+  });
+  it("cancels end-track timers and refuses track/album seeking for live radio", async () => {
+    const p = new Playback("fixture",undefined,async()=>media("live")), radio = trackFromUrl("https://example.com/live",true);
+    await p.play(a,[a,b]); p.setSleepTimer("track"); p.setSleepTimer("off");
+    engine().emit("ended"); await settle(); expect(p.getState().track?.id).toBe(b.id);
+    await p.play(radio); expect(()=>p.setSleepTimer("track")).toThrow(/minute timer/);
+    await p.seekTo(50); expect(engine().seekAbsolute).not.toHaveBeenCalled();
+    await p.suspendPlayback("Output disconnected"); engine().emit("ended"); await settle();
+    expect(p.getState()).toMatchObject({track:radio,paused:true,notice:"Output disconnected"}); p.quit();
+  });
+  it("cancels an in-flight load on sleep and ignores a late resolver", async () => {
+    let resolve!: (v: ResolvedMedia) => void;
+    const p = new Playback("fixture",undefined,()=>new Promise(r=>{resolve=r;}));
+    const work = p.play(a,[a,b]); await Promise.resolve(); await p.suspendPlayback();
+    resolve(media("late")); await work;
+    expect(engine().mediaLoads).toHaveLength(0); expect(p.getState()).toMatchObject({paused:true,loading:false}); p.quit();
+  });
+  it("loads a resume point directly, retaining duplicate queue occurrences", async () => {
+    const p = new Playback("fixture",undefined,async()=>media("a"));
+    await p.play(a,[a,b]); await p.resumeTrack({...a,durationSec:300},75,"video");
+    expect(engine().mediaLoads.at(-1)).toMatchObject({startPosition:75,mode:"video"});
+    expect(p.getState().list.map(t=>t.id)).toEqual([a.id,a.id,b.id]);
+    expect(p.getState().index).toBe(1); p.quit();
+  });
+});
 
 describe("stream playback", () => {
   it("offers an explicit cookie retry for one item, preserving mode/position/queue without persisting consent", async () => {

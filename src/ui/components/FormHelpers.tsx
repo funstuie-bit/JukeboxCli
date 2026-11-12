@@ -19,7 +19,8 @@ import { Box, Text } from "ink";
 import { useActionInput as useInput } from "../hooks/useActionInput";
 import { Select } from "./Select";
 import { MouseRow } from "./MouseRow";
-import { COLOR, ICON } from "../theme";
+import { ICON } from "../theme";
+import { usePalette } from "../palette";
 import { TextField } from "./TextField";
 
 /**
@@ -27,7 +28,7 @@ import { TextField } from "./TextField";
  * the value is set, rose for danger, and dim otherwise — mirroring the inline
  * detail styling Settings.tsx used before extracting SettingRow.
  */
-function detailColor(props: { set?: boolean; danger?: boolean }): string | undefined {
+function detailColor(props: { set?: boolean; danger?: boolean }, COLOR: ReturnType<typeof usePalette>): string | undefined {
   if (props.danger) return COLOR.bad;
   if (props.set) return COLOR.alt;
   return undefined;
@@ -67,7 +68,8 @@ export function SettingRow({
   danger = false,
   onClick,
 }: SettingRowProps) {
-  const detail = detailColor({ set, danger });
+  const COLOR = usePalette();
+  const detail = detailColor({ set, danger }, COLOR);
   return (
     <MouseRow active={!!onClick} onClick={() => onClick?.()}>
       <Text color={COLOR.accent}>{active ? `${ICON.pointer} ` : "  "}</Text>
@@ -126,6 +128,7 @@ export function SelectField({
   focused,
   hint,
 }: SelectFieldProps) {
+  const COLOR = usePalette();
   useInput(
     (_input, key) => {
       if (key.escape) onCancel();
@@ -194,6 +197,7 @@ export function TextInputField({
   onCancel,
   focused,
 }: TextInputFieldProps) {
+  const COLOR = usePalette();
   // Separate esc handler — TextField's own keymap ignores esc so global nav
   // (and ctrl-c) still works while typing.
   useInput(
@@ -259,6 +263,7 @@ export function ToggleField({
   onToggle,
   active,
 }: ToggleFieldProps) {
+  const COLOR = usePalette();
   useInput(
     (_input, key) => {
       if (key.upArrow || key.downArrow || key.leftArrow || key.rightArrow) {

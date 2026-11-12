@@ -2,12 +2,13 @@ import { useEffect, useState } from "react";
 import { Box, Text } from "ink";
 import { Cover } from "./Cover";
 import { cleanText } from "../../util/format";
-import { COLOR } from "../theme";
+import { usePalette } from "../palette";
 
 /** A short settle delay avoids probing every file while scrolling quickly. */
 export function BrowsePreview({ source, title, subtitle, rows, visible = true }: {
   source?: string; title?: string; subtitle?: string; rows: number; visible?: boolean;
 }) {
+  const COLOR = usePalette();
   const [settled, setSettled] = useState(source);
   useEffect(() => { const timer = setTimeout(() => setSettled(source), 180); return () => clearTimeout(timer); }, [source]);
   return <Box flexDirection="column" width={32}>

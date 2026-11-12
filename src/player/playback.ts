@@ -1,4 +1,5 @@
 import { videoSource } from "./video-source";
+import { validChapters, validEqualizer, type AudioDetails, type Chapter, type Equalizer } from "./audio-tools";
 import { EventEmitter } from "node:events";
 import { logEvent } from "../diagnostics/log";
 import { existsSync } from "node:fs";
@@ -19,6 +20,11 @@ export type Engine = "mpv" | "external";
 export type RepeatMode = "off" | "all" | "one";
 
 export interface PlaybackState {
+  audioDetails?: AudioDetails;
+  chapters?: Chapter[];
+  chapter?: number;
+  sleepTimer?: { mode: "minutes" | "track" | "album"; remaining?: number };
+  notice?: string;
   mode?: PlaybackMode;
   continuationStatus?: string;
   track: Track | null;
@@ -98,6 +104,63 @@ export function mpvInstallHint(): string {
  * IPC); falls back to opening the file in the OS default audio app.
  */
 export class Playback extends EventEmitter {
+  private sleepTimeout: ReturnType<typeof setTimeout> | undefined;
+  private sleepDeadline = 0;
+  private autoAdvanceBlocked = false;
+  private eq: Equalizer = validEqualizer(undefined);
+  private resolvedChapters: Chapter[] = [];
+  async setEqualizer(value: Equalizer): Promise<void> {
+    const eq = validEqualizer(value);
+    await this.mpv?.setEqualizer(eq);
+    this.eq = eq;
+  }
+  setSleepTimer(mode: "minutes" | "track" | "album" | "off", minutes = 30): void {
+    if (mode !== "off" && !this.mpvPath) throw Error("Sleep timers need mpv; an external player must be paused in its own app.");
+    if (mode === "minutes" && (!Number.isFinite(minutes) || minutes <= 0 || minutes > 1440)) throw Error("Choose 1–1440 minutes.");
+    if (mode === "album" && !this.state.track?.album) throw Error("This item has no known album boundary.");
+    if (mode !== "off" && mode !== "minutes" && (!this.state.track || isLive(this.state.track))) throw Error("Use a minute timer for live radio.");
+    clearTimeout(this.sleepTimeout);
+    this.update({ sleepTimer: mode === "off" ? undefined : { mode, ...(mode === "minutes" ? { remaining: minutes * 60 } : {}) } });
+    if (mode === "track" || mode === "album") this.cancelPrefetch();
+    if (mode !== "minutes") return;
+    this.sleepDeadline = Date.now() + minutes * 60_000;
+    const tick = () => {
+      const remaining = Math.max(0, Math.ceil((this.sleepDeadline - Date.now()) / 1000));
+      if (!remaining) { void this.suspendPlayback("Sleep timer finished"); this.update({ sleepTimer: undefined }); return; }
+      this.update({ sleepTimer: { mode: "minutes", remaining } });
+      this.sleepTimeout = setTimeout(tick, 1000); this.sleepTimeout.unref?.();
+    };
+    tick();
+  }
+  /** Retain queue/position, cancel in-flight loads and never resume implicitly. */
+  async suspendPlayback(notice = "Paused for system sleep"): Promise<void> {
+    if (this.state.engine === "external" && this.state.track) { this.update({notice:"Pause playback in your external player"}); return; }
+    this.autoAdvanceBlocked = true;
+    this.playRequest++; this.resolving?.abort(); this.cancelPrefetch();
+    this.update({ paused: true, loading: false, notice });
+    if (this.mpv?.processId) {
+      if (isLive(this.state.track)) await this.mpv.stop().catch(() => {});
+      else await this.mpv.command(["set_property", "pause", true]).catch(() => {});
+    }
+  }
+  async seekChapter(index: number): Promise<void> {
+    const chapter = this.state.chapters?.[index];
+    if (chapter && !isLive(this.state.track) && this.state.seekable !== false) await this.seekTo(chapter.time);
+  }
+  async seekTo(seconds: number): Promise<void> {
+    if (!this.mpv || !Number.isFinite(seconds) || !this.state.track || isLive(this.state.track) || this.state.seekable === false || this.state.loading) return;
+    const position = Math.max(0, Math.min(this.state.duration || seconds, seconds));
+    const request = this.playRequest;
+    await this.mpv?.seekAbsolute(position);
+    if (request === this.playRequest) this.update({ position });
+  }
+  async resumeTrack(track: Track, position: number, mode: PlaybackMode = "audio"): Promise<void> {
+    // Only the selected occurrence is changed; existing queue and order survive.
+    if (!this.mpvPath || isLive(track) || !Number.isFinite(position)) return this.selectTrack(track, [track], mode);
+    const at = this.state.index >= 0 ? this.state.index + 1 : this.state.list.length;
+    this.enqueue(track, true);
+    await this.play(track, this.state.list, at, false, false, mode, Math.max(0, Math.min(position, track.durationSec && track.durationSec > 0 ? track.durationSec : position)));
+  }
   private continuation?: QueueContinuation;
   private continuationEnabled = false;
   setContinuationEnabled(enabled: boolean): void {
@@ -343,7 +406,7 @@ export class Playback extends EventEmitter {
   private schedulePrefetch(): void {
     this.cancelPrefetch();
     const m = this.mpv;
-    if (!m || this.state.loading || !this.state.track) return;
+    if (!m || this.state.loading || !this.state.track || this.autoAdvanceBlocked || this.state.sleepTimer?.mode === "track" || this.state.sleepTimer?.mode === "album") return;
     const signal = (this.prefetchAbort = new AbortController()).signal;
     const token = this.prefetchToken;
     const index = onEndedDecision(this.order, this.state.index, this.state.repeat);
@@ -372,11 +435,25 @@ export class Playback extends EventEmitter {
     if (!this.mpvPath) return null;
     if (this.mpv) return this.mpv;
     const m = new MpvPlayer(this.mpvPath);
+    void m.setEqualizer(this.eq);
     m.setInitialVolume(this.state.volume);
+    m.on("audio-tool-warning", (notice: string) => this.update({ notice }));
     m.on("media-key", (action: string) => {
       void dispatchMediaAction(this, action).catch(() => this.update({ error: "Media control failed; use the player keys to retry." }));
     });
     m.on("property", (name: string, data: unknown) => {
+      if (name === "chapter-list") { const chapters = validChapters(data); this.update({ chapters: chapters.length ? chapters : this.resolvedChapters }); return; }
+      if (name === "chapter") { this.update({ chapter: typeof data === "number" && data >= 0 ? data : undefined }); return; }
+      if (name === "audio-codec-name" || name === "audio-params" || name === "audio-out-params" || name === "audio-bitrate") {
+        const details = { ...this.state.audioDetails };
+        const p = data && typeof data === "object" ? data as Record<string, unknown> : {};
+        const rate = typeof p.samplerate === "number" && Number.isFinite(p.samplerate) && p.samplerate > 0 ? p.samplerate : undefined;
+        if (name === "audio-codec-name") details.codec = typeof data === "string" ? data.replace(/[\x00-\x1f\x7f]/g, "").slice(0, 60) : undefined;
+        if (name === "audio-bitrate") details.bitrate = typeof data === "number" && Number.isFinite(data) && data > 0 ? data : undefined;
+        if (name === "audio-params") { details.decodedRate = rate; details.channels = typeof p["hr-channels"] === "string" ? String(p["hr-channels"]).replace(/[\x00-\x1f\x7f]/g, "").slice(0, 40) : undefined; }
+        if (name === "audio-out-params") details.outputRate = rate;
+        this.update({ audioDetails: details }); return;
+      }
       if (name === "time-pos" && typeof data === "number") {
         const pos = Math.floor(data);
         if (pos !== this.state.position) this.update({ position: pos });
@@ -398,13 +475,16 @@ export class Playback extends EventEmitter {
     m.on("spectrum", (levels: number[]) => this.emit("spectrum", levels));
     m.on("ended", () => void this.onEnded().catch(() => this.update({ error: "Could not advance playback. Select a queue entry to retry." })));
     m.on("advanced", (token: number) => {
+      if (this.autoAdvanceBlocked) { void this.suspendPlayback(this.state.notice); return; }
       const next = this.prepared;
       if (!next || next.token !== token) return;
       this.playRequest++;
       if (this.state.index >= 0 && next.index !== this.state.index) this.backStack.push(this.state.index);
       this.backStack = this.backStack.slice(-500);
       this.prepared = null;
+      this.resolvedChapters = next.media.chapters ?? [];
       this.update({ track: next.track, index: next.index, position: 0,
+        chapters: this.resolvedChapters, chapter: undefined,
         mode: "audio", duration: next.track.durationSec ?? 0, loading: false, engine: "mpv", canControl: true, error: undefined, cookieRetryAvailable: false, withoutCookies: next.withoutCookies,
         broadcastTitle: undefined, seekable: undefined });
       this.schedulePrefetch();
@@ -443,6 +523,12 @@ export class Playback extends EventEmitter {
 
   /** A track finished on its own: honor repeat/shuffle via the pure decision. */
   private async onEnded(): Promise<void> {
+    if (this.autoAdvanceBlocked) return;
+    const timer = this.state.sleepTimer;
+    const next = this.upNext(1)[0];
+    if (timer?.mode === "track" || (timer?.mode === "album" && (!next || !next.album || next.album !== this.state.track?.album || next.artist !== this.state.track?.artist))) {
+      this.setSleepTimer("off"); await this.suspendPlayback("Sleep timer finished"); return;
+    }
     if (isLive(this.state.track)) {
       this.cancelPrefetch();
       this.update({ paused: true, loading: false, error: "Live broadcast ended or disconnected. Space reconnects · n skips." });
@@ -515,6 +601,9 @@ export class Playback extends EventEmitter {
   }
 
   async play(track: Track, list: Track[] = [track], index = -1, startPaused = false, fresh = false, mode: PlaybackMode = "audio", startPosition = 0, withoutCookies = false): Promise<void> {
+    this.autoAdvanceBlocked = false;
+    this.resolvedChapters = [];
+    this.update({ notice: undefined, audioDetails: undefined, chapters: [], chapter: undefined });
     const request = ++this.playRequest;
     this.resolving?.abort();
     const signal = (this.resolving = new AbortController()).signal;
@@ -558,6 +647,8 @@ export class Playback extends EventEmitter {
         if (request !== this.playRequest) return;
         this.applyMetadata(this.state.index, media);
         const load = async (resolved: ResolvedMedia) => {
+          this.resolvedChapters = resolved.chapters ?? [];
+          this.update({ chapters: this.resolvedChapters });
           await m.loadMedia({ ...resolved, mode, startPosition }, startPaused);
           if (request !== this.playRequest) return;
           if (mode === "video" && !(await m.command(["get_property", "vid"]))) throw new StreamResolutionError("no-video");
@@ -627,6 +718,15 @@ export class Playback extends EventEmitter {
   }
 
   async togglePause(): Promise<void> {
+    const suspended = this.autoAdvanceBlocked;
+    this.autoAdvanceBlocked = false;
+    this.update({ notice: undefined });
+    if (suspended && this.state.track) {
+      const s = this.state;
+      const position = isLive(s.track) || s.duration > 0 && s.position >= s.duration - 1 ? 0 : s.position;
+      await this.play(s.track!, s.list, s.index, false, true, s.mode, position, s.withoutCookies);
+      return;
+    }
     if (this.state.error && this.state.track) {
       await this.play(this.state.track, this.state.list, this.state.index, false, true, this.state.mode, this.state.position, this.state.withoutCookies); return;
     }
@@ -813,6 +913,7 @@ export class Playback extends EventEmitter {
   }
 
   quit(): void {
+    clearTimeout(this.sleepTimeout);
     this.clearContinuation();
     this.resolving?.abort(); this.cancelPrefetch();
     this.playRequest++;

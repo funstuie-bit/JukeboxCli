@@ -1,7 +1,7 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
 import { historyFile } from "../config/paths";
-import { isHttpUrl, isStream, streamMetadata, type PlayableTrack, type StreamTrack } from "./media";
+import { isHttpUrl, isStream, isLive, streamMetadata, type PlayableTrack, type StreamTrack } from "./media";
 
 interface HistoryEntry {
   /** Library track id, e.g. "youtube:dQw4w9WgXcQ". */
@@ -9,6 +9,9 @@ interface HistoryEntry {
   /** ISO timestamp of when it last started playing. */
   at: string;
   stream?: StreamTrack;
+  position?: number;
+  duration?: number;
+  completed?: boolean;
 }
 
 interface HistoryIndex {
@@ -55,7 +58,9 @@ export class PlayHistory {
             (t.stationWebsite === undefined || isHttpUrl(t.stationWebsite)) &&
             (t.streamType === undefined || ["extractor", "direct", "radio"].includes(t.streamType)) &&
             (t.isLive === undefined || typeof t.isLive === "boolean");
-          return { id: e.id, at: e.at, ...(valid ? { stream: streamMetadata(t) } : {}) };
+          const progress = typeof e.position === "number" && Number.isFinite(e.position) && e.position >= 0 && typeof e.duration === "number" && Number.isFinite(e.duration) && e.duration > 0;
+          return { id: e.id, at: e.at, ...(valid ? { stream: streamMetadata(t) } : {}),
+            ...(progress ? { position: Math.min(e.position!, e.duration!), duration: e.duration, completed: e.completed === true } : {}) };
         });
         return new PlayHistory({ version: 1, entries }, file);
       }
@@ -93,6 +98,27 @@ export class PlayHistory {
     return this.index.entries.find(e => e.id === id)?.stream;
   }
 
+  progress(id: string): { position: number; duration: number; completed: boolean } | undefined {
+    const entry = this.index.entries.find(e => e.id === id);
+    return entry?.duration && entry.position !== undefined ? { position: entry.position, duration: entry.duration, completed: entry.completed === true } : undefined;
+  }
+  continuing(): { id: string; position: number; duration: number }[] {
+    return this.index.entries.filter(e => !e.completed && (e.position ?? 0) >= 10 && (e.duration ?? 0) - (e.position ?? 0) >= 10)
+      .map(e => ({ id: e.id, position: e.position!, duration: e.duration! }));
+  }
+  clearProgress(): void {
+    this.index.entries = this.index.entries.map(({ position, duration, completed, ...entry }) => entry);
+    this.notify(); void this.persist();
+  }
+  recordProgress(id: string, position: number, duration: number): void {
+    if (!Number.isFinite(position) || !Number.isFinite(duration) || duration <= 0 || position < 0) return;
+    const entry = this.index.entries.find(e => e.id === id);
+    if (!entry || (entry.stream && isLive(entry.stream))) return;
+    entry.position = Math.min(position, duration); entry.duration = duration;
+    entry.completed = position / duration >= 0.95 || (duration > 20 && duration - position < 10);
+    this.notify(); void this.persist();
+  }
+
   remove(id: string): void {
     this.index.entries = this.index.entries.filter(e => e.id !== id);
     this.notify();
@@ -103,8 +129,9 @@ export class PlayHistory {
   record(track: string | PlayableTrack): void {
     const id = typeof track === "string" ? track : track.id;
     const stream = typeof track !== "string" && isStream(track) ? streamMetadata(track) : undefined;
+    const progress = this.progress(id);
     this.index.entries = [
-      { id, at: new Date().toISOString(), ...(stream ? { stream } : {}) },
+      { id, at: new Date().toISOString(), ...progress, ...(stream ? { stream } : {}) },
       ...this.index.entries.filter((e) => e.id !== id),
     ].slice(0, CAP);
     this.notify();

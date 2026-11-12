@@ -1,4 +1,5 @@
 import { NAV, SIDEBAR_WIDTH } from "../navigation";
+import { usePalette } from "../palette";
 import { Box, Text } from "ink";
 import { useActionInput as useInput } from "../hooks/useActionInput";
 import { useStore } from "../store";
@@ -10,7 +11,7 @@ import { MouseRow } from "./MouseRow";
 
 export function Sidebar() {
   const { section, setSection, region, setRegion, queue, config } = useStore();
-  const COLOR = playerPalette(config.playerTheme);
+  const COLOR = usePalette();
   const focused = region === "sidebar";
   const idx = NAV.findIndex((n) => n.key === section);
   const active = queue.activeCount;

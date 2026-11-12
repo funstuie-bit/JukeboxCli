@@ -1,4 +1,5 @@
 import { Box, Text } from "ink";
+import { usePalette } from "../palette";
 import { COLOR } from "../theme";
 
 interface HeaderProps {
@@ -11,6 +12,7 @@ interface HeaderProps {
 
 /** A consistent section title used across every content pane. */
 export function Header({ title, subtitle, focused }: HeaderProps) {
+  const COLOR = usePalette();
   return (
     <Box marginBottom={1}>
       <Text bold color={focused ? COLOR.accent : COLOR.text}>

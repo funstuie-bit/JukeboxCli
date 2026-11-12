@@ -2,9 +2,10 @@ import { useState } from "react";
 import { Box, Text, useInput } from "ink";
 import { useStore } from "../store";
 import { ACTIONS, bindingError, keyToken, type Bindings } from "../shortcuts";
-import { COLOR } from "../theme";
+import { usePalette } from "../palette";
 
 export function ShortcutEditor({ focused, onBack }: { focused: boolean; onBack: () => void }) {
+  const COLOR = usePalette();
   const { config, setConfig, listRows } = useStore();
   const [draft, setDraft] = useState<Bindings>({ ...config.keybindings });
   const [cursor, setCursor] = useState(0);

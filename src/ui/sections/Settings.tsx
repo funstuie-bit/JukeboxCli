@@ -68,6 +68,7 @@ type Mode =
   | "controls"
   | "preset-packs"
   | "appearance"
+  | "tools"
   | "visualizer-install"
   | "menu"
   | "youtube"
@@ -98,7 +99,9 @@ function HintLine({ children }: { children: string }) {
   );
 }
 
+import { usePalette } from "../palette";
 export function Settings() {
+  const COLOR = usePalette();
   const store = useStore();
   const [choiceFocus, setChoiceFocus] = useState<{ appearance?: string; controls?: string }>({});
   const { config, setConfig, library, queue, playback, binaries, region, setCaptureMode, listRows } =
@@ -244,12 +247,14 @@ export function Settings() {
       danger: true,
     },
     { value: "appearance", name: "Player appearance", detail: `${playerThemeLabel(config.playerTheme)} · visualizer ${config.visualizerMode ?? "classic"}` },
+    { value: "tools", name: "Listening tools", detail: "Audio format · sleep timer · equaliser · power" },
     { value: "diagnostics", name: "Session diagnostics", detail: "Read errors · export a sanitised report" },
     { value: "genres", name: "Scan genre tags", detail: "Read local tags without changing audio" },
     { value: "controls", name: "Keyboard and mouse", detail: config.mouseMode === "click" ? "Mouse: click · left plays, right opens actions" : `Mouse: ${config.mouseMode ?? "wheel"} · choose click to enable left/right actions` },
   ];
 
   function openSetting(v: Mode | "open-folder"): void {
+    if (v === "tools") { store.openListeningTools?.(); return; }
     if (v === "open-folder") {
       // The folder may not exist yet (fresh install, edited path): create it
       // first so the file manager always lands somewhere real.

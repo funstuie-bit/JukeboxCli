@@ -63,7 +63,9 @@ const toSetItem = (s: SetInfo) => ({
  * opening a set shows its songs with a set-scoped shuffle, and playing a song
  * scopes next/prev to that set.
  */
+import { usePalette } from "../palette";
 export function Playlists() {
+  const COLOR = usePalette();
   const {
     library,
     config,

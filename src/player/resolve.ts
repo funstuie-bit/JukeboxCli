@@ -3,6 +3,7 @@ import { resolvedYtDlpPath } from "../bin/ytdlp-fetch";
 import { jsRuntimeArgs, toolEnv } from "../bin/binaries";
 import { cookieArgs } from "../ytdlp/args";
 import { ytDlpLookupError } from "../ytdlp/errors";
+import { validChapters } from "./audio-tools";
 import type { Config } from "../config/config";
 import { isHttpUrl, StreamResolutionError, type MediaResolver, type ResolvedMedia, type PlaybackMode } from "./media";
 
@@ -84,6 +85,7 @@ export function createStreamResolver(config: () => Promise<Config>): MediaResolv
       signal.throwIfAborted();
       const info = JSON.parse(stdout);
       const media = resolvedMedia(info, Date.now(), mode);
+      media.chapters = validChapters(Array.isArray(info.chapters) ? info.chapters.map((c: any) => ({ time: c?.start_time, title: c?.title })) : []);
       media.metadata = {
         title: typeof info.title === "string" ? info.title : track.title,
         artist: typeof info.artist === "string" ? info.artist : typeof info.uploader === "string" ? info.uploader : track.artist,

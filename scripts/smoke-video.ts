@@ -44,6 +44,7 @@ const list = [track, next];
 let owned: number | undefined;
 try {
   await playback.changeVolume(-100);
+  await playback.setEqualizer({enabled:true,gains:[2,1,0,0,0,0,0,0,0,0]});
   await playback.play(track, list, 0, true, false, "video", 2);
   if (cookieRetry) {
     assert.equal(playback.getState().cookieRetryAvailable, true, "Cookie extraction failure must offer, not perform, anonymous retry");
@@ -71,6 +72,7 @@ try {
     assert.equal(playback.mpvProcessId, owned);
     assert.equal(await get("pause"), true, `${mode} must retain pause`);
     assert.equal(await get("volume"), 0);
+    assert((await get("af") as {label?:string}[]).some(f=>f.label==="jukebox-eq"),"EQ must survive mode changes alongside analysis");
     assert(Math.abs(Number(await get("time-pos")) - 2) < 0.5);
     assert.deepEqual(playback.getState().list.map(t => t.id), list.map(t => t.id));
     if (mode === "audio") {

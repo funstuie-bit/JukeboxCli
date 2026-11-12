@@ -26,6 +26,7 @@ export type PlaybackMode = "audio" | "video";
 export interface ResolvedMedia {
   mode?: PlaybackMode;
   startPosition?: number;
+  chapters?: import("./audio-tools").Chapter[];
   url: string;
   /** Optional separate audio stream; ephemeral like url, never session metadata. */
   audioUrl?: string;

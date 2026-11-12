@@ -1,5 +1,183 @@
 # Roadmap
 
+## Implemented in source — player polish and discovery (1.9.0)
+
+Plan approved for all six stages; implementation started 12 November 2026.
+The core items below are in the **unreleased 1.9.0 source build**. Published
+stable/Homebrew remain 1.8.2. Keep one Mac/Linux codebase, the existing mpv player
+and editable mixed-source queue. [Controls and limits](listening-tools.md).
+Unchecked items are acceptance work or explicitly deferred extensions, not
+features silently claimed complete.
+
+### What we already have
+
+- TubeTUI-inspired audio/video actions, dedicated video search, landscape
+  previews, context menus and saved searches shipped in 1.6.x.
+- Clean/classic player layouts, artwork accents, custom shortcuts and a theme
+  editor with an isolated preview and explicit save/discard already exist.
+- Timed/word-timed lyrics, live analysis, station discovery, paused session
+  restoration and preloading already exist. Improve these rather than present
+  them as entirely new features. Session resume is not per-video watch progress.
+
+### 0. Establish the acceptance baseline
+
+- [x] Recheck local audio, public anonymous YouTube audio/video, live radio,
+  mode switching and queue preservation with isolated profiles and owned muted
+  players. Separate the outstanding Mac seek-timing smoke assertion from an
+  actual playback defect before changing playback behaviour.
+- [x] Capture current small/medium/large layouts and idle/playing resource use.
+  Do not require browser cookies for public playback or silently switch a saved
+  cookie preference. Source restrictions remain external limits.
+
+Acceptance so far: 986 tests passed / 6 skipped, typecheck, build/import and
+production redraw guard; isolated source install/relocation/reinstall; owned
+muted local/EQ/spectrum/timer, ICY radio, and anonymous YouTube video/audio/video.
+The earlier online seek assertion did not reproduce. Built CLI checked in an
+isolated TTY; native helper starts/exits with it. Resource samples are short
+observations, not a multi-hour performance or physical-device guarantee.
+
+### 1. Small-window identity and mini-player — first milestone
+
+Inspired by Musinator's mini mode, addressing the MacBook Air's missing cabinet.
+
+- [x] Add a smaller cabinet for ordinary laptop Home sizes rather than hiding
+  the full-size mark at the current large-window threshold. At extremely small
+  sizes use a small identity badge; playback controls take priority over art.
+- [x] Add an explicit three-line mini-player: title/artist, progress or LIVE,
+  transport/volume and a visible route back. Automatically use a compact layout
+  when space genuinely runs out, without permanently changing the saved choice.
+- [x] Let the navigation collapse where useful; preserve selection and scroll
+  position on resize. Keep Home actions available without hidden focus targets.
+- [x] Test 80×24, 100×30, 120×40 and 160×50 terminal cells, long titles, Unicode
+  and ASCII fallbacks, zoom/resize, keyboard-only use and mouse opt-in modes.
+
+### 2. Visual polish and full-interface theme previews
+
+Inspired by Musinator's theme previews and Cloofy's cover-led shelves.
+
+- [x] Refine the existing Clean player: balanced cover/metadata/lyrics/Up Next
+  proportions, clearer focus, quieter borders and consistent spacing. Keep the
+  classic layout available and preserve the queue while changing layout.
+- [x] Turn Home's existing recents/stations into responsive cover shelves and
+  quick-play tiles. Use the user's real local history, playlists and favourites;
+  do not invent personalised recommendations or add account requirements.
+- [x] Extend the existing theme draft to a full-interface palette preview
+  covering Home, lists, menus and player. Save applies; Escape/cancel/unmount
+  restores the previous appearance without config writes. Honour custom accents.
+- [x] Add contrast checks for built-in solid palettes. Transparent backgrounds
+  depend on terminal colours; offer a legible/high-contrast fallback rather than
+  claiming a universal contrast guarantee. Respect reduced motion.
+- [x] Load/render only visible artwork; no speculative off-screen prefetch;
+  reuse the native/block fallbacks, overlay suppression and bounded caches.
+
+### 3. Listening tools — audio details, sleep timer and equaliser
+
+Inspired by Musinator; use the existing mpv IPC rather than its PipeWire engine.
+
+- [x] Expose verified codec, bitrate when reported, channels, decoded
+  sample rate and mpv audio-output format. Distinguish source from output;
+  unknown stays unknown. No invented bit depth, bit-perfect or gapless badges.
+- [x] Add a sleep timer: preset/custom minutes, end of track, and end of album
+  where album boundaries are known. Show remaining time and Cancel. On expiry
+  pause/disconnect live radio and suppress queue/repeat auto-advance; retain the
+  queue. Never resume automatically after a timer fires or app restart.
+- [x] Add a bypass-by-default 10-band EQ with Flat and a few presets, custom
+  gains, Reset and explicit Save. Use headroom for boosts and explain that this
+  is not a guarantee against every form of clipping.
+- [x] Give EQ and analysis separate owned filter stages; do not overwrite the
+  current spectrum graph, its pipes or lifetime guard. Verify coexistence with
+  visualisers, local/YouTube/radio, audio/video switching and new queue entries.
+- [x] Test timer races, pause/skip/repeat, live broadcasts, synthetic output events,
+  unsupported filter builds and EQ bypass. No second audible player process.
+
+### 4. Discoverable commands and complete pointer controls
+
+Inspired by Cloofy's action palette and mouse interactions.
+
+- [x] Add a searchable command palette backed by the existing action/shortcut
+  registry: commands, settings, sections and relevant queue actions with current
+  bindings and availability. Suggest Ctrl+K outside text entry, subject to
+  conflict checks; preserve text-field editing chords and existing shortcuts.
+- [x] Expand mouse decoding to press/motion/release and add drag-to-seek and
+  volume with bounded command frequency. Never seek a LIVE/non-seekable source.
+- [x] Use consistent hit areas and hover/focus feedback, keyboard alternatives,
+  Shift-select text, menu dismissal and state restoration. Honour off/wheel/click
+  preferences; no silent change of an existing user's mouse setting.
+- [x] Surface the current mouse mode and relevant setup choices without hiding
+  them in nested settings. Ensure a small-window palette/menu remains usable.
+
+### 5. Richer discovery and per-item resume — discovery milestone
+
+Finish the useful TubeTUI-inspired gaps, keeping music-first navigation.
+
+- [x] Add responsive video result columns for available channel/date/views/
+  duration and LIVE/queued/watched status, with a compact fallback. Preserve
+  selection while loading or returning from playback.
+- [x] Add per-media progress and explicit Resume / Start again actions, plus a
+  Continue listening/watching Home shelf. Migrate history safely, keep a bounded
+  record keyed by stable source IDs, provide Clear and never persist signed URLs.
+  Do not seek live streams or auto-play on Home/startup. Test duplicate queue rows.
+- [x] Add a chapter menu and previous/next chapter actions from actual media or
+  extractor metadata. Display only valid chapter times on seekable items. Refresh
+  expired media links without dropping queue order, pause, volume or resume state.
+- [x] Offer an optional settled-selection download-size estimate with timeout,
+  cancellation and cache. Label estimates/unknowns honestly and use the format
+  the existing audio downloader will actually save, not a fictitious video size.
+  No downloads or persistent files merely from highlighting a result.
+- [ ] Consider local Watch later and subtitle/audio-language controls after the
+  above; keep them distinct from modifying a YouTube account. Choose bindings
+  through the existing shortcut registry, not by reusing occupied letters.
+
+### 6. Laptop lifecycle and power awareness — platform milestone
+
+Inspired by Cloofy's native platform adapters, not assumed portable Rust code.
+
+- [x] Add scoped Mac/Linux adapters for sleep/wake and available output-route
+  events. Pause/disconnect before sleep, remember position, refresh an expired
+  stream on explicit resume and never wake into unexpected playback.
+- [x] Add a documented low-power/reduced-motion policy for decorative animation,
+  artwork prefetch and redraw frequency, without disabling essential controls.
+- [x] Detect supported Mac headphone/output-disconnect events where feasible, with
+  an honest unsupported fallback. A device change is not always a disconnect;
+  don't claim universal AirPods support or silently change the output device.
+- [x] No blanket disk access, TCC resets, permanent daemon or system audio config
+  edits. Package any required helper explicitly and test its lifetime/cleanup.
+- [ ] Physical acceptance on Apple Silicon/macOS and Linux: lid sleep/wake,
+  headphone unplug/Bluetooth change, live-radio reconnect, quit and host exit.
+
+### Scope, credits and release gates
+
+- Preserve one owned mpv, mixed-source queue, cookies opt-in, private profile
+  data and bounded resource use. No automatic external account writes.
+- Defer Spotify Premium/DJ/Connect, account recommendations/subscriptions,
+  Navidrome/Jellyfin/podcasts, scrobbling, crossfade, tag editing and automatic
+  loudness scanning to separate proposals. They are not required for UI polish.
+- Defer per-video tabs, CPU-rendered terminal video, X11 window overlays and
+  voice translation. Keep the existing native Mac/Linux video window.
+- Independent implementations, no upstream source/assets copied. TubeTUI is
+  AGPL-3.0-only; this plan uses interaction ideas, not its code. Keep JukeboxCli's
+  existing upstream notices and add accurate inspiration credits as work ships.
+- Each milestone needs geometry/input tests, fake-clock/IPC tests where relevant,
+  real muted player acceptance and no profile/cookie leakage. Re-run Mac/Linux
+  source installs and Homebrew checks before a stable release; update README,
+  feature status and release notes only for functionality actually delivered.
+- All six stages were authorised together and implemented in source1.9.0.
+  Run final Mac/Linux install CI and physical lifecycle checks before calling
+  a stable release published. No source tag or Homebrew pin has moved yet.
+
+### Research references
+
+Snapshots reviewed without installing or executing the third-party apps:
+
+- [Musinator](https://github.com/smanookian/musinator/tree/d4f05a7eb7ed6e11c97a33f3e312eb02828c408c),
+  0.1.5: mini mode, layout, theme previews, audio details, EQ and sleep timer.
+- [TubeTUI](https://github.com/polblancoo/tubetui/tree/888e79cb7fa42469fc7ee8ba45b4cb5e51e5fd22),
+  0.8.9: rich preview/results, progress/resume, chapters and settled estimates.
+- [Cloofy](https://github.com/parda21/cloofy/tree/efb7e5fd31b564193ed5e40e4ebd72be4e1ac7ac):
+  cover shelves, command palette, pointer controls and native lifecycle adapters.
+- [mpv manual](https://mpv.io/manual/stable/): existing IPC audio/output properties,
+  chapter/track lists and libavfilter support. Availability needs runtime checks.
+
 ## Current release — 1.8.2
 
 - [x] Make anonymous playback explicit rather than a missing setup field.

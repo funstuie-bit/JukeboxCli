@@ -3,9 +3,10 @@ import { Box, Text } from "ink";
 import { useActionInput as useInput } from "../hooks/useActionInput";
 import { scanGenres, type GenreProgress } from "../../library/genre";
 import { useStore } from "../store";
-import { COLOR } from "../theme";
+import { usePalette } from "../palette";
 
 export function GenreScan({ focused }: { focused: boolean }) {
+  const COLOR = usePalette();
   const { library } = useStore();
   const controller = useRef<AbortController | null>(null);
   const [busy, setBusy] = useState(false);

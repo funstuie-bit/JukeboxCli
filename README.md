@@ -21,6 +21,11 @@ keeps the lot in one editable queue. Streams stay streams unless you choose to s
 them. There are lyrics, cover artwork and live visualisers too, with optional
 fullscreen MilkDrop effects on Mac and Linux.
 
+**In the next source build (1.9.0):** compact Home/mini-player, command search,
+sleep timers, EQ, audio details, per-item resume, chapters and pointer dragging.
+See [listening tools and controls](docs/listening-tools.md) for keys and platform
+limits. This work has not replaced the published 1.8.2 release/Homebrew pin yet.
+
 **Cookies are optional.** Public YouTube links are tried anonymously when no
 browser/file is selected. Version **1.8.2** makes that mode explicit and separates
 source verification, rate limits, restricted items and tool errors from actual

@@ -5,12 +5,13 @@ import { useStore } from "../store";
 import { TextField } from "./TextField";
 import { readPlaylist, writePlaylist, type PlaylistPreview } from "../../library/portable-playlist";
 import { expandTilde, cleanText, displayPath } from "../../util/format";
-import { COLOR } from "../theme";
+import { usePalette } from "../palette";
 import type { PlayableTrack } from "../../player/media";
 
 export function PortablePlaylist({ mode, tracks, focused, onBack }: {
   mode: "import" | "export"; tracks?: readonly PlayableTrack[]; focused: boolean; onBack: () => void;
 }) {
+  const COLOR = usePalette();
   const { library, config, playback, listRows } = useStore();
   const [preview, setPreview] = useState<PlaylistPreview | null>(null);
   const [busy, setBusy] = useState(false);

@@ -1,5 +1,6 @@
 import { memo, useEffect, useRef, useState } from "react";
 import { Box, Text } from "ink";
+import { audioDetailsLabel } from "../../player/audio-tools";
 import { usePlayback, useStore } from "../store";
 import { loadWaveform, type Waveform } from "../../player/art";
 import { cleanText, formatDuration, trackDisplayTitle } from "../../util/format";
@@ -69,7 +70,10 @@ export function NowPlaying({ embedded = false, onDownload = () => {} }: { embedd
   const width = Math.max(10, embedded ? store.contentWidth : store.cols - 2);
   const height = store.listRows + 2;
   const clean = store.config.playerLayout === "clean";
-  const layout = playerLayout(width, height);
+  const baseLayout = playerLayout(width, height);
+  // The borderless Clean view can share medium laptop widths more evenly.
+  const cleanLeft = clean && baseLayout.split ? Math.min(64, Math.max(38, Math.floor(width * .43))) : baseLayout.left;
+  const layout = { ...baseLayout, left: cleanLeft, right: width - cleanLeft - 1 };
   const inner = layout.left - 4;
   const file = st.track?.filePath;
   const source = st.track && isStream(st.track) ? st.track.thumbnailUrl : file;
@@ -79,13 +83,26 @@ export function NowPlaying({ embedded = false, onDownload = () => {} }: { embedd
   const [artVisible, setArtVisible] = useState(true);
   const [lyricsVisible, setLyricsVisible] = useState(false);
   const [searchVisible, setSearchVisible] = useState(false);
+  useEffect(() => {
+    const action = store.pendingPlayerAction;
+    if (!action || !(!embedded || store.region === "content")) return;
+    if (action === "lyrics") setLyricsVisible(v => !v);
+    if (action === "artwork") setArtVisible(v => !v);
+    if (action === "playerSearch") setSearchVisible(true);
+    if (action === "video") void store.playback.setPlaybackMode(st.mode === "video" ? "audio" : "video");
+    if (action === "theme") store.setConfig({ ...store.config, playerTheme: nextPlayerTheme(store.config.playerTheme) });
+    if (action === "motion") store.setConfig({ ...store.config, reducedMotion: !(store.config.reducedMotion ?? true) });
+    if (action === "visualizer") store.setConfig({ ...store.config, visualizerMode: nextSpectrumMode(store.config.visualizerMode ?? "classic") });
+    if (action === "fullscreen") void launchFullscreenVisualizer(store.playback.mpvProcessId);
+    store.setPendingPlayerAction?.(undefined);
+  }, [store.pendingPlayerAction]);
   const [wave, setWave] = useState<{ file: string; data: Waveform | null }>();
   const [spectrum, setSpectrum] = useState<number[]>();
   const [fullscreenStatus, setFullscreenStatus] = useState("");
   const visualizer = visualizerEnabled();
   const visualizerMode = store.config.visualizerMode ?? "classic";
   // App unmounts expanded player for help; hidden embedded views get region=help.
-  const active = !embedded || store.region === "content";
+  const active = !store.uiObscured && (!embedded || store.region === "content");
   useEffect(() => {
     if (!menuOpen || !active) return;
     store.setCaptureMode("menu");
@@ -114,11 +131,11 @@ export function NowPlaying({ embedded = false, onDownload = () => {} }: { embedd
     return () => { cancelled = true; };
   }, [file, inner]);
   useEffect(() => {
-    if (!visualizer) return;
+    if (!visualizer || store.powerSaving || !active) return;
     const onSpectrum = (levels: number[]) => setSpectrum(levels);
     store.playback.on("spectrum", onSpectrum);
     return () => { store.playback.off("spectrum", onSpectrum); };
-  }, [store.playback, visualizer]);
+  }, [store.playback, visualizer, store.powerSaving, active]);
   const samples = wave?.file === file ? wave?.data?.samples : undefined;
   const canTrack = st.engine === "mpv" && !st.loading;
   const fraction = canTrack && st.duration > 0 ? Math.max(0, Math.min(1, st.position / st.duration)) : 0;
@@ -126,8 +143,9 @@ export function NowPlaying({ embedded = false, onDownload = () => {} }: { embedd
   const at = Math.min(progressWidth - 1, Math.floor(fraction * progressWidth));
   const t = st.track;
   const live = isLive(t);
-  const artRows = clean && layout.split ? Math.max(2, height - 11 - (visualizer ? layout.waveRows : 0))
-    : playerLayout(width, height, live, visualizer || !!samples).artRows;
+  const infoRows = height >= 23 ? 2 : 0;
+  const artRows = Math.max(0, (clean && layout.split ? Math.max(2, height - 11 - (visualizer ? layout.waveRows : 0))
+    : playerLayout(width, height, live, visualizer || !!samples).artRows) - infoRows);
   const heading = <Box flexDirection="column" width={inner}>
     <Text color={COLOR.accent} bold wrap="truncate-end">{t ? cleanText(trackDisplayTitle(t)) : "Nothing playing"}</Text>
     <Box height={layout.split && live && height >= 26 ? 3 : 1} overflow="hidden"><Text color={COLOR.alt} wrap={layout.split && live && height >= 26 ? "wrap" : "truncate-end"}>{live ? cleanText(st.broadcastTitle || "Waiting for station song information") : t?.artist ? cleanText(t.artist) : t ? "Online audio" : "Library · 7 Discover · o Play URL"}</Text></Box>
@@ -140,12 +158,14 @@ export function NowPlaying({ embedded = false, onDownload = () => {} }: { embedd
       {visualizer ? <SpectrumPanel levels={spectrum} width={inner} height={layout.waveRows} paused={st.paused || Boolean(st.loading)} palette={COLOR} mode={visualizerMode} />
         : <WaveformPanel samples={samples} width={inner} height={layout.waveRows} fraction={fraction} palette={COLOR} />}
     </Box> : null}
-    {live ? <Text color={COLOR.accent} wrap="truncate-end">LIVE · no seeking or restart</Text> : <MouseRow width={progressWidth} active={clickable && canTrack && st.seekable !== false && st.duration > 0} onClick={f => { void store.playback.seek(f * st.duration - st.position); }}><Text color={RULE}>{"─".repeat(at)}<Text color={COLOR.accent}>●</Text>{"─".repeat(progressWidth - at - 1)}</Text></MouseRow>}
+    {live ? <Text color={COLOR.accent} wrap="truncate-end">LIVE · no seeking or restart</Text> : <MouseRow width={progressWidth} active={clickable && canTrack && st.seekable !== false && st.duration > 0} onClick={f => { void store.playback.seekTo(f * st.duration); }} onDrag={f => { void store.playback.seekTo(f * st.duration); }}><Text color={RULE}>{"─".repeat(at)}<Text color={COLOR.accent}>●</Text>{"─".repeat(progressWidth - at - 1)}</Text></MouseRow>}
+    {infoRows ? <><Text color={COLOR.muted} wrap="truncate-end">{audioDetailsLabel(st.audioDetails)}</Text>
+      <MouseRow active={clickable} onClick={() => store.openListeningTools?.()}><Text color={COLOR.alt} wrap="truncate-end">^E Tools{st.sleepTimer ? ` · Timer ${st.sleepTimer.mode}${st.sleepTimer.remaining === undefined ? "" : ` ${st.sleepTimer.remaining}s`}` : " · EQ / sleep timer"}{st.chapters?.length ? ` · ${st.chapters.length} chapters (^K)` : ""}</Text></MouseRow></> : null}
     <Box justifyContent="space-between">
       <Text color={COLOR.text} wrap="truncate-end">{live ? st.loading ? "Connecting…" : st.paused ? `Disconnected · ${shortcutLabel("space", store.config.keybindings)} reconnects` : `On air · ${shortcutLabel("space", store.config.keybindings)} disconnects` : st.engine === "mpv" ? `${formatDuration(st.position)} / ${st.duration > 0 ? formatDuration(st.duration) : "—"}` : "Progress needs mpv"}</Text>
       {store.config.mouseMode === "click" && canTrack ? <Box>
         <MouseRow active={clickable} onClick={() => { void store.playback.changeVolume(-5); }}><Text color={COLOR.alt}> − </Text></MouseRow>
-        <Text color={COLOR.alt}>{st.volume}%</Text>
+        <MouseRow active={clickable} width={12} onClick={f => { void store.playback.setVolume(f * 100); }} onDrag={f => { void store.playback.setVolume(f * 100); }}><Text color={COLOR.alt}>{`${st.volume}%`.padStart(5)} ━━━━━━</Text></MouseRow>
         <MouseRow active={clickable} onClick={() => { void store.playback.changeVolume(5); }}><Text color={COLOR.alt}> + </Text></MouseRow>
       </Box> : <Text color={COLOR.alt}>{st.engine === "mpv" ? `${st.volume}%` : ""}</Text>}
     </Box>
@@ -154,7 +174,7 @@ export function NowPlaying({ embedded = false, onDownload = () => {} }: { embedd
       <MouseRow active={clickable && !!t} onClick={() => { void store.playback.togglePause(); }}><Text color={COLOR.alt}>[{st.paused ? "Play" : "Pause"}] </Text></MouseRow>
       <MouseRow active={clickable && !!t} onClick={() => { void store.playback.next(); }}><Text color={COLOR.alt}>[Next]</Text></MouseRow>
     </Box> : <Text color={COLOR.muted} wrap="truncate-end">{`${!t ? "Stopped" : st.loading ? "Loading" : st.paused ? "Paused" : "Playing"}${clean ? `${st.shuffle ? " · shuffled" : ""}${st.repeat !== "off" ? ` · repeat ${st.repeat}` : ""}` : ` · shuffle ${st.shuffle ? "on" : "off"} · repeat ${st.repeat}`}`}</Text>}
-    <Text color={st.error ? COLOR.warn : COLOR.muted} wrap="truncate-end">{st.cookieRetryAvailable ? "Cookie access failed · c → Retry without cookies" : st.error || fullscreenStatus || (st.loading ? "Loading…" : st.engine === "external" && t ? "Playing in your default app" : t ? `${isStream(t) ? "Streaming · not in Library" : "Saved locally"}${st.withoutCookies ? " · without cookies (this item)" : ""} · c actions · ${shortcutLabel("W", store.config.keybindings, "player")} ${st.mode === "video" ? "audio" : "video"}${st.preloading ? " · preparing next…" : st.nextReady ? " · next prepared" : ""}` : `${shortcutLabel("m", store.config.keybindings)} closes this screen`)}</Text>
+    <Text color={st.error ? COLOR.warn : COLOR.muted} wrap="truncate-end">{st.cookieRetryAvailable ? "Cookie access failed · c → Retry without cookies" : st.error || st.notice || fullscreenStatus || (st.loading ? "Loading…" : st.engine === "external" && t ? "Playing in your default app" : t ? `${isStream(t) ? "Streaming · not in Library" : "Saved locally"}${st.withoutCookies ? " · without cookies (this item)" : ""} · c actions · ${shortcutLabel("W", store.config.keybindings, "player")} ${st.mode === "video" ? "audio" : "video"}${st.preloading ? " · preparing next…" : st.nextReady ? " · next prepared" : ""}` : `${shortcutLabel("m", store.config.keybindings)} closes this screen`)}</Text>
   </Box>;
   const perform = (task: () => void | Promise<unknown>) => {
     setMenuOpen(false);
@@ -186,7 +206,7 @@ export function NowPlaying({ embedded = false, onDownload = () => {} }: { embedd
           toggleHint={shortcutLabel("b", store.config.keybindings, "player")}
           repaintKey={live ? `${Boolean(st.loading)}:${st.paused}:${st.broadcastTitle ?? ""}` : undefined}
           fallback={<RadioFallback live={live} rows={artRows} palette={COLOR} simple={simpleArtwork()}
-            animate={active && !st.paused && !st.loading && !!t && store.config.reducedMotion === false} />} />
+            animate={active && !store.powerSaving && !st.paused && !st.loading && !!t && store.config.reducedMotion === false} />} />
       </Box> : null}
       {!clean && (layout.split || layout.showcase) && height >= 23 ? <Box height={1} /> : null}
       {details}

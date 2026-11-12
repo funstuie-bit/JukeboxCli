@@ -1,6 +1,19 @@
 import { describe, it, expect, vi } from "vitest";
 import { MpvPlayer } from "../src/player/mpv";
 
+it("restores the previous owned EQ after a rejected filter without touching analysis",async()=>{
+  const player=new MpvPlayer("/no/such/mpv/binary");
+  vi.spyOn(player,"processId","get").mockReturnValue(123);
+  const command=vi.spyOn(player,"command").mockResolvedValue(undefined);
+  await player.setEqualizer({enabled:true,gains:[2,0,0,0,0,0,0,0,0,0]});
+  command.mockClear(); let adds=0;
+  command.mockImplementation(async args=>{if(args[0]==="af"&&args[1]==="add"&&++adds===1)throw Error("unsupported filter");});
+  await expect(player.setEqualizer({enabled:true,gains:[3,0,0,0,0,0,0,0,0,0]})).rejects.toThrow("Previous settings retained");
+  expect(command.mock.calls[0]![0]).toEqual(["af","remove","@jukebox-eq"]);
+  expect(String(command.mock.calls.at(-1)![0][2])).toContain("volume=-2dB");
+  expect(command.mock.calls.every(([args])=>args[0]==="af"&&["add","remove"].includes(String(args[1])))).toBe(true);
+});
+
 describe("MpvPlayer idle-command gating", () => {
   // The crash was an mpv "error running command" reply to a seek/pause sent
   // while no file was loaded. With the `loaded` gate those commands must return

@@ -3,6 +3,22 @@
 Release notes describe what changed in each build. For what works now and the
 remaining limits, see [feature status](FEATURES.md).
 
+## Unreleased — 1.9.0 source
+
+- Compact Home cabinet/mini-player, optional sidebar and balanced Clean player.
+- Extend draft palette previews to interface chrome/lists/menus and add contrast
+  checks. Broaden small cover shelves without changing the user's saved items.
+- Audio format telemetry, cancellable sleep timers and bypass-default 10-band EQ
+  using a separate labelled mpv filter alongside live-spectrum analysis.
+- Commands palette, chapter navigation, pointer hover and bounded timeline/volume
+  dragging; retain custom shortcut conflicts, text editing and mouse preferences.
+- Bounded per-media resume points/Continue, Resume/Start again video actions,
+  rich result columns and opt-in metadata-only audio size estimates.
+- Optional process-owned Mac notifications and Linux logind sleep observer;
+  pause/disconnect without wake auto-play, plus low-power visual controls.
+- Independent interaction ideas from Musinator, TubeTUI and Cloofy. Details and
+  acceptance limits: [listening tools](docs/listening-tools.md).
+
 ## 1.8.2 — Anonymous YouTube status and accurate failure reasons
 
 - Label no-profile mode Anonymous / cookies optional, with an explicit keep-

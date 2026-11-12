@@ -36,7 +36,9 @@ const SOURCE_ORDER: SourceId[] = [
  * Source tabs + text search mirror the Library, but the list stays flat so
  * play-recency order is never reshuffled by grouping.
  */
+import { usePalette } from "../palette";
 export function History() {
+  const COLOR = usePalette();
   const {
     library,
     config,

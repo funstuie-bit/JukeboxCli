@@ -3,9 +3,11 @@ import { Box, Text } from "ink";
 import type { SelectProps } from "@inkjs/ui";
 import { MouseRow } from "./MouseRow";
 import { useActionInput } from "../hooks/useActionInput";
-import { COLOR, ICON } from "../theme";
+import { ICON } from "../theme";
+import { usePalette } from "../palette";
 /** Shared keyboard and pointer selection for settings and nested menus. */
 export function Select({ options, onChange, isDisabled = false, visibleOptionCount = 5, defaultValue, highlightText }: SelectProps) {
+  const COLOR = usePalette();
   const [cursor, setCursor] = useState(0);
   const [selected, setSelected] = useState(defaultValue);
   const signature = JSON.stringify(options.map(option => option.value));

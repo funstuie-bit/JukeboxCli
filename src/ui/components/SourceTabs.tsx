@@ -1,6 +1,6 @@
 import { Box, Text } from "ink";
 import { SOURCE_LABELS, type SourceId } from "../../library/types";
-import { COLOR } from "../theme";
+import { usePalette } from "../palette";
 
 export type SourceFilter = "all" | SourceId;
 
@@ -12,6 +12,7 @@ interface SourceTabsProps {
 
 /** Source filter bar shared by Library and Playlists (All · YouTube · …). */
 export function SourceTabs({ tabs, active, count }: SourceTabsProps) {
+  const COLOR = usePalette();
   return (
     <Box flexShrink={0}>
       {tabs.map((tb, i) => {

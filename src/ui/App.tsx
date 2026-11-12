@@ -19,7 +19,14 @@ import { migrateOwnerLayout } from "../library/migrate";
 import { reconcileLibrary } from "../library/reconcile";
 import { legacyArchiveFile } from "../config/paths";
 import type { Track } from "../library/types";
-import { isStream, type PlayableTrack } from "../player/media";
+import { isLive, isStream, type PlayableTrack } from "../player/media";
+import { PaletteProvider } from "./palette";
+import { appearancePalette } from "./appearance";
+import { MiniPlayer } from "./components/MiniPlayer";
+import { CommandPalette } from "./components/CommandPalette";
+import { ListeningTools } from "./components/ListeningTools";
+import { MouseRow } from "./components/MouseRow";
+import { watchLifecycle } from "../player/lifecycle";
 import { Playback, type PlaybackState } from "../player/playback";
 import { closeFullscreenVisualizer } from "../player/fullscreen-visualizer";
 import { createStreamResolver } from "../player/resolve";
@@ -158,6 +165,26 @@ export function App({ initialAdd, initialOverrides }: { initialAdd?: string; ini
   // drop their idle search hint, so every freed row goes to the song list. The
   // now-playing divider holds until even shorter terminals force it out.
   const compact = rows < 20;
+  const [mini, setMini] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [commands, setCommands] = useState(false);
+  const [listeningTools, setListeningTools] = useState(false);
+  const [previewConfig, setPreviewConfig] = useState<Config | null>(null);
+  const [pendingPlayerAction, setPendingPlayerAction] = useState<string>();
+  const [lifecycleStatus, setLifecycleStatus] = useState("Platform events not active");
+  const [systemLowPower, setSystemLowPower] = useState(false);
+  useEffect(() => {
+    if (!boot || config?.lifecycle === false) { setLifecycleStatus("Platform events off"); setSystemLowPower(false); return; }
+    return watchLifecycle(event => {
+      if (event === "sleep" || event === "output-disconnected") void boot.playback.suspendPlayback(event === "sleep" ? "Paused for system sleep" : "Audio output disconnected · resume explicitly");
+      if (event === "wake") setLifecycleStatus("Awake · playback stays paused until you resume");
+      if (event === "low-power" || event === "normal-power") setSystemLowPower(event === "low-power");
+    }, setLifecycleStatus);
+  }, [boot, config?.lifecycle]);
+  const sidebarVisible = !sidebarCollapsed && cols >= 70;
+  const miniVisible = mini || rows < 12 || cols < 45;
+  const openCommands = useCallback(() => setCommands(true), []);
+  const openListeningTools = useCallback(() => setListeningTools(true), []);
   // The block wordmark stays in every height, compact included, so the app
   // never reads as bare chrome; it's width-gated only. Below 34 cols there is
   // no logo (no text fallback), reserving a row only for the transient mpv
@@ -182,13 +209,16 @@ export function App({ initialAdd, initialOverrides }: { initialAdd?: string; ini
   const listRows = Math.max(3, bodyH - 2);
   // Root padding (2) + shared sidebar width + its margin (1) + the content rail (1)
   // + its padding (2), with 2 columns of slack.
-  const contentWidth = Math.max(20, cols - SIDEBAR_WIDTH - 8);
+  const contentWidth = Math.max(20, cols - (sidebarVisible ? SIDEBAR_WIDTH : 0) - 8);
 
   const [section, setSection] = useState<Section>("home");
   // Home's listening choices own the arrows/Enter on launch; Tab opens the map.
   const [region, setRegion] = useState<Region>("content");
+  useEffect(() => { if (!sidebarVisible && region === "sidebar") setRegion("content"); }, [sidebarVisible,region]);
   const [captureMode, setCaptureMode] = useState<CaptureMode>("none");
-  useMouseWheel(captureMode === "text" && config?.mouseMode !== "click" ? "off" : config?.mouseMode ?? "off", captureMode === "text");
+  // Overlays own input without destroying the underlying section's text mode.
+  const uiCaptureMode = commands || listeningTools ? "menu" : miniVisible ? "none" : captureMode;
+  useMouseWheel(uiCaptureMode === "text" && config?.mouseMode !== "click" ? "off" : config?.mouseMode ?? "off", uiCaptureMode === "text");
   const [showHelp, setShowHelp] = useState(false);
   // Full-screen Now Playing view, toggled with `m` from any section. The
   // body stays mounted (display none) behind it so section state survives.
@@ -222,6 +252,7 @@ export function App({ initialAdd, initialOverrides }: { initialAdd?: string; ini
       void fs.rm(legacyArchiveFile, { force: true }).catch(() => {});
       const binaries = await ensureBinaries(setStatus, cfg.ytdlpChannel ?? "nightly", cfg.ytdlpProvider);
       const playback = new Playback(binaries.mpv, undefined, createStreamResolver(async () => sessionConfig.get()));
+      await playback.setEqualizer(cfg.equalizer ?? { enabled: false, gains: [] });
 
       // Recently played: record every track the player actually starts,
       // including auto-advance and next/prev, not just explicit picks.
@@ -265,6 +296,10 @@ export function App({ initialAdd, initialOverrides }: { initialAdd?: string; ini
             (!isStream(s.track) || (s.engine === "mpv" && s.canControl)) && id !== lastPlayedId) {
           lastPlayedId = id;
           history.record(s.track);
+        }
+        if (id && s.track && !s.loading && !s.error && !isLive(s.track) && s.duration > 0 && (s.paused || s.position % 5 === 0)) {
+          const previous = history.progress(id);
+          if (!previous || Math.abs(previous.position - s.position) >= 1) history.recordProgress(id, s.position, s.duration);
         }
       });
 
@@ -441,7 +476,13 @@ export function App({ initialAdd, initialOverrides }: { initialAdd?: string; ini
         return;
       }
       // A TextField owns the whole keyboard while the user is typing.
-      if (captureMode === "text" || captureMode === "menu") return;
+      if (uiCaptureMode === "text" || uiCaptureMode === "menu") return;
+      const userBindings = Object.values(config?.keybindings ?? {});
+      if (key.ctrl && input === "k" && !userBindings.includes("ctrl+k")) { setCommands(true); return; }
+      if (key.ctrl && input === "e" && !userBindings.includes("ctrl+e")) { setListeningTools(true); return; }
+      if (key.ctrl && input === "b" && !userBindings.includes("ctrl+b")) { setSidebarCollapsed(v => !v); setRegion("content"); return; }
+      if (input === "Z" && !key.ctrl && !key.meta && !userBindings.includes("Z")) { setMini(v => !v); return; }
+      if (miniVisible && key.escape) { setMini(false); return; }
       const translated = shortcutInput(input, key, config?.keybindings, "global");
       if (!translated) return;
       [input, key] = translated;
@@ -465,7 +506,7 @@ export function App({ initialAdd, initialOverrides }: { initialAdd?: string; ini
         setShowHelp(true);
         return;
       }
-      if (input === "H" && captureMode === "none") {
+      if (input === "H" && uiCaptureMode === "none") {
         setNowPlayingView(false); setSection("home"); setRegion("content"); return;
       }
       if (input === "Y") {
@@ -505,7 +546,7 @@ export function App({ initialAdd, initialOverrides }: { initialAdd?: string; ini
         // busy toggling rows): that's the point of having two pause keys.
         const transport =
           input === " " || input === "k"
-            ? input === "k" || !shouldBlockPlayerSpace(captureMode)
+            ? input === "k" || !shouldBlockPlayerSpace(uiCaptureMode)
             : playerCanControl(pb) &&
               (input === "n" ||
                 input === "p" ||
@@ -537,13 +578,13 @@ export function App({ initialAdd, initialOverrides }: { initialAdd?: string; ini
         }
       }
       if (key.tab) {
-        setRegion(region === "sidebar" ? "content" : "sidebar");
+        setRegion(!sidebarVisible || region === "sidebar" ? "content" : "sidebar");
         return;
       }
       if (key.escape) {
         // Pickers and drill-down views run their own esc (back one step), so
         // the global one stays out.
-        if (captureMode === "picker" || captureMode === "esc") return;
+        if (uiCaptureMode === "picker" || uiCaptureMode === "esc") return;
         if (nowPlayingView) {
           setNowPlayingView(false);
           return;
@@ -558,7 +599,7 @@ export function App({ initialAdd, initialOverrides }: { initialAdd?: string; ini
         quitAll();
         return;
       }
-      if (captureMode === "none" || captureMode === "esc") {
+      if (uiCaptureMode === "none" || uiCaptureMode === "esc") {
         // Digits jump straight to a section, no sidebar round-trip.
         const jump = sectionForDigit(input);
         if (jump) {
@@ -622,7 +663,11 @@ export function App({ initialAdd, initialOverrides }: { initialAdd?: string; ini
   const store: Store | null = useMemo(() => {
     if (!boot || !config) return null;
     return {
-      config,
+      config: previewConfig ?? config,
+      previewConfig: setPreviewConfig,
+      lifecycleStatus, powerSaving: config.lowPower === true || systemLowPower,
+      uiObscured: commands || listeningTools || miniVisible,
+      openListeningTools, openCommands, pendingPlayerAction, setPendingPlayerAction,
       setConfig,
       library: boot.library,
       binaries: boot.binaries,
@@ -634,9 +679,9 @@ export function App({ initialAdd, initialOverrides }: { initialAdd?: string; ini
       // While the cheatsheet or the Now Playing view is up, no pane owns the
       // keyboard: every handler gated on "content"/"sidebar" goes inactive
       // without per-component edits.
-      region: showHelp || nowPlayingView ? "help" : region,
+      region: showHelp || nowPlayingView || commands || listeningTools || miniVisible ? "help" : region,
       setRegion,
-      captureMode,
+      captureMode: uiCaptureMode,
       setCaptureMode,
       playlistsDepth,
       setPlaylistsDepth,
@@ -663,7 +708,7 @@ export function App({ initialAdd, initialOverrides }: { initialAdd?: string; ini
     region,
     showHelp,
     nowPlayingView,
-    captureMode,
+    uiCaptureMode,
     playlistsDepth,
     pendingSearch,
     pendingAdd,
@@ -677,6 +722,8 @@ export function App({ initialAdd, initialOverrides }: { initialAdd?: string; ini
     rows,
     setConfig,
     playTrack,
+    previewConfig, commands, listeningTools, miniVisible, openCommands, openListeningTools, pendingPlayerAction,
+    lifecycleStatus, systemLowPower,
   ]);
 
   if (error) {
@@ -715,11 +762,17 @@ export function App({ initialAdd, initialOverrides }: { initialAdd?: string; ini
   const expandedPlayerLayout = playerLayout(ruleWidth, listRows + 2);
 
   return (
-    <StoreContext.Provider value={store}><RowMenuProvider>
-      <Box flexDirection="column" paddingX={1}>
+    <StoreContext.Provider value={store}><PaletteProvider config={store.config}><RowMenuProvider>
+      {!welcome && !commands && !listeningTools && miniVisible ? <MiniPlayer close={() => setMini(false)} /> : null}
+      {commands ? <CommandPalette close={() => setCommands(false)} navigate={section => { setSection(section); setNowPlayingView(false); setMini(false); setRegion("content"); }}
+        reportError={setMpvStatus}
+        mini={() => setMini(v => !v)} sidebar={() => { setSidebarCollapsed(v => !v); setRegion("content"); }}
+        playerAction={id => { if (id === "help") setShowHelp(true); else { setNowPlayingView(true); setPendingPlayerAction(id); } }} /> : null}
+      {listeningTools && !commands ? <ListeningTools close={() => setListeningTools(false)} /> : null}
+      <Box flexDirection="column" paddingX={1} display={!welcome && (commands || listeningTools || miniVisible) ? "none" : "flex"}>
         <Box justifyContent="space-between">
           {showLogo ? <Logo /> : null}
-          {!welcome ? <Text color={playerPalette(config?.playerTheme).muted}>{shortcutLabel("H", config?.keybindings)} Home · {shortcutLabel("m", config?.keybindings)} Player · {shortcutLabel("?", config?.keybindings)} Keys</Text> : null}
+          {!welcome ? <MouseRow active onClick={openCommands}><Text color={appearancePalette(store.config.playerTheme,store.config.appearance).muted}>{shortcutLabel("H", config?.keybindings)} Home · {shortcutLabel("m", config?.keybindings)} Player · ^K Commands · ^E Tools</Text></MouseRow> : null}
           {mpvStatus ? <Text dimColor>{mpvStatus}</Text> : null}
         </Box>
         {showTopRule ? <Rule width={ruleWidth} /> : null}
@@ -752,12 +805,12 @@ export function App({ initialAdd, initialOverrides }: { initialAdd?: string; ini
               marginTop={compact ? 0 : 1}
               display={showHelp || nowPlayingView ? "none" : "flex"}
             >
-              <Sidebar />
+              {sidebarVisible ? <Sidebar /> : null}
               <Box
                 flexGrow={1}
                 flexDirection="column"
                 borderStyle={region === "content" ? "bold" : "single"}
-                borderColor={region === "content" ? COLOR.accent : RULE}
+                borderColor={region === "content" ? appearancePalette(store.config.playerTheme,store.config.appearance).accent : RULE}
                 borderTop={false}
                 borderRight={false}
                 borderBottom={false}
@@ -789,6 +842,6 @@ export function App({ initialAdd, initialOverrides }: { initialAdd?: string; ini
         )}
         <RowMenuOverlay />
       </Box>
-    </RowMenuProvider></StoreContext.Provider>
+    </RowMenuProvider></PaletteProvider></StoreContext.Provider>
   );
 }

@@ -1,4 +1,5 @@
 import { spawn, type ChildProcess } from "node:child_process";
+import { equalizerFilter, validEqualizer, type Equalizer } from "./audio-tools";
 import { EventEmitter } from "node:events";
 import net from "node:net";
 import os from "node:os";
@@ -30,6 +31,27 @@ const CONNECT_RETRY_MS = 100;
  * dies while we are still using it, so a crash does not permanently break playback.
  */
 export class MpvPlayer extends EventEmitter {
+  private equalizer: Equalizer = validEqualizer(undefined);
+  private eqChain: Promise<void> = Promise.resolve();
+  async setEqualizer(value: Equalizer): Promise<void> {
+    const next = validEqualizer(value);
+    if (!this.processId) { this.equalizer = next; return; }
+    const work = this.eqChain.then(async () => {
+      const previous = this.equalizer;
+      const filter = equalizerFilter(next);
+      await this.command(["af", "remove", "@jukebox-eq"]).catch(() => {});
+      try {
+        if (filter) await this.command(["af", "add", filter]);
+        this.equalizer = next;
+      } catch {
+        const restore = equalizerFilter(previous);
+        if (restore) await this.command(["af", "add", restore]).catch(() => {});
+        throw Error("This mpv build could not apply the equaliser. Previous settings retained.");
+      }
+    });
+    this.eqChain = work.catch(() => {});
+    return work;
+  }
   private proc: ChildProcess | null = null;
   get processId(): number | undefined {
     return this.proc?.exitCode === null && !this.proc.killed ? this.proc.pid : undefined;
@@ -292,6 +314,9 @@ export class MpvPlayer extends EventEmitter {
     this.write(["observe_property", 4, "volume"]).catch(() => undefined);
     this.write(["observe_property", 5, "seekable"]).catch(() => undefined);
     this.write(["observe_property", 6, "metadata"]).catch(() => undefined);
+    ["audio-codec-name", "audio-params", "audio-out-params", "audio-bitrate", "chapter-list", "chapter"].forEach((name, i) => {
+      this.write(["observe_property", 20 + i, name]).catch(() => undefined);
+    });
   }
 
   private mediaKeysReady = false;
@@ -373,6 +398,10 @@ export class MpvPlayer extends EventEmitter {
       });
       try {
         await Promise.all([this.command(this.mediaCommand(media, "replace")), ready]);
+        await this.setEqualizer(this.equalizer).catch(() => {
+          this.equalizer = validEqualizer(undefined);
+          this.emit("audio-tool-warning", "Equaliser unavailable in this mpv build · playing with EQ bypassed");
+        });
         if (epoch !== this.loadEpoch) throw new Error("mpv load cancelled");
         // Some HLS loads discard the loadfile external-audio option while
         // resolving the video playlist. Attach the soundtrack explicitly only

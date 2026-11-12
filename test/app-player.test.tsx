@@ -55,6 +55,7 @@ vi.mock("../src/player/mpv", async () => {
   return { MpvPlayer: class extends EventEmitter {
     paused = false; volume = 100;
     setInitialVolume(v: number) { this.volume = v; }
+    async setEqualizer() {}
     async loadMedia(_media: unknown, paused: boolean) { this.paused = paused; }
     async clearNext() {}
     async preloadNext() {}
@@ -115,6 +116,38 @@ async function press(view: ReturnType<typeof app>, key: string) {
 afterEach(() => { startup.fresh = false; startup.writes = []; startup.readEffective = undefined; vi.unstubAllEnvs(); cleanup(); rmSync(searchHistoryFile, { force: true }); rmSync(sessionFile, { force: true }); rmSync(stationsFile, { force: true }); rmSync(path.join(paths.cache, "lyrics-v1.json"), { force: true }); });
 
 describe("App player workflow", () => {
+  it("restores text ownership after shrinking into mini mode and returns focus from a hidden sidebar",async()=>{
+    const view=app(); await tick();await tick();
+    await press(view,"\t");expect(view.lastFrame()).toContain("Tab for Home choices");
+    Object.defineProperty(view.stdout,"columns",{value:60,configurable:true});view.stdout.emit("resize");await tick();
+    expect(view.lastFrame()).toContain("↑↓ choose · Enter open");
+    Object.defineProperty(view.stdout,"columns",{value:100,configurable:true});view.stdout.emit("resize");await tick();
+    await press(view,"9");await press(view,"\r"); // YouTube handle text field
+    Object.defineProperty(view.stdout,"columns",{value:40,configurable:true});view.stdout.emit("resize");await tick();
+    expect(view.lastFrame()).toContain("Enlarge for full view");
+    Object.defineProperty(view.stdout,"columns",{value:100,configurable:true});view.stdout.emit("resize");await tick();
+    await press(view,"n");await press(view,"\x0b");
+    expect(view.lastFrame()).not.toContain("Commands · type");
+    expect(view.lastFrame()).not.toContain("NOW PLAYING");
+  });
+  it("opens commands without playing underlying rows, navigates and restores input", async () => {
+    const view = app(); await tick(); await tick();
+    await press(view,"\x0b"); expect(view.lastFrame()).toContain("Commands · type");
+    await press(view,"open library"); await press(view,"\r");
+    expect(view.lastFrame()).not.toContain("Commands · type");
+    expect(view.lastFrame()).toContain("Library");
+    await press(view,"\x05"); expect(view.lastFrame()).toContain("Listening tools");
+    await press(view,"\x1b"); expect(view.lastFrame()).not.toContain("EQ changes apply");
+    await press(view,"Z"); expect(view.lastFrame()!.split("\n")).toHaveLength(3);
+    expect(view.lastFrame()).toContain("Z Back");
+    await press(view,"Z"); expect(view.lastFrame()).toContain("Library");
+  });
+  it("keeps command chords inside text editing and honours conflicting custom shortcuts", async () => {
+    const view = app({initialOverrides:{keybindings:{pause:"ctrl+k"}}}); await tick(); await tick();
+    await press(view,"\x0b"); expect(view.lastFrame()).not.toContain("Commands · type");
+    await press(view,"Y"); await press(view,"typing"); await press(view,"\x0b");
+    expect(view.lastFrame()).not.toContain("Commands · type");
+  });
   it("uses rebound player controls without interpreting text as shortcuts", async () => {
     const view = app({ initialOverrides: { keybindings: { player: "!", pause: "ctrl+e", artwork: "ctrl+b" } } });
     await tick(); await tick(); await press(view, "1"); await press(view, "\r");
@@ -359,7 +392,7 @@ describe("App player workflow", () => {
     expect(view.lastFrame()).not.toContain("No cover art");
     await press(view, "T"); await press(view, "V");
     await press(view, "\u001b"); await press(view, "9"); await press(view, "\u001b[F");
-    for (let i = 0; i < 3; i++) await press(view, "\u001b[A");
+    for (let i = 0; i < 4; i++) await press(view, "\u001b[A");
     await press(view, "\r");
     expect(view.lastFrame()).toContain("Theme: Calm");
     expect(view.lastFrame()).toContain("Reduced motion: off");

@@ -1,5 +1,6 @@
 import { Box, Text } from "ink";
-import { playerPalette, RULE } from "../theme";
+import { RULE } from "../theme";
+import { usePalette } from "../palette";
 import type { Hint } from "../keymap";
 import { useStore, usePlayback } from "../store";
 import { isLive } from "../../player/media";
@@ -11,8 +12,7 @@ import { shortcutLabel } from "../shortcuts";
  * labels are dimmed. Deliberately short, the `?` overlay carries the rest.
  */
 export function Footer({ hints }: { hints: Hint[] }) {
-  const { playback, config } = useStore();
-  const COLOR = playerPalette(config.playerTheme);
+  const { playback } = useStore();
   const live = isLive(usePlayback(playback).track);
   const visible = live ? hints.filter(h => h.label !== "Seek").map(h => h.label === "Pause" ? { ...h, label: "Reconnect/pause" } : h) : hints;
   return (
@@ -39,7 +39,7 @@ export function SplitFooter({ left, right, leftHints, rightHints }: {
 
 function HintLine({ hints }: { hints: Hint[] }) {
   const { config } = useStore();
-  const COLOR = playerPalette(config.playerTheme);
+  const COLOR = usePalette();
   return <Text wrap="truncate-end">{hints.map((h, i) => <Text key={h.keys + h.label}>
     {i > 0 ? <Text color={COLOR.muted}>{"   "}</Text> : null}
     <Text color={COLOR.alt}>{shortcutLabel(h.keys, config.keybindings)}</Text>

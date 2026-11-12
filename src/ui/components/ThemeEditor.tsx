@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Box, Text } from "ink";
 import { useActionInput as useInput } from "../hooks/useActionInput";
 import { useStore } from "../store";
@@ -8,8 +8,13 @@ import { TextField } from "./TextField";
 
 /** Draft is isolated: leaving, Esc or unmount cannot persist preview changes. */
 export function ThemeEditor({ focused, onBack }: { focused: boolean; onBack: () => void }) {
-  const { config, setConfig, contentWidth, listRows } = useStore();
+  const { config, setConfig, contentWidth, listRows, previewConfig } = useStore();
   const [draft, setDraft] = useState(() => ({ theme: config.playerTheme, ...validAppearance(config.appearance) }));
+  useEffect(() => {
+    const { theme, ...appearance } = draft;
+    previewConfig?.({ ...config, playerTheme: theme, appearance });
+    return () => previewConfig?.(null);
+  }, [draft, previewConfig]);
   const [row, setRow] = useState(0);
   const [editingAccent, setEditingAccent] = useState(false);
   const [error, setError] = useState("");

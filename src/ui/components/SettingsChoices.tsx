@@ -1,7 +1,8 @@
 import { MouseRow } from "./MouseRow";
 import { Box, Text } from "ink";
 import { useActionInput } from "../hooks/useActionInput";
-import { COLOR, ICON } from "../theme";
+import { ICON } from "../theme";
+import { usePalette } from "../palette";
 
 /** Live preference labels change after Enter. Keep focus by stable option ID,
  * not the option array/label, and use the available height instead of five rows. */
@@ -14,6 +15,7 @@ export function SettingsChoices({ title, options, focused, height, value, onFocu
   onFocus: (value: string) => void;
   onSelect: (value: string) => void;
 }) {
+  const COLOR = usePalette();
   const selected = Math.max(0, options.findIndex(option => option.value === value));
   const count = Math.max(1, Math.floor(height) - 2);
   const start = Math.max(0, Math.min(selected - Math.floor(count / 2), options.length - count));

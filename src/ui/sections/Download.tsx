@@ -20,7 +20,8 @@ import {
   getPartials,
   type PartialNotice,
 } from "../../sources/partials";
-import { COLOR, ICON } from "../theme";
+import { ICON } from "../theme";
+import { usePalette } from "../palette";
 import {
   cleanText,
   displayUrl,
@@ -102,6 +103,7 @@ function PageIntro({
   hint: string;
   focused?: boolean;
 }) {
+  const COLOR = usePalette();
   return (
     <Box flexDirection="column" marginBottom={1}>
       <Text bold color={focused ? COLOR.accent : COLOR.text}>
@@ -118,6 +120,7 @@ function PageIntro({
 
 /** Key hints pinned under the main content — same spacing everywhere. */
 function FooterHint({ children }: { children: string }) {
+  const COLOR = usePalette();
   return (
     <Box marginTop={1}>
       <Text color={COLOR.muted} wrap="truncate-end">
@@ -141,6 +144,7 @@ function MenuRow({
   focused: boolean;
   nameWidth: number;
 }) {
+  const COLOR = usePalette();
   const active = here && focused;
   return (
     <Box>
@@ -173,13 +177,6 @@ const MARK: Partial<Record<QueueItem["status"], string>> = {
   paused: ICON.pause,
   pending: ICON.pending,
   downloading: ICON.play,
-};
-
-const MARK_COLOR: Partial<Record<QueueItem["status"], string>> = {
-  downloading: COLOR.accent,
-  done: COLOR.good,
-  error: COLOR.bad,
-  paused: COLOR.warn,
 };
 
 /**
@@ -222,6 +219,8 @@ function shortError(e?: string): string {
  * shrinks. Errors stay short so nothing ever wraps.
  */
 function QueueRow({ item }: { item: QueueItem }) {
+  const COLOR = usePalette();
+  const MARK_COLOR: Partial<Record<QueueItem["status"], string>> = { downloading: COLOR.accent, done: COLOR.good, error: COLOR.bad, paused: COLOR.warn };
   let detail = "";
   let detailColor: string | undefined;
   let detailDim = true;
@@ -322,6 +321,7 @@ const STATUS_ORDER: Record<QueueItem["status"], number> = {
 };
 
 function QueueView() {
+  const COLOR = usePalette();
   const { queue, region, listRows } = useStore();
   const items = useQueueItems(queue);
   const s = queue.stats();
@@ -556,6 +556,7 @@ function SingleListConfirm({
   focused: boolean;
   onSubmit: (ids: string[]) => void;
 }) {
+  const COLOR = usePalette();
   // A pasted link has no real name until it's fetched, so show the clean link
   // itself rather than a guessed "YouTube playlist" abstraction.
   const label = isDirectLink(item)
@@ -618,6 +619,7 @@ export function PlaylistPicker({
    *  the scroll window never overflows the body (see SongList). */
   reserveRows?: number;
 }) {
+  const COLOR = usePalette();
   const { region, listRows, library } = useStore();
   const focused = region === "content";
   // Nothing starts selected: picking is the optional path, not homework.
@@ -911,6 +913,7 @@ function DownloadHub({
 // ── Main Download component ─────────────────────────────────────────────
 
 export function Download() {
+  const COLOR = usePalette();
   const {
     config,
     setConfig,

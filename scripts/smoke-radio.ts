@@ -52,6 +52,7 @@ const waitFor = async (predicate: () => boolean, timeout = 8000) => {
 };
 try {
   await p.setVolume(0);
+  await p.setEqualizer({enabled:true,gains:[2,1,0,0,0,0,0,0,0,0]});
   // A station queued after a finite URL must not connect speculatively.
   await p.play(direct, [direct, radio], 0, true);
   assert(!p.getState().error); assert(!requests.includes("/live"));

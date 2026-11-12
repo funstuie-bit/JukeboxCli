@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { mouseEvents, mousePresses } from "../mouse";
+import { mouseEvents, MouseDecoder } from "../mouse";
 
 /**
  * Enable mouse wheel scrolling in the terminal. Translates SGR mouse wheel
@@ -14,20 +14,18 @@ export function useMouseWheel(mode: "off" | "wheel" | "click" = "wheel", suppres
     // Enable SGR extended mouse tracking (button events + SGR encoding).
     // This tells the terminal to report mouse button presses (including wheel)
     // as escape sequences on stdin.
-    stdout.write("\x1b[?1000h\x1b[?1006h");
+    stdout.write(`\x1b[?1000h\x1b[?1006h${mode === "click" ? "\x1b[?1003h" : ""}`);
+    const decoder = new MouseDecoder();
 
     const handler = (data: Buffer): void => {
       const str = data.toString("utf8");
-      if (mode === "click") for (const press of mousePresses(str)) mouseEvents.emit("press", press);
+      const events = decoder.push(str);
+      if (mode === "click") for (const event of events) if (event.kind !== "wheel") mouseEvents.emit(event.kind, event);
       if (suppressWheel) return;
       // SGR mouse wheel up:   \x1b[<64;col;rowM
       // SGR mouse wheel down: \x1b[<65;col;rowM
-      const re = /\x1b\[<(64|65);\d+;\d+[Mm]/g;
       let arrows = "";
-      let match: RegExpExecArray | null;
-      while ((match = re.exec(str)) !== null) {
-        arrows += match[1] === "64" ? "\x1b[A" : "\x1b[B";
-      }
+      for (const event of events) if (event.kind === "wheel") arrows += event.down ? "\x1b[B" : "\x1b[A";
       if (arrows.length === 0) return;
       // Ink 7 consumes stdin via 'readable' + read() into its own parser, so
       // a manual emit("data") never reaches it. unshift puts the arrows back
@@ -45,7 +43,7 @@ export function useMouseWheel(mode: "off" | "wheel" | "click" = "wheel", suppres
     stdin.prependListener("data", handler);
 
     return () => {
-      stdout.write("\x1b[?1000l\x1b[?1006l");
+      stdout.write("\x1b[?1000l\x1b[?1002l\x1b[?1003l\x1b[?1006l");
       stdin.removeListener("data", handler);
     };
   }, [mode, suppressWheel]);

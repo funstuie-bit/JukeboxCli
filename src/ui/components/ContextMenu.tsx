@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { usePalette } from "../palette";
 import { Box, Text, type DOMElement } from "ink";
 import { useActionInput } from "../hooks/useActionInput";
 import { MouseRow } from "./MouseRow";
@@ -13,6 +14,7 @@ export function ContextMenu({ actions, width, height, active, close, anchor, tit
   actions: ContextAction[]; width: number; height: number; active: boolean; close: () => void; anchor?: { x: number; y: number }; title?: string;
 }) {
   const { config } = useStore();
+  const COLOR = usePalette();
   const ref = useRef<DOMElement>(null);
   const [selected, setSelected] = useState(0);
   const menuWidth = Math.min(width, 40);
