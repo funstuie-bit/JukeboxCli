@@ -43,6 +43,9 @@ tests cover compact layouts and aligned wide panels.
 For asynchronous UI results, wait for the expected frame with a bounded
 `vi.waitFor` instead of guessing a sleep just longer than a component debounce.
 Keep the same result assertions; slower CI must not weaken behaviour checks.
+Full-App tests wait for Home to finish bootstrap before sending navigation,
+and flush input through React `act`. The delayed-bootstrap regression keeps
+this separate from application performance or user-visible startup behaviour.
 
 Playing a track is not permission to download it. Removing it from the queue is
 not permission to delete the file. Keep those actions separate, and ask before
