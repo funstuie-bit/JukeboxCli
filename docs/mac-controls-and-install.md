@@ -19,8 +19,8 @@ That downloads a separate cached copy and takes effect after restarting the app;
 it never replaces Homebrew's executable. Choose System / package manager to
 switch back. `JUKEBOXCLI_SYSTEM_TOOLS=1` still keeps mpv and ffmpeg system-managed.
 
-The formula pins the `v1.8.2` source revision,
-version `1.8.2`. It does not follow every source commit, even when that
+The formula pins the `v1.9.0` source revision,
+version `1.9.0`. It does not follow every source commit, even when that
 commit has the same package version. A future release needs an explicit pin
 update; use a source install if you need the latest checkout.
 
@@ -173,7 +173,7 @@ Automated tests don't tell us whether every Mac's physical keys and Control
 Centre work. Include your macOS version, terminal and keyboard when reporting
 a problem with them.
 
-The unreleased1.9.0 source build also packages an optional process-owned helper
+Version 1.9.0 also packages an optional process-owned helper
 for sleep, supported output disconnects and Low Power Mode. It is separate from
 the media-key bridge above; see [listening tools](listening-tools.md) for limits
 and the off switch. No permanent service or system audio capture is installed.

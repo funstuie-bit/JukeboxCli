@@ -3,7 +3,7 @@
 These features are in the app now. That doesn't mean every station, terminal
 or online service will cooperate. The limits are listed below.
 
-## Implemented in source — 1.9.0 (unreleased)
+## Current release — 1.9.0
 
 - Compact Home cabinet, three-line mini-player, collapsible sidebar and a more
   balanced Clean layout. Responsive real-history/Continue and station covers.
@@ -17,10 +17,10 @@ or online service will cooperate. The limits are listed below.
   No wake auto-play. Manual low-power visuals; unsupported events are labelled.
 
 See [controls, behaviour and platform limits](docs/listening-tools.md).
-Physical lifecycle acceptance and the next release's Mac/Linux install gates
-remain required. The stable release/Homebrew pin below is unchanged.
+Mac/Linux installation checks gate publication. Physical sleep/headphone and
+Bluetooth acceptance remains device-specific; no universal detection claim.
 
-## Current release — 1.8.2
+## Also included from 1.8.2
 
 - Explicit Anonymous / cookies optional mode when no browser/file is selected.
 - Distinct safe playback and pasted-YouTube errors for source verification,

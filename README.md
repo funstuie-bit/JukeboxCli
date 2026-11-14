@@ -21,10 +21,11 @@ keeps the lot in one editable queue. Streams stay streams unless you choose to s
 them. There are lyrics, cover artwork and live visualisers too, with optional
 fullscreen MilkDrop effects on Mac and Linux.
 
-**In the next source build (1.9.0):** compact Home/mini-player, command search,
-sleep timers, EQ, audio details, per-item resume, chapters and pointer dragging.
-See [listening tools and controls](docs/listening-tools.md) for keys and platform
-limits. This work has not replaced the published 1.8.2 release/Homebrew pin yet.
+**New in 1.9.0:** compact Home/mini-player, command search, sleep timers, EQ,
+audio details, per-item resume, chapters and pointer dragging. Press **Ctrl+K**
+for Commands, **Ctrl+E** for Listening tools, **Z** for mini mode and **Ctrl+B**
+to toggle the sidebar. Existing custom bindings win. See
+[listening tools and controls](docs/listening-tools.md) for the details and limits.
 
 **Cookies are optional.** Public YouTube links are tried anonymously when no
 browser/file is selected. Version **1.8.2** makes that mode explicit and separates
@@ -301,7 +302,11 @@ results stay temporary until you explicitly save one with **f**.
 
 ## Status and limits
 
-**Current release: [1.8.2](https://github.com/funstuie-bit/JukeboxCli/releases/tag/v1.8.2).**
+**Current release: [1.9.0](https://github.com/funstuie-bit/JukeboxCli/releases/tag/v1.9.0).**
+Adds compact layouts, shared theme previews, listening tools, commands, pointer
+dragging, per-item resume and chapters. Download-size estimates are opt-in;
+platform sleep/output detection has device-specific limits. One Mac/Linux
+release, one player and the same mixed-source queue.
 Anonymous playback is a valid default, not incomplete setup. Source failures now
 have specific, safe messages instead of generic advice to configure cookies.
 Sharp native Home thumbnails appear together; long titles keep artwork aligned,
@@ -312,7 +317,7 @@ install/retry feedback. Keeps explicit cookie-free playback recovery. Includes
 Includes 1.6.0's video browsing, saved searches, thumbnail preview, audio/video
 menus and mouse controls, plus Linux preset imports and isolated fullscreen audio.
 Restart after updating; music and settings are kept.
-[Release notes](docs/releases/1.8.2.md).
+[Release notes](docs/releases/1.9.0.md).
 [Changelog](CHANGELOG.md).
 
 Automated install checks run on Apple Silicon and x64 Linux. Intel Macs and other
@@ -628,7 +633,7 @@ Original / En D downloads, plus fullscreen audio isolated to JukeboxCli by defau
 Click mode adds player transport, seek and volume controls on Mac and Linux.
 Session diagnostics records local memory trends once a minute. See
 [setup, controls and limits](docs/visualiser-and-diagnostics.md).
-Version 1.8.2 is available from source and the Homebrew tap.
+Version 1.9.0 is available from source and the Homebrew tap.
 
 Packaged startup uses React production mode to avoid retaining development render
 timing records during long sessions. Linux and macOS share the same release;

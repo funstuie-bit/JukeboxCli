@@ -1,7 +1,7 @@
 # Player polish and listening tools
 
-Implemented in the **1.9.0 source build**. The published stable release and
-Homebrew pin remain 1.8.2 until this work goes through release checks.
+Available in **1.9.0** on macOS and Linux. The Mac Homebrew formula pins the same
+release source as the normal installer.
 
 ## Finding things
 

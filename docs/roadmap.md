@@ -1,10 +1,9 @@
 # Roadmap
 
-## Implemented in source — player polish and discovery (1.9.0)
+## Shipped in 1.9.0 — player polish and discovery
 
 Plan approved for all six stages; implementation started 12 November 2026.
-The core items below are in the **unreleased 1.9.0 source build**. Published
-stable/Homebrew remain 1.8.2. Keep one Mac/Linux codebase, the existing mpv player
+The core items below are in **1.9.0**. Keep one Mac/Linux codebase, the existing mpv player
 and editable mixed-source queue. [Controls and limits](listening-tools.md).
 Unchecked items are acceptance work or explicitly deferred extensions, not
 features silently claimed complete.
@@ -161,9 +160,9 @@ Inspired by Cloofy's native platform adapters, not assumed portable Rust code.
   real muted player acceptance and no profile/cookie leakage. Re-run Mac/Linux
   source installs and Homebrew checks before a stable release; update README,
   feature status and release notes only for functionality actually delivered.
-- All six stages were authorised together and implemented in source1.9.0.
-  Run final Mac/Linux install CI and physical lifecycle checks before calling
-  a stable release published. No source tag or Homebrew pin has moved yet.
+- All six stages were authorised together for1.9.0. Mac/Linux install CI gates
+  stable publication. Physical lifecycle checks and broader long-session
+  acceptance remain ongoing on the relevant hardware.
 
 ### Research references
 
@@ -178,7 +177,7 @@ Snapshots reviewed without installing or executing the third-party apps:
 - [mpv manual](https://mpv.io/manual/stable/): existing IPC audio/output properties,
   chapter/track lists and libavfilter support. Availability needs runtime checks.
 
-## Current release — 1.8.2
+## Shipped in 1.8.2
 
 - [x] Make anonymous playback explicit rather than a missing setup field.
 - [x] Separate source verification/rate limits/tool issues from cookie access.

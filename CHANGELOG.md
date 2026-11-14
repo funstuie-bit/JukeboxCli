@@ -3,7 +3,7 @@
 Release notes describe what changed in each build. For what works now and the
 remaining limits, see [feature status](FEATURES.md).
 
-## Unreleased — 1.9.0 source
+## 1.9.0 — Player polish and listening tools
 
 - Compact Home cabinet/mini-player, optional sidebar and balanced Clean player.
 - Extend draft palette previews to interface chrome/lists/menus and add contrast
